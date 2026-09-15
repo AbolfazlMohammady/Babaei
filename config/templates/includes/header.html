@@ -1,0 +1,33 @@
+<header class="site-header">
+    <div class="container site-header__inner">
+
+        <a href="/" class="site-logo">
+            BABAEI
+        </a>
+
+        <nav class="site-nav">
+            <a href="/">خانه</a>
+            <a href="#">فروشگاه</a>
+            <a href="#">طراحی اختصاصی</a>
+            <a href="#">بلاگ</a>
+            <a href="#">درباره ما</a>
+        </nav>
+
+        <div class="site-actions">
+            <button type="button" aria-label="جستجو">⌕</button>
+
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'users:profile' %}" aria-label="پروفایل">◯</a>
+            {% else %}
+                <a href="{% url 'users:login' %}" aria-label="ورود">◯</a>
+            {% endif %}
+
+            <a href="#" aria-label="سبد خرید">◌</a>
+
+            <button type="button" class="mobile-menu-trigger" data-mobile-menu>
+                ☰
+            </button>
+        </div>
+
+    </div>
+</header>

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="account-page">
+    <div class="container account-layout">
+
+        <aside class="account-sidebar">
+            <div class="account-user">
+                <div class="account-avatar">
+                    {% if request.user.image %}
+                        <img src="{{ request.user.image.url }}" alt="{{ request.user.get_full_name }}">
+                    {% else %}
+                        {{ request.user.first_name|first|default:"ب" }}
+                    {% endif %}
+                </div>
+
+                <strong>{{ request.user.get_full_name|default:"کاربر BABAEI" }}</strong>
+                <span>{{ request.user.phone }}</span>
+            </div>
+
+            <nav>
+                <a href="{% url 'users:profile' %}">اطلاعات شخصی</a>
+                <a href="{% url 'users:addresses' %}">آدرس‌ها</a>
+                <a href="#">سفارش‌های من</a>
+                <a href="#">علاقه‌مندی‌ها</a>
+                <a href="#">خروج</a>
+            </nav>
+        </aside>
+
+        <div class="account-content">
+            {% block account_content %}{% endblock %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}
