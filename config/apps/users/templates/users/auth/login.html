@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}ورود | BABAEI{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card">
+        <div class="auth-logo">BABAEI</div>
+
+        <div class="auth-header">
+            <h1>ورود به حساب</h1>
+            <p>برای ادامه شماره موبایل خود را وارد کنید.</p>
+        </div>
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label" for="phone">شماره موبایل</label>
+                <input
+                    class="form-input"
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="09xxxxxxxxx"
+                    autocomplete="tel"
+                    required
+                >
+            </div>
+
+            <button class="btn btn-primary auth-submit" type="submit">
+                ادامه
+            </button>
+        </form>
+
+        <p class="auth-footer">
+            با ورود به BABAEI، قوانین و شرایط استفاده را می‌پذیرید.
+        </p>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "users/account_base.html" %}
+
+{% block title %}آدرس‌ها | BABAEI{% endblock %}
+
+{% block account_content %}
+<div class="page-header account-page-header">
+    <div>
+        <h1 class="page-title">آدرس‌های من</h1>
+        <p class="page-description">آدرس‌های ارسال سفارش خود را مدیریت کنید.</p>
+    </div>
+
+    <a href="{% url 'users:address_create' %}" class="btn btn-primary">
+        افزودن آدرس
+    </a>
+</div>
+
+<div class="address-list">
+    {% for address in addresses %}
+        <article class="card address-card">
+            <div>
+                <h2>{{ address.title }}</h2>
+                <p>{{ address.description }}</p>
+                <span>{{ address.city.province.name }}، {{ address.city.name }}</span>
+                <span>کد پستی: {{ address.postal_code }}</span>
+                <span>موبایل: {{ address.phone }}</span>
+            </div>
+
+            <div class="address-actions">
+                <a href="{% url 'users:address_update' address.pk %}" class="btn btn-secondary">
+                    ویرایش
+                </a>
+
+                <form method="post" action="{% url 'users:address_delete' address.pk %}">
+                    {% csrf_token %}
+                    <button
+                        class="btn btn-secondary"
+                        type="submit"
+                        data-confirm="آیا از حذف این آدرس مطمئن هستید؟"
+                    >
+                        حذف
+                    </button>
+                </form>
+            </div>
+        </article>
+    {% empty %}
+        <div class="card empty-state">
+            <h2>هنوز آدرسی ثبت نکرده‌اید.</h2>
+            <p>برای ثبت سفارش ابتدا یک آدرس اضافه کنید.</p>
+            <a href="{% url 'users:address_create' %}" class="btn btn-primary">
+                افزودن اولین آدرس
+            </a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

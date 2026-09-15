@@ -1,19 +1,22 @@
 :root {
     --color-black: #111111;
     --color-white: #ffffff;
+
     --color-bg: #f7f7f5;
     --color-surface: #ffffff;
-    --color-border: #e7e7e4;
-    --color-muted: #777777;
+
     --color-text: #171717;
+    --color-muted: #777777;
+    --color-border: #e7e7e4;
+
     --color-success: #238636;
     --color-danger: #d92d20;
+
+    --container: 1440px;
 
     --radius-sm: 8px;
     --radius-md: 14px;
     --radius-lg: 20px;
-
-    --container: 1440px;
 
     --space-1: 4px;
     --space-2: 8px;
@@ -26,11 +29,26 @@
     --space-12: 48px;
     --space-16: 64px;
 
-    --transition-fast: 150ms ease;
-    --transition-normal: 250ms ease;
+    --transition-fast: 180ms ease;
+    --transition-normal: 300ms ease;
+    --transition-slow: 600ms cubic-bezier(.22, .61, .36, 1);
+
+    --font-sans:
+        "Vazirmatn",
+        "IRANSansX",
+        Tahoma,
+        Arial,
+        sans-serif;
+
+    --font-display:
+        "Arial",
+        "Helvetica Neue",
+        sans-serif;
 }
 
-* {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -38,15 +56,27 @@
 
 html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
     min-height: 100vh;
+
     background: var(--color-bg);
     color: var(--color-text);
-    font-family: Arial, sans-serif;
+
+    font-family: var(--font-sans);
+    font-size: 16px;
     line-height: 1.7;
+
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    overflow-x: hidden;
+}
+
+body.no-scroll {
+    overflow: hidden;
 }
 
 a {
@@ -66,30 +96,53 @@ button {
     cursor: pointer;
 }
 
-img {
-    max-width: 100%;
+img,
+svg {
     display: block;
 }
 
-.container {
-    width: min(100% - 32px, var(--container));
-    margin-inline: auto;
+img {
+    max-width: 100%;
 }
 
-.text-muted {
-    color: var(--color-muted);
+svg {
+    width: 1em;
+    height: 1em;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+}
+
+::selection {
+    background: var(--color-black);
+    color: var(--color-white);
+}
+
+.container {
+    width: min(calc(100% - 48px), var(--container));
+    margin-inline: auto;
 }
 
 .hidden {
     display: none !important;
 }
 
-.no-scroll {
-    overflow: hidden;
+.text-muted {
+    color: var(--color-muted);
+}
+
+.section {
+    width: 100%;
 }
 
 @media (max-width: 768px) {
     .container {
-        width: min(100% - 24px, var(--container));
+        width: min(calc(100% - 32px), var(--container));
     }
 }

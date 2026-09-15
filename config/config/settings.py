@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
 
     # Local Apps
+    "apps.home",
     "apps.users",
 ]
 
@@ -131,14 +132,15 @@ LOCALE_PATHS = [
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/static/'
-# Store collected static where Nginx serves
-STATIC_ROOT = os.path.join(BASE_DIR, "data/static/")
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "data/static/"
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, "data/media/")
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "data/media/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

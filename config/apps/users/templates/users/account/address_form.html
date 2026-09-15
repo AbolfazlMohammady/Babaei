@@ -1,0 +1,92 @@
+{% extends "users/account_base.html" %}
+
+{% block title %}
+    {% if address %}ویرایش آدرس{% else %}افزودن آدرس{% endif %} | BABAEI
+{% endblock %}
+
+{% block account_content %}
+<div class="page-header">
+    <h1 class="page-title">
+        {% if address %}ویرایش آدرس{% else %}افزودن آدرس{% endif %}
+    </h1>
+</div>
+
+<div class="card profile-card">
+    <form method="post" class="profile-form">
+        {% csrf_token %}
+
+        <div class="profile-grid">
+            <div class="form-group">
+                <label class="form-label">عنوان آدرس</label>
+                <input
+                    class="form-input"
+                    name="title"
+                    value="{{ address.title|default:'' }}"
+                    placeholder="مثلاً خانه"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">شماره موبایل گیرنده</label>
+                <input
+                    class="form-input"
+                    name="phone"
+                    value="{{ address.phone|default:'' }}"
+                    placeholder="0912xxxxxxx"
+                    inputmode="numeric"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">شهر</label>
+                <select class="form-select" name="city" required>
+                    <option value="">انتخاب شهر</option>
+
+                    {% for city in cities %}
+                        <option
+                            value="{{ city.id }}"
+                            {% if address.city_id == city.id %}selected{% endif %}
+                        >
+                            {{ city.province.name }} - {{ city.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">کد پستی</label>
+                <input
+                    class="form-input"
+                    name="postal_code"
+                    value="{{ address.postal_code|default:'' }}"
+                    maxlength="10"
+                    inputmode="numeric"
+                    required
+                >
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">آدرس کامل</label>
+            <textarea
+                class="form-textarea"
+                name="description"
+                placeholder="خیابان، کوچه، پلاک، واحد..."
+                required
+            >{{ address.description|default:'' }}</textarea>
+        </div>
+
+        <div>
+            <button class="btn btn-primary" type="submit">
+                {% if address %}ذخیره تغییرات{% else %}ثبت آدرس{% endif %}
+            </button>
+
+            <a href="{% url 'users:addresses' %}" class="btn btn-secondary">
+                انصراف
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

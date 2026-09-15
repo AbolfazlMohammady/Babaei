@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}تأیید شماره | BABAEI{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card">
+        <div class="auth-logo">BABAEI</div>
+
+        <div class="auth-header">
+            <h1>کد تأیید</h1>
+            <p>
+                کد ارسال‌شده به
+                <strong>{{ phone }}</strong>
+                را وارد کنید.
+            </p>
+        </div>
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label" for="code">کد تأیید</label>
+
+                <input
+                    class="form-input otp-input"
+                    id="code"
+                    name="code"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="6"
+                    autocomplete="one-time-code"
+                    placeholder="------"
+                    required
+                >
+            </div>
+
+            <button class="btn btn-primary auth-submit" type="submit">
+                ورود به حساب
+            </button>
+        </form>
+
+        <a href="{% url 'users:login' %}" class="auth-back">
+            تغییر شماره موبایل
+        </a>
+    </div>
+</section>
+{% endblock %}

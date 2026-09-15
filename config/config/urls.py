@@ -16,8 +16,9 @@ urlpatterns = [
 
 
     # My app
-
-    # path('api/core/', include('apps.users.urls')),
+    
+    path("", include("apps.home.urls")),
+    path('', include('apps.users.urls')),
 
 ]
 if settings.DEBUG:

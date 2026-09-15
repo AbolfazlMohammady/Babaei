@@ -1,0 +1,69 @@
+{% extends "users/account_base.html" %}
+
+{% block title %}پروفایل | BABAEI{% endblock %}
+
+{% block account_content %}
+<div class="page-header">
+    <h1 class="page-title">اطلاعات شخصی</h1>
+    <p class="page-description">اطلاعات حساب کاربری خود را مدیریت کنید.</p>
+</div>
+
+<div class="card profile-card">
+    <form method="post" enctype="multipart/form-data" class="profile-form">
+        {% csrf_token %}
+
+        <div class="profile-image">
+            {% if user.image %}
+                <img src="{{ user.image.url }}" alt="{{ user.get_full_name }}">
+            {% else %}
+                <span>{{ user.first_name|first|default:"ب" }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">تصویر پروفایل</label>
+            <input class="form-input" type="file" name="image" accept="image/*">
+        </div>
+
+        <div class="profile-grid">
+            <div class="form-group">
+                <label class="form-label">نام</label>
+                <input class="form-input" name="first_name" value="{{ user.first_name }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">نام خانوادگی</label>
+                <input class="form-input" name="last_name" value="{{ user.last_name }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">شماره موبایل</label>
+                <input class="form-input" value="{{ user.phone }}" disabled>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">ایمیل</label>
+                <input class="form-input" type="email" name="email" value="{{ user.email|default:'' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">تاریخ تولد</label>
+                <input class="form-input" type="date" name="birth_date" value="{{ user.birth_date|date:'Y-m-d' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">جنسیت</label>
+                <select class="form-select" name="gender">
+                    <option value="">انتخاب کنید</option>
+                    <option value="male" {% if user.gender == "male" %}selected{% endif %}>آقا</option>
+                    <option value="female" {% if user.gender == "female" %}selected{% endif %}>خانم</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" type="submit">
+            ذخیره تغییرات
+        </button>
+    </form>
+</div>
+{% endblock %}
