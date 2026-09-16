@@ -5,7 +5,7 @@ import apps.shop.models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("shop", "0001_initial"),
+        ("shop", "0002_rename_shop_catego_is_acti_idx_shop_catego_is_acti_b15761_idx_and_more"),
     ]
 
     operations = [
@@ -51,7 +51,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RemoveIndex(
             model_name="productvariant",
-            name="shop_var_product_idx",
+            name="shop_produc_product_27d2af_idx",
         ),
         migrations.AddIndex(
             model_name="productvariant",
