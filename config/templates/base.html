@@ -17,9 +17,11 @@
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
     <link rel="stylesheet" href="{% static 'css/pages/users.css' %}">
-    <link rel="stylesheet" href="{% static 'css/pages/home-polish.css' %}">
 
     {% block extra_css %}{% endblock %}
+
+    <!-- Final visual overrides load after page-specific CSS. -->
+    <link rel="stylesheet" href="{% static 'css/pages/home-polish.css' %}">
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
