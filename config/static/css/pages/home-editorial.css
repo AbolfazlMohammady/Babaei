@@ -220,9 +220,68 @@
     text-align: right;
 }
 
+/*
+   WHITE FEATURE IMAGE
+   The product label + chain live on the right half of the photo.
+   Keep the editorial copy on the genuinely open left side.
+   A restrained divider and micro-label make the copy feel designed,
+   rather than simply moved.
+*/
 .home-page .feature-banner__item:nth-child(2) .feature-banner__content {
-    width: 50%;
-    margin-left: auto;
+    inset: 0 auto 0 0 !important;
+    width: 46% !important;
+    margin: 0 !important;
+    padding: 40px 34px 40px 42px;
+    box-sizing: border-box;
+    align-items: flex-start;
+    justify-content: center;
+    text-align: right;
+    color: #111;
+}
+
+.home-page .feature-banner__item:nth-child(2) .feature-banner__content::before {
+    content: "DETAILS / BABAEI";
+    position: absolute;
+    top: 34px;
+    left: 42px;
+    padding-left: 10px;
+    border-left: 1px solid rgba(17,17,17,.28);
+    color: rgba(17,17,17,.48);
+    font: 8px/1.4 Arial, sans-serif;
+    letter-spacing: 1.8px;
+    direction: ltr;
+    text-align: left;
+}
+
+.home-page .feature-banner__item:nth-child(2) .feature-banner__content > div {
+    width: 100%;
+    max-width: 250px;
+    margin: 42px 0 0;
+}
+
+.home-page .feature-banner__item:nth-child(2) .feature-banner__content h2 {
+    max-width: 235px;
+    margin: 0 0 11px;
+    font-size: clamp(23px, 2.7vw, 36px);
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -.2px;
+    text-wrap: balance;
+    text-shadow: 0 1px 12px rgba(255,255,255,.52);
+}
+
+.home-page .feature-banner__item:nth-child(2) .feature-banner__content p {
+    max-width: 230px;
+    margin: 0;
+    color: rgba(17,17,17,.70);
+    font-size: 10px;
+    line-height: 2;
+}
+
+.home-page .feature-banner__item:nth-child(2) .feature-banner__content a:not(.button) {
+    margin-top: 14px;
+    font-size: 10px;
+    color: #111;
 }
 
 .home-page .feature-banner__content > div {
@@ -341,7 +400,22 @@
     }
 
     .home-page .feature-banner__item:nth-child(2) .feature-banner__content {
-        width: 57%;
+        inset: 0 auto 0 0 !important;
+        width: 67% !important;
+        padding: 24px 18px 24px 22px;
+        justify-content: center;
+    }
+
+    .home-page .feature-banner__item:nth-child(2) .feature-banner__content::before {
+        top: 18px;
+        left: 22px;
+        font-size: 6px;
+        letter-spacing: 1.2px;
+    }
+
+    .home-page .feature-banner__item:nth-child(2) .feature-banner__content > div {
+        max-width: 205px;
+        margin-top: 28px;
     }
 
     .home-page .feature-banner__content h2 {
@@ -349,6 +423,11 @@
         margin-bottom: 8px;
         font-size: clamp(22px, 7vw, 30px);
         line-height: 1.18;
+    }
+
+    .home-page .feature-banner__item:nth-child(2) .feature-banner__content h2 {
+        max-width: 195px;
+        font-size: clamp(21px, 6.5vw, 28px);
     }
 
     .home-page .feature-banner__content p {
@@ -388,5 +467,18 @@
 
     .home-page .feature-banner__item {
         aspect-ratio: 1.28 / 1;
+    }
+
+    .home-page .feature-banner__item:nth-child(2) .feature-banner__content {
+        width: 70% !important;
+        padding-left: 18px;
+    }
+
+    .home-page .feature-banner__item:nth-child(2) .feature-banner__content::before {
+        left: 18px;
+    }
+
+    .home-page .feature-banner__item:nth-child(2) .feature-banner__content > div {
+        max-width: 185px;
     }
 }
