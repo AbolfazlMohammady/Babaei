@@ -1,36 +1,42 @@
 <footer class="site-footer">
     <div class="container site-footer__grid">
-
         <div class="site-footer__brand">
             <div class="site-logo">BABAEI</div>
             <p>Wear Your Story.</p>
             <span class="site-footer__brand-note">لباس، جزئی از داستان توست.</span>
+            <div class="site-footer__socials" aria-label="شبکه‌های اجتماعی">
+                <a href="#" aria-label="Instagram">IG</a>
+                <a href="#" aria-label="Telegram">TG</a>
+                <a href="#" aria-label="YouTube">YT</a>
+            </div>
         </div>
 
         <div>
             <h3>فروشگاه</h3>
+            <a href="{% url 'shop:index' %}">همه محصولات</a>
             <a href="#">تیشرت</a>
             <a href="#">هودی</a>
-            <a href="#">اورسایز</a>
             <a href="#">اکسسوری</a>
         </div>
 
         <div>
-            <h3>راهنما</h3>
+            <h3>خدمات مشتریان</h3>
             <a href="#">سوالات متداول</a>
             <a href="#">شرایط و قوانین</a>
             <a href="#">شیوه ارسال</a>
             <a href="#">پیگیری سفارش</a>
         </div>
 
-        <div>
-            <h3>BABAEI</h3>
-            <a href="#">درباره ما</a>
-            <a href="#">تماس با ما</a>
-            <a href="#">بلاگ</a>
-            <a href="#">طراحی اختصاصی</a>
+        <div class="site-footer__newsletter">
+            <h3>عضویت در خبرنامه</h3>
+            <p>جدیدترین کالکشن‌ها و اخبار BABAEI را دریافت کن.</p>
+            <form method="post" class="footer-newsletter">
+                {% csrf_token %}
+                <label class="sr-only" for="footer-email">ایمیل</label>
+                <input id="footer-email" type="email" name="email" placeholder="ایمیل شما" required>
+                <button type="submit" aria-label="عضویت">←</button>
+            </form>
         </div>
-
     </div>
 
     <div class="container site-footer__bottom">
