@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const digits = value => String(value).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
     const div = value => Math.floor(value);
     const mod = (a, b) => a - Math.floor(a / b) * b;
+    const MIN_AGE = 13;
 
     const jalaliToGregorian = (jy, jm, jd) => {
         jy += 1595;
@@ -35,21 +36,17 @@ document.addEventListener("DOMContentLoaded", () => {
         return new Date(gy, gm, remaining);
     };
 
-    // Use the browser's native Persian calendar implementation for Gregorian -> Jalali.
-    // This avoids fragile hand-written calendar arithmetic and guarantees the current
-    // Jalali year is correct (e.g. 2026 -> 1405), which also drives the year wheel.
-    const jalaliFormatter = new Intl.DateTimeFormat("en-US-u-ca-persian", {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
+    // Force Latin numerals so Number("۱۴۰۵") never becomes NaN.
+    const jalaliFormatter = new Intl.DateTimeFormat("fa-IR-u-ca-persian-nu-latn", {
+        year: "numeric", month: "numeric", day: "numeric"
     });
 
     const gregorianToJalali = date => {
         const parts = jalaliFormatter.formatToParts(date);
         return {
-            year: Number(parts.find(p => p.type === "year").value),
-            month: Number(parts.find(p => p.type === "month").value),
-            day: Number(parts.find(p => p.type === "day").value),
+            year: Number(parts.find(p => p.type === "year")?.value),
+            month: Number(parts.find(p => p.type === "month")?.value),
+            day: Number(parts.find(p => p.type === "day")?.value)
         };
     };
 
@@ -65,12 +62,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const minimumBirthDate = new Date(today.getFullYear() - MIN_AGE, today.getMonth(), today.getDate());
     const todayJ = gregorianToJalali(today);
+    const minAllowedJ = gregorianToJalali(minimumBirthDate);
     const minYear = 1200;
-    const maxYear = todayJ.year;
+    const maxYear = minAllowedJ.year;
+
     const initial = isoToDate(hidden.value);
     let selected = initial ? gregorianToJalali(initial) : null;
-    let view = selected || { year: Math.max(1370, maxYear - 25), month: 1, day: 1 };
+    let view = selected || { year: maxYear, month: minAllowedJ.month, day: minAllowedJ.day };
 
     const daysInMonth = (year, month) => {
         if (month <= 6) return 31;
@@ -80,19 +80,19 @@ document.addEventListener("DOMContentLoaded", () => {
         return Math.round((b - a) / 86400000) === 366 ? 30 : 29;
     };
 
-    const close = () => {
-        picker.hidden = true;
-        input.setAttribute("aria-expanded", "false");
+    const isAllowedBirthDate = (year, month, day) => {
+        const candidate = jalaliToGregorian(year, month, day);
+        return candidate < today && candidate <= minimumBirthDate;
     };
 
+    const close = () => { picker.hidden = true; input.setAttribute("aria-expanded", "false"); };
     const updatePreview = () => {
         const preview = picker.querySelector("[data-preview]");
         if (preview) preview.textContent = selected ? format(selected) : format(view);
     };
 
-    const renderColumn = (column, values, current, formatter, onChange) => {
+    const renderColumn = (column, values, current, formatter, onChange, disabled = () => false) => {
         column.innerHTML = "";
-
         const spacer = document.createElement("div");
         spacer.className = "date-wheel__spacer";
         column.appendChild(spacer);
@@ -103,58 +103,33 @@ document.addEventListener("DOMContentLoaded", () => {
             item.className = "date-wheel__item";
             item.textContent = formatter(value);
             item.dataset.value = value;
-
             if (Number(value) === Number(current)) item.classList.add("is-selected");
-
-            item.addEventListener("click", () => onChange(Number(value)));
+            if (disabled(value)) {
+                item.disabled = true;
+                item.classList.add("is-disabled");
+            } else {
+                item.addEventListener("click", () => onChange(Number(value)));
+            }
             column.appendChild(item);
         });
 
         column.appendChild(spacer.cloneNode(true));
-
         requestAnimationFrame(() => {
-            const item = [...column.querySelectorAll(".date-wheel__item")]
-                .find(x => Number(x.dataset.value) === Number(current));
-            if (item) {
-                column.scrollTop = Math.max(
-                    0,
-                    item.offsetTop - (column.clientHeight - item.offsetHeight) / 2
-                );
-            }
+            const item = [...column.querySelectorAll(".date-wheel__item")].find(x => Number(x.dataset.value) === Number(current) && !x.disabled);
+            if (item) column.scrollTop = Math.max(0, item.offsetTop - (column.clientHeight - item.offsetHeight) / 2);
         });
     };
 
     const render = () => {
         picker.innerHTML = `
-            <div class="date-wheel__top">
-                <div>
-                    <span class="date-wheel__eyebrow">تاریخ تولد</span>
-                    <strong>روز، ماه و سال تولد را انتخاب کنید</strong>
-                </div>
-                <button type="button" class="date-wheel__close" aria-label="بستن">×</button>
-            </div>
+            <div class="date-wheel__top"><div><span class="date-wheel__eyebrow">تاریخ تولد</span><strong>روز، ماه و سال تولد را انتخاب کنید</strong></div><button type="button" class="date-wheel__close" aria-label="بستن">×</button></div>
             <div class="date-wheel__columns">
-                <div class="date-wheel__column-wrap">
-                    <span>روز</span>
-                    <div class="date-wheel__column" data-day></div>
-                </div>
-                <div class="date-wheel__column-wrap">
-                    <span>ماه</span>
-                    <div class="date-wheel__column" data-month></div>
-                </div>
-                <div class="date-wheel__column-wrap">
-                    <span>سال</span>
-                    <div class="date-wheel__column date-wheel__year" data-year></div>
-                </div>
+                <div class="date-wheel__column-wrap"><span>روز</span><div class="date-wheel__column" data-day></div></div>
+                <div class="date-wheel__column-wrap"><span>ماه</span><div class="date-wheel__column" data-month></div></div>
+                <div class="date-wheel__column-wrap"><span>سال</span><div class="date-wheel__column date-wheel__year" data-year></div></div>
                 <div class="date-wheel__selection"></div>
             </div>
-            <div class="date-wheel__bottom">
-                <span data-preview></span>
-                <div>
-                    <button type="button" class="date-wheel__clear">پاک کردن</button>
-                    <button type="button" class="date-wheel__confirm">تأیید تاریخ</button>
-                </div>
-            </div>`;
+            <div class="date-wheel__bottom"><span data-preview></span><div><button type="button" class="date-wheel__clear">پاک کردن</button><button type="button" class="date-wheel__confirm">تأیید تاریخ</button></div></div>`;
 
         const day = picker.querySelector("[data-day]");
         const month = picker.querySelector("[data-month]");
@@ -163,97 +138,47 @@ document.addEventListener("DOMContentLoaded", () => {
         const rebuildDays = () => {
             const maxDay = daysInMonth(view.year, view.month);
             if (view.day > maxDay) view.day = maxDay;
-
-            renderColumn(
-                day,
-                Array.from({ length: maxDay }, (_, i) => i + 1),
-                view.day,
-                digits,
-                value => {
-                    view.day = value;
-                    selected = null;
-                    updatePreview();
-                }
-            );
+            renderColumn(day, Array.from({length: maxDay}, (_, i) => i + 1), view.day, digits, value => {
+                view.day = value; selected = null; updatePreview();
+            }, value => !isAllowedBirthDate(view.year, view.month, value));
         };
 
-        // Descending years: current Jalali year down to 1200.
-        // maxYear is now always a valid Jalali year, so this column cannot be empty.
-        const years = Array.from(
-            { length: maxYear - minYear + 1 },
-            (_, i) => maxYear - i
-        );
-
+        const years = Array.from({length: maxYear - minYear + 1}, (_, i) => maxYear - i);
         renderColumn(year, years, view.year, digits, value => {
-            view.year = value;
-            selected = null;
-            rebuildDays();
-            updatePreview();
-        });
+            view.year = value; selected = null;
+            // When the user moves to a year older than the cutoff, every month/day is available.
+            // In the cutoff year, future days inside that Jalali year are disabled.
+            rebuildDays(); updatePreview();
+        }, value => value > maxYear);
 
-        renderColumn(
-            month,
-            Array.from({ length: 12 }, (_, i) => i + 1),
-            view.month,
-            value => months[value - 1],
-            value => {
-                view.month = value;
-                selected = null;
-                rebuildDays();
-                updatePreview();
-            }
-        );
+        renderColumn(month, Array.from({length: 12}, (_, i) => i + 1), view.month, value => months[value - 1], value => {
+            view.month = value; selected = null; rebuildDays(); updatePreview();
+        }, value => {
+            if (view.year < maxYear) return false;
+            return jalaliToGregorian(view.year, value, 1) > minimumBirthDate;
+        });
 
         rebuildDays();
         updatePreview();
 
         picker.querySelector(".date-wheel__close").onclick = close;
-
-        picker.querySelector(".date-wheel__clear").onclick = () => {
-            selected = null;
-            hidden.value = "";
-            input.value = "";
-            close();
-        };
-
+        picker.querySelector(".date-wheel__clear").onclick = () => { selected = null; hidden.value = ""; input.value = ""; close(); };
         picker.querySelector(".date-wheel__confirm").onclick = () => {
-            const chosen = jalaliToGregorian(
-                view.year,
-                view.month,
-                Math.min(view.day, daysInMonth(view.year, view.month))
-            );
-
-            if (chosen >= today) return;
-
-            selected = {
-                year: view.year,
-                month: view.month,
-                day: view.day,
-            };
+            const chosen = jalaliToGregorian(view.year, view.month, Math.min(view.day, daysInMonth(view.year, view.month)));
+            if (!isAllowedBirthDate(view.year, view.month, view.day)) return;
+            selected = {year: view.year, month: view.month, day: view.day};
             hidden.value = iso(chosen);
             input.value = format(selected);
             close();
         };
     };
 
-    const open = () => {
-        picker.hidden = false;
-        input.setAttribute("aria-expanded", "true");
-        render();
-    };
-
+    const open = () => { picker.hidden = false; input.setAttribute("aria-expanded", "true"); render(); };
     if (selected) input.value = format(selected);
-
     input.addEventListener("click", open);
     input.addEventListener("focus", open);
     input.addEventListener("keydown", e => e.preventDefault());
     input.addEventListener("paste", e => e.preventDefault());
-
-    document.addEventListener("click", e => {
-        if (!input.closest(".jalali-picker-field")?.contains(e.target)) close();
-    });
-
-    document.addEventListener("keydown", e => {
-        if (e.key === "Escape") close();
-    });
+    document.addEventListener("click", e => { if (!input.closest(".jalali-picker-field")?.contains(e.target)) close(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
 });
