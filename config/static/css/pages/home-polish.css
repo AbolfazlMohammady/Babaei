@@ -1,63 +1,384 @@
 /* =========================================================
    BABAEI HOME — VISUAL POLISH
-   Overrides only. Keeps page structure and shared components intact.
+   Typography → image composition → overlay copy → spacing
 ========================================================= */
 
-.home-page .site-header__inner { min-height: 62px; width: min(calc(100% - 56px), 1240px); }
-.home-page .site-logo { font-size: 18px; letter-spacing: 4.5px; }
-.home-page .site-nav { gap: 26px; font-size: 12px; }
-.home-page .header-icon { width: 34px; height: 34px; }
-.home-page .header-icon svg { width: 19px; height: 19px; stroke-width: 1.35; }
-.home-page .header-cart__badge { top: 0; right: 0; min-width: 12px; height: 12px; font-size: 7px; }
+@import url("https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css");
 
-.home-page .hero { height: min(690px, calc(100vh - 20px)); min-height: 620px; }
-.home-page .hero__content { width: min(410px, calc(100% - 96px)); transform: translateY(-42%); }
-.home-page .hero__content h1,
-.home-page .hero__content h2 { font-size: clamp(60px, 5.5vw, 82px); }
-.home-page .hero__description { font-size: 13px; }
-.home-page .hero__counter { bottom: 20px; }
-
-.home-page .categories { padding: 58px 0 68px; }
-.home-page .categories__grid { gap: 16px; }
-.home-page .category-card__image { aspect-ratio: 1 / 1; border-radius: 5px; }
-
-/* Reference: black banner LEFT, light banner RIGHT. */
-.home-page .feature-banner { direction: ltr; }
-.home-page .feature-banner__item { min-height: 0; aspect-ratio: 1.32 / 1; }
-.home-page .feature-banner__content { min-height: 0; height: 100%; box-sizing: border-box; direction: rtl; }
-.home-page .feature-banner__content h2 { font-size: clamp(30px, 3.4vw, 50px); }
-.home-page .feature-banner__content--dark { color: #111; }
-.home-page .feature-banner__content--dark a { color: #111; }
-
-/* Reference order: Premium Quality, Fast Delivery, Secure Payment, Support 24/7. */
-.home-page .trust { padding-block: 52px; direction: ltr; }
-.home-page .trust__item { direction: rtl; }
-.home-page .trust__item h3 { font-size: 11px; }
-
-/* Product cards flow left-to-right; text remains RTL. */
-.home-page .products { padding-bottom: 72px; direction: ltr; }
-.home-page .products .section-header { direction: rtl; }
-.home-page .product-card { direction: rtl; }
-.home-page .product-card__image { aspect-ratio: 1 / 1.08; border-radius: 5px; }
-
-.home-page .story { min-height: 500px; }
-.home-page .story__image { min-height: 500px; }
-
-@media (max-width: 1100px) {
-    .home-page .site-header__inner { width: calc(100% - 40px); }
-    .home-page .hero { height: 640px; min-height: 0; }
+.home-page {
+    --home-max: 1120px;
+    font-family: "Vazirmatn", Tahoma, Arial, sans-serif;
 }
 
+/* =========================================================
+   01. TYPOGRAPHY
+========================================================= */
+
+.home-page,
+.home-page button,
+.home-page input,
+.home-page textarea,
+.home-page select,
+.home-page .site-nav,
+.home-page .site-actions,
+.home-page .section-header,
+.home-page .category-card,
+.home-page .feature-banner__content,
+.home-page .trust,
+.home-page .products,
+.home-page .story__content,
+.home-page .newsletter {
+    font-family: "Vazirmatn", Tahoma, Arial, sans-serif;
+    text-rendering: optimizeLegibility;
+}
+
+.home-page .section-header h2,
+.home-page .category-card h3,
+.home-page .feature-banner__content h2,
+.home-page .trust__item h3,
+.home-page .product-card__info h3,
+.home-page .story__content h2,
+.home-page .section-header__link,
+.home-page .category-card span,
+.home-page .feature-banner__content p,
+.home-page .feature-banner__content a,
+.home-page .trust__item p,
+.home-page .product-card__info strong,
+.home-page .story__content > p:not(.story__eyebrow),
+.home-page .newsletter input {
+    font-family: "Vazirmatn", Tahoma, Arial, sans-serif;
+}
+
+.home-page .section-header h2,
+.home-page .category-card h3,
+.home-page .feature-banner__content h2,
+.home-page .trust__item h3,
+.home-page .product-card__info h3,
+.home-page .story__content h2 {
+    font-weight: 650;
+    letter-spacing: 0;
+}
+
+.home-page .hero__eyebrow,
+.home-page .hero__content h1,
+.home-page .hero__content h2,
+.home-page .story__eyebrow,
+.home-page .story__image h2,
+.home-page .site-logo {
+    font-family: Arial, "Helvetica Neue", sans-serif;
+}
+
+/* =========================================================
+   02. SMALLER HEADER
+========================================================= */
+
+.home-page .site-header__inner {
+    min-height: 62px;
+    width: min(calc(100% - 48px), var(--home-max));
+}
+
+.home-page .site-logo {
+    font-size: 19px;
+    letter-spacing: 4.5px;
+}
+
+.home-page .site-nav {
+    gap: 24px;
+    font-size: 12px;
+    font-weight: 550;
+}
+
+.home-page .site-actions { gap: 0; }
+
+.home-page .header-icon {
+    width: 36px;
+    height: 36px;
+}
+
+.home-page .header-icon svg {
+    width: 19px;
+    height: 19px;
+    stroke-width: 1.35;
+}
+
+.home-page .header-cart__badge {
+    min-width: 12px;
+    height: 12px;
+    font-size: 7px;
+}
+
+/* =========================================================
+   03. CATEGORY — COMPACT / SQUARE
+========================================================= */
+
+.home-page .categories {
+    padding: 58px 0 64px;
+}
+
+.home-page .categories .section-header,
+.home-page .categories__grid {
+    width: min(calc(100% - 56px), var(--home-max));
+}
+
+.home-page .categories .section-header { margin-bottom: 22px; }
+
+.home-page .section-header h2 {
+    font-size: 25px;
+    font-weight: 650;
+}
+
+.home-page .section-header__link {
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.home-page .categories__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.home-page .category-card__image {
+    aspect-ratio: 1 / 1;
+    border-radius: 4px;
+}
+
+.home-page .category-card__image img {
+    object-fit: cover;
+    object-position: center center;
+}
+
+.home-page .category-card h3 {
+    margin: 9px 0 1px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.home-page .category-card span {
+    font-size: 8px;
+    line-height: 1.4;
+    color: #8a8a8a;
+}
+
+/* =========================================================
+   04. FEATURE BANNERS — COMPOSITION
+========================================================= */
+
+.home-page .feature-banner__item {
+    min-height: 0;
+    aspect-ratio: 1.52 / 1;
+}
+
+.home-page .feature-banner__item > img {
+    object-fit: cover;
+    object-position: center center;
+}
+
+/* The white-shirt label stays on the right; copy stays on the left. */
+.home-page .feature-banner__item:nth-child(2) > img {
+    object-position: 62% center;
+}
+
+.home-page .feature-banner__overlay {
+    background: linear-gradient(
+        90deg,
+        rgba(0,0,0,.56) 0%,
+        rgba(0,0,0,.25) 58%,
+        rgba(0,0,0,.06) 100%
+    );
+}
+
+.home-page .feature-banner__item:nth-child(2) .feature-banner__overlay {
+    background: linear-gradient(
+        90deg,
+        rgba(255,255,255,.08) 0%,
+        rgba(255,255,255,.02) 100%
+    );
+}
+
+/* Never center copy over the garment label. */
+.home-page .feature-banner__content {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 56%;
+    height: 100%;
+    min-height: 0;
+    padding: 40px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    direction: rtl;
+    text-align: center;
+}
+
+.home-page .feature-banner__item:nth-child(2) .feature-banner__content {
+    width: 52%;
+}
+
+.home-page .feature-banner__content h2 {
+    max-width: 300px;
+    margin: 0 0 13px;
+    font-size: clamp(26px, 3.1vw, 44px);
+    line-height: 1.2;
+}
+
+.home-page .feature-banner__content p {
+    max-width: 270px;
+    font-size: 11px;
+    line-height: 2;
+}
+
+.home-page .feature-banner__content .button {
+    margin-top: 18px;
+    min-height: 42px;
+    padding-inline: 20px;
+    font-size: 11px;
+}
+
+.home-page .feature-banner__content a:not(.button) {
+    margin-top: 16px;
+    font-size: 10px;
+}
+
+/* =========================================================
+   05. TRUST
+========================================================= */
+
+.home-page .trust {
+    width: min(calc(100% - 56px), var(--home-max));
+    padding: 48px 0;
+    gap: 16px;
+}
+
+.home-page .trust__item h3 { font-size: 11px; }
+.home-page .trust__item p { font-size: 9px; }
+
+/* =========================================================
+   06. MOBILE
+========================================================= */
+
 @media (max-width: 900px) {
-    .home-page .site-header__inner { min-height: 60px; width: calc(100% - 22px); }
-    .home-page .site-logo { font-size: 16px; letter-spacing: 3.5px; }
-    .home-page .hero { height: 550px; min-height: 0; }
-    .home-page .hero__content h1,
-    .home-page .hero__content h2 { font-size: clamp(45px, 13vw, 60px); }
-    .home-page .categories { padding: 48px 0 52px; }
-    .home-page .feature-banner__item { aspect-ratio: auto; min-height: 340px; }
-    .home-page .feature-banner__content { min-height: 340px; height: auto; }
-    .home-page .trust { padding-block: 42px; direction: ltr; }
-    .home-page .story,
-    .home-page .story__image { min-height: 350px; }
+    .home-page .site-header__inner {
+        min-height: 56px;
+        width: calc(100% - 20px);
+    }
+
+    .home-page .site-logo {
+        font-size: 15px;
+        letter-spacing: 3.2px;
+    }
+
+    .home-page .header-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .home-page .header-icon svg {
+        width: 17px;
+        height: 17px;
+    }
+
+    .home-page .categories {
+        padding: 38px 0 44px;
+    }
+
+    .home-page .categories .section-header,
+    .home-page .categories__grid {
+        width: calc(100% - 24px);
+    }
+
+    .home-page .categories .section-header { margin-bottom: 14px; }
+
+    .home-page .section-header h2 { font-size: 18px; }
+    .home-page .section-header__link { font-size: 8px; }
+
+    /* Four compact cards instead of two oversized cards. */
+    .home-page .categories__grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .home-page .category-card__image {
+        aspect-ratio: 1 / 1;
+        border-radius: 3px;
+    }
+
+    .home-page .category-card h3 {
+        margin-top: 6px;
+        font-size: 9px;
+        font-weight: 650;
+    }
+
+    .home-page .category-card span { font-size: 6.5px; }
+
+    .home-page .feature-banner {
+        grid-template-columns: 1fr;
+    }
+
+    .home-page .feature-banner__item {
+        aspect-ratio: 1.35 / 1;
+        min-height: 0;
+    }
+
+    .home-page .feature-banner__item > img {
+        object-position: center center;
+    }
+
+    .home-page .feature-banner__item:nth-child(2) > img {
+        object-position: 63% center;
+    }
+
+    .home-page .feature-banner__content,
+    .home-page .feature-banner__item:nth-child(2) .feature-banner__content {
+        width: 54%;
+        height: 100%;
+        min-height: 0;
+        padding: 20px 12px;
+    }
+
+    .home-page .feature-banner__content h2 {
+        max-width: 185px;
+        margin-bottom: 8px;
+        font-size: clamp(22px, 6.5vw, 30px);
+        line-height: 1.22;
+    }
+
+    .home-page .feature-banner__content p {
+        max-width: 170px;
+        font-size: 8px;
+        line-height: 1.9;
+    }
+
+    .home-page .feature-banner__content .button {
+        margin-top: 11px;
+        min-height: 34px;
+        padding-inline: 13px;
+        font-size: 8px;
+    }
+
+    .home-page .feature-banner__content a:not(.button) {
+        margin-top: 9px;
+        font-size: 8px;
+    }
+
+    .home-page .trust {
+        width: calc(100% - 24px);
+        padding: 36px 0;
+        gap: 22px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .home-page .site-header__inner { min-height: 54px; }
+    .home-page .categories__grid { gap: 7px; }
+    .home-page .category-card h3 { font-size: 8.5px; }
+    .home-page .category-card span { font-size: 6px; }
+
+    .home-page .feature-banner__item { aspect-ratio: 1.28 / 1; }
+
+    .home-page .feature-banner__content,
+    .home-page .feature-banner__item:nth-child(2) .feature-banner__content {
+        width: 52%;
+    }
+
+    .home-page .feature-banner__content h2 { font-size: 23px; }
 }
