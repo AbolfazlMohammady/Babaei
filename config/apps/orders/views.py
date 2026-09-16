@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.contrib import messages
+from django.db.models import Case, ExpressionWrapper, F, PositiveBigIntegerField, Sum, When
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -16,10 +17,23 @@ def _is_json_request(request):
 
 
 def _cart_totals(cart):
-    items = list(cart.items.all())
+    """Calculate badge count and subtotal in one SQL aggregation query."""
+    unit_price = Case(
+        When(variant__isnull=False, then=F("variant__price")),
+        default=F("product__base_price"),
+        output_field=PositiveBigIntegerField(),
+    )
+    line_total = ExpressionWrapper(
+        F("quantity") * unit_price,
+        output_field=PositiveBigIntegerField(),
+    )
+    totals = cart.items.aggregate(
+        count=Sum("quantity", default=0),
+        subtotal=Sum(line_total, default=0),
+    )
     return {
-        "count": sum(item.quantity for item in items),
-        "subtotal": sum(item.line_total for item in items),
+        "count": totals["count"] or 0,
+        "subtotal": totals["subtotal"] or 0,
     }
 
 
@@ -32,16 +46,15 @@ def cart_view(request):
             "variant__size",
         ).prefetch_related("product__images")
     )
-    item_count = sum(item.quantity for item in items)
-    subtotal = sum(item.line_total for item in items)
+    totals = _cart_totals(cart)
     return render(
         request,
         "orders/cart.html",
         {
             "cart": cart,
             "items": items,
-            "item_count": item_count,
-            "subtotal": subtotal,
+            "item_count": totals["count"],
+            "subtotal": totals["subtotal"],
         },
     )
 
