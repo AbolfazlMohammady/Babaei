@@ -88,6 +88,10 @@ class Product(models.Model):
 
     @property
     def display_price(self):
+        annotated_price = self.__dict__.get("listed_price")
+        if annotated_price is not None:
+            return annotated_price
+
         prefetched = getattr(self, "_prefetched_objects_cache", {}).get("active_variants")
         if prefetched:
             return min(variant.price for variant in prefetched)
@@ -137,7 +141,7 @@ class ProductVariant(models.Model):
         constraints = [
             models.UniqueConstraint(fields=("product", "color", "size"), name="unique_product_variant"),
         ]
-        indexes = [models.Index(fields=("product", "is_active", "color", "size"))]
+        indexes = [models.Index(fields=("product", "is_active", "color", "size"), name="shop_variant_lookup_idx")]
 
     @property
     def in_stock(self):
