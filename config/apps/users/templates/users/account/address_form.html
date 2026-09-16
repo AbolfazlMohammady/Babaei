@@ -5,7 +5,7 @@
 
 {% block extra_css %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'css/pages/address-picker.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/pages/address-picker.css' %}?v=2">
 {% endblock %}
 
 {% block account_content %}
@@ -38,12 +38,19 @@
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"></path></svg>
                     </button>
                     <div class="location-picker__menu" role="listbox" aria-label="انتخاب استان" hidden>
-                        {% for province in provinces %}
-                        <button type="button" class="location-picker__option" role="option" data-value="{{ province.id }}" data-label="{{ province.name }}" aria-selected="{% if selected_province_id == province.id %}true{% else %}false{% endif %}">
-                            <span>{{ province.name }}</span>
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
-                        </button>
-                        {% endfor %}
+                        <div class="location-picker__search-wrap">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+                            <input class="location-picker__search" type="search" placeholder="جستجوی استان..." autocomplete="off" aria-label="جستجوی استان">
+                        </div>
+                        <div class="location-picker__options">
+                            {% for province in provinces %}
+                            <button type="button" class="location-picker__option" role="option" data-value="{{ province.id }}" data-label="{{ province.name }}" aria-selected="{% if selected_province_id == province.id %}true{% else %}false{% endif %}">
+                                <span>{{ province.name }}</span>
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+                            </button>
+                            {% endfor %}
+                            <div class="location-picker__empty" hidden>استانی پیدا نشد.</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -57,13 +64,19 @@
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"></path></svg>
                     </button>
                     <div class="location-picker__menu" role="listbox" aria-label="انتخاب شهر" hidden>
-                        {% for city in cities %}
-                        <button type="button" class="location-picker__option" role="option" data-value="{{ city.id }}" data-province="{{ city.province_id }}" data-label="{{ city.name }}" aria-selected="{% if address and address.city_id == city.id %}true{% else %}false{% endif %}">
-                            <span>{{ city.name }}</span>
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
-                        </button>
-                        {% endfor %}
-                        <div class="location-picker__empty" hidden>شهری برای این استان پیدا نشد.</div>
+                        <div class="location-picker__search-wrap">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+                            <input class="location-picker__search" type="search" placeholder="جستجوی شهر..." autocomplete="off" aria-label="جستجوی شهر">
+                        </div>
+                        <div class="location-picker__options">
+                            {% for city in cities %}
+                            <button type="button" class="location-picker__option" role="option" data-value="{{ city.id }}" data-province="{{ city.province_id }}" data-label="{{ city.name }}" aria-selected="{% if address and address.city_id == city.id %}true{% else %}false{% endif %}">
+                                <span>{{ city.name }}</span>
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+                            </button>
+                            {% endfor %}
+                            <div class="location-picker__empty" hidden>شهری برای این استان پیدا نشد.</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -94,9 +107,12 @@
     const provinceValue = document.getElementById('province-value');
     const cityValue = document.getElementById('city-value');
     const cityTrigger = document.getElementById('city-picker-button');
-    const cityMenu = cityPicker.querySelector('.location-picker__menu');
-    const cityOptions = [...cityMenu.querySelectorAll('.location-picker__option')];
-    const cityEmpty = cityMenu.querySelector('.location-picker__empty');
+    const cityOptions = [...cityPicker.querySelectorAll('.location-picker__option')];
+    const cityEmpty = cityPicker.querySelector('.location-picker__empty');
+
+    function normalize(value) {
+        return String(value || '').trim().toLocaleLowerCase('fa-IR').replace(/[يى]/g, 'ی').replace(/ك/g, 'ک');
+    }
 
     function closeAll(except) {
         document.querySelectorAll('.location-picker').forEach(picker => {
@@ -112,8 +128,30 @@
         if (trigger.disabled) return;
         closeAll(picker);
         picker.classList.add('is-open');
-        picker.querySelector('.location-picker__menu').hidden = false;
+        const menu = picker.querySelector('.location-picker__menu');
+        menu.hidden = false;
         trigger.setAttribute('aria-expanded', 'true');
+        const search = menu.querySelector('.location-picker__search');
+        if (search) {
+            search.value = '';
+            filterPicker(picker, '');
+            requestAnimationFrame(() => search.focus());
+        }
+    }
+
+    function filterPicker(picker, query) {
+        const normalized = normalize(query);
+        const options = [...picker.querySelectorAll('.location-picker__option')];
+        let visible = 0;
+        options.forEach(option => {
+            const provinceMatch = picker === cityPicker ? option.dataset.province === provinceValue.value : true;
+            const textMatch = !normalized || normalize(option.dataset.label).includes(normalized);
+            const show = provinceMatch && textMatch;
+            option.hidden = !show;
+            if (show) visible++;
+        });
+        const empty = picker.querySelector('.location-picker__empty');
+        if (empty) empty.hidden = visible > 0;
     }
 
     function selectOption(picker, option) {
@@ -133,20 +171,35 @@
             cityValue.value = '';
             cityTrigger.disabled = false;
             cityPicker.querySelector('.location-picker__value').textContent = 'انتخاب شهر';
-            cityOptions.forEach(city => {
-                city.hidden = city.dataset.province !== option.dataset.value;
-                city.setAttribute('aria-selected', 'false');
-            });
-            cityEmpty.hidden = !cityOptions.some(city => city.dataset.province === option.dataset.value);
+            cityPicker.querySelector('.location-picker__option[aria-selected="true"]')?.setAttribute('aria-selected', 'false');
+            filterPicker(cityPicker, '');
         });
     });
 
     cityTrigger.addEventListener('click', () => openPicker(cityPicker));
     cityOptions.forEach(option => option.addEventListener('click', () => selectOption(cityPicker, option)));
 
+    document.querySelectorAll('.location-picker__search').forEach(search => {
+        search.addEventListener('input', () => filterPicker(search.closest('.location-picker'), search.value));
+        search.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                closeAll();
+            }
+            if (event.key === 'Enter') {
+                const picker = search.closest('.location-picker');
+                const first = picker.querySelector('.location-picker__option:not([hidden])');
+                if (first) {
+                    event.preventDefault();
+                    first.click();
+                }
+            }
+        });
+        search.addEventListener('click', event => event.stopPropagation());
+    });
+
     const initialProvince = provinceValue.value;
-    cityOptions.forEach(city => { city.hidden = city.dataset.province !== initialProvince; });
-    cityEmpty.hidden = !cityOptions.some(city => city.dataset.province === initialProvince);
+    filterPicker(cityPicker, '');
+    if (!initialProvince) cityTrigger.disabled = true;
 
     document.addEventListener('click', event => {
         if (!event.target.closest('.location-picker')) closeAll();
