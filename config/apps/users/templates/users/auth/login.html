@@ -1,42 +1,70 @@
 {% extends "base.html" %}
 
 {% block title %}ورود | BABAEI{% endblock %}
+{% block meta_description %}ورود به حساب کاربری BABAEI با شماره موبایل.{% endblock %}
+{% block body_class %}auth-body{% endblock %}
 
 {% block content %}
 <section class="auth-page">
-    <div class="auth-card">
-        <div class="auth-logo">BABAEI</div>
-
-        <div class="auth-header">
-            <h1>ورود به حساب</h1>
-            <p>برای ادامه شماره موبایل خود را وارد کنید.</p>
+    <div class="auth-shell">
+        <div class="auth-visual" aria-hidden="true">
+            <div class="auth-visual__content">
+                <span class="auth-kicker">BABAEI STUDIO</span>
+                <h1>Wear<br>Your Story.</h1>
+                <p>برای ادامه، وارد حساب BABAEI شوید و طراحی خودتان را ادامه دهید.</p>
+            </div>
+            <span class="auth-visual__mark">BABAEI</span>
         </div>
 
-        <form method="post" class="auth-form">
-            {% csrf_token %}
+        <div class="auth-card">
+            <a href="/" class="auth-brand" aria-label="BABAEI">BABAEI</a>
 
-            <div class="form-group">
-                <label class="form-label" for="phone">شماره موبایل</label>
-                <input
-                    class="form-input"
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="09xxxxxxxxx"
-                    autocomplete="tel"
-                    required
-                >
+            <div class="auth-header">
+                <span class="auth-eyebrow">ACCOUNT</span>
+                <h2>ورود به حساب</h2>
+                <p>شماره موبایل خود را وارد کنید تا کد تأیید برای شما ارسال شود.</p>
             </div>
 
-            <button class="btn btn-primary auth-submit" type="submit">
-                ادامه
-            </button>
-        </form>
+            <form method="post" class="auth-form" novalidate>
+                {% csrf_token %}
 
-        <p class="auth-footer">
-            با ورود به BABAEI، قوانین و شرایط استفاده را می‌پذیرید.
-        </p>
+                <div class="form-group">
+                    <label class="form-label" for="phone">شماره موبایل</label>
+                    <div class="auth-input-wrap">
+                        <span class="auth-input-prefix" aria-hidden="true">+98</span>
+                        <input
+                            class="form-input auth-phone-input"
+                            id="phone"
+                            name="phone"
+                            type="tel"
+                            inputmode="numeric"
+                            autocomplete="tel"
+                            maxlength="11"
+                            placeholder="0912 345 6789"
+                            value="{{ phone|default:'' }}"
+                            aria-describedby="phone-hint"
+                            required
+                        >
+                    </div>
+                    <small id="phone-hint" class="auth-hint">شماره را بدون فاصله وارد کنید.</small>
+                </div>
+
+                <button class="btn btn-primary auth-submit" type="submit">
+                    <span>دریافت کد تأیید</span>
+                    <span aria-hidden="true">←</span>
+                </button>
+            </form>
+
+            <div class="auth-policy">
+                <span>با ادامه،</span>
+                <a href="#">شرایط استفاده</a>
+                <span>و</span>
+                <a href="#">حریم خصوصی</a>
+                <span>را می‌پذیرید.</span>
+            </div>
+
+            <a href="/" class="auth-back-link">← بازگشت به فروشگاه</a>
+        </div>
     </div>
 </section>
 {% endblock %}
