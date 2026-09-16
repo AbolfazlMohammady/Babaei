@@ -1,59 +1,66 @@
 {% extends "users/account_base.html" %}
 
-{% block title %}پروفایل | BABAEI{% endblock %}
+{% block title %}اطلاعات شخصی | BABAEI{% endblock %}
 
 {% block account_content %}
-<div class="page-header">
-    <h1 class="page-title">اطلاعات شخصی</h1>
-    <p class="page-description">اطلاعات حساب کاربری خود را مدیریت کنید.</p>
+<div class="account-page-header">
+    <span class="account-page-header__eyebrow">MY ACCOUNT</span>
+    <h1 class="account-page-title">اطلاعات شخصی</h1>
+    <p class="account-page-description">اطلاعات حساب کاربری خود را مدیریت و به‌روز کنید.</p>
 </div>
 
-<div class="card profile-card">
+<div class="account-card profile-card">
     <form method="post" enctype="multipart/form-data" class="profile-form">
         {% csrf_token %}
 
-        <div class="profile-image">
-            {% if user.image %}
-                <img src="{{ user.image.url }}" alt="{{ user.get_full_name }}">
-            {% else %}
-                <span>{{ user.first_name|first|default:"ب" }}</span>
-            {% endif %}
-        </div>
+        <div class="profile-photo-row">
+            <div class="profile-image">
+                {% if user.image %}
+                    <img src="{{ user.image.url }}" alt="{{ user.get_full_name|default:'تصویر پروفایل' }}">
+                {% else %}
+                    <span>{{ user.first_name|first|default:"ب" }}</span>
+                {% endif %}
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">تصویر پروفایل</label>
-            <input class="form-input" type="file" name="image" accept="image/*">
+            <div class="profile-photo-copy">
+                <strong>تصویر پروفایل</strong>
+                <p>یک تصویر مربع و باکیفیت برای حساب خود انتخاب کنید.</p>
+                <label class="profile-file">
+                    <span>انتخاب تصویر جدید</span>
+                    <input type="file" name="image" accept="image/*">
+                </label>
+            </div>
         </div>
 
         <div class="profile-grid">
-            <div class="form-group">
-                <label class="form-label">نام</label>
-                <input class="form-input" name="first_name" value="{{ user.first_name }}">
+            <div class="form-group profile-field">
+                <label class="form-label" for="first-name">نام</label>
+                <input id="first-name" class="form-input" type="text" name="first_name" value="{{ user.first_name }}" placeholder="نام خود را وارد کنید" autocomplete="given-name">
             </div>
 
-            <div class="form-group">
-                <label class="form-label">نام خانوادگی</label>
-                <input class="form-input" name="last_name" value="{{ user.last_name }}">
+            <div class="form-group profile-field">
+                <label class="form-label" for="last-name">نام خانوادگی</label>
+                <input id="last-name" class="form-input" type="text" name="last_name" value="{{ user.last_name }}" placeholder="نام خانوادگی خود را وارد کنید" autocomplete="family-name">
             </div>
 
-            <div class="form-group">
-                <label class="form-label">شماره موبایل</label>
-                <input class="form-input" value="{{ user.phone }}" disabled>
+            <div class="form-group profile-field">
+                <label class="form-label" for="phone">شماره موبایل</label>
+                <input id="phone" class="form-input" type="tel" value="{{ user.phone }}" disabled dir="ltr">
             </div>
 
-            <div class="form-group">
-                <label class="form-label">ایمیل</label>
-                <input class="form-input" type="email" name="email" value="{{ user.email|default:'' }}">
+            <div class="form-group profile-field">
+                <label class="form-label" for="email">ایمیل</label>
+                <input id="email" class="form-input" type="email" name="email" value="{{ user.email|default:'' }}" placeholder="example@email.com" dir="ltr" autocomplete="email">
             </div>
 
-            <div class="form-group">
-                <label class="form-label">تاریخ تولد</label>
-                <input class="form-input" type="date" name="birth_date" value="{{ user.birth_date|date:'Y-m-d' }}">
+            <div class="form-group profile-field">
+                <label class="form-label" for="birth-date">تاریخ تولد</label>
+                <input id="birth-date" class="form-input" type="date" name="birth_date" value="{{ user.birth_date|date:'Y-m-d' }}">
             </div>
 
-            <div class="form-group">
-                <label class="form-label">جنسیت</label>
-                <select class="form-select" name="gender">
+            <div class="form-group profile-field">
+                <label class="form-label" for="gender">جنسیت</label>
+                <select id="gender" class="form-select" name="gender">
                     <option value="">انتخاب کنید</option>
                     <option value="male" {% if user.gender == "male" %}selected{% endif %}>آقا</option>
                     <option value="female" {% if user.gender == "female" %}selected{% endif %}>خانم</option>
@@ -61,9 +68,9 @@
             </div>
         </div>
 
-        <button class="btn btn-primary" type="submit">
-            ذخیره تغییرات
-        </button>
+        <div class="profile-actions">
+            <button class="profile-save" type="submit">ذخیره تغییرات</button>
+        </div>
     </form>
 </div>
 {% endblock %}
