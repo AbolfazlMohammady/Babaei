@@ -11,7 +11,7 @@ from .models import Address, City, OTP
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
-AUTH_BACKEND = "django.contrib.auth.backends.ModelBackend"
+AUTH_BACKEND = "apps.users.backends.BabaeiAxesBackend"
 
 
 def login_view(request):
@@ -73,6 +73,9 @@ def verify_otp_view(request):
             messages.error(request, "حساب کاربری شما غیرفعال است.")
             return redirect("users:login")
 
+        # The backend stored in the session must implement get_user().
+        # BabaeiAxesBackend provides Axes lockout checks + ModelBackend's
+        # get_user implementation.
         login(request, user, backend=AUTH_BACKEND)
         request.session.pop("otp_phone", None)
         request.session.pop("otp_id", None)
