@@ -2,35 +2,25 @@
 
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>{% block title %}BABAEI{% endblock %}</title>
-
-    <meta
-        name="description"
-        content="{% block meta_description %}BABAEI — Wear Your Story.{% endblock %}"
-    >
+    <meta name="description" content="{% block meta_description %}BABAEI — Wear Your Story.{% endblock %}">
 
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
-    <link rel="stylesheet" href="{% static 'css/pages/users.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pages/users.css' %}?v=3">
 
     {% block extra_css %}{% endblock %}
 
-    <!-- Final visual overrides load after page-specific CSS. -->
     <link rel="stylesheet" href="{% static 'css/pages/home-polish.css' %}">
     <link rel="stylesheet" href="{% static 'css/pages/home-editorial.css' %}">
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
-
     {% include "includes/header.html" %}
-
     {% include "includes/mobile_menu.html" %}
-
     {% include "includes/messages.html" %}
 
     <main>
@@ -43,7 +33,5 @@
     <script src="{% static 'js/components.js' %}" defer></script>
 
     {% block extra_js %}{% endblock %}
-
 </body>
-
 </html>
