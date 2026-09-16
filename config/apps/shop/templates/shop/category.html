@@ -2,10 +2,13 @@
 {% load static %}
 
 {% block title %}{{ category.seo_title|default:category.name }} | BABAEI{% endblock %}
-{% block meta_description %}{{ category.seo_description|default:category.description|truncatechars:160 }}{% endblock %}
+{% block meta_description %}{{ category.seo_description|default:category.description|default:category.name|truncatechars:160 }}{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ canonical_url }}">{% endblock %}
 {% block common_page_css %}{% endblock %}
 {% block body_class %}shop-page{% endblock %}
+{% block og_title %}{{ category.seo_title|default:category.name }} | BABAEI{% endblock %}
+{% block og_description %}{{ category.seo_description|default:category.description|default:category.name|truncatechars:160 }}{% endblock %}
+{% block og_image %}{% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}">{% endif %}{% endblock %}
 {% block extra_head %}<script type="application/ld+json">{{ category_schema }}</script>{% endblock %}
 
 {% block extra_css %}
@@ -39,13 +42,9 @@
 
     {% if is_paginated %}
     <nav class="pager" aria-label="صفحه‌بندی">
-        {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}" rel="prev">قبلی</a>
-        {% endif %}
+        {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" rel="prev">قبلی</a>{% endif %}
         <span>صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" rel="next">بعدی</a>
-        {% endif %}
+        {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" rel="next">بعدی</a>{% endif %}
     </nav>
     {% endif %}
 </div>
