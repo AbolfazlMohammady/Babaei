@@ -9,11 +9,20 @@
     const subtotalEls = [...root.querySelectorAll("[data-cart-subtotal]")];
     const summary = root.querySelector("[data-cart-summary]");
     const empty = root.querySelector("[data-cart-empty]");
+    const headerBadges = [...document.querySelectorAll(".header-cart__badge")];
+
+    const updateHeaderCount = (count) => {
+        headerBadges.forEach((badge) => {
+            badge.textContent = formatPrice(count);
+            badge.classList.toggle("is-hidden", Number(count) === 0);
+        });
+    };
 
     const setTotals = (count, subtotal) => {
         if (summaryCount) summaryCount.textContent = `${formatPrice(count)} کالا`;
         if (headingCount) headingCount.textContent = formatPrice(count);
         subtotalEls.forEach((el) => { el.textContent = `${formatPrice(subtotal)} تومان`; });
+        updateHeaderCount(count);
     };
 
     const request = async (form) => {
