@@ -80,4 +80,11 @@
     </div>
 </section>
 
+<section class="story">
+    <div class="story__image"><img src="{% static 'images/home/every.png' %}" alt="Every Detail Matters" loading="lazy"><div class="story__overlay"></div><h2>Every<br>Detail<br>Matters</h2></div>
+    <div class="story__content"><p class="story__eyebrow">BABAEI</p><h2>همیشه یک قدم جلوتر</h2><p>جدیدترین محصولات، تخفیف‌ها<br>و اخبار BABAEI را از دست نده.</p><form class="newsletter" method="post">{% csrf_token %}<input type="email" name="email" placeholder="ایمیل خود را وارد کنید" aria-label="ایمیل" required><button type="submit" aria-label="عضویت">→</button></form><div class="social-links"><a href="#">Instagram</a><a href="#">Telegram</a><a href="#">YouTube</a><a href="#">LinkedIn</a></div></div>
+</section>
+
 {% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/pages/home.js' %}" defer></script>{% endblock %}
