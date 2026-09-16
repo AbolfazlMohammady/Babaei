@@ -81,7 +81,7 @@ def cart_add_view(request):
         )
 
     try:
-        add_to_cart(request, product=product, variant=variant, quantity=quantity)
+        item = add_to_cart(request, product=product, variant=variant, quantity=quantity)
     except (ValueError, TypeError):
         message = "اطلاعات انتخاب‌شده برای افزودن به سبد صحیح نیست."
         try:
@@ -103,6 +103,9 @@ def cart_add_view(request):
                 "ok": True,
                 "count": totals["count"],
                 "subtotal": totals["subtotal"],
+                "item_id": item.id,
+                "variant_id": item.variant_id,
+                "quantity": item.quantity,
                 "message": "محصول به سبد خرید اضافه شد.",
             }
         )
