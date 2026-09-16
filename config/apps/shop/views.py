@@ -26,6 +26,14 @@ def toman_to_irr(value):
     return value * 10
 
 
+def price_annotations():
+    variants = ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True).order_by("price", "id")
+    return (
+        Subquery(variants.values("price")[:1], output_field=IntegerField()),
+        Subquery(variants.values("compare_at_price")[:1], output_field=IntegerField()),
+    )
+
+
 class ShopIndexView(ListView):
     template_name = "shop/index.html"
     context_object_name = "products"
@@ -34,18 +42,13 @@ class ShopIndexView(ListView):
         primary_images = ProductImage.objects.filter(image_type=ProductImage.ImageType.PRIMARY).only(
             "id", "product_id", "image", "alt_text"
         )
-        variant_price = Subquery(
-            ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True)
-            .order_by("price")
-            .values("price")[:1],
-            output_field=IntegerField(),
-        )
+        variant_price, variant_compare_price = price_annotations()
         return (
             Product.objects.filter(is_active=True, category__is_active=True)
             .select_related("category")
-            .annotate(listed_price=variant_price)
+            .annotate(listed_price=variant_price, listed_compare_price=variant_compare_price)
             .prefetch_related(Prefetch("images", queryset=primary_images, to_attr="primary_images"))
-            .order_by("-created_at")[:24]
+            .order_by("-is_featured", "-created_at")[:24]
         )
 
     def get_context_data(self, **kwargs):
@@ -54,7 +57,7 @@ class ShopIndexView(ListView):
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
         context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
-        context["og_image_url"] = absolute_url(self.request, "/static/images/home/hero.jpg")
+        context["og_image_url"] = absolute_url(self.request, "/static/images/home/Tshirt.png")
         context["website_schema"] = schema_json(
             {
                 "@context": "https://schema.org",
@@ -81,16 +84,11 @@ class CategoryDetailView(ListView):
         primary_images = ProductImage.objects.filter(image_type=ProductImage.ImageType.PRIMARY).only(
             "id", "product_id", "image", "alt_text"
         )
-        variant_price = Subquery(
-            ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True)
-            .order_by("price")
-            .values("price")[:1],
-            output_field=IntegerField(),
-        )
+        variant_price, variant_compare_price = price_annotations()
         return (
             Product.objects.filter(category_id=self.category.id, is_active=True)
             .select_related("category")
-            .annotate(listed_price=variant_price)
+            .annotate(listed_price=variant_price, listed_compare_price=variant_compare_price)
             .prefetch_related(Prefetch("images", queryset=primary_images, to_attr="primary_images"))
         )
 
@@ -142,8 +140,9 @@ class ProductDetailView(DetailView):
             ProductVariant.objects.filter(is_active=True)
             .select_related("color", "size")
             .only(
-                "id", "product_id", "color_id", "size_id", "sku", "price", "stock_quantity",
-                "color__id", "color__name", "color__hex_code", "size__id", "size__name", "size__sort_order",
+                "id", "product_id", "color_id", "size_id", "sku", "price", "compare_at_price", "stock_quantity",
+                "color__id", "color__name", "color__slug", "color__hex_code",
+                "size__id", "size__name", "size__slug", "size__sort_order",
             )
             .order_by("color__name", "size__sort_order", "size__name")
         )
@@ -171,9 +170,27 @@ class ProductDetailView(DetailView):
         first_image = next((image for image in self.object.gallery_images if image.image), None)
         context["og_image_url"] = absolute_url(self.request, first_image.image.url) if first_image else None
 
-        images = [absolute_url(self.request, image.image.url) for image in self.object.gallery_images if image.image]
         offers = self.object.active_variants
         prices = [variant.price for variant in offers]
+        context["total_stock"] = sum(variant.stock_quantity for variant in offers)
+        context["variant_data"] = schema_json(
+            [
+                {
+                    "id": variant.id,
+                    "color_id": variant.color_id,
+                    "color": variant.color.name,
+                    "color_hex": variant.color.hex_code,
+                    "size_id": variant.size_id,
+                    "size": variant.size.name,
+                    "price": variant.price,
+                    "compare_at_price": variant.compare_at_price,
+                    "stock": variant.stock_quantity,
+                    "sku": variant.sku,
+                }
+                for variant in offers
+            ]
+        )
+
         if offers:
             offer_data = {
                 "@type": "AggregateOffer",
@@ -199,7 +216,7 @@ class ProductDetailView(DetailView):
                 "name": self.object.name,
                 "description": self.object.seo_description or self.object.short_description or self.object.description,
                 "url": canonical_url,
-                "image": images,
+                "image": [absolute_url(self.request, image.image.url) for image in self.object.gallery_images if image.image],
                 "brand": {"@type": "Brand", "name": "BABAEI"},
                 "category": self.object.category.name,
                 "offers": offer_data,
