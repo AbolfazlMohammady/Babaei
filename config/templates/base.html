@@ -7,7 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}BABAEI{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}BABAEI — Wear Your Story.{% endblock %}">
+    <meta name="robots" content="{% block robots %}index,follow,max-image-preview:large{% endblock %}">
     {% block canonical %}{% endblock %}
+
+    <meta property="og:site_name" content="BABAEI">
+    <meta property="og:locale" content="fa_IR">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}BABAEI{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}BABAEI — Wear Your Story.{% endblock %}">
+    {% block og_image %}{% endblock %}
+    {% block extra_head %}{% endblock %}
 
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
@@ -16,7 +25,6 @@
     {% endblock %}
 
     {% block extra_css %}{% endblock %}
-    {% block extra_head %}{% endblock %}
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
