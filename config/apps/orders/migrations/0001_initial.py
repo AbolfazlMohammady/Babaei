@@ -8,6 +8,7 @@ import uuid
 
 class Migration(migrations.Migration):
     initial = True
+
     dependencies = [
         ("shop", "0003_product_discount_fields"),
         ("users", "0005_rename_users_address_user_default_idx_users_addre_user_id_194804_idx_and_more"),
@@ -104,6 +105,6 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(model_name="cart", constraint=models.UniqueConstraint(condition=models.Q(("session_key__isnull", False), ("user__isnull", True), ("status", "active")), fields=("session_key",), name="unique_active_guest_cart_per_session")),
         migrations.AddConstraint(model_name="cartitem", constraint=models.UniqueConstraint(condition=models.Q(("variant__isnull", False)), fields=("cart", "variant"), name="unique_cart_variant_item")),
         migrations.AddConstraint(model_name="cartitem", constraint=models.UniqueConstraint(condition=models.Q(("variant__isnull", True)), fields=("cart", "product"), name="unique_cart_product_item")),
-        migrations.AddConstraint(model_name="cartitem", constraint=models.CheckConstraint(condition=models.Q(("quantity__gt", 0)), name="cart_item_quantity_gt_zero")),
-        migrations.AddConstraint(model_name="orderitem", constraint=models.CheckConstraint(condition=models.Q(("quantity__gt", 0)), name="order_item_quantity_gt_zero")),
+        migrations.AddConstraint(model_name="cartitem", constraint=models.CheckConstraint(check=models.Q(("quantity__gt", 0)), name="cart_item_quantity_gt_zero")),
+        migrations.AddConstraint(model_name="orderitem", constraint=models.CheckConstraint(check=models.Q(("quantity__gt", 0)), name="order_item_quantity_gt_zero")),
     ]
