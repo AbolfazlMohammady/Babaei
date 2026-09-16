@@ -13,6 +13,9 @@ ALLOWED_HOSTS = [
     '127.0.0.1'
 ]
 
+# Canonical public origin. Set SITE_URL=https://your-domain.tld in production.
+SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000").rstrip("/")
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -22,6 +25,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sitemaps",
 
     # Third Party
     "phonenumber_field",
@@ -144,6 +148,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Config User
 AUTH_USER_MODEL = 'users.User'
 
+# Iranian phone numbers are normalized to international form by django-phonenumber-field.
+PHONE_NUMBER_DEFAULT_REGION = "IR"
+
 
 # Config Celery
 CELERY_BROKER_URL = os.environ.get(
@@ -180,42 +187,6 @@ CACHES = {
         "LOCATION": "redis://redis:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+        },
     }
-}
-
-
-# logging
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{asctime} | {levelname} | {name} | {message}",
-            "style": "{",
-        },
-    },
-    "filters": {},
-    "handlers": {
-        "console": {
-            "level": "INFO",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
-        "file": {
-            "level": "INFO",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "data/logs/application.log",
-            "maxBytes": 1024 * 1024 * 5,
-            "backupCount": 5,
-            "formatter": "verbose",
-        },
-    },
-    "loggers": {
-        "apps": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-            "propagate": False,
-        },
-    },
 }
