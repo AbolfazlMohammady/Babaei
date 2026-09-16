@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}فروشگاه | BABAEI{% endblock %}
+
+{% block content %}
+<main>
+    <h1>فروشگاه</h1>
+    {% for product in products %}
+        <article>
+            <a href="{% url 'shop:product-detail' product.slug %}">
+                <h2>{{ product.name }}</h2>
+            </a>
+            <p>{{ product.short_description }}</p>
+            <strong>{{ product.base_price }}</strong>
+        </article>
+    {% empty %}
+        <p>هنوز محصولی برای نمایش وجود ندارد.</p>
+    {% endfor %}
+</main>
+{% endblock %}
