@@ -3,6 +3,17 @@ from django.contrib.sitemaps import Sitemap
 from .models import Category, Product
 
 
+class ShopSitemap(Sitemap):
+    changefreq = "daily"
+    priority = 1.0
+
+    def items(self):
+        return ["shop:index"]
+
+    def location(self, item):
+        return "/shop/"
+
+
 class CategorySitemap(Sitemap):
     changefreq = "weekly"
     priority = 0.8
@@ -19,9 +30,8 @@ class ProductSitemap(Sitemap):
     priority = 0.9
 
     def items(self):
-        return (
-            Product.objects.filter(is_active=True, category__is_active=True)
-            .only("id", "slug", "updated_at", "category_id")
+        return Product.objects.filter(is_active=True, category__is_active=True).only(
+            "id", "slug", "updated_at", "category_id"
         )
 
     def lastmod(self, obj):
@@ -29,6 +39,7 @@ class ProductSitemap(Sitemap):
 
 
 sitemaps = {
+    "shop": ShopSitemap,
     "categories": CategorySitemap,
     "products": ProductSitemap,
 }
