@@ -1,0 +1,6 @@
+/* BABAEI V6 — auth mobile chrome */
+@media(max-width:900px){
+  .auth-body .site-header{display:none!important}
+  .auth-body .mobile-bottom-nav{display:grid!important}
+  .auth-body main{padding-top:0!important}
+}
