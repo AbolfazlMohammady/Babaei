@@ -1,10 +1,12 @@
 import logging
 import secrets
+from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from .models import Address, City, OTP
@@ -73,9 +75,6 @@ def verify_otp_view(request):
             messages.error(request, "حساب کاربری شما غیرفعال است.")
             return redirect("users:login")
 
-        # The backend stored in the session must implement get_user().
-        # BabaeiAxesBackend provides Axes lockout checks + ModelBackend's
-        # get_user implementation.
         login(request, user, backend=AUTH_BACKEND)
         request.session.pop("otp_phone", None)
         request.session.pop("otp_id", None)
@@ -99,7 +98,22 @@ def profile_update_view(request):
         user.last_name = request.POST.get("last_name", "").strip()
         user.email = request.POST.get("email", "").strip() or None
         user.gender = request.POST.get("gender") or None
-        user.birth_date = request.POST.get("birth_date") or None
+
+        birth_date = request.POST.get("birth_date", "").strip()
+        if birth_date:
+            try:
+                parsed_birth_date = date.fromisoformat(birth_date)
+            except ValueError:
+                messages.error(request, "تاریخ تولد نامعتبر است.")
+                return render(request, "users/account/profile.html", {"user": user})
+
+            if parsed_birth_date >= timezone.localdate():
+                messages.error(request, "تاریخ تولد باید قبل از امروز باشد.")
+                return render(request, "users/account/profile.html", {"user": user})
+
+            user.birth_date = parsed_birth_date
+        else:
+            user.birth_date = None
 
         if "image" in request.FILES:
             user.image = request.FILES["image"]
