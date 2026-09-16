@@ -67,12 +67,12 @@ MEDIA_ROOT = BASE_DIR / "data/media/"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 PHONE_NUMBER_DEFAULT_REGION = "IR"
-CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
-CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "redis://redis:6379/0")
+CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0")
 AXES_ENABLED = True
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = timedelta(hours=1)
 AXES_CACHE = 'default'
 AUTHENTICATION_BACKENDS = ["apps.users.backends.BabaeiAxesBackend", "django.contrib.auth.backends.ModelBackend"]
-CACHES = {"default": {"BACKEND": "django_redis.cache.RedisCache", "LOCATION": "redis://redis:6379/1", "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"}}}
+CACHES = {"default": {"BACKEND": "django_redis.cache.RedisCache", "LOCATION": "redis://127.0.0.1:6379/1", "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"}}}
 LOGGING = {"version": 1, "disable_existing_loggers": False, "formatters": {"verbose": {"format": "{asctime} | {levelname} | {name} | {message}", "style": "{"}}, "filters": {}, "handlers": {"console": {"level": "INFO", "class": "logging.StreamHandler", "formatter": "verbose"}, "file": {"level": "INFO", "class": "logging.handlers.RotatingFileHandler", "filename": "data/logs/application.log", "maxBytes": 1024 * 1024 * 5, "backupCount": 5, "formatter": "verbose"}}, "loggers": {"apps": {"handlers": ["console", "file"], "level": "INFO", "propagate": False}}}
