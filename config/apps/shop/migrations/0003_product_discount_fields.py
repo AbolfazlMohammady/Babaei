@@ -1,10 +1,10 @@
+import django.core.validators
 from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
     dependencies = [
         ("shop", "0002_catalog_integrity"),
-        ("shop", "0002_rename_shop_catego_is_acti_idx_shop_catego_is_acti_b15761_idx_and_more"),
     ]
 
     operations = [
@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 help_text="اگر محصول تخفیف دارد، قیمت قبل از تخفیف را وارد کنید.",
                 null=True,
-                validators=[],
+                validators=[django.core.validators.MinValueValidator(0)],
                 verbose_name="قیمت قبل از تخفیف",
             ),
         ),
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 help_text="در صورت تخفیف این ترکیب، قیمت قبل از تخفیف را وارد کنید.",
                 null=True,
-                validators=[],
+                validators=[django.core.validators.MinValueValidator(0)],
                 verbose_name="قیمت قبل از تخفیف",
             ),
         ),
