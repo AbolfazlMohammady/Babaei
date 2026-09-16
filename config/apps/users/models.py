@@ -3,11 +3,18 @@ from datetime import timedelta
 from pathlib import Path
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
+
+
+POSTAL_CODE_VALIDATOR = RegexValidator(
+    regex=r"^\d{10}$",
+    message=_("کد پستی باید دقیقاً ۱۰ رقم باشد."),
+)
 
 
 def user_profile_image_path(instance, filename):
@@ -49,18 +56,15 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
         extra_fields.setdefault("role", RoleUser.ADMIN)
-
         if extra_fields.get("is_staff") is not True:
             raise ValueError(_("Superuser must have is_staff=True."))
         if extra_fields.get("is_superuser") is not True:
             raise ValueError(_("Superuser must have is_superuser=True."))
-
         return self.create_user(phone=phone, password=password, **extra_fields)
 
 
 class User(AbstractUser):
     username = None
-
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     phone = PhoneNumberField(_("شماره تلفن"), region="IR", unique=True)
     email = models.EmailField(_("ایمیل"), unique=True, blank=True, null=True)
@@ -72,7 +76,6 @@ class User(AbstractUser):
     gender = models.CharField(_("جنسیت"), max_length=10, choices=RoleUserGender.choices, blank=True, null=True)
 
     objects = CustomUserManager()
-
     USERNAME_FIELD = "phone"
     REQUIRED_FIELDS = []
 
@@ -80,7 +83,6 @@ class User(AbstractUser):
     def age(self):
         if not self.birth_date:
             return None
-
         today = timezone.localdate()
         age = today.year - self.birth_date.year
         if (today.month, today.day) < (self.birth_date.month, self.birth_date.day):
@@ -106,7 +108,6 @@ class City(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["province", "name"], name="unique_city_per_province")
         ]
-        indexes = [models.Index(fields=("province", "name"))]
 
     def __str__(self):
         return self.name
@@ -118,15 +119,12 @@ class Address(models.Model):
     phone = PhoneNumberField(_("شماره موبایل"), region="IR", max_length=128)
     description = models.TextField(_("آدرس"), blank=True)
     city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="addresses", verbose_name=_("شهر"))
-    postal_code = models.CharField(_("کد پستی"), max_length=10)
+    postal_code = models.CharField(_("کد پستی"), max_length=10, validators=[POSTAL_CODE_VALIDATOR])
     is_default = models.BooleanField(_("آدرس پیش‌فرض"), default=False)
 
     class Meta:
         ordering = ("-is_default", "-id")
-        indexes = [
-            models.Index(fields=("user", "is_default")),
-            models.Index(fields=("city", "postal_code")),
-        ]
+        indexes = [models.Index(fields=("user", "is_default"))]
         constraints = [
             models.UniqueConstraint(
                 fields=("user",),
