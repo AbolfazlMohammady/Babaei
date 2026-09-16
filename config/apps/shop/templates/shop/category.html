@@ -24,7 +24,7 @@
                 <div class="product-card__image">
                     {% with image=product.primary_images.0 %}
                         {% if image %}
-                            <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" width="600" height="800" loading="lazy" decoding="async">
+                            <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async">
                         {% endif %}
                     {% endwith %}
                 </div>
