@@ -13,7 +13,6 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/pages/home.css' %}">
-    <link rel="stylesheet" href="{% static 'css/pages/home-polish.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -22,49 +21,29 @@
     <div class="hero__slider">
 
         <article class="hero__slide is-active" aria-hidden="false">
-            <img
-                src="{% static 'images/home/baner1.png' %}"
-                alt="مجموعه جدید BABAEI"
-                fetchpriority="high"
-            >
+            <img src="{% static 'images/home/baner1.png' %}" alt="مجموعه جدید BABAEI" fetchpriority="high">
             <div class="hero__overlay"></div>
-
             <div class="hero__content">
                 <p class="hero__eyebrow">MORE THAN CLOTHING</p>
                 <h1 class="hero__title">More<br>Than<br>Clothing</h1>
-                <p class="hero__description">
-                    لباس فقط پوشش نیست،<br>
-                    راهی برای بیان خودته.
-                </p>
+                <p class="hero__description">لباس فقط پوشش نیست،<br>راهی برای بیان خودته.</p>
                 <div class="hero__actions">
                     <a href="#" class="button button--light">شروع طراحی</a>
-                    <a href="#products" class="hero__link">
-                        مشاهده محصولات <span>←</span>
-                    </a>
+                    <a href="#products" class="hero__link">مشاهده محصولات <span>←</span></a>
                 </div>
             </div>
         </article>
 
         <article class="hero__slide" aria-hidden="true">
-            <img
-                src="{% static 'images/home/banner2.png' %}"
-                alt="طراحی اختصاصی BABAEI"
-                loading="lazy"
-            >
+            <img src="{% static 'images/home/banner2.png' %}" alt="طراحی اختصاصی BABAEI" loading="lazy">
             <div class="hero__overlay"></div>
-
             <div class="hero__content">
                 <p class="hero__eyebrow">CREATE YOUR STYLE</p>
                 <h2 class="hero__title">Wear<br>Your<br>Story</h2>
-                <p class="hero__description">
-                    چیزی که می‌پوشی،<br>
-                    داستان تو را تعریف می‌کند.
-                </p>
+                <p class="hero__description">چیزی که می‌پوشی،<br>داستان تو را تعریف می‌کند.</p>
                 <div class="hero__actions">
                     <a href="#" class="button button--light">شروع طراحی</a>
-                    <a href="#products" class="hero__link">
-                        مشاهده محصولات <span>←</span>
-                    </a>
+                    <a href="#products" class="hero__link">مشاهده محصولات <span>←</span></a>
                 </div>
             </div>
         </article>
@@ -86,37 +65,10 @@
     </div>
 
     <div class="categories__grid">
-        <a href="#" class="category-card">
-            <div class="category-card__image">
-                <img src="{% static 'images/home/Tshirt.png' %}" alt="تیشرت" loading="lazy">
-            </div>
-            <h3>تیشرت</h3>
-            <span>T-Shirts</span>
-        </a>
-
-        <a href="#" class="category-card">
-            <div class="category-card__image">
-                <img src="{% static 'images/home/Hoodis.png' %}" alt="هودی" loading="lazy">
-            </div>
-            <h3>هودی</h3>
-            <span>Hoodies</span>
-        </a>
-
-        <a href="#" class="category-card">
-            <div class="category-card__image">
-                <img src="{% static 'images/home/accsory.png' %}" alt="اکسسوری" loading="lazy">
-            </div>
-            <h3>اکسسوری</h3>
-            <span>Accessories</span>
-        </a>
-
-        <a href="#" class="category-card">
-            <div class="category-card__image">
-                <img src="{% static 'images/home/Oversize.png' %}" alt="اورسایز" loading="lazy">
-            </div>
-            <h3>اورسایز</h3>
-            <span>Oversized</span>
-        </a>
+        <a href="#" class="category-card"><div class="category-card__image"><img src="{% static 'images/home/Tshirt.png' %}" alt="تیشرت" loading="lazy"></div><h3>تیشرت</h3><span>T-Shirts</span></a>
+        <a href="#" class="category-card"><div class="category-card__image"><img src="{% static 'images/home/Hoodis.png' %}" alt="هودی" loading="lazy"></div><h3>هودی</h3><span>Hoodies</span></a>
+        <a href="#" class="category-card"><div class="category-card__image"><img src="{% static 'images/home/accsory.png' %}" alt="اکسسوری" loading="lazy"></div><h3>اکسسوری</h3><span>Accessories</span></a>
+        <a href="#" class="category-card"><div class="category-card__image"><img src="{% static 'images/home/Oversize.png' %}" alt="اورسایز" loading="lazy"></div><h3>اورسایز</h3><span>Oversized</span></a>
     </div>
 </section>
 
@@ -126,16 +78,14 @@
         <div class="feature-banner__overlay"></div>
         <div class="feature-banner__content">
             <h2>طراحی کن<br>متفاوت باش</h2>
-            <p>
-                با ابزار طراحی اختصاصی BABAEI<br>
-                ایده‌هات رو به واقعیت تبدیل کن.
-            </p>
+            <p>با ابزار طراحی اختصاصی BABAEI<br>ایده‌هات رو به واقعیت تبدیل کن.</p>
             <a href="#" class="button button--light">شروع طراحی</a>
         </div>
     </div>
 
     <div class="feature-banner__item">
         <img src="{% static 'images/home/about_us.png' %}" alt="کیفیت در جزئیات BABAEI" loading="lazy">
+        <div class="feature-banner__overlay"></div>
         <div class="feature-banner__content feature-banner__content--dark">
             <h2>کیفیت<br>در جزئیات است</h2>
             <a href="#">درباره ما <span>←</span></a>
@@ -144,37 +94,10 @@
 </section>
 
 <section class="trust section" aria-label="مزایای خرید از BABAEI">
-    <div class="trust__item">
-        <div class="trust__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M20 8.5V6l-8-4-8 4v2.5M4 8.5l8 4 8-4M12 12.5V22M4 8.5V18l8 4 8-4V8.5"/></svg>
-        </div>
-        <h3>Premium Quality</h3>
-        <p>کیفیت تضمینی</p>
-    </div>
-
-    <div class="trust__item">
-        <div class="trust__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7zM6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
-        </div>
-        <h3>Fast Delivery</h3>
-        <p>ارسال سریع</p>
-    </div>
-
-    <div class="trust__item">
-        <div class="trust__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
-        </div>
-        <h3>Secure Payment</h3>
-        <p>پرداخت امن</p>
-    </div>
-
-    <div class="trust__item">
-        <div class="trust__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 5v5h-5"/></svg>
-        </div>
-        <h3>Support 24/7</h3>
-        <p>پشتیبانی ۲۴ ساعته</p>
-    </div>
+    <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 8.5V6l-8-4-8 4v2.5M4 8.5l8 4 8-4M12 12.5V22M4 8.5V18l8 4 8-4V8.5"/></svg></div><h3>Premium Quality</h3><p>کیفیت تضمینی</p></div>
+    <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7zM6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></div><h3>Fast Delivery</h3><p>ارسال سریع</p></div>
+    <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg></div><h3>Secure Payment</h3><p>پرداخت امن</p></div>
+    <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 5v5h-5"/></svg></div><h3>Support 24/7</h3><p>پشتیبانی ۲۴ ساعته</p></div>
 </section>
 
 <section id="products" class="products section">
@@ -182,77 +105,26 @@
         <h2>محصولات محبوب</h2>
         <a href="#" class="section-header__link">مشاهده همه <span>←</span></a>
     </div>
-
     <div class="products__grid">
-        <article class="product-card">
-            <div class="product-card__image">
-                <img src="{% static 'images/home/Tshirt.png' %}" alt="تیشرت ساده" loading="lazy">
-            </div>
-            <div class="product-card__info">
-                <h3>تیشرت ساده</h3>
-                <strong>۸۵۰,۰۰۰ تومان</strong>
-            </div>
-        </article>
-
-        <article class="product-card">
-            <div class="product-card__image">
-                <img src="{% static 'images/home/Tshirt.png' %}" alt="تیشرت گرافیکی" loading="lazy">
-            </div>
-            <div class="product-card__info">
-                <h3>تیشرت گرافیکی</h3>
-                <strong>۹۸۰,۰۰۰ تومان</strong>
-            </div>
-        </article>
-
-        <article class="product-card">
-            <div class="product-card__image">
-                <img src="{% static 'images/home/Tshirt.png' %}" alt="تیشرت اورسایز" loading="lazy">
-            </div>
-            <div class="product-card__info">
-                <h3>تیشرت اورسایز</h3>
-                <strong>۹۹۰,۰۰۰ تومان</strong>
-            </div>
-        </article>
-
-        <article class="product-card">
-            <div class="product-card__image">
-                <img src="{% static 'images/home/Tshirt.png' %}" alt="تیشرت مینیمال" loading="lazy">
-            </div>
-            <div class="product-card__info">
-                <h3>تیشرت مینیمال</h3>
-                <strong>۸۹۰,۰۰۰ تومان</strong>
-            </div>
-        </article>
+        <article class="product-card"><div class="product-card__image"><img src="{% static 'images/home/Tshirt.png' %}" alt="تیشرت ساده" loading="lazy"></div><div class="product-card__info"><h3>تیشرت ساده</h3><strong>۸۵۰,۰۰۰ تومان</strong></div></article>
+        <article class="product-card"><div class="product-card__image"><img src="{% static 'images/home/Tshirt.png' %}" alt="تیشرت گرافیکی" loading="lazy"></div><div class="product-card__info"><h3>تیشرت گرافیکی</h3><strong>۹۸۰,۰۰۰ تومان</strong></div></article>
+        <article class="product-card"><div class="product-card__image"><img src="{% static 'images/home/Tshirt.png' %}" alt="تیشرت اورسایز" loading="lazy"></div><div class="product-card__info"><h3>تیشرت اورسایز</h3><strong>۹۹۰,۰۰۰ تومان</strong></div></article>
+        <article class="product-card"><div class="product-card__image"><img src="{% static 'images/home/Tshirt.png' %}" alt="تیشرت مینیمال" loading="lazy"></div><div class="product-card__info"><h3>تیشرت مینیمال</h3><strong>۸۹۰,۰۰۰ تومان</strong></div></article>
     </div>
 </section>
 
 <section class="story">
-    <div class="story__image">
-        <img src="{% static 'images/home/every.png' %}" alt="Every Detail Matters" loading="lazy">
-        <div class="story__overlay"></div>
-        <h2>Every<br>Detail<br>Matters</h2>
-    </div>
-
+    <div class="story__image"><img src="{% static 'images/home/every.png' %}" alt="Every Detail Matters" loading="lazy"><div class="story__overlay"></div><h2>Every<br>Detail<br>Matters</h2></div>
     <div class="story__content">
         <p class="story__eyebrow">BABAEI</p>
         <h2>همیشه یک قدم جلوتر</h2>
-        <p>
-            جدیدترین محصولات، تخفیف‌ها<br>
-            و اخبار BABAEI را از دست نده.
-        </p>
-
+        <p>جدیدترین محصولات، تخفیف‌ها<br>و اخبار BABAEI را از دست نده.</p>
         <form class="newsletter" method="post">
             {% csrf_token %}
             <input type="email" name="email" placeholder="ایمیل خود را وارد کنید" aria-label="ایمیل" required>
             <button type="submit" aria-label="عضویت">→</button>
         </form>
-
-        <div class="social-links">
-            <a href="#" aria-label="Instagram">Instagram</a>
-            <a href="#" aria-label="Telegram">Telegram</a>
-            <a href="#" aria-label="YouTube">YouTube</a>
-            <a href="#" aria-label="LinkedIn">LinkedIn</a>
-        </div>
+        <div class="social-links"><a href="#">Instagram</a><a href="#">Telegram</a><a href="#">YouTube</a><a href="#">LinkedIn</a></div>
     </div>
 </section>
 
