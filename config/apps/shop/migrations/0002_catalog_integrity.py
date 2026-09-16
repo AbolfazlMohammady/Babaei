@@ -16,8 +16,15 @@ class Migration(migrations.Migration):
                 name="unique_primary_image_per_product",
             ),
         ),
-        migrations.AlterIndexTogether(
-            name="productvariant",
-            index_together=set(),
+        migrations.RemoveIndex(
+            model_name="productvariant",
+            name="shop_var_product_idx",
+        ),
+        migrations.AddIndex(
+            model_name="productvariant",
+            index=models.Index(
+                fields=("product", "is_active", "color", "size"),
+                name="shop_variant_lookup_idx",
+            ),
         ),
     ]
