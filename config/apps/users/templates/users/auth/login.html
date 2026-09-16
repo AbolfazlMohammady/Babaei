@@ -1,8 +1,13 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}ورود | BABAEI{% endblock %}
 {% block meta_description %}ورود به حساب کاربری BABAEI با شماره موبایل.{% endblock %}
 {% block body_class %}auth-body{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/auth-polish.css' %}?v=1">
+{% endblock %}
 
 {% block content %}
 <section class="auth-page">
@@ -11,7 +16,7 @@
             <div class="auth-visual__content">
                 <span class="auth-kicker">BABAEI STUDIO</span>
                 <h1>Wear<br>Your Story.</h1>
-                <p>برای ادامه، وارد حساب BABAEI شوید و طراحی خودتان را ادامه دهید.</p>
+                <p>برای ادامه، وارد حساب BABAEI شوید و تجربه شخصی خودتان را ادامه دهید.</p>
             </div>
             <span class="auth-visual__mark">BABAEI</span>
         </div>
