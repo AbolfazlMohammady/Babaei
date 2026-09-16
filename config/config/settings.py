@@ -4,15 +4,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
-SECRET_KEY = os.environ.get('SECRET_KEY',"fallback_secret_key")
+SECRET_KEY = os.environ.get('SECRET_KEY', "fallback_secret_key")
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = [
-    '127.0.0.1'
-]
-
+ALLOWED_HOSTS = ['127.0.0.1']
 SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000").rstrip("/")
 
 INSTALLED_APPS = [
@@ -23,21 +19,17 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
-
     "phonenumber_field",
     "axes",
     "modeltranslation",
     "tinymce",
     "debug_toolbar",
-
     "apps.home",
     "apps.users",
     "apps.shop",
 ]
 
-INTERNAL_IPS = [
-    '127.0.0.1',
-]
+INTERNAL_IPS = ['127.0.0.1']
 
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
@@ -76,9 +68,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'data/database/db.sqlite3',
-        'TEST': {
-            'NAME': ':memory:',
-        },
+        'TEST': {'NAME': ':memory:'},
     }
 }
 # DATABASES = {
