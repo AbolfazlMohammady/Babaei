@@ -6,54 +6,31 @@
 {% block body_class %}shop-page{% endblock %}
 
 {% block extra_css %}
-<style>
-.shop-page .shop-shell{max-width:1200px;margin:0 auto;padding:48px 20px 80px}
-.shop-page .shop-hero{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:stretch;margin-bottom:36px}
-.shop-page .shop-hero__copy,.shop-page .shop-hero__visual{border-radius:28px;overflow:hidden;background:#f5f2ee}
-.shop-page .shop-hero__copy{padding:48px}
-.shop-page .shop-kicker{font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
-.shop-page h1{font-size:clamp(34px,5vw,64px);line-height:1.08;margin:14px 0 18px}
-.shop-page .shop-hero__copy p{font-size:17px;line-height:1.9;max-width:650px;opacity:.78}
-.shop-page .shop-hero__visual{min-height:360px;display:flex;align-items:end;justify-content:center}
-.shop-page .shop-hero__visual img{width:100%;height:100%;object-fit:cover}
-.shop-page .section-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:44px 0 18px}
-.shop-page .section-head h2{margin:0;font-size:27px}
-.shop-page .categories{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.shop-page .category-card{display:block;padding:18px;border:1px solid #ece7e1;border-radius:20px;color:inherit;text-decoration:none;background:#fff}
-.shop-page .category-card img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;margin-bottom:12px}
-.shop-page .category-card__title{font-weight:700}
-.shop-page .products{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-.shop-page .product-card{display:block;color:inherit;text-decoration:none}
-.shop-page .product-card__image{aspect-ratio:3/4;background:#f4f1ed;border-radius:20px;overflow:hidden;margin-bottom:12px}
-.shop-page .product-card__image img{width:100%;height:100%;object-fit:cover;display:block}
-.shop-page .product-card__name{font-size:16px;font-weight:700;margin-bottom:7px}
-.shop-page .product-card__price{opacity:.72;font-size:14px}
-.shop-page .empty-state{padding:40px;border:1px dashed #d6d0c8;border-radius:20px;text-align:center;grid-column:1/-1}
-@media (max-width:900px){.shop-page .shop-hero{grid-template-columns:1fr}.shop-page .categories,.shop-page .products{grid-template-columns:repeat(2,1fr)}}
-@media (max-width:560px){.shop-page .shop-shell{padding-inline:14px}.shop-page .shop-hero__copy{padding:30px 24px}.shop-page .categories,.shop-page .products{grid-template-columns:1fr 1fr;gap:12px}.shop-page .shop-hero__visual{min-height:250px}}
-</style>
+<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="shop-shell">
-    <section class="shop-hero">
+    <section class="shop-hero" aria-labelledby="shop-title">
         <div class="shop-hero__copy">
             <div class="shop-kicker">BABAEI / COLLECTION</div>
-            <h1>لباسی که<br>داستان تو را می‌گوید.</h1>
+            <h1 id="shop-title">لباسی که<br>داستان تو را می‌گوید.</h1>
             <p>مدل مورد علاقه‌ات را انتخاب کن، بعد در مرحله طراحی، چاپ خودت را روی ناحیه دلخواه لباس قرار بده.</p>
         </div>
         <div class="shop-hero__visual" aria-hidden="true">
-            <img src="{% static 'images/home/hero.jpg' %}" alt="" loading="eager" fetchpriority="high">
+            <img src="{% static 'images/home/hero.jpg' %}" alt="" width="800" height="1000" fetchpriority="high">
         </div>
     </section>
 
     {% if categories %}
-    <section>
-        <div class="section-head"><h2>دسته‌بندی‌ها</h2></div>
+    <section aria-labelledby="categories-title">
+        <div class="section-head"><h2 id="categories-title">دسته‌بندی‌ها</h2></div>
         <div class="categories">
             {% for category in categories %}
                 <a class="category-card" href="{% url 'shop:category' category.slug %}">
-                    {% if category.image %}<img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">{% endif %}
+                    {% if category.image %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}" width="400" height="400" loading="lazy" decoding="async">
+                    {% endif %}
                     <div class="category-card__title">{{ category.name }}</div>
                 </a>
             {% endfor %}
@@ -61,14 +38,16 @@
     </section>
     {% endif %}
 
-    <section>
-        <div class="section-head"><h2>محصولات</h2></div>
+    <section aria-labelledby="products-title">
+        <div class="section-head"><h2 id="products-title">محصولات</h2></div>
         <div class="products">
             {% for product in products %}
                 <a class="product-card" href="{% url 'shop:product' product.slug %}">
                     <div class="product-card__image">
                         {% with image=product.primary_images.0 %}
-                            {% if image %}<img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy">{% endif %}
+                            {% if image %}
+                                <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" width="600" height="800" loading="lazy" decoding="async">
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="product-card__name">{{ product.name }}</div>
