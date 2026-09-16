@@ -64,6 +64,13 @@ class Product(models.Model):
     short_description = models.TextField(_("توضیحات کوتاه"), blank=True)
     description = models.TextField(_("توضیحات کامل"), blank=True)
     base_price = models.PositiveBigIntegerField(_("قیمت پایه"), validators=[MinValueValidator(0)])
+    compare_at_price = models.PositiveBigIntegerField(
+        _("قیمت قبل از تخفیف"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)],
+        help_text=_("اگر محصول تخفیف دارد، قیمت قبل از تخفیف را وارد کنید."),
+    )
     is_active = models.BooleanField(_("فعال"), default=True, db_index=True)
     is_featured = models.BooleanField(_("ویژه"), default=False, db_index=True)
     seo_title = models.CharField(_("عنوان سئو"), max_length=70, blank=True)
@@ -96,6 +103,40 @@ class Product(models.Model):
         if prefetched:
             return min(variant.price for variant in prefetched)
         return self.base_price
+
+    @property
+    def display_compare_price(self):
+        annotated_price = self.__dict__.get("listed_compare_price")
+        if annotated_price is not None and annotated_price > self.display_price:
+            return annotated_price
+
+        prefetched = getattr(self, "_prefetched_objects_cache", {}).get("active_variants")
+        if prefetched:
+            current = min(prefetched, key=lambda variant: variant.price)
+            if current.has_discount:
+                return current.compare_at_price
+
+        if self.compare_at_price and self.compare_at_price > self.display_price:
+            return self.compare_at_price
+        return None
+
+    @property
+    def has_discount(self):
+        return self.display_compare_price is not None
+
+    @property
+    def discount_percent(self):
+        compare_price = self.display_compare_price
+        if not compare_price:
+            return 0
+        return round((compare_price - self.display_price) * 100 / compare_price)
+
+    @property
+    def total_stock(self):
+        prefetched = getattr(self, "_prefetched_objects_cache", {}).get("active_variants")
+        if prefetched is None:
+            return None
+        return sum(variant.stock_quantity for variant in prefetched)
 
     def __str__(self):
         return self.name
@@ -133,6 +174,13 @@ class ProductVariant(models.Model):
     size = models.ForeignKey(ProductSize, on_delete=models.PROTECT, related_name="variants", verbose_name=_("سایز"))
     sku = models.CharField(_("SKU"), max_length=80, unique=True)
     price = models.PositiveBigIntegerField(_("قیمت"), validators=[MinValueValidator(0)])
+    compare_at_price = models.PositiveBigIntegerField(
+        _("قیمت قبل از تخفیف"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)],
+        help_text=_("در صورت تخفیف این ترکیب، قیمت قبل از تخفیف را وارد کنید."),
+    )
     stock_quantity = models.PositiveIntegerField(_("موجودی"), default=0)
     is_active = models.BooleanField(_("فعال"), default=True, db_index=True)
 
@@ -146,6 +194,16 @@ class ProductVariant(models.Model):
     @property
     def in_stock(self):
         return self.stock_quantity > 0
+
+    @property
+    def has_discount(self):
+        return bool(self.compare_at_price and self.compare_at_price > self.price)
+
+    @property
+    def discount_percent(self):
+        if not self.has_discount:
+            return 0
+        return round((self.compare_at_price - self.price) * 100 / self.compare_at_price)
 
     def __str__(self):
         return f"{self.product} / {self.color} / {self.size}"
