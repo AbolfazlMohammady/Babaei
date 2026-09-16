@@ -36,7 +36,7 @@ INSTALLED_APPS = [
 ]
 
 INTERNAL_IPS = [
-    '127.0.0.1', 
+    '127.0.0.1',
 ]
 
 MIDDLEWARE = [
@@ -47,7 +47,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'axes.middleware.AxesMiddleware',  
+    'axes.middleware.AxesMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -81,7 +81,6 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'data/database/db.sqlite3',
-        # Use an isolated in-memory database for Django's test runner/pytest
         'TEST': {
             'NAME': ':memory:',
         },
@@ -123,15 +122,12 @@ LANGUAGE_CODE = 'en'
 
 USE_I18N = True
 TIME_ZONE = 'UTC'
-USE_I18N = True
 USE_TZ = True
-# Where compiled/po locale files live
 LOCALE_PATHS = [
     BASE_DIR / 'locale',
 ]
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+# Static files
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "data/static/"
 
@@ -149,7 +145,6 @@ AUTH_USER_MODEL = 'users.User'
 
 
 # Config Celery
-# 'amqp://guest:guest@rabbitmq:5672//'
 CELERY_BROKER_URL = os.environ.get(
     "REDIS_URL",
     "redis://redis:6379/0",
@@ -160,26 +155,28 @@ CELERY_RESULT_BACKEND = os.environ.get(
     "redis://redis:6379/0",
 )
 
-# config axes
-# تعداد تلاش‌های ناموفق قبل از بلاک شدن
-# config axes (for django-axes v5)
+# Config axes
 AXES_ENABLED = True
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = timedelta(hours=1)
-
-
 AXES_CACHE = 'default'
 
+# IMPORTANT:
+# AxesStandaloneBackend only monitors authentication and does not implement
+# get_user(). Django stores the selected backend in the session, so using the
+# standalone backend directly for login sessions causes request.user to fail.
+# BabaeiAxesBackend combines AxesStandaloneBackend with ModelBackend and is
+# therefore safe to store in the session.
 AUTHENTICATION_BACKENDS = [
-    "axes.backends.AxesStandaloneBackend",
+    "apps.users.backends.BabaeiAxesBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-# cashing "redis://redis:6379/1",  
+# Caching
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",  
+        "LOCATION": "redis://redis:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
@@ -190,26 +187,20 @@ CACHES = {
 # logging
 LOGGING = {
     "version": 1,
-
     "disable_existing_loggers": False,
-
     "formatters": {
         "verbose": {
             "format": "{asctime} | {levelname} | {name} | {message}",
             "style": "{",
         },
     },
-
-    "filters": {
-    },
-
+    "filters": {},
     "handlers": {
         "console": {
             "level": "INFO",
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
-
         "file": {
             "level": "INFO",
             "class": "logging.handlers.RotatingFileHandler",
@@ -219,7 +210,6 @@ LOGGING = {
             "formatter": "verbose",
         },
     },
-
     "loggers": {
         "apps": {
             "handlers": ["console", "file"],
