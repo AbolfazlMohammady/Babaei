@@ -26,13 +26,13 @@ class ProductImageInline(admin.TabularInline):
 class ProductVariantInline(admin.TabularInline):
     model = ProductVariant
     extra = 0
-    fields = ("color", "size", "sku", "price", "stock_quantity", "is_active")
+    fields = ("color", "size", "sku", "price", "compare_at_price", "stock_quantity", "is_active")
     autocomplete_fields = ("color", "size")
 
 
 @admin.register(Product)
 class ProductAdmin(ShopAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "category", "base_price", "is_active", "is_featured", "created_at")
+    list_display = ("name", "category", "base_price", "compare_at_price", "is_active", "is_featured", "created_at")
     list_filter = ("is_active", "is_featured", "category")
     search_fields = ("name", "slug", "short_description", "description")
     prepopulated_fields = {"slug": ("name",)}
@@ -64,7 +64,7 @@ class ProductSizeAdmin(ShopAdminMixin, admin.ModelAdmin):
 
 @admin.register(ProductVariant)
 class ProductVariantAdmin(ShopAdminMixin, admin.ModelAdmin):
-    list_display = ("product", "color", "size", "sku", "price", "stock_quantity", "is_active")
+    list_display = ("product", "color", "size", "sku", "price", "compare_at_price", "stock_quantity", "is_active")
     list_filter = ("is_active", "color", "size")
     search_fields = ("product__name", "sku", "color__name", "size__name")
     list_select_related = ("product", "color", "size")
