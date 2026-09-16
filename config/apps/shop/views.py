@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 from django.conf import settings
-from django.db.models import DecimalField, Min, OuterRef, Prefetch, Subquery
+from django.db.models import Case, IntegerField, OuterRef, Prefetch, Subquery, When
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
@@ -13,13 +13,19 @@ from .models import Category, Product, ProductImage, ProductVariant
 
 
 def absolute_url(request, path):
-    return f"{settings.SITE_URL}{path}" if settings.SITE_URL else request.build_absolute_uri(path)
+    if path.startswith("http://") or path.startswith("https://"):
+        return path
+    return f"{settings.SITE_URL}{path}"
 
 
 def schema_json(data):
     return mark_safe(
         json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
     )
+
+
+def toman_to_irr(value):
+    return value * 10
 
 
 class ShopIndexView(ListView):
@@ -31,13 +37,10 @@ class ShopIndexView(ListView):
             image_type=ProductImage.ImageType.PRIMARY,
         ).only("id", "product_id", "image", "alt_text")
         variant_price = Subquery(
-            ProductVariant.objects.filter(
-                product_id=OuterRef("pk"),
-                is_active=True,
-            )
+            ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True)
             .order_by("price")
             .values("price")[:1],
-            output_field=DecimalField(max_digits=19, decimal_places=0),
+            output_field=IntegerField(),
         )
 
         return (
@@ -50,9 +53,7 @@ class ShopIndexView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["categories"] = Category.objects.filter(is_active=True).only(
-            "id", "name", "slug", "image"
-        )
+        context["categories"] = Category.objects.filter(is_active=True).only("id", "name", "slug", "image")
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["website_schema"] = schema_json(
             {
@@ -73,9 +74,7 @@ class CategoryDetailView(ListView):
 
     def get_queryset(self):
         self.category = get_object_or_404(
-            Category.objects.only(
-                "id", "name", "slug", "description", "seo_title", "seo_description"
-            ),
+            Category.objects.only("id", "name", "slug", "description", "seo_title", "seo_description"),
             slug=self.kwargs["slug"],
             is_active=True,
         )
@@ -83,13 +82,10 @@ class CategoryDetailView(ListView):
             image_type=ProductImage.ImageType.PRIMARY,
         ).only("id", "product_id", "image", "alt_text")
         variant_price = Subquery(
-            ProductVariant.objects.filter(
-                product_id=OuterRef("pk"),
-                is_active=True,
-            )
+            ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True)
             .order_by("price")
             .values("price")[:1],
-            output_field=DecimalField(max_digits=19, decimal_places=0),
+            output_field=IntegerField(),
         )
 
         return (
@@ -129,17 +125,23 @@ class ProductDetailView(DetailView):
 
     def get_queryset(self):
         images = (
-            ProductImage.objects.only(
-                "id", "product_id", "image", "alt_text", "image_type", "sort_order"
+            ProductImage.objects.only("id", "product_id", "image", "alt_text", "image_type", "sort_order")
+            .annotate(
+                type_priority=Case(
+                    When(image_type=ProductImage.ImageType.PRIMARY, then=0),
+                    When(image_type=ProductImage.ImageType.DETAIL, then=1),
+                    default=2,
+                    output_field=IntegerField(),
+                )
             )
-            .order_by("sort_order", "id")
+            .order_by("type_priority", "sort_order", "id")
         )
         variants = (
             ProductVariant.objects.filter(is_active=True)
             .select_related("color", "size")
             .only(
                 "id", "product_id", "color_id", "size_id", "sku", "price", "stock_quantity",
-                "color__id", "color__name", "color__hex_code", "size__id", "size__name",
+                "color__id", "color__name", "color__hex_code", "size__id", "size__name", "size__sort_order",
             )
             .order_by("color__name", "size__sort_order", "size__name")
         )
@@ -158,37 +160,30 @@ class ProductDetailView(DetailView):
         canonical_url = absolute_url(self.request, self.request.path)
         breadcrumbs = [
             {"name": "فروشگاه", "url": absolute_url(self.request, "/shop/")},
-            {
-                "name": self.object.category.name,
-                "url": absolute_url(self.request, self.object.category.get_absolute_url()),
-            },
+            {"name": self.object.category.name, "url": absolute_url(self.request, self.object.category.get_absolute_url())},
             {"name": self.object.name, "url": canonical_url},
         ]
         context["breadcrumbs"] = breadcrumbs
         context["canonical_url"] = canonical_url
 
-        images = [
-            absolute_url(self.request, image.image.url)
-            for image in self.object.gallery_images
-            if image.image
-        ]
+        images = [absolute_url(self.request, image.image.url) for image in self.object.gallery_images if image.image]
         offers = self.object.active_variants
         prices = [variant.price for variant in offers]
+
         if offers:
-            availability = "https://schema.org/InStock" if any(v.in_stock for v in offers) else "https://schema.org/OutOfStock"
             offer_data = {
                 "@type": "AggregateOffer",
                 "priceCurrency": "IRR",
-                "lowPrice": min(prices),
-                "highPrice": max(prices),
+                "lowPrice": toman_to_irr(min(prices)),
+                "highPrice": toman_to_irr(max(prices)),
                 "offerCount": len(offers),
-                "availability": availability,
+                "availability": "https://schema.org/InStock" if any(v.in_stock for v in offers) else "https://schema.org/OutOfStock",
             }
         else:
             offer_data = {
                 "@type": "Offer",
                 "priceCurrency": "IRR",
-                "price": self.object.base_price,
+                "price": toman_to_irr(self.object.base_price),
                 "availability": "https://schema.org/InStock",
                 "url": canonical_url,
             }
@@ -201,7 +196,6 @@ class ProductDetailView(DetailView):
                 "description": self.object.seo_description or self.object.short_description or self.object.description,
                 "url": canonical_url,
                 "image": images,
-                "sku": next((variant.sku for variant in offers), None),
                 "brand": {"@type": "Brand", "name": "BABAEI"},
                 "category": self.object.category.name,
                 "offers": offer_data,
