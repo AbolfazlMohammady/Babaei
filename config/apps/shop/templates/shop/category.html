@@ -1,0 +1,32 @@
+{% extends "shop/index.html" %}
+
+{% block title %}{{ category.name }} | BABAEI{% endblock %}
+
+{% block content %}
+<main>
+    <nav aria-label="مسیر صفحه">
+        <a href="{% url 'shop:index' %}">فروشگاه</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ category.name }}</span>
+    </nav>
+
+    <header>
+        <h1>{{ category.name }}</h1>
+        {% if category.description %}
+            <p>{{ category.description }}</p>
+        {% endif %}
+    </header>
+
+    {% for product in products %}
+        <article>
+            <a href="{% url 'shop:product-detail' product.slug %}">
+                <h2>{{ product.name }}</h2>
+            </a>
+            <p>{{ product.short_description }}</p>
+            <strong>{{ product.base_price }}</strong>
+        </article>
+    {% empty %}
+        <p>محصولی در این دسته‌بندی وجود ندارد.</p>
+    {% endfor %}
+</main>
+{% endblock %}
