@@ -11,8 +11,7 @@ def cart_context(request):
     if request.user.is_authenticated:
         count = (
             Cart.objects.filter(user=request.user, status=Cart.Status.ACTIVE)
-            .values_list("items__quantity")
-            .aggregate(total=Sum("items__quantity"))
+            .aggregate(total=Sum("items__quantity", default=0))
             .get("total")
             or 0
         )
@@ -25,8 +24,7 @@ def cart_context(request):
                     user__isnull=True,
                     status=Cart.Status.ACTIVE,
                 )
-                .values_list("items__quantity")
-                .aggregate(total=Sum("items__quantity"))
+                .aggregate(total=Sum("items__quantity", default=0))
                 .get("total")
                 or 0
             )
