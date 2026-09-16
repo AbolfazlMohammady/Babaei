@@ -1,0 +1,15 @@
+/* Final shared polish for structural components introduced by design-system.css. */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.site-footer__socials{display:flex;gap:7px;margin-top:20px;direction:ltr}
+.site-footer__socials a{width:30px;height:30px!important;display:grid!important;place-items:center;border:1px solid rgba(201,164,92,.2);border-radius:50%;background:#101010;color:#a88a52!important;font-family:Arial,sans-serif;font-size:8px!important;letter-spacing:.5px}
+.site-footer__socials a:hover{border-color:#c9a45c;background:#1a1712;color:#e4c77d!important}
+.site-footer__newsletter p{max-width:270px}
+.footer-newsletter{height:44px;display:flex;align-items:stretch;margin-top:12px;border:1px solid rgba(201,164,92,.2);border-radius:6px;overflow:hidden;background:#101010;direction:ltr}
+.footer-newsletter input{min-width:0;flex:1;padding:0 12px;border:0;outline:0;background:transparent;color:#f3efe6;font-family:var(--b-font);font-size:10px;text-align:right}
+.footer-newsletter input::placeholder{color:#67635c}
+.footer-newsletter button{width:44px;flex:0 0 44px;background:#c9a45c;color:#0a0a0a;font-family:Arial,sans-serif;font-size:15px}
+.footer-newsletter button:hover{background:#e4c77d}
+.messages{position:fixed!important;top:84px!important;right:18px!important;z-index:2500!important;display:grid!important;gap:8px!important;max-width:min(360px,calc(100vw - 36px))!important}
+.toast{padding:12px 15px!important;border:1px solid rgba(201,164,92,.22)!important;border-radius:8px!important;background:#171717!important;color:#e7e1d7!important;box-shadow:0 16px 45px rgba(0,0,0,.35)!important;font-family:var(--b-font)!important;font-size:10px!important}
+.toast-success{border-color:rgba(118,184,142,.35)!important}.toast-error{border-color:rgba(217,107,98,.35)!important}
+@media(max-width:760px){.messages{top:72px!important;right:10px!important;max-width:calc(100vw - 20px)!important}.site-footer__socials{margin-top:15px}.footer-newsletter{max-width:100%}.site-footer__grid{padding-bottom:32px!important}}
