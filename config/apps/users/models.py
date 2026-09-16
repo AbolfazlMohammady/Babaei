@@ -139,7 +139,7 @@ class Address(models.Model):
 
 class OTP(models.Model):
     code = models.CharField(_("کد"), max_length=6)
-    phone = PhoneNumberField(_("شماره تلفن"), region="IR", max_length=128, db_index=True)
+    phone = PhoneNumberField(_("شماره تلفن"), region="IR", max_length=128)
     created_at = models.DateTimeField(_("زمان ایجاد"), auto_now_add=True)
     expire_at = models.DateTimeField(_("زمان انقضا"))
     is_used = models.BooleanField(_("استفاده شده"), default=False)
