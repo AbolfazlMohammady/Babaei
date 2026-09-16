@@ -14,43 +14,24 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="user",
             name="phone",
-            field=phonenumber_field.modelfields.PhoneNumberField(
-                max_length=128,
-                region="IR",
-                unique=True,
-                verbose_name="شماره تلفن",
-            ),
+            field=phonenumber_field.modelfields.PhoneNumberField(max_length=128, region="IR", unique=True, verbose_name="شماره تلفن"),
         ),
         migrations.AlterField(
             model_name="user",
             name="image",
-            field=models.ImageField(
-                blank=True,
-                null=True,
-                upload_to=apps.users.models.user_profile_image_path,
-                verbose_name="تصویر پروفایل",
-            ),
+            field=models.ImageField(blank=True, null=True, upload_to=apps.users.models.user_profile_image_path, verbose_name="تصویر پروفایل"),
         ),
         migrations.AlterField(
             model_name="address",
             name="phone",
-            field=phonenumber_field.modelfields.PhoneNumberField(
-                max_length=128,
-                region="IR",
-                verbose_name="شماره موبایل",
-            ),
+            field=phonenumber_field.modelfields.PhoneNumberField(max_length=128, region="IR", verbose_name="شماره موبایل"),
         ),
         migrations.AlterField(
             model_name="address",
             name="postal_code",
             field=models.CharField(
                 max_length=10,
-                validators=[
-                    django.core.validators.RegexValidator(
-                        "^\\d{10}$",
-                        "کد پستی باید دقیقاً ۱۰ رقم باشد.",
-                    )
-                ],
+                validators=[django.core.validators.RegexValidator("^\\d{10}$", "کد پستی باید دقیقاً ۱۰ رقم باشد.")],
                 verbose_name="کد پستی",
             ),
         ),
@@ -78,19 +59,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="otp",
             name="phone",
-            field=phonenumber_field.modelfields.PhoneNumberField(
-                db_index=True,
-                max_length=128,
-                region="IR",
-                verbose_name="شماره تلفن",
-            ),
+            field=phonenumber_field.modelfields.PhoneNumberField(max_length=128, region="IR", verbose_name="شماره تلفن"),
         ),
         migrations.AddConstraint(
             model_name="address",
-            constraint=models.UniqueConstraint(
-                fields=("user",),
-                condition=Q(is_default=True),
-                name="unique_default_address_per_user",
-            ),
+            constraint=models.UniqueConstraint(fields=("user",), condition=Q(is_default=True), name="unique_default_address_per_user"),
         ),
     ]
