@@ -1,57 +1,45 @@
-/* BABAEI — compact editorial feature banners */
 
-.home-page .feature-banner {
-    width: min(calc(100% - 96px), 1160px) !important;
-    margin: 22px auto 0 !important;
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 18px !important;
+
+/* Subtle glass surface behind feature copy — intentionally localized */
+.home-page .feature-banner__content {
+    width: 43% !important;
+    height: auto !important;
+    min-height: 242px !important;
+    inset: 50% auto auto 0 !important;
+    transform: translateY(-50%) !important;
+    padding: 24px 24px 56px 27px !important;
+    border: 1px solid rgba(255,255,255,.18) !important;
+    border-radius: 18px !important;
+    box-sizing: border-box !important;
+    background: rgba(10,10,10,.25) !important;
+    -webkit-backdrop-filter: blur(9px) saturate(115%) !important;
+    backdrop-filter: blur(9px) saturate(115%) !important;
+    box-shadow: 0 16px 36px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.08) !important;
 }
-.home-page .feature-banner__item { position: relative !important; width: 100% !important; height: 380px !important; min-height: 380px !important; overflow: hidden !important; border-radius: 16px !important; isolation: isolate !important; box-shadow: 0 14px 32px rgba(17,17,17,.09) !important; }
-.home-page .feature-banner__item > img { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover !important; transition: transform .8s cubic-bezier(.22,.61,.36,1) !important; }
-.home-page .feature-banner__item:hover > img { transform: scale(1.025) !important; }
-.home-page .feature-banner__overlay { position: absolute !important; inset: 0 !important; z-index: 1 !important; pointer-events: none !important; }
-.home-page .feature-banner__item:first-child .feature-banner__overlay { background: linear-gradient(90deg,rgba(0,0,0,.84) 0%,rgba(0,0,0,.58) 40%,rgba(0,0,0,.10) 73%,transparent 100%) !important; }
-.home-page .feature-banner__item:first-child .feature-banner__content { position: absolute !important; inset: 0 auto 0 0 !important; width: 48% !important; height: 100% !important; padding: 34px 28px 28px 34px !important; box-sizing: border-box !important; display: flex !important; flex-direction: column !important; align-items: flex-start !important; justify-content: center !important; direction: rtl !important; text-align: right !important; color: #fff !important; z-index: 2 !important; }
-.home-page .feature-banner__item:first-child .feature-banner__content::before { content: "—  WEAR YOUR STORY  —" !important; display: block !important; margin: 0 0 13px !important; color: rgba(255,255,255,.72) !important; font: 7px/1 Arial,sans-serif !important; letter-spacing: 2.2px !important; direction: ltr !important; white-space: nowrap !important; }
-.home-page .feature-banner__item:first-child .feature-banner__content h2 { max-width: 230px !important; margin: 0 !important; color: #fff !important; font-size: clamp(26px,2.55vw,35px) !important; line-height: 1.18 !important; font-weight: 700 !important; text-shadow: 0 3px 16px rgba(0,0,0,.4) !important; }
-.home-page .feature-banner__item:first-child .feature-banner__content p { max-width: 220px !important; margin: 11px 0 0 !important; color: rgba(255,255,255,.78) !important; font-size: 9px !important; line-height: 1.9 !important; }
-.home-page .feature-banner__item:first-child .feature-banner__content .button { min-height: 36px !important; margin-top: 14px !important; padding: 0 18px !important; border: 1px solid rgba(255,255,255,.68) !important; border-radius: 8px !important; background: transparent !important; color: #fff !important; font-size: 9px !important; }
-.home-page .feature-banner__item:first-child .feature-banner__content::after { content: "BABAEI CUSTOM\A MORE THAN CLOTHES" !important; white-space: pre !important; position: absolute !important; left: 34px !important; bottom: 25px !important; padding-left: 10px !important; border-left: 1px solid rgba(255,255,255,.6) !important; color: rgba(255,255,255,.48) !important; font: 7px/1.9 Arial,sans-serif !important; letter-spacing: 1.4px !important; direction: ltr !important; text-align: left !important; }
-.home-page .feature-banner__item:nth-child(2) .feature-banner__overlay { background: linear-gradient(90deg,rgba(255,255,255,.08),rgba(255,255,255,0)) !important; }
-.home-page .feature-banner__item:nth-child(2) .feature-banner__content { position: absolute !important; inset: 0 auto 0 0 !important; width: 48% !important; height: 100% !important; padding: 34px 28px 28px 34px !important; margin: 0 !important; box-sizing: border-box !important; display: flex !important; flex-direction: column !important; align-items: flex-start !important; justify-content: center !important; direction: rtl !important; text-align: right !important; color: #111 !important; z-index: 2 !important; }
-.home-page .feature-banner__item:nth-child(2) .feature-banner__content::before { content: "—  PREMIUM QUALITY  —" !important; display: block !important; margin: 0 0 13px !important; color: rgba(17,17,17,.48) !important; font: 7px/1 Arial,sans-serif !important; letter-spacing: 2.2px !important; direction: ltr !important; white-space: nowrap !important; }
-.home-page .feature-banner__item:nth-child(2) .feature-banner__content h2 { max-width: 230px !important; margin: 0 !important; color: #111 !important; font-size: clamp(25px,2.45vw,34px) !important; line-height: 1.18 !important; font-weight: 700 !important; }
-.home-page .feature-banner__item:nth-child(2) .feature-banner__content p { max-width: 215px !important; margin: 11px 0 0 !important; color: rgba(17,17,17,.68) !important; font-size: 9px !important; line-height: 1.9 !important; }
-.home-page .feature-banner__item:nth-child(2) .feature-banner__content a:not(.button) { min-height: 36px !important; margin-top: 14px !important; padding: 0 17px !important; display: inline-flex !important; align-items: center !important; gap: 9px !important; border-radius: 8px !important; background: #111 !important; color: #fff !important; font-size: 9px !important; }
-.home-page .feature-banner__item:nth-child(2) .feature-banner__content::after { content: "BABAEI ESSENTIALS\A BUILT TO LAST" !important; white-space: pre !important; position: absolute !important; left: 34px !important; bottom: 25px !important; padding-left: 10px !important; border-left: 1px solid rgba(17,17,17,.48) !important; color: rgba(17,17,17,.48) !important; font: 7px/1.9 Arial,sans-serif !important; letter-spacing: 1.4px !important; direction: ltr !important; text-align: left !important; }
-
-/* MOBILE — keep the image dominant, move every text element into the clean left safe zone */
+.home-page .feature-banner__item:nth-child(2) .feature-banner__content {
+    background: rgba(255,255,255,.30) !important;
+    border-color: rgba(17,17,17,.10) !important;
+    box-shadow: 0 16px 36px rgba(17,17,17,.07), inset 0 1px 0 rgba(255,255,255,.55) !important;
+}
 @media (max-width: 900px) {
-    .home-page .feature-banner { width: calc(100% - 28px) !important; margin: 0 auto !important; grid-template-columns: 1fr !important; gap: 12px !important; }
-    .home-page .feature-banner__item { height: 290px !important; min-height: 290px !important; border-radius: 12px !important; }
-    .home-page .feature-banner__item:first-child .feature-banner__content,
-    .home-page .feature-banner__item:nth-child(2) .feature-banner__content { width: 53% !important; padding: 20px 10px 20px 15px !important; justify-content: center !important; align-items: flex-start !important; }
-    .home-page .feature-banner__item:first-child .feature-banner__content::before,
-    .home-page .feature-banner__item:nth-child(2) .feature-banner__content::before { margin-bottom: 10px !important; font-size: 5px !important; letter-spacing: 1.35px !important; }
-    .home-page .feature-banner__item:first-child .feature-banner__content h2,
-    .home-page .feature-banner__item:nth-child(2) .feature-banner__content h2 { max-width: 145px !important; font-size: 19px !important; line-height: 1.22 !important; }
-    .home-page .feature-banner__item:first-child .feature-banner__content p,
-    .home-page .feature-banner__item:nth-child(2) .feature-banner__content p { max-width: 140px !important; margin-top: 8px !important; font-size: 6.5px !important; line-height: 1.85 !important; }
-    .home-page .feature-banner__item:first-child .feature-banner__content .button,
-    .home-page .feature-banner__item:nth-child(2) .feature-banner__content a:not(.button) { min-height: 30px !important; margin-top: 10px !important; padding-inline: 12px !important; border-radius: 6px !important; font-size: 6.5px !important; }
-    .home-page .feature-banner__item:first-child .feature-banner__content::after,
-    .home-page .feature-banner__item:nth-child(2) .feature-banner__content::after { left: 15px !important; bottom: 15px !important; padding-left: 7px !important; font-size: 4.7px !important; letter-spacing: .85px !important; }
+    .home-page .feature-banner__content {
+        width: 58% !important;
+        min-height: 168px !important;
+        padding: 17px 14px 44px 16px !important;
+        border-radius: 14px !important;
+        background: rgba(10,10,10,.27) !important;
+        -webkit-backdrop-filter: blur(7px) saturate(112%) !important;
+        backdrop-filter: blur(7px) saturate(112%) !important;
+    }
+    .home-page .feature-banner__item:nth-child(2) .feature-banner__content {
+        background: rgba(255,255,255,.36) !important;
+    }
 }
-
 @media (max-width: 480px) {
-    .home-page .feature-banner__item { height: 265px !important; min-height: 265px !important; }
-    .home-page .feature-banner__item:first-child .feature-banner__content,
-    .home-page .feature-banner__item:nth-child(2) .feature-banner__content { width: 52% !important; padding-left: 13px !important; padding-right: 8px !important; }
-    .home-page .feature-banner__item:first-child .feature-banner__content h2,
-    .home-page .feature-banner__item:nth-child(2) .feature-banner__content h2 { max-width: 138px !important; font-size: 17px !important; }
-    .home-page .feature-banner__item:first-child .feature-banner__content p,
-    .home-page .feature-banner__item:nth-child(2) .feature-banner__content p { max-width: 130px !important; font-size: 6px !important; }
-    .home-page .feature-banner__item:first-child .feature-banner__content::after,
-    .home-page .feature-banner__item:nth-child(2) .feature-banner__content::after { left: 13px !important; bottom: 13px !important; }
+    .home-page .feature-banner__content {
+        width: 59% !important;
+        min-height: 158px !important;
+        padding: 15px 11px 40px 13px !important;
+        border-radius: 13px !important;
+    }
 }
