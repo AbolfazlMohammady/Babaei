@@ -80,7 +80,7 @@
                     <div class="product-card__name">{{ product.name }}</div>
                     <div class="product-card__price-row">
                         <div class="product-card__price">{{ product.display_price|price }} <span>تومان</span></div>
-                        {% if product.has_discount %}<del>{{ product.display_compare_price|price }}</del>{% endif %}
+                        {% if product.has_discount %}<del>{{ product.display_compare_price|price }} تومان</del>{% endif %}
                     </div>
                 </a>
             {% empty %}
