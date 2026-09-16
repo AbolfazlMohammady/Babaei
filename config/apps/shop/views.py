@@ -9,6 +9,8 @@ from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 from django.views.generic import DetailView, ListView
 
+from apps.orders.services import get_active_cart
+
 from .models import Category, Product, ProductImage, ProductVariant
 
 
@@ -187,6 +189,16 @@ class ProductDetailView(DetailView):
         context["colors"] = colors
         context["sizes"] = sizes
         context["total_stock"] = sum(variant.stock_quantity for variant in offers)
+
+        cart = get_active_cart(self.request)
+        cart_items = cart.items.filter(product_id=self.object.id).only("variant_id", "quantity")
+        context["cart_variant_data"] = schema_json(
+            {
+                str(item.variant_id) if item.variant_id else "base": item.quantity
+                for item in cart_items
+            }
+        )
+
         context["variant_data"] = schema_json(
             [
                 {
