@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     # Local Apps
     "apps.home",
     "apps.users",
+    "apps.shop",
 ]
 
 INTERNAL_IPS = [
