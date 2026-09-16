@@ -11,6 +11,7 @@ from .models import Address, City, OTP
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
+AUTH_BACKEND = "django.contrib.auth.backends.ModelBackend"
 
 
 def login_view(request):
@@ -19,6 +20,7 @@ def login_view(request):
 
     if request.method == "POST":
         phone = request.POST.get("phone", "").strip()
+
         if not phone:
             messages.error(request, "شماره موبایل را وارد کنید.")
             return render(request, "users/auth/login.html", {"phone": phone})
@@ -30,6 +32,7 @@ def login_view(request):
 
         logger.info("OTP requested for phone %s", phone)
         logger.info("Development OTP: %s", otp.code)
+
         return redirect("users:verify_otp")
 
     return render(request, "users/auth/login.html")
@@ -41,6 +44,7 @@ def verify_otp_view(request):
 
     phone = request.session.get("otp_phone")
     otp_id = request.session.get("otp_id")
+
     if not phone or not otp_id:
         return redirect("users:login")
 
@@ -69,9 +73,10 @@ def verify_otp_view(request):
             messages.error(request, "حساب کاربری شما غیرفعال است.")
             return redirect("users:login")
 
-        login(request, user, backend="axes.backends.AxesStandaloneBackend")
+        login(request, user, backend=AUTH_BACKEND)
         request.session.pop("otp_phone", None)
         request.session.pop("otp_id", None)
+
         return redirect("users:profile")
 
     return render(request, "users/auth/verify_otp.html", {"phone": phone})
@@ -92,8 +97,10 @@ def profile_update_view(request):
         user.email = request.POST.get("email", "").strip() or None
         user.gender = request.POST.get("gender") or None
         user.birth_date = request.POST.get("birth_date") or None
+
         if "image" in request.FILES:
             user.image = request.FILES["image"]
+
         user.save()
         messages.success(request, "اطلاعات حساب با موفقیت ذخیره شد.")
         return redirect("users:profile")
@@ -132,6 +139,7 @@ def address_create_view(request):
 @require_http_methods(["GET", "POST"])
 def address_update_view(request, pk):
     address = get_object_or_404(Address, pk=pk, user=request.user)
+
     if request.method == "POST":
         address.title = request.POST.get("title", "").strip()
         address.phone = request.POST.get("phone", "").strip()
