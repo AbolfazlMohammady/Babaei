@@ -10,7 +10,6 @@ from .models import Category, Product, ProductImage, ProductVariant
 class ShopIndexView(ListView):
     template_name = "shop/index.html"
     context_object_name = "products"
-    paginate_by = 24
 
     def get_queryset(self):
         primary_images = ProductImage.objects.filter(
@@ -29,7 +28,7 @@ class ShopIndexView(ListView):
                     queryset=primary_images,
                     to_attr="primary_images",
                 )
-            )
+            )[:24]
         )
 
     def get_context_data(self, **kwargs):
@@ -141,18 +140,12 @@ class ProductDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["breadcrumbs"] = [
-            {
-                "name": "فروشگاه",
-                "url": "/shop/",
-            },
+            {"name": "فروشگاه", "url": "/shop/"},
             {
                 "name": self.object.category.name,
                 "url": f"/shop/category/{self.object.category.slug}/",
             },
-            {
-                "name": self.object.name,
-                "url": self.request.path,
-            },
+            {"name": self.object.name, "url": self.request.path},
         ]
         context["canonical_url"] = self.request.build_absolute_uri(self.request.path)
         return context
