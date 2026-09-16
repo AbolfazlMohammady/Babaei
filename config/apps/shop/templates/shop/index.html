@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static shop_tags %}
 
 {% block title %}فروشگاه لباس و تی‌شرت | BABAEI{% endblock %}
 {% block meta_description %}خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی.{% endblock %}
@@ -21,10 +21,20 @@
         <div class="shop-hero__copy">
             <div class="shop-kicker">BABAEI / COLLECTION</div>
             <h1 id="shop-title">لباسی که<br>داستان تو را می‌گوید.</h1>
-            <p>مدل مورد علاقه‌ات را انتخاب کن، بعد در مرحله طراحی، چاپ خودت را روی ناحیه دلخواه لباس قرار بده.</p>
+            <p>مدل مورد علاقه‌ات را انتخاب کن، رنگ و سایز را مشخص کن و بعد چاپ خودت را روی ناحیه دلخواه لباس قرار بده.</p>
+            <a class="shop-hero__cta" href="#products">مشاهده محصولات</a>
         </div>
         <div class="shop-hero__visual" aria-hidden="true">
-            <img src="{% static 'images/home/hero.jpg' %}" alt="" fetchpriority="high" decoding="async">
+            {% with hero_product=products.0 %}
+                {% with hero_image=hero_product.primary_images.0 %}
+                    {% if hero_image %}
+                        <img src="{{ hero_image.image.url }}" alt="" fetchpriority="high" decoding="async">
+                    {% else %}
+                        <img src="{% static 'images/home/Tshirt.png' %}" alt="" fetchpriority="high" decoding="async">
+                    {% endif %}
+                {% endwith %}
+            {% endwith %}
+            <div class="shop-hero__label">DESIGN YOUR STORY</div>
         </div>
     </section>
 
@@ -34,9 +44,13 @@
         <div class="categories">
             {% for category in categories %}
                 <a class="category-card" href="{% url 'shop:category' category.slug %}">
-                    {% if category.image %}
-                        <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">
-                    {% endif %}
+                    <div class="category-card__image">
+                        {% if category.image %}
+                            <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">
+                        {% else %}
+                            <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ category.name }}" loading="lazy" decoding="async">
+                        {% endif %}
+                    </div>
                     <div class="category-card__title">{{ category.name }}</div>
                 </a>
             {% endfor %}
@@ -44,8 +58,11 @@
     </section>
     {% endif %}
 
-    <section aria-labelledby="products-title">
-        <div class="section-head"><h2 id="products-title">محصولات</h2></div>
+    <section id="products" aria-labelledby="products-title">
+        <div class="section-head">
+            <h2 id="products-title">محصولات</h2>
+            <span class="section-count">{{ products|length|price }} محصول</span>
+        </div>
         <div class="products">
             {% for product in products %}
                 <a class="product-card" href="{% url 'shop:product' product.slug %}">
@@ -53,11 +70,18 @@
                         {% with image=product.primary_images.0 %}
                             {% if image %}
                                 <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async">
+                            {% else %}
+                                <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async">
                             {% endif %}
                         {% endwith %}
+                        {% if product.has_discount %}<span class="product-card__discount">{{ product.discount_percent|discount_percent }}</span>{% endif %}
                     </div>
+                    <div class="product-card__category">{{ product.category.name }}</div>
                     <div class="product-card__name">{{ product.name }}</div>
-                    <div class="product-card__price">{{ product.display_price|floatformat:0 }} تومان</div>
+                    <div class="product-card__price-row">
+                        <div class="product-card__price">{{ product.display_price|price }} <span>تومان</span></div>
+                        {% if product.has_discount %}<del>{{ product.display_compare_price|price }}</del>{% endif %}
+                    </div>
                 </a>
             {% empty %}
                 <div class="empty-state">هنوز محصولی برای نمایش وجود ندارد.</div>
