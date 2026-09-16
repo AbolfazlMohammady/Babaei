@@ -1,5 +1,6 @@
 from django.db import migrations, models
 from django.db.models import Q
+import django.core.validators
 import phonenumber_field.modelfields
 import apps.users.models
 
@@ -39,6 +40,20 @@ class Migration(migrations.Migration):
                 verbose_name="شماره موبایل",
             ),
         ),
+        migrations.AlterField(
+            model_name="address",
+            name="postal_code",
+            field=models.CharField(
+                max_length=10,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        "^\\d{10}$",
+                        "کد پستی باید دقیقاً ۱۰ رقم باشد.",
+                    )
+                ],
+                verbose_name="کد پستی",
+            ),
+        ),
         migrations.AddField(
             model_name="address",
             name="is_default",
@@ -49,16 +64,8 @@ class Migration(migrations.Migration):
             options={"ordering": ("-is_default", "-id")},
         ),
         migrations.AddIndex(
-            model_name="city",
-            index=models.Index(fields=("province", "name"), name="users_city_province_name_idx"),
-        ),
-        migrations.AddIndex(
             model_name="address",
             index=models.Index(fields=("user", "is_default"), name="users_address_user_default_idx"),
-        ),
-        migrations.AddIndex(
-            model_name="address",
-            index=models.Index(fields=("city", "postal_code"), name="users_address_city_postal_idx"),
         ),
         migrations.AddIndex(
             model_name="otp",
