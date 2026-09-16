@@ -14,18 +14,12 @@
 
         <section class="profile-identity">
             <div class="profile-image profile-image--large">
-                {% if user.image %}
-                    <img src="{{ user.image.url }}" alt="تصویر پروفایل">
-                {% else %}
-                    <span>{{ user.first_name|first|default:"ب" }}</span>
-                {% endif %}
+                {% if user.image %}<img src="{{ user.image.url }}" alt="تصویر پروفایل">{% else %}<span>{{ user.first_name|first|default:"ب" }}</span>{% endif %}
             </div>
-
             <div class="profile-identity__info">
                 <h2>{{ user.get_full_name|default:"کاربر BABAEI" }}</h2>
                 <span>{{ user.phone }}</span>
             </div>
-
             <label class="profile-file profile-file--compact">
                 <span>تغییر تصویر</span>
                 <input type="file" name="image" accept="image/jpeg,image/png,image/webp">
@@ -37,52 +31,36 @@
                 <label class="form-label" for="first-name">نام</label>
                 <input id="first-name" class="form-input" type="text" name="first_name" value="{{ user.first_name }}" autocomplete="given-name">
             </div>
-
             <div class="form-group profile-field">
                 <label class="form-label" for="last-name">نام خانوادگی</label>
                 <input id="last-name" class="form-input" type="text" name="last_name" value="{{ user.last_name }}" autocomplete="family-name">
             </div>
-
             <div class="form-group profile-field">
                 <label class="form-label" for="phone">شماره موبایل</label>
                 <input id="phone" class="form-input" type="tel" value="{{ user.phone }}" disabled dir="ltr">
             </div>
-
             <div class="form-group profile-field">
                 <label class="form-label" for="email">ایمیل</label>
                 <input id="email" class="form-input" type="email" name="email" value="{{ user.email|default:'' }}" dir="ltr" autocomplete="email">
             </div>
-
             <div class="form-group profile-field jalali-picker-field">
                 <label class="form-label" for="birth-date-display">تاریخ تولد</label>
-                <input
-                    id="birth-date-display"
-                    class="form-input jalali-date-input"
-                    type="text"
-                    value=""
-                    placeholder="سال / ماه / روز"
-                    readonly
-                    autocomplete="off"
-                    aria-haspopup="dialog"
-                    aria-expanded="false"
-                    data-jalali-picker
-                >
-                <input
-                    type="hidden"
-                    name="birth_date"
-                    value="{{ user.birth_date|date:'Y-m-d' }}"
-                    data-gregorian-input
-                >
+                <input id="birth-date-display" class="form-input jalali-date-input" type="text" value="" placeholder="سال / ماه / روز" readonly autocomplete="off" aria-haspopup="dialog" aria-expanded="false" data-jalali-picker>
+                <input type="hidden" name="birth_date" value="{{ user.birth_date|date:'Y-m-d' }}" data-gregorian-input>
                 <div class="jalali-picker" data-jalali-calendar hidden></div>
             </div>
-
             <div class="form-group profile-field">
-                <label class="form-label" for="gender">جنسیت</label>
-                <select id="gender" class="form-select" name="gender">
-                    <option value="">انتخاب کنید</option>
-                    <option value="male" {% if user.gender == "male" %}selected{% endif %}>آقا</option>
-                    <option value="female" {% if user.gender == "female" %}selected{% endif %}>خانم</option>
-                </select>
+                <label class="form-label">جنسیت</label>
+                <div class="gender-choice" role="radiogroup" aria-label="جنسیت">
+                    <label class="gender-option {% if user.gender == 'male' %}is-selected{% endif %}">
+                        <input type="radio" name="gender" value="male" {% if user.gender == 'male' %}checked{% endif %}>
+                        <span class="gender-option__icon">♂</span><span>آقا</span>
+                    </label>
+                    <label class="gender-option {% if user.gender == 'female' %}is-selected{% endif %}">
+                        <input type="radio" name="gender" value="female" {% if user.gender == 'female' %}checked{% endif %}>
+                        <span class="gender-option__icon">♀</span><span>خانم</span>
+                    </label>
+                </div>
             </div>
         </div>
 
@@ -95,4 +73,14 @@
 
 {% block extra_js %}
 <script src="{% static 'js/pages/profile.js' %}" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.gender-option input').forEach(input => {
+        input.addEventListener('change', () => {
+            document.querySelectorAll('.gender-option').forEach(option => option.classList.remove('is-selected'));
+            input.closest('.gender-option')?.classList.add('is-selected');
+        });
+    });
+});
+</script>
 {% endblock %}
