@@ -6,6 +6,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/account.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/pages/account-polish.css' %}?v=1">
 {% endblock %}
 
 {% block content %}
@@ -49,10 +50,10 @@
             </div>
 
             <nav class="account-nav" aria-label="منوی حساب کاربری">
-                <a href="{% url 'users:profile' %}" class="is-active">
+                <a href="{% url 'users:profile' %}" class="{% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_update' %}is-active{% endif %}">
                     <span>اطلاعات شخصی</span><span>01</span>
                 </a>
-                <a href="{% url 'users:addresses' %}">
+                <a href="{% url 'users:addresses' %}" class="{% if request.resolver_match.url_name == 'addresses' or request.resolver_match.url_name == 'address_create' or request.resolver_match.url_name == 'address_update' %}is-active{% endif %}">
                     <span>آدرس‌ها</span><span>02</span>
                 </a>
                 <a href="#">
