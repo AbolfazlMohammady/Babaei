@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{% if product.seo_title %}{{ product.seo_title }}{% else %}{{ product.name }} | BABAEI{% endif %}{% endblock %}
+
+{% block content %}
+<main>
+    <nav aria-label="مسیر صفحه">
+        <a href="{% url 'shop:index' %}">فروشگاه</a>
+        <span aria-hidden="true">/</span>
+        <a href="{% url 'shop:category' product.category.slug %}">{{ product.category.name }}</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ product.name }}</span>
+    </nav>
+
+    <article>
+        <header>
+            <h1>{{ product.name }}</h1>
+            {% if product.short_description %}
+                <p>{{ product.short_description }}</p>
+            {% endif %}
+        </header>
+
+        <section aria-label="تصاویر محصول">
+            {% for image in product.images.all %}
+                <figure>
+                    <img
+                        src="{{ image.image.url }}"
+                        alt="{{ image.alt_text|default:product.name }}"
+                        loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                        decoding="async"
+                    >
+                </figure>
+            {% empty %}
+                <p>تصویری برای این محصول ثبت نشده است.</p>
+            {% endfor %}
+        </section>
+
+        <section aria-label="اطلاعات محصول">
+            {% if product.description %}
+                <div>{{ product.description|linebreaks }}</div>
+            {% endif %}
+            <p>قیمت پایه: <strong>{{ product.base_price }}</strong></p>
+        </section>
+
+        {% if product.variants.all %}
+            <section aria-label="تنوع محصول">
+                <h2>انتخاب محصول</h2>
+                <ul>
+                    {% for variant in product.variants.all %}
+                        <li>
+                            {{ variant.color.name }} / {{ variant.size.name }}
+                            — {{ variant.price }}
+                            {% if variant.stock_quantity > 0 %}
+                                — موجود
+                            {% else %}
+                                — ناموجود
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    </article>
+</main>
+{% endblock %}
