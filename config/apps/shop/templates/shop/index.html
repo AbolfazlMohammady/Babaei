@@ -19,7 +19,7 @@
             <p>مدل مورد علاقه‌ات را انتخاب کن، بعد در مرحله طراحی، چاپ خودت را روی ناحیه دلخواه لباس قرار بده.</p>
         </div>
         <div class="shop-hero__visual" aria-hidden="true">
-            <img src="{% static 'images/home/hero.jpg' %}" alt="" width="800" height="1000" fetchpriority="high">
+            <img src="{% static 'images/home/hero.jpg' %}" alt="" fetchpriority="high">
         </div>
     </section>
 
@@ -30,7 +30,7 @@
             {% for category in categories %}
                 <a class="category-card" href="{% url 'shop:category' category.slug %}">
                     {% if category.image %}
-                        <img src="{{ category.image.url }}" alt="{{ category.name }}" width="400" height="400" loading="lazy" decoding="async">
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">
                     {% endif %}
                     <div class="category-card__title">{{ category.name }}</div>
                 </a>
@@ -47,7 +47,7 @@
                     <div class="product-card__image">
                         {% with image=product.primary_images.0 %}
                             {% if image %}
-                                <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" width="600" height="800" loading="lazy" decoding="async">
+                                <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async">
                             {% endif %}
                         {% endwith %}
                     </div>
