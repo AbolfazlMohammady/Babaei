@@ -1,5 +1,7 @@
 .shop-page {
     background: var(--color-bg);
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-variant-numeric: proportional-nums;
 }
 
 .shop-page .shop-shell,
