@@ -45,6 +45,16 @@
                 Number(variant.size_id) === Number(selectedSizeId)
         );
 
+    const findColorName = (colorId) => {
+        const variant = variants.find((item) => Number(item.color_id) === Number(colorId));
+        return variant ? variant.color : "";
+    };
+
+    const findSizeName = (sizeId) => {
+        const variant = variants.find((item) => Number(item.size_id) === Number(sizeId));
+        return variant ? variant.size : "";
+    };
+
     const renderSizes = () => {
         sizeButtons.forEach((button) => {
             const sizeId = Number(button.dataset.sizeId);
@@ -60,7 +70,9 @@
             button.classList.toggle("is-selected", sizeId === Number(selectedSizeId));
 
             const stockText = button.querySelector(".size-stock");
-            if (stockText) stockText.textContent = variant ? formatPrice(variant.stock) : "";
+            if (stockText) {
+                stockText.textContent = variant ? `${formatPrice(variant.stock)} عدد` : "";
+            }
         });
     };
 
@@ -77,14 +89,13 @@
 
     const renderVariant = () => {
         const variant = findVariant();
-        const selectedColor = variants.find((item) => Number(item.color_id) === Number(selectedColorId));
-        const selectedSize = variants.find((item) => Number(item.size_id) === Number(selectedSizeId));
-
-        selectedColorLabel.textContent = selectedColor ? selectedColor.color : "";
-        selectedSizeLabel.textContent = selectedSize ? selectedSize.size : "";
+        selectedColorLabel.textContent = findColorName(selectedColorId);
+        selectedSizeLabel.textContent = findSizeName(selectedSizeId);
 
         if (!variant) {
             statusEl.textContent = "این ترکیب رنگ و سایز موجود نیست.";
+            priceEl.textContent = formatPrice(data.initialProductPrice);
+            oldPriceRow.classList.add("is-hidden");
             return;
         }
 
@@ -96,6 +107,8 @@
             oldPriceRow.classList.remove("is-hidden");
         } else {
             oldPriceRow.classList.add("is-hidden");
+            oldPriceEl.textContent = "";
+            discountEl.textContent = "";
         }
 
         if (Number(variant.stock) > 0) {
@@ -109,7 +122,6 @@
         const initial = variants.find((variant) => Number(variant.stock) > 0) || variants[0];
         selectedColorId = initial.color_id;
         selectedSizeId = initial.size_id;
-
         renderColors();
         renderSizes();
         renderVariant();
@@ -119,12 +131,9 @@
         button.addEventListener("click", () => {
             if (button.disabled) return;
             selectedColorId = Number(button.dataset.colorId);
-
             const sameColor = availableForColor(selectedColorId);
-            const nextSize =
-                sameColor.find((variant) => Number(variant.stock) > 0) || sameColor[0];
+            const nextSize = sameColor.find((variant) => Number(variant.stock) > 0) || sameColor[0];
             selectedSizeId = nextSize ? nextSize.size_id : null;
-
             renderColors();
             renderSizes();
             renderVariant();
