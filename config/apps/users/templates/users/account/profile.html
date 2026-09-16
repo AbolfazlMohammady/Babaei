@@ -10,7 +10,7 @@
 </div>
 
 <div class="account-card profile-card">
-    <form method="post" enctype="multipart/form-data" class="profile-form">
+    <form method="post" action="{% url 'users:profile_update' %}" enctype="multipart/form-data" class="profile-form">
         {% csrf_token %}
 
         <div class="profile-photo-row">
@@ -27,7 +27,7 @@
                 <p>یک تصویر مربع و باکیفیت برای حساب خود انتخاب کنید.</p>
                 <label class="profile-file">
                     <span>انتخاب تصویر جدید</span>
-                    <input type="file" name="image" accept="image/*">
+                    <input type="file" name="image" accept="image/jpeg,image/png,image/webp">
                 </label>
             </div>
         </div>
