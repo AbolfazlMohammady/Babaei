@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static shop_tags %}
 
 {% block title %}{{ product.seo_title|default:product.name }} | BABAEI{% endblock %}
 {% block meta_description %}{{ product.seo_description|default:product.short_description|default:product.name|truncatechars:160 }}{% endblock %}
@@ -33,43 +33,104 @@
     </nav>
 
     <div class="product-layout">
-        <section aria-label="تصاویر {{ product.name }}">
+        <section class="product-gallery" aria-label="تصاویر {{ product.name }}">
             <div class="gallery-main">
                 {% with image=product.gallery_images.0 %}
                     {% if image %}
                         <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" fetchpriority="high" decoding="async">
+                    {% else %}
+                        <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" fetchpriority="high" decoding="async">
                     {% endif %}
                 {% endwith %}
             </div>
         </section>
 
         <article class="product-info">
+            <div class="product-eyebrow">BABAEI / PRODUCT</div>
             <h1>{{ product.name }}</h1>
             {% if product.short_description %}<div class="product-short">{{ product.short_description }}</div>{% endif %}
-            <div class="price">{{ product.display_price|floatformat:0 }} تومان</div>
+
+            <div class="product-price-box" aria-live="polite">
+                <div class="price-row">
+                    <strong id="product-price" class="price">{{ product.display_price|price }}</strong>
+                    <span class="price-unit">تومان</span>
+                </div>
+                <div id="product-old-price-row" class="old-price-row{% if not product.has_discount %} is-hidden{% endif %}">
+                    <del id="product-old-price">{{ product.display_compare_price|price }}</del>
+                    <span id="product-discount" class="discount-badge">{{ product.discount_percent|discount_percent }}</span>
+                </div>
+                <small class="price-note">قیمت‌ها به تومان هستند</small>
+            </div>
 
             {% if product.active_variants %}
-            <div class="meta-block">
-                <h2>موجودی و انتخاب‌ها</h2>
-                <div class="variants">
-                    {% for variant in product.active_variants %}
-                        <div class="variant">
-                            <span>{{ variant.color.name }} · {{ variant.size.name }}</span>
-                            <strong>{% if variant.in_stock %}{{ variant.stock_quantity }} عدد{% else %}ناموجود{% endif %}</strong>
-                        </div>
-                    {% endfor %}
+            <section class="product-options" aria-label="انتخاب رنگ و سایز">
+                <div class="stock-summary">
+                    <span>موجودی کل</span>
+                    <strong id="total-stock">{{ total_stock|price }} عدد</strong>
                 </div>
-            </div>
+
+                <div class="option-group">
+                    <div class="option-heading">
+                        <h2>رنگ</h2>
+                        <span id="selected-color-label"></span>
+                    </div>
+                    <div class="color-options" role="radiogroup" aria-label="رنگ محصول">
+                        {% for color in colors %}
+                            <button type="button" class="color-option" data-color-id="{{ color.id }}" aria-label="{{ color.name }}" title="{{ color.name }}">
+                                <span class="color-swatch" style="--swatch: {{ color.hex_code }}"></span>
+                                <span>{{ color.name }}</span>
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <div class="option-heading">
+                        <h2>سایز</h2>
+                        <span id="selected-size-label"></span>
+                    </div>
+                    <div class="size-options" role="radiogroup" aria-label="سایز محصول">
+                        {% for size in sizes %}
+                            <button type="button" class="size-option" data-size-id="{{ size.id }}">{{ size.name }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div id="variant-status" class="variant-status" aria-live="polite"></div>
+            </section>
+            {% else %}
+                <div class="stock-summary stock-summary--simple"><span>وضعیت</span><strong>موجود</strong></div>
             {% endif %}
 
-            <a class="design-cta" href="#designer">شخصی‌سازی این تی‌شرت</a>
-
-            {% if product.description %}<div class="description">{{ product.description|linebreaks }}</div>{% endif %}
+            <a class="design-cta" href="#designer">شخصی‌سازی این لباس</a>
         </article>
     </div>
 
-    <div id="designer" class="description">
-        <strong>مرحله بعد:</strong> طراح لباس، جای‌گذاری چاپ روی نواحی مختلف و محاسبه قیمت بر اساس تعداد نواحی چاپ به همین محصول متصل خواهد شد.
+    {% if product.description %}
+    <section class="product-description">
+        <h2>توضیحات محصول</h2>
+        <div>{{ product.description|linebreaks }}</div>
+    </section>
+    {% endif %}
+
+    <div id="designer" class="next-step-card">
+        <div>
+            <span class="product-eyebrow">COMING NEXT</span>
+            <h2>لباس را برای خودت طراحی کن</h2>
+            <p>در مرحله بعد، طراح سه‌بعدی و جای‌گذاری چاپ روی سینه، پشت و آستین به همین محصول متصل می‌شود و هزینه هر ناحیه چاپ را به قیمت اضافه می‌کند.</p>
+        </div>
+        <span class="next-step-number">۰۱</span>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.BabaeiProduct = {
+        variants: {{ variant_data }},
+        initialProductPrice: {{ product.display_price|default:0 }},
+        initialComparePrice: {{ product.display_compare_price|default:0 }}
+    };
+</script>
+<script src="{% static 'js/pages/shop-product.js' %}" defer></script>
 {% endblock %}
