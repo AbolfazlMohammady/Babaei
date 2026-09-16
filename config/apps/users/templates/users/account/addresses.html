@@ -7,36 +7,26 @@
     <div>
         <span class="account-page-header__eyebrow">DELIVERY</span>
         <h1 class="account-page-title">آدرس‌های من</h1>
-        <p class="account-page-description">آدرس‌های ارسال سفارش را از اینجا مدیریت کنید.</p>
     </div>
-
-    <a href="{% url 'users:address_create' %}" class="btn btn-primary">افزودن آدرس جدید</a>
+    <a href="{% url 'users:address_create' %}" class="btn btn-primary">افزودن آدرس</a>
 </div>
 
 <div class="address-list">
     {% for address in addresses %}
         <article class="address-card">
             <div class="address-card__main">
-                <div class="address-card__top">
-                    <h2>{{ address.title }}</h2>
-                    <span class="address-card__badge">آدرس ارسال</span>
-                </div>
-
-                <p class="address-card__description">{{ address.description }}</p>
-
+                <div class="address-card__top"><h2>{{ address.title }}</h2></div>
                 <div class="address-card__meta">
                     <span>{{ address.city.province.name }}، {{ address.city.name }}</span>
                     <span>کد پستی: {{ address.postal_code }}</span>
-                    <span>موبایل: {{ address.phone }}</span>
+                    <span>{{ address.phone }}</span>
                 </div>
             </div>
-
             <div class="address-actions">
                 <a href="{% url 'users:address_update' address.pk %}" class="btn btn-secondary">ویرایش</a>
-
                 <form method="post" action="{% url 'users:address_delete' address.pk %}">
                     {% csrf_token %}
-                    <button class="btn btn-danger" type="submit" data-confirm="آیا از حذف این آدرس مطمئن هستید؟">حذف</button>
+                    <button class="btn btn-danger" type="submit">حذف</button>
                 </form>
             </div>
         </article>
@@ -45,8 +35,7 @@
             <div>
                 <div class="address-empty__icon">⌖</div>
                 <h2>هنوز آدرسی ثبت نکرده‌اید</h2>
-                <p>یک آدرس اضافه کنید تا هنگام خرید، انتخاب و ارسال سفارش سریع‌تر انجام شود.</p>
-                <a href="{% url 'users:address_create' %}" class="btn btn-primary">افزودن اولین آدرس</a>
+                <a href="{% url 'users:address_create' %}" class="btn btn-primary">افزودن آدرس</a>
             </div>
         </div>
     {% endfor %}
