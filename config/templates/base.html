@@ -7,17 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}BABAEI{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}BABAEI — Wear Your Story.{% endblock %}">
+    {% block canonical %}{% endblock %}
 
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
     <link rel="stylesheet" href="{% static 'css/pages/users.css' %}?v=3">
 
     {% block extra_css %}{% endblock %}
-
-    <link rel="stylesheet" href="{% static 'css/pages/home-polish.css' %}">
-    <link rel="stylesheet" href="{% static 'css/pages/home-editorial.css' %}">
-    <link rel="stylesheet" href="{% static 'css/pages/home-final.css' %}">
-    <link rel="stylesheet" href="{% static 'css/pages/home-products-final.css' %}">
+    {% block extra_head %}{% endblock %}
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
