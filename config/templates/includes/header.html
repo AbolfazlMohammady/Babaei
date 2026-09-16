@@ -37,37 +37,3 @@
         </div>
     </div>
 </header>
-
-<style>
-.home-page .categories{padding:54px 0 58px;background:#fff}
-.home-page .categories .section-header{width:min(calc(100% - 56px),1240px);margin:0 auto 24px}
-.home-page .categories .section-header h2{font-size:clamp(22px,2vw,30px);line-height:1.2}
-.home-page .categories__grid{width:min(calc(100% - 56px),1240px);grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
-.home-page .category-card__image{aspect-ratio:1/1;border-radius:5px;background:#f2f2f0}
-.home-page .category-card__image img{object-fit:contain;transform:none}
-.home-page .category-card:hover .category-card__image img{transform:scale(1.015)}
-.home-page .category-card h3{margin:9px 0 2px;font-size:13px;font-weight:600}
-.home-page .category-card span{font-size:9px;color:#888}
-
-.home-page .feature-banner{direction:ltr;grid-template-columns:repeat(2,minmax(0,1fr))}
-.home-page .feature-banner__item{aspect-ratio:1.5/1;min-height:0;position:relative}
-.home-page .feature-banner__item>img{object-fit:cover}
-.home-page .feature-banner__item:first-child .feature-banner__overlay{background:linear-gradient(90deg,rgba(0,0,0,.58) 0%,rgba(0,0,0,.28) 58%,rgba(0,0,0,.10) 100%)}
-.home-page .feature-banner__content{position:absolute;inset:0 auto 0 0;width:58%;min-height:0;height:100%;padding:44px;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;direction:rtl;text-align:right}
-.home-page .feature-banner__content h2{max-width:100%;margin:0 0 13px;font-size:clamp(27px,3vw,44px);line-height:1.12}
-.home-page .feature-banner__content p{max-width:100%;font-size:11px;line-height:1.9}
-.home-page .feature-banner__content .button{margin-top:17px;min-height:42px;padding-inline:20px;font-size:11px}
-.home-page .feature-banner__content--dark{color:#111}
-.home-page .feature-banner__content--dark a{color:#111;font-size:11px}
-
-@media (max-width:900px){
- .home-page .categories{padding:42px 0 48px}
- .home-page .categories .section-header,.home-page .categories__grid{width:calc(100% - 28px)}
- .home-page .categories__grid{gap:10px}
- .home-page .category-card__image{aspect-ratio:1/1.03}
- .home-page .feature-banner{grid-template-columns:1fr}
- .home-page .feature-banner__item{aspect-ratio:1.45/1}
- .home-page .feature-banner__content{width:68%;padding:28px 22px}
- .home-page .feature-banner__content h2{font-size:29px}
-}
-</style>
