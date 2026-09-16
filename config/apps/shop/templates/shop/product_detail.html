@@ -6,6 +6,10 @@
 {% block canonical %}<link rel="canonical" href="{{ canonical_url }}">{% endblock %}
 {% block common_page_css %}{% endblock %}
 {% block body_class %}shop-page{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_title %}{{ product.seo_title|default:product.name }} | BABAEI{% endblock %}
+{% block og_description %}{{ product.seo_description|default:product.short_description|default:product.name|truncatechars:160 }}{% endblock %}
+{% block og_image %}{% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}">{% endif %}{% endblock %}
 {% block extra_head %}
 <script type="application/ld+json">{{ product_schema }}</script>
 <script type="application/ld+json">{{ breadcrumb_schema }}</script>
@@ -33,7 +37,7 @@
             <div class="gallery-main">
                 {% with image=product.gallery_images.0 %}
                     {% if image %}
-                        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" fetchpriority="high" decoding="async" width="1200" height="1200">
+                        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" fetchpriority="high" decoding="async">
                     {% endif %}
                 {% endwith %}
             </div>
