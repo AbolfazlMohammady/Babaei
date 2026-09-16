@@ -1,91 +1,57 @@
 {% extends "users/account_base.html" %}
 
-{% block title %}
-    {% if address %}ویرایش آدرس{% else %}افزودن آدرس{% endif %} | BABAEI
-{% endblock %}
+{% block title %}{% if address %}ویرایش آدرس{% else %}افزودن آدرس{% endif %} | BABAEI{% endblock %}
 
 {% block account_content %}
-<div class="page-header">
-    <h1 class="page-title">
-        {% if address %}ویرایش آدرس{% else %}افزودن آدرس{% endif %}
-    </h1>
+<div class="account-page-header">
+    <div>
+        <span class="account-page-header__eyebrow">DELIVERY / ADDRESS</span>
+        <h1 class="account-page-title">{% if address %}ویرایش آدرس{% else %}افزودن آدرس جدید{% endif %}</h1>
+        <p class="account-page-description">اطلاعات آدرس را دقیق وارد کنید تا سفارش بدون مشکل ارسال شود.</p>
+    </div>
 </div>
 
-<div class="card profile-card">
-    <form method="post" class="profile-form">
+<div class="account-card address-form-card">
+    <form method="post" class="address-form">
         {% csrf_token %}
 
-        <div class="profile-grid">
+        <div class="address-form__grid">
             <div class="form-group">
-                <label class="form-label">عنوان آدرس</label>
-                <input
-                    class="form-input"
-                    name="title"
-                    value="{{ address.title|default:'' }}"
-                    placeholder="مثلاً خانه"
-                    required
-                >
+                <label class="form-label" for="address-title">عنوان آدرس</label>
+                <input id="address-title" class="form-input" name="title" value="{{ address.title|default:'' }}" placeholder="مثلاً خانه یا محل کار" required>
             </div>
 
             <div class="form-group">
-                <label class="form-label">شماره موبایل گیرنده</label>
-                <input
-                    class="form-input"
-                    name="phone"
-                    value="{{ address.phone|default:'' }}"
-                    placeholder="0912xxxxxxx"
-                    inputmode="numeric"
-                    required
-                >
+                <label class="form-label" for="address-phone">شماره موبایل گیرنده</label>
+                <input id="address-phone" class="form-input" name="phone" value="{{ address.phone|default:'' }}" placeholder="09123456789" inputmode="numeric" maxlength="11" dir="ltr" required>
             </div>
 
             <div class="form-group">
-                <label class="form-label">شهر</label>
-                <select class="form-select" name="city" required>
+                <label class="form-label" for="address-city">شهر</label>
+                <select id="address-city" class="form-select" name="city" required>
                     <option value="">انتخاب شهر</option>
-
                     {% for city in cities %}
-                        <option
-                            value="{{ city.id }}"
-                            {% if address.city_id == city.id %}selected{% endif %}
-                        >
-                            {{ city.province.name }} - {{ city.name }}
+                        <option value="{{ city.id }}" {% if address.city_id == city.id %}selected{% endif %}>
+                            {{ city.province.name }} — {{ city.name }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
 
             <div class="form-group">
-                <label class="form-label">کد پستی</label>
-                <input
-                    class="form-input"
-                    name="postal_code"
-                    value="{{ address.postal_code|default:'' }}"
-                    maxlength="10"
-                    inputmode="numeric"
-                    required
-                >
+                <label class="form-label" for="postal-code">کد پستی</label>
+                <input id="postal-code" class="form-input" name="postal_code" value="{{ address.postal_code|default:'' }}" placeholder="۱۰ رقم" maxlength="10" inputmode="numeric" dir="ltr" required>
             </div>
         </div>
 
         <div class="form-group">
-            <label class="form-label">آدرس کامل</label>
-            <textarea
-                class="form-textarea"
-                name="description"
-                placeholder="خیابان، کوچه، پلاک، واحد..."
-                required
-            >{{ address.description|default:'' }}</textarea>
+            <label class="form-label" for="address-description">نشانی کامل</label>
+            <textarea id="address-description" class="form-textarea" name="description" placeholder="استان، شهر، خیابان، کوچه، پلاک، واحد و سایر جزئیات..." required>{{ address.description|default:'' }}</textarea>
         </div>
 
-        <div>
-            <button class="btn btn-primary" type="submit">
-                {% if address %}ذخیره تغییرات{% else %}ثبت آدرس{% endif %}
-            </button>
-
-            <a href="{% url 'users:addresses' %}" class="btn btn-secondary">
-                انصراف
-            </a>
+        <div class="address-form__actions">
+            <button class="btn btn-primary" type="submit">{% if address %}ذخیره تغییرات{% else %}ثبت آدرس{% endif %}</button>
+            <a href="{% url 'users:addresses' %}" class="btn btn-secondary">انصراف</a>
         </div>
     </form>
 </div>
