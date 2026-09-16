@@ -26,7 +26,7 @@
 <div id="variant-status" class="variant-status" aria-live="polite"></div></section>
 {% else %}<div class="stock-summary stock-summary--simple"><span>وضعیت</span><strong>موجود</strong></div>{% endif %}
 <form method="post" action="{% url 'orders:cart_add' %}" class="add-to-cart-form" id="add-to-cart-form">
-{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="variant_id" id="cart-variant-id" value=""><div class="add-to-cart-row"><div class="product-quantity"><label for="cart-quantity">تعداد</label><input id="cart-quantity" name="quantity" type="number" min="1" value="1" inputmode="numeric"></div><button id="add-to-cart-button" class="add-to-cart-button" type="submit"{% if product.active_variants %} disabled{% endif %}>افزودن به سبد خرید</button></div>
+{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="variant_id" id="cart-variant-id" value=""><div class="add-to-cart-row"><div class="product-quantity" data-product-quantity-wrap><div class="product-quantity__heading"><label for="cart-quantity">تعداد</label><span data-product-quantity-stock></span></div><div class="product-quantity__control"><button type="button" data-product-quantity-button="-1" aria-label="کاهش تعداد">−</button><input id="cart-quantity" name="quantity" type="number" min="1" value="1" inputmode="numeric" aria-label="تعداد محصول"><button type="button" data-product-quantity-button="1" aria-label="افزایش تعداد">+</button></div></div><button id="add-to-cart-button" class="add-to-cart-button" type="submit"{% if product.active_variants %} disabled{% endif %}>افزودن به سبد خرید</button></div>
 </form>
 <a class="design-cta" href="#designer">شخصی‌سازی این لباس</a>
 </article></div>
@@ -34,4 +34,4 @@
 <div id="designer" class="next-step-card"><div><span class="product-eyebrow">COMING NEXT</span><h2>لباس را برای خودت طراحی کن</h2><p>در مرحله بعد، طراح سه‌بعدی و جای‌گذاری چاپ روی سینه، پشت و آستین به همین محصول متصل می‌شود و هزینه هر ناحیه چاپ را به قیمت اضافه می‌کند.</p></div><span class="next-step-number">۰۱</span></div>
 </div>
 {% endblock %}
-{% block extra_js %}<script>window.BabaeiProduct={variants:{{ variant_data }},initialProductPrice:{{ product.display_price|default:0 }},initialComparePrice:{{ product.display_compare_price|default:0 }}};</script><script src="{% static 'js/pages/shop-product.js' %}" defer></script>{% endblock %}
+{% block extra_js %}<script>window.BabaeiProduct={variants:{{ variant_data }},initialProductPrice:{{ product.display_price|default:0 }},initialComparePrice:{{ product.display_compare_price|default:0 }}};</script><script src="{% static 'js/pages/shop-product.js' %}?v=2" defer></script>{% endblock %}
