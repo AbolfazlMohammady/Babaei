@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const months = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
     const digits = value => String(value).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
-    const div = (a, b) => Math.floor(a / b);
+    const div = value => Math.floor(value);
     const mod = (a, b) => a - Math.floor(a / b) * b;
 
     const jalaliToGregorian = (jy, jm, jd) => {
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
         days += jm < 7 ? (jm - 1) * 31 : (jm - 1) * 30 + 6;
         let gy = 400 * div(days / 146097);
         days = mod(days, 146097);
-        if (days > 36524) { gy += 100 * div(--days / 36524); days = mod(days, 36524); if (days >= 365) days++; }
+        if (days > 36524) { gy += 100 * div(days / 36524); days = mod(days, 36524); if (days >= 365) days++; }
         gy += 4 * div(days / 1461);
         days = mod(days, 1461);
         if (days > 365) { gy += div((days - 1) / 365); days = (days - 1) % 365; }
@@ -35,7 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (gm > 1 && ((gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0)) days++;
         days += gd;
         let jy = -1597 + 33 * div(days / 12053);
-        days %= 12053; jy += 4 * div(days / 1461); days %= 1461;
+        days %= 12053;
+        jy += 4 * div(days / 1461);
+        days %= 1461;
         if (days > 365) { jy += div((days - 1) / 365); days = (days - 1) % 365; }
         return { year: jy, month: days < 186 ? 1 + div(days / 31) : 7 + div((days - 186) / 30), day: 1 + (days < 186 ? days % 31 : (days - 186) % 30) };
     };
@@ -43,14 +45,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const isoToDate = value => {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
         const [y, m, d] = value.split("-").map(Number);
-        return new Date(y, m - 1, d);
+        const date = new Date(y, m - 1, d);
+        return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d ? date : null;
     };
     const iso = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     const format = d => d ? `${digits(d.year)}/${digits(String(d.month).padStart(2, "0"))}/${digits(String(d.day).padStart(2, "0"))}` : "";
 
-    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const todayJ = gregorianToJalali(today);
-    const minYear = 1200, maxYear = todayJ.year - 1; // birth year must be before current Jalali year
+    const minYear = 1200;
+    const maxYear = todayJ.year;
     const initial = isoToDate(hidden.value);
     let selected = initial ? gregorianToJalali(initial) : null;
     let view = selected || { year: Math.max(1370, maxYear - 25), month: 1, day: 1 };
@@ -70,8 +75,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const renderColumn = (column, values, current, formatter, onChange) => {
         column.innerHTML = "";
-        const top = document.createElement("div"); top.className = "date-wheel__spacer";
-        column.appendChild(top);
+        const spacer = document.createElement("div");
+        spacer.className = "date-wheel__spacer";
+        column.appendChild(spacer);
         values.forEach(value => {
             const item = document.createElement("button");
             item.type = "button";
@@ -82,10 +88,10 @@ document.addEventListener("DOMContentLoaded", () => {
             item.addEventListener("click", () => onChange(Number(value)));
             column.appendChild(item);
         });
-        column.appendChild(top.cloneNode(true));
+        column.appendChild(spacer.cloneNode(true));
         requestAnimationFrame(() => {
             const item = [...column.querySelectorAll(".date-wheel__item")].find(x => Number(x.dataset.value) === Number(current));
-            if (item) column.scrollTop = item.offsetTop - (column.clientHeight - item.offsetHeight) / 2;
+            if (item) column.scrollTop = Math.max(0, item.offsetTop - (column.clientHeight - item.offsetHeight) / 2);
         });
     };
 
@@ -103,15 +109,30 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="date-wheel__bottom"><span data-preview></span><div><button type="button" class="date-wheel__clear">پاک کردن</button><button type="button" class="date-wheel__confirm">تأیید تاریخ</button></div></div>`;
 
-        const day = picker.querySelector("[data-day]"), month = picker.querySelector("[data-month]"), year = picker.querySelector("[data-year]");
+        const day = picker.querySelector("[data-day]");
+        const month = picker.querySelector("[data-month]");
+        const year = picker.querySelector("[data-year]");
+
         const rebuildDays = () => {
             const maxDay = daysInMonth(view.year, view.month);
             if (view.day > maxDay) view.day = maxDay;
-            renderColumn(day, Array.from({length: maxDay}, (_, i) => i + 1), view.day, digits, v => { view.day = v; selected = null; updatePreview(); });
+            renderColumn(day, Array.from({length: maxDay}, (_, i) => i + 1), view.day, digits, value => { view.day = value; selected = null; updatePreview(); });
         };
-        renderColumn(year, Array.from({length: maxYear - minYear + 1}, (_, i) => maxYear - i), view.year, digits, v => { view.year = v; selected = null; rebuildDays(); updatePreview(); });
-        renderColumn(month, Array.from({length: 12}, (_, i) => i + 1), view.month, v => months[v - 1], v => { view.month = v; selected = null; rebuildDays(); updatePreview(); });
-        rebuildDays(); updatePreview();
+
+        renderColumn(year, Array.from({length: maxYear - minYear + 1}, (_, i) => maxYear - i), view.year, digits, value => {
+            view.year = value;
+            selected = null;
+            rebuildDays();
+            updatePreview();
+        });
+        renderColumn(month, Array.from({length: 12}, (_, i) => i + 1), view.month, value => months[value - 1], value => {
+            view.month = value;
+            selected = null;
+            rebuildDays();
+            updatePreview();
+        });
+        rebuildDays();
+        updatePreview();
 
         picker.querySelector(".date-wheel__close").onclick = close;
         picker.querySelector(".date-wheel__clear").onclick = () => { selected = null; hidden.value = ""; input.value = ""; close(); };
@@ -119,7 +140,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const chosen = jalaliToGregorian(view.year, view.month, Math.min(view.day, daysInMonth(view.year, view.month)));
             if (chosen >= today) return;
             selected = {year: view.year, month: view.month, day: view.day};
-            hidden.value = iso(chosen); input.value = format(selected); close();
+            hidden.value = iso(chosen);
+            input.value = format(selected);
+            close();
         };
     };
 
@@ -128,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("click", open);
     input.addEventListener("focus", open);
     input.addEventListener("keydown", e => e.preventDefault());
+    input.addEventListener("paste", e => e.preventDefault());
     document.addEventListener("click", e => { if (!input.closest(".jalali-picker-field")?.contains(e.target)) close(); });
     document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
 });
