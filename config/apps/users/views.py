@@ -1,6 +1,6 @@
 import logging
 import secrets
-from datetime import date
+from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
@@ -14,6 +14,7 @@ from .models import Address, City, OTP
 logger = logging.getLogger(__name__)
 User = get_user_model()
 AUTH_BACKEND = "apps.users.backends.BabaeiAxesBackend"
+MIN_PROFILE_AGE = 13
 
 
 def login_view(request):
@@ -107,8 +108,13 @@ def profile_update_view(request):
                 messages.error(request, "تاریخ تولد نامعتبر است.")
                 return render(request, "users/account/profile.html", {"user": user})
 
-            if parsed_birth_date >= timezone.localdate():
+            today = timezone.localdate()
+            minimum_birth_date = date(today.year - MIN_PROFILE_AGE, today.month, today.day)
+            if parsed_birth_date >= today:
                 messages.error(request, "تاریخ تولد باید قبل از امروز باشد.")
+                return render(request, "users/account/profile.html", {"user": user})
+            if parsed_birth_date > minimum_birth_date:
+                messages.error(request, f"برای ثبت تاریخ تولد، حداقل سن باید {MIN_PROFILE_AGE} سال باشد.")
                 return render(request, "users/account/profile.html", {"user": user})
 
             user.birth_date = parsed_birth_date
