@@ -13,10 +13,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1'
 ]
 
-# Canonical public origin. Set SITE_URL=https://your-domain.tld in production.
 SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000").rstrip("/")
-
-# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -27,14 +24,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
 
-    # Third Party
     "phonenumber_field",
     "axes",
     "modeltranslation",
     "tinymce",
     "debug_toolbar",
 
-    # Local Apps
     "apps.home",
     "apps.users",
     "apps.shop",
@@ -57,7 +52,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -77,10 +71,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -102,85 +92,42 @@ DATABASES = {
 #     }
 # }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
-# زبان پیش‌فرض
 LANGUAGE_CODE = 'en'
-
 USE_I18N = True
 TIME_ZONE = 'UTC'
 USE_TZ = True
-LOCALE_PATHS = [
-    BASE_DIR / 'locale',
-]
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
-# Static files
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "data/static/"
-
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
+STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "data/media/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Config User
 AUTH_USER_MODEL = 'users.User'
-
-# Iranian phone numbers are normalized to international form by django-phonenumber-field.
 PHONE_NUMBER_DEFAULT_REGION = "IR"
 
+CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "redis://redis:6379/0")
 
-# Config Celery
-CELERY_BROKER_URL = os.environ.get(
-    "REDIS_URL",
-    "redis://redis:6379/0",
-)
-
-CELERY_RESULT_BACKEND = os.environ.get(
-    "REDIS_URL",
-    "redis://redis:6379/0",
-)
-
-# Config axes
 AXES_ENABLED = True
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = timedelta(hours=1)
 AXES_CACHE = 'default'
 
-# IMPORTANT:
-# AxesStandaloneBackend only monitors authentication and does not implement
-# get_user(). Django stores the selected backend in the session, so using the
-# standalone backend directly for login sessions causes request.user to fail.
-# BabaeiAxesBackend combines AxesStandaloneBackend with ModelBackend and is
-# therefore safe to store in the session.
 AUTHENTICATION_BACKENDS = [
     "apps.users.backends.BabaeiAxesBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-# Caching
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -189,4 +136,38 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
     }
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} | {levelname} | {name} | {message}",
+            "style": "{",
+        },
+    },
+    "filters": {},
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "data/logs/application.log",
+            "maxBytes": 1024 * 1024 * 5,
+            "backupCount": 5,
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "apps": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
 }
