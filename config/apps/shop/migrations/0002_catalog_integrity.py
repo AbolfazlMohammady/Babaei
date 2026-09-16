@@ -1,5 +1,6 @@
 from django.db import migrations, models
 from django.db.models import Q
+import apps.shop.models
 
 
 class Migration(migrations.Migration):
@@ -8,6 +9,38 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterField(
+            model_name="category",
+            name="image",
+            field=models.ImageField(
+                blank=True,
+                null=True,
+                upload_to=apps.shop.models.category_image_path,
+                verbose_name="تصویر",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="productimage",
+            name="image",
+            field=models.ImageField(
+                max_length=500,
+                upload_to=apps.shop.models.product_image_path,
+                verbose_name="تصویر",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="productcolor",
+            name="hex_code",
+            field=models.CharField(
+                max_length=7,
+                validators=[apps.shop.models.HEX_COLOR_VALIDATOR],
+                verbose_name="کد رنگ",
+            ),
+        ),
+        migrations.AlterModelOptions(
+            name="productvariant",
+            options={"ordering": ("color", "size")},
+        ),
         migrations.AddConstraint(
             model_name="productimage",
             constraint=models.UniqueConstraint(
