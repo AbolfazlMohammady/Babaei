@@ -93,29 +93,31 @@ class Product(models.Model):
     def get_absolute_url(self):
         return reverse("shop:product", kwargs={"slug": self.slug})
 
+    def _prefetched_variants(self):
+        return getattr(self, "_prefetched_objects_cache", {}).get("active_variants")
+
+    def _lowest_variant(self):
+        variants = self._prefetched_variants()
+        if not variants:
+            return None
+        return min(variants, key=lambda variant: variant.price)
+
     @property
     def display_price(self):
         annotated_price = self.__dict__.get("listed_price")
         if annotated_price is not None:
             return annotated_price
-
-        prefetched = getattr(self, "_prefetched_objects_cache", {}).get("active_variants")
-        if prefetched:
-            return min(variant.price for variant in prefetched)
-        return self.base_price
+        current = self._lowest_variant()
+        return current.price if current else self.base_price
 
     @property
     def display_compare_price(self):
         annotated_price = self.__dict__.get("listed_compare_price")
         if annotated_price is not None and annotated_price > self.display_price:
             return annotated_price
-
-        prefetched = getattr(self, "_prefetched_objects_cache", {}).get("active_variants")
-        if prefetched:
-            current = min(prefetched, key=lambda variant: variant.price)
-            if current.has_discount:
-                return current.compare_at_price
-
+        current = self._lowest_variant()
+        if current and current.has_discount:
+            return current.compare_at_price
         if self.compare_at_price and self.compare_at_price > self.display_price:
             return self.compare_at_price
         return None
@@ -133,10 +135,10 @@ class Product(models.Model):
 
     @property
     def total_stock(self):
-        prefetched = getattr(self, "_prefetched_objects_cache", {}).get("active_variants")
-        if prefetched is None:
+        variants = self._prefetched_variants()
+        if variants is None:
             return None
-        return sum(variant.stock_quantity for variant in prefetched)
+        return sum(variant.stock_quantity for variant in variants)
 
     def __str__(self):
         return self.name
@@ -157,12 +159,13 @@ class ProductColor(models.Model):
 
 class ProductSize(models.Model):
     name = models.CharField(_("نام"), max_length=40)
-    slug = models.SlugField(_("اسلاگ"), max_length=60, unique=True, allow_unicode=True)
+    slug = models.SlugField(_("اسلاگ"), max_length=60, allow_unicode=True)
     sort_order = models.PositiveSmallIntegerField(_("ترتیب"), default=0)
     is_active = models.BooleanField(_("فعال"), default=True, db_index=True)
 
     class Meta:
         ordering = ("sort_order", "name")
+        constraints = [models.UniqueConstraint(fields=("slug",), name="unique_product_size_slug")]
 
     def __str__(self):
         return self.name
