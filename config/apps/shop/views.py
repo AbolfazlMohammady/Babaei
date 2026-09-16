@@ -19,9 +19,7 @@ def absolute_url(request, path):
 
 
 def schema_json(data):
-    return mark_safe(
-        json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
-    )
+    return mark_safe(json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c"))
 
 
 def toman_to_irr(value):
@@ -33,16 +31,15 @@ class ShopIndexView(ListView):
     context_object_name = "products"
 
     def get_queryset(self):
-        primary_images = ProductImage.objects.filter(
-            image_type=ProductImage.ImageType.PRIMARY,
-        ).only("id", "product_id", "image", "alt_text")
+        primary_images = ProductImage.objects.filter(image_type=ProductImage.ImageType.PRIMARY).only(
+            "id", "product_id", "image", "alt_text"
+        )
         variant_price = Subquery(
             ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True)
             .order_by("price")
             .values("price")[:1],
             output_field=IntegerField(),
         )
-
         return (
             Product.objects.filter(is_active=True, category__is_active=True)
             .select_related("category")
@@ -55,6 +52,9 @@ class ShopIndexView(ListView):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.objects.filter(is_active=True).only("id", "name", "slug", "image")
         context["canonical_url"] = absolute_url(self.request, self.request.path)
+        context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
+        context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
+        context["og_image_url"] = absolute_url(self.request, "/static/images/home/hero.jpg")
         context["website_schema"] = schema_json(
             {
                 "@context": "https://schema.org",
@@ -74,20 +74,19 @@ class CategoryDetailView(ListView):
 
     def get_queryset(self):
         self.category = get_object_or_404(
-            Category.objects.only("id", "name", "slug", "description", "seo_title", "seo_description"),
+            Category.objects.only("id", "name", "slug", "description", "seo_title", "seo_description", "image"),
             slug=self.kwargs["slug"],
             is_active=True,
         )
-        primary_images = ProductImage.objects.filter(
-            image_type=ProductImage.ImageType.PRIMARY,
-        ).only("id", "product_id", "image", "alt_text")
+        primary_images = ProductImage.objects.filter(image_type=ProductImage.ImageType.PRIMARY).only(
+            "id", "product_id", "image", "alt_text"
+        )
         variant_price = Subquery(
             ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True)
             .order_by("price")
             .values("price")[:1],
             output_field=IntegerField(),
         )
-
         return (
             Product.objects.filter(category_id=self.category.id, is_active=True)
             .select_related("category")
@@ -99,6 +98,9 @@ class CategoryDetailView(ListView):
         context = super().get_context_data(**kwargs)
         context["category"] = self.category
         context["canonical_url"] = absolute_url(self.request, self.request.path)
+        context["og_title"] = self.category.seo_title or self.category.name
+        context["og_description"] = self.category.seo_description or self.category.description or self.category.name
+        context["og_image_url"] = absolute_url(self.request, self.category.image.url) if self.category.image else None
         context["category_schema"] = schema_json(
             {
                 "@context": "https://schema.org",
@@ -145,7 +147,6 @@ class ProductDetailView(DetailView):
             )
             .order_by("color__name", "size__sort_order", "size__name")
         )
-
         return (
             Product.objects.filter(is_active=True, category__is_active=True)
             .select_related("category")
@@ -165,11 +166,14 @@ class ProductDetailView(DetailView):
         ]
         context["breadcrumbs"] = breadcrumbs
         context["canonical_url"] = canonical_url
+        context["og_title"] = self.object.seo_title or self.object.name
+        context["og_description"] = self.object.seo_description or self.object.short_description or self.object.name
+        first_image = next((image for image in self.object.gallery_images if image.image), None)
+        context["og_image_url"] = absolute_url(self.request, first_image.image.url) if first_image else None
 
         images = [absolute_url(self.request, image.image.url) for image in self.object.gallery_images if image.image]
         offers = self.object.active_variants
         prices = [variant.price for variant in offers]
-
         if offers:
             offer_data = {
                 "@type": "AggregateOffer",
@@ -207,12 +211,7 @@ class ProductDetailView(DetailView):
                 "@context": "https://schema.org",
                 "@type": "BreadcrumbList",
                 "itemListElement": [
-                    {
-                        "@type": "ListItem",
-                        "position": position,
-                        "name": item["name"],
-                        "item": item["url"],
-                    }
+                    {"@type": "ListItem", "position": position, "name": item["name"], "item": item["url"]}
                     for position, item in enumerate(breadcrumbs, start=1)
                 ],
             }
