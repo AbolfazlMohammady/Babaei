@@ -1,48 +1,58 @@
 {% extends "base.html" %}
 
 {% block title %}تأیید شماره | BABAEI{% endblock %}
+{% block meta_description %}تأیید شماره موبایل و ورود به حساب کاربری BABAEI.{% endblock %}
+{% block body_class %}auth-body{% endblock %}
 
 {% block content %}
 <section class="auth-page">
-    <div class="auth-card">
-        <div class="auth-logo">BABAEI</div>
-
-        <div class="auth-header">
-            <h1>کد تأیید</h1>
-            <p>
-                کد ارسال‌شده به
-                <strong>{{ phone }}</strong>
-                را وارد کنید.
-            </p>
+    <div class="auth-shell auth-shell--verify">
+        <div class="auth-visual" aria-hidden="true">
+            <div class="auth-visual__content">
+                <span class="auth-kicker">BABAEI STUDIO</span>
+                <h1>Almost<br>There.</h1>
+                <p>یک قدم دیگر تا ورود به حساب و ادامه تجربه شخصی‌سازی BABAEI.</p>
+            </div>
+            <span class="auth-visual__mark">BABAEI</span>
         </div>
 
-        <form method="post" class="auth-form">
-            {% csrf_token %}
+        <div class="auth-card">
+            <a href="/" class="auth-brand" aria-label="BABAEI">BABAEI</a>
 
-            <div class="form-group">
-                <label class="form-label" for="code">کد تأیید</label>
-
-                <input
-                    class="form-input otp-input"
-                    id="code"
-                    name="code"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="6"
-                    autocomplete="one-time-code"
-                    placeholder="------"
-                    required
-                >
+            <div class="auth-header">
+                <span class="auth-eyebrow">VERIFICATION</span>
+                <h2>کد تأیید</h2>
+                <p>کد ارسال‌شده به <strong>{{ phone }}</strong> را وارد کنید.</p>
             </div>
 
-            <button class="btn btn-primary auth-submit" type="submit">
-                ورود به حساب
-            </button>
-        </form>
+            <form method="post" class="auth-form" novalidate>
+                {% csrf_token %}
 
-        <a href="{% url 'users:login' %}" class="auth-back">
-            تغییر شماره موبایل
-        </a>
+                <div class="form-group">
+                    <label class="form-label" for="code">کد تأیید</label>
+                    <input
+                        class="form-input auth-phone-input otp-input"
+                        id="code"
+                        name="code"
+                        type="text"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        maxlength="6"
+                        pattern="[0-9]{6}"
+                        placeholder="۱۲۳۴۵۶"
+                        required
+                        autofocus
+                    >
+                </div>
+
+                <button class="btn btn-primary auth-submit" type="submit">
+                    <span>ورود به حساب</span>
+                    <span aria-hidden="true">←</span>
+                </button>
+            </form>
+
+            <a href="{% url 'users:login' %}" class="auth-back-link">← تغییر شماره موبایل</a>
+        </div>
     </div>
 </section>
 {% endblock %}
