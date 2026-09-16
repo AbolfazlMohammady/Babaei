@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static shop_tags %}
 
 {% block title %}{{ category.seo_title|default:category.name }} | BABAEI{% endblock %}
 {% block meta_description %}{{ category.seo_description|default:category.description|default:category.name|truncatechars:160 }}{% endblock %}
@@ -17,7 +17,14 @@
 
 {% block content %}
 <div class="category-shell">
+    <nav class="breadcrumbs" aria-label="مسیر صفحه">
+        <a href="{% url 'shop:index' %}">فروشگاه</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{{ category.name }}</span>
+    </nav>
+
     <header class="category-intro">
+        <div class="shop-kicker">BABAEI / CATEGORY</div>
         <h1>{{ category.name }}</h1>
         {% if category.description %}<p>{{ category.description }}</p>{% endif %}
     </header>
@@ -29,11 +36,18 @@
                     {% with image=product.primary_images.0 %}
                         {% if image %}
                             <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async">
+                        {% else %}
+                            <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async">
                         {% endif %}
                     {% endwith %}
+                    {% if product.has_discount %}<span class="product-card__discount">{{ product.discount_percent|discount_percent }}</span>{% endif %}
                 </div>
+                <div class="product-card__category">{{ product.category.name }}</div>
                 <div class="product-card__name">{{ product.name }}</div>
-                <div class="product-card__price">{{ product.display_price|floatformat:0 }} تومان</div>
+                <div class="product-card__price-row">
+                    <div class="product-card__price">{{ product.display_price|price }} <span>تومان</span></div>
+                    {% if product.has_discount %}<del>{{ product.display_compare_price|price }}</del>{% endif %}
+                </div>
             </a>
         {% empty %}
             <p class="empty-state">در این دسته‌بندی محصول فعالی وجود ندارد.</p>
@@ -43,7 +57,7 @@
     {% if is_paginated %}
     <nav class="pager" aria-label="صفحه‌بندی">
         {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" rel="prev">قبلی</a>{% endif %}
-        <span>صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+        <span>صفحه {{ page_obj.number|price }} از {{ page_obj.paginator.num_pages|price }}</span>
         {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" rel="next">بعدی</a>{% endif %}
     </nav>
     {% endif %}
