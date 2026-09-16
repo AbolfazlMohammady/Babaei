@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}فروشگاه لباس | BABAEI{% endblock %}
+{% block title %}فروشگاه لباس و تی‌شرت | BABAEI{% endblock %}
 {% block meta_description %}خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی.{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ canonical_url }}">{% endblock %}
 {% block common_page_css %}{% endblock %}
 {% block body_class %}shop-page{% endblock %}
+{% block extra_head %}<script type="application/ld+json">{{ website_schema }}</script>{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/shop.css' %}">
@@ -20,7 +21,7 @@
             <p>مدل مورد علاقه‌ات را انتخاب کن، بعد در مرحله طراحی، چاپ خودت را روی ناحیه دلخواه لباس قرار بده.</p>
         </div>
         <div class="shop-hero__visual" aria-hidden="true">
-            <img src="{% static 'images/home/hero.jpg' %}" alt="" fetchpriority="high">
+            <img src="{% static 'images/home/hero.jpg' %}" alt="" fetchpriority="high" decoding="async">
         </div>
     </section>
 
@@ -53,7 +54,7 @@
                         {% endwith %}
                     </div>
                     <div class="product-card__name">{{ product.name }}</div>
-                    <div class="product-card__price">{{ product.base_price|floatformat:0 }} تومان</div>
+                    <div class="product-card__price">{{ product.display_price|floatformat:0 }} تومان</div>
                 </a>
             {% empty %}
                 <div class="empty-state">هنوز محصولی برای نمایش وجود ندارد.</div>
