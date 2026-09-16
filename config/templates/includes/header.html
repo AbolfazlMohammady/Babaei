@@ -39,7 +39,7 @@
 </header>
 
 <nav class="mobile-bottom-nav" aria-label="ناوبری سریع موبایل">
-    <a href="/" class="{% if request.resolver_match.url_name == 'home' %}is-active{% endif %}" aria-label="خانه">
+    <a href="/" class="{% if request.resolver_match.namespace == 'home' %}is-active{% endif %}" aria-label="خانه">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg>
         <span>خانه</span>
     </a>
