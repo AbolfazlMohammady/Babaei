@@ -172,6 +172,20 @@ class ProductDetailView(DetailView):
 
         offers = self.object.active_variants
         prices = [variant.price for variant in offers]
+        colors = []
+        sizes = []
+        seen_colors = set()
+        seen_sizes = set()
+        for variant in offers:
+            if variant.color_id not in seen_colors:
+                colors.append(variant.color)
+                seen_colors.add(variant.color_id)
+            if variant.size_id not in seen_sizes:
+                sizes.append(variant.size)
+                seen_sizes.add(variant.size_id)
+
+        context["colors"] = colors
+        context["sizes"] = sizes
         context["total_stock"] = sum(variant.stock_quantity for variant in offers)
         context["variant_data"] = schema_json(
             [
