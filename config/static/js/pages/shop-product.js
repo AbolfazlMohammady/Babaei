@@ -35,7 +35,6 @@
     const findVariant = () => variants.find((variant) => Number(variant.color_id) === Number(selectedColorId) && Number(variant.size_id) === Number(selectedSizeId));
     const findColorName = (colorId) => (variants.find((item) => Number(item.color_id) === Number(colorId)) || {}).color || "";
     const findSizeName = (sizeId) => (variants.find((item) => Number(item.size_id) === Number(sizeId)) || {}).size || "";
-
     const cartKeyForVariant = (variant) => variant ? String(variant.id) : "base";
     const cartQuantityForVariant = (variant) => Number(cartVariants[cartKeyForVariant(variant)] || 0);
 
@@ -46,9 +45,7 @@
         if (currentStock !== null) value = Math.min(value, currentStock);
         quantityInput.value = value;
         quantityInput.max = currentStock !== null ? String(currentStock) : "";
-        if (quantityStock) {
-            quantityStock.textContent = currentStock !== null ? `${formatPrice(currentStock)} عدد موجود` : "";
-        }
+        if (quantityStock) quantityStock.textContent = currentStock !== null ? `${formatPrice(currentStock)} عدد موجود` : "";
         quantityButtons.forEach((button) => {
             const delta = Number(button.dataset.productQuantityButton);
             button.disabled = delta < 0 ? value <= 1 : currentStock !== null && value >= currentStock;
@@ -61,18 +58,13 @@
         toast.textContent = message;
         document.body.appendChild(toast);
         requestAnimationFrame(() => toast.classList.add("is-visible"));
-        setTimeout(() => {
-            toast.classList.remove("is-visible");
-            setTimeout(() => toast.remove(), 180);
-        }, 2400);
+        setTimeout(() => { toast.classList.remove("is-visible"); setTimeout(() => toast.remove(), 180); }, 2400);
     };
 
-    const updateHeaderCount = (count) => {
-        headerBadges.forEach((badge) => {
-            badge.textContent = formatPrice(count);
-            badge.classList.toggle("is-hidden", Number(count) === 0);
-        });
-    };
+    const updateHeaderCount = (count) => headerBadges.forEach((badge) => {
+        badge.textContent = formatPrice(count);
+        badge.classList.toggle("is-hidden", Number(count) === 0);
+    });
 
     const renderSizes = () => sizeButtons.forEach((button) => {
         const sizeId = Number(button.dataset.sizeId);
@@ -101,12 +93,17 @@
         }
         if (addButton) {
             addButton.hidden = alreadyInCart;
+            addButton.textContent = "افزودن به سبد خرید";
             addButton.disabled = alreadyInCart || !variant || Number(variant.stock) <= 0;
         }
         if (quantityWrap) quantityWrap.classList.toggle("is-in-cart", alreadyInCart);
-        quantityButtons.forEach((button) => { button.disabled = alreadyInCart || button.disabled; });
         if (quantityInput) quantityInput.disabled = alreadyInCart;
-        if (quantityStock && alreadyInCart) quantityStock.textContent = `${formatPrice(existingQuantity)} عدد در سبد`;
+        if (alreadyInCart) {
+            quantityButtons.forEach((button) => { button.disabled = true; });
+            if (quantityStock) quantityStock.textContent = `${formatPrice(existingQuantity)} عدد در سبد`;
+        } else {
+            updateQuantityUI();
+        }
     };
 
     const renderVariant = () => {
@@ -120,7 +117,7 @@
             if (oldPriceRow) oldPriceRow.classList.add("is-hidden");
             if (variantInput) variantInput.value = "";
             currentStock = 0;
-            if (addButton) { addButton.hidden = false; addButton.disabled = true; }
+            if (addButton) { addButton.hidden = false; addButton.textContent = "افزودن به سبد خرید"; addButton.disabled = true; }
             if (inCartLink) inCartLink.hidden = true;
             if (quantityWrap) quantityWrap.classList.remove("is-in-cart");
             if (quantityInput) quantityInput.disabled = true;
@@ -141,17 +138,10 @@
 
         if (variantInput) variantInput.value = variant.id;
         currentStock = Number(variant.stock || 0);
-        if (statusEl) {
-            statusEl.innerHTML = currentStock > 0
-                ? `<strong>${formatPrice(currentStock)} عدد</strong> از این ترکیب موجود است`
-                : "این ترکیب ناموجود است.";
-        }
+        if (statusEl) statusEl.innerHTML = currentStock > 0 ? `<strong>${formatPrice(currentStock)} عدد</strong> از این ترکیب موجود است` : "این ترکیب ناموجود است.";
 
         const existingQuantity = cartQuantityForVariant(variant);
         if (quantityInput && existingQuantity === 0) quantityInput.value = 1;
-        if (quantityInput) quantityInput.disabled = existingQuantity > 0;
-        if (quantityWrap) quantityWrap.classList.toggle("is-in-cart", existingQuantity > 0);
-        updateQuantityUI();
         renderCartState(variant);
     };
 
@@ -161,10 +151,7 @@
             const existingQuantity = cartQuantityForVariant(null);
             if (quantityInput) quantityInput.disabled = existingQuantity > 0;
             if (quantityWrap) quantityWrap.classList.toggle("is-in-cart", existingQuantity > 0);
-            if (addButton) {
-                addButton.hidden = existingQuantity > 0;
-                addButton.disabled = existingQuantity > 0;
-            }
+            if (addButton) { addButton.hidden = existingQuantity > 0; addButton.disabled = existingQuantity > 0; }
             if (inCartLink) inCartLink.hidden = existingQuantity === 0;
             if (inCartQuantity && existingQuantity) inCartQuantity.textContent = `${formatPrice(existingQuantity)} عدد`;
             updateQuantityUI();
@@ -184,25 +171,20 @@
         const sameColor = availableForColor(selectedColorId);
         const nextSize = sameColor.find((variant) => Number(variant.stock) > 0) || sameColor[0];
         selectedSizeId = nextSize ? nextSize.size_id : null;
-        renderColors();
-        renderSizes();
-        renderVariant();
+        renderColors(); renderSizes(); renderVariant();
     }));
 
     sizeButtons.forEach((button) => button.addEventListener("click", () => {
         if (button.disabled) return;
         selectedSizeId = Number(button.dataset.sizeId);
-        renderSizes();
-        renderVariant();
+        renderSizes(); renderVariant();
     }));
 
     quantityButtons.forEach((button) => button.addEventListener("click", () => {
         if (!quantityInput || button.disabled) return;
-        const delta = Number(button.dataset.productQuantityButton);
-        quantityInput.value = (Number.parseInt(quantityInput.value, 10) || 1) + delta;
+        quantityInput.value = (Number.parseInt(quantityInput.value, 10) || 1) + Number(button.dataset.productQuantityButton);
         updateQuantityUI();
     }));
-
     quantityInput?.addEventListener("input", updateQuantityUI);
     quantityInput?.addEventListener("blur", updateQuantityUI);
 
@@ -210,7 +192,6 @@
         event.preventDefault();
         const variant = findVariant();
         if (!addButton || addButton.disabled || !variant) return;
-
         addButton.disabled = true;
         addButton.classList.add("is-loading");
         addButton.textContent = "در حال افزودن...";
@@ -218,32 +199,26 @@
         try {
             const response = await fetch(addForm.action, {
                 method: "POST",
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Accept": "application/json",
-                },
+                headers: { "X-Requested-With": "XMLHttpRequest", "Accept": "application/json" },
                 body: new FormData(addForm),
                 credentials: "same-origin",
             });
             const result = await response.json().catch(() => ({}));
             if (!response.ok || !result.ok) throw new Error(result.message || "افزودن به سبد خرید انجام نشد.");
-
             updateHeaderCount(result.count);
             cartVariants[cartKeyForVariant(variant)] = Number(result.quantity || quantityInput?.value || 1);
             renderVariant();
             showToast("این مدل به سبد خرید اضافه شد.");
         } catch (error) {
             addButton.hidden = false;
+            addButton.disabled = false;
+            addButton.textContent = "افزودن به سبد خرید";
             showToast(error.message, true);
         } finally {
             addButton.classList.remove("is-loading");
-            if (!cartQuantityForVariant(variant)) addButton.textContent = "افزودن به سبد خرید";
         }
     });
 
-    if (totalStockEl && variants.length) {
-        totalStockEl.textContent = `${formatPrice(variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0))} عدد`;
-    }
-
+    if (totalStockEl && variants.length) totalStockEl.textContent = `${formatPrice(variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0))} عدد`;
     selectInitialVariant();
 })();
