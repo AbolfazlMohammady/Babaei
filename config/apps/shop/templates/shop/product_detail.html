@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.seo_title|default:product.name }} | BABAEI{% endblock %}
+{% block meta_description %}{{ product.seo_description|default:product.short_description|truncatechars:160 }}{% endblock %}
+{% block body_class %}shop-page{% endblock %}
+
+{% block extra_css %}
+<style>
+.product-shell{max-width:1200px;margin:0 auto;padding:40px 20px 80px}.breadcrumbs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;font-size:13px;opacity:.65}.breadcrumbs a{color:inherit}.product-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);gap:42px}.gallery-main{background:#f4f1ed;border-radius:26px;overflow:hidden;aspect-ratio:1/1}.gallery-main img{width:100%;height:100%;object-fit:cover;display:block}.product-info h1{font-size:clamp(30px,4vw,48px);line-height:1.15;margin:0 0 14px}.product-short{line-height:1.95;opacity:.72}.price{font-size:24px;font-weight:800;margin:24px 0}.meta-block{border-top:1px solid #ece7e1;padding-top:20px;margin-top:24px}.meta-block h2{font-size:18px}.variants{display:grid;gap:10px}.variant{display:flex;justify-content:space-between;border:1px solid #e4dfd8;padding:12px 14px;border-radius:12px;font-size:14px}.description{margin-top:42px;line-height:2}.design-cta{display:inline-flex;margin-top:28px;padding:14px 20px;border-radius:13px;background:#171514;color:#fff;text-decoration:none;font-weight:700}@media(max-width:900px){.product-layout{grid-template-columns:1fr}.product-info{order:-1}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="product-shell">
+    <nav class="breadcrumbs" aria-label="مسیر صفحه">
+        {% for item in breadcrumbs %}{% if not forloop.last %}<a href="{{ item.url }}">{{ item.name }}</a><span aria-hidden="true">/</span>{% else %}<span>{{ item.name }}</span>{% endif %}{% endfor %}
+    </nav>
+
+    <div class="product-layout">
+        <section>
+            <div class="gallery-main">
+                {% with image=product.images.all.0 %}
+                    {% if image %}<img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="eager" fetchpriority="high">{% endif %}
+                {% endwith %}
+            </div>
+        </section>
+
+        <article class="product-info">
+            <h1>{{ product.name }}</h1>
+            {% if product.short_description %}<div class="product-short">{{ product.short_description }}</div>{% endif %}
+            <div class="price">{{ product.display_price|floatformat:0 }} تومان</div>
+
+            {% if product.variants.all %}
+            <div class="meta-block">
+                <h2>موجودی و انتخاب‌ها</h2>
+                <div class="variants">
+                    {% for variant in product.variants.all %}
+                        <div class="variant"><span>{{ variant.color.name }} · {{ variant.size.name }}</span><strong>{% if variant.in_stock %}{{ variant.stock_quantity }} عدد{% else %}ناموجود{% endif %}</strong></div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <a class="design-cta" href="#designer">شخصی‌سازی این تی‌شرت</a>
+
+            {% if product.description %}<div class="description">{{ product.description|linebreaks }}</div>{% endif %}
+        </article>
+    </div>
+
+    <div id="designer" class="description">
+        <strong>مرحله بعد:</strong> طراح لباس، جای‌گذاری چاپ روی نواحی مختلف و محاسبه قیمت بر اساس تعداد نواحی چاپ به همین محصول متصل خواهد شد.
+    </div>
+</div>
+{% endblock %}
