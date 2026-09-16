@@ -1,0 +1,156 @@
+/* =========================================================
+   BABAEI — HOME COLOR SYSTEM
+   Replace the flat white canvas with a warm editorial palette.
+   The photography stays dominant; backgrounds only create rhythm.
+========================================================= */
+
+.home-page {
+    --canvas: #e9e7e2;
+    --canvas-deep: #e2dfd9;
+    --paper: #f5f3ef;
+    --paper-soft: #efede8;
+    --ink: #151515;
+    --muted: #77736c;
+    --hairline: rgba(21,21,21,.10);
+    background: var(--canvas) !important;
+}
+
+.home-page main {
+    background:
+        radial-gradient(circle at 12% 22%, rgba(255,255,255,.48), transparent 28%),
+        radial-gradient(circle at 88% 62%, rgba(255,255,255,.30), transparent 30%),
+        var(--canvas);
+}
+
+/* ---------------------------------------------------------
+   CATEGORIES — warm editorial panel
+--------------------------------------------------------- */
+.home-page .categories {
+    position: relative;
+    background: var(--paper) !important;
+    border-top: 1px solid rgba(255,255,255,.70);
+    border-bottom: 1px solid var(--hairline);
+}
+
+.home-page .categories::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(0,0,0,.018), transparent 24%, transparent 76%, rgba(0,0,0,.018));
+}
+
+/* ---------------------------------------------------------
+   FEATURE AREA — sits on the canvas instead of white
+--------------------------------------------------------- */
+.home-page .feature-banner {
+    position: relative;
+    padding-top: 54px;
+}
+
+.home-page .feature-banner::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(21,21,21,.08);
+}
+
+/* ---------------------------------------------------------
+   TRUST — deliberate breathing room, not an empty strip
+--------------------------------------------------------- */
+.home-page .trust {
+    position: relative;
+    background: rgba(245,243,239,.52);
+    border-top: 1px solid rgba(21,21,21,.09);
+    border-bottom: 1px solid rgba(21,21,21,.09);
+}
+
+.home-page .trust__item {
+    position: relative;
+}
+
+.home-page .trust__item + .trust__item::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    right: 0;
+    width: 1px;
+    background: rgba(21,21,21,.08);
+}
+
+/* ---------------------------------------------------------
+   PRODUCTS — slightly lighter paper field for contrast
+--------------------------------------------------------- */
+.home-page .products {
+    position: relative;
+    background: var(--paper);
+    margin-top: 42px;
+    margin-bottom: 42px;
+    padding-top: 30px;
+    padding-bottom: 52px;
+    border-radius: 16px;
+    box-shadow: 0 12px 34px rgba(20,18,15,.055);
+}
+
+.home-page .products .section-header,
+.home-page .products .products__grid {
+    width: calc(100% - 48px);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.home-page .products .section-header {
+    margin-bottom: 24px;
+}
+
+/* ---------------------------------------------------------
+   STORY — keeps the warm system through the lower page
+--------------------------------------------------------- */
+.home-page .story {
+    background: #f1efeb;
+    border: 1px solid rgba(21,21,21,.07);
+}
+
+/* ---------------------------------------------------------
+   MOBILE — tighter, calmer canvas; no oversized white panels
+--------------------------------------------------------- */
+@media (max-width: 900px) {
+    .home-page main {
+        background: var(--canvas);
+    }
+
+    .home-page .categories {
+        padding-top: 46px;
+        padding-bottom: 48px;
+    }
+
+    .home-page .feature-banner {
+        padding-top: 28px;
+    }
+
+    .home-page .trust {
+        background: rgba(245,243,239,.65);
+    }
+
+    .home-page .trust__item + .trust__item::before {
+        display: none;
+    }
+
+    .home-page .products {
+        width: calc(100% - 24px);
+        margin-top: 24px;
+        margin-bottom: 24px;
+        padding-top: 24px;
+        padding-bottom: 30px;
+        border-radius: 12px;
+    }
+
+    .home-page .products .section-header,
+    .home-page .products .products__grid {
+        width: calc(100% - 24px);
+    }
+}
