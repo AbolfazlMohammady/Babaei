@@ -10,7 +10,7 @@
 {% block og_description %}{{ product.seo_description|default:product.short_description|default:product.name|truncatechars:160 }}{% endblock %}
 {% block og_image %}{% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}">{% endif %}{% endblock %}
 {% block extra_head %}<script type="application/ld+json">{{ product_schema }}</script><script type="application/ld+json">{{ breadcrumb_schema }}</script>{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}"><link rel="stylesheet" href="{% static 'css/pages/product-quantity.css' %}?v=1"><link rel="stylesheet" href="{% static 'css/pages/shop-designer-cta.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}"><link rel="stylesheet" href="{% static 'css/pages/product-quantity.css' %}?v=2"><link rel="stylesheet" href="{% static 'css/pages/shop-designer-cta.css' %}">{% endblock %}
 {% block content %}
 <div class="product-shell">
 <nav class="breadcrumbs" aria-label="مسیر صفحه">{% for item in breadcrumbs %}{% if not forloop.last %}<a href="{{ item.url }}">{{ item.name }}</a><span aria-hidden="true">/</span>{% else %}<span aria-current="page">{{ item.name }}</span>{% endif %}{% endfor %}</nav>
@@ -26,7 +26,7 @@
 <div id="variant-status" class="variant-status" aria-live="polite"></div></section>
 {% else %}<div class="stock-summary stock-summary--simple"><span>وضعیت</span><strong>موجود</strong></div>{% endif %}
 <form method="post" action="{% url 'orders:cart_add' %}" class="add-to-cart-form" id="add-to-cart-form">
-{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="variant_id" id="cart-variant-id" value=""><div class="add-to-cart-row"><div class="product-quantity" data-product-quantity-wrap><div class="product-quantity__heading"><label for="cart-quantity">تعداد</label><span data-product-quantity-stock></span></div><div class="product-quantity__control"><button type="button" data-product-quantity-button="-1" aria-label="کاهش تعداد">−</button><input id="cart-quantity" name="quantity" type="number" min="1" value="1" inputmode="numeric" aria-label="تعداد محصول"><button type="button" data-product-quantity-button="1" aria-label="افزایش تعداد">+</button></div></div><button id="add-to-cart-button" class="add-to-cart-button" type="submit"{% if product.active_variants %} disabled{% endif %}>افزودن به سبد خرید</button></div>
+{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="variant_id" id="cart-variant-id" value=""><div class="add-to-cart-row"><div class="product-quantity" data-product-quantity-wrap><div class="product-quantity__heading"><label for="cart-quantity">تعداد</label><span data-product-quantity-stock></span></div><div class="product-quantity__control"><button type="button" data-product-quantity-button="-1" aria-label="کاهش تعداد">−</button><input id="cart-quantity" name="quantity" type="number" min="1" value="1" inputmode="numeric" aria-label="تعداد محصول"><button type="button" data-product-quantity-button="1" aria-label="افزایش تعداد">+</button></div></div><button id="add-to-cart-button" class="add-to-cart-button" type="submit"{% if product.active_variants %} disabled{% endif %}>افزودن به سبد خرید</button><a id="product-in-cart" class="product-in-cart" href="{% url 'orders:cart' %}" hidden><span>این مدل در سبد خرید است</span><strong data-product-in-cart-quantity></strong><small>مشاهده سبد خرید ←</small></a></div>
 </form>
 <a class="design-cta" href="{% url 'customizer:designer' product.slug %}">این لباس را طراحی کن</a>
 </article></div>
@@ -34,4 +34,4 @@
 <section class="next-step-card next-step-card--designer"><div><span class="product-eyebrow">BABAEI DESIGN STUDIO</span><h2>لیبلت را روی لباس قرار بده</h2><p>از بین طرح‌های آماده انتخاب کن، روی سینه، پشت یا آستین قرار بده، اندازه و زاویه را تغییر بده و قیمت هر چاپ را همان لحظه ببین.</p></div><a class="next-step-card__cta" href="{% url 'customizer:designer' product.slug %}">ورود به طراحی</a></section>
 </div>
 {% endblock %}
-{% block extra_js %}<script>window.BabaeiProduct={variants:{{ variant_data }},initialProductPrice:{{ product.display_price|default:0 }},initialComparePrice:{{ product.display_compare_price|default:0 }}};</script><script src="{% static 'js/pages/shop-product.js' %}?v=3" defer></script>{% endblock %}
+{% block extra_js %}<script>window.BabaeiProduct={variants:{{ variant_data }},cartVariants:{{ cart_variant_data }},initialProductPrice:{{ product.display_price|default:0 }},initialComparePrice:{{ product.display_compare_price|default:0 }}};</script><script src="{% static 'js/pages/shop-product.js' %}?v=4" defer></script>{% endblock %}
