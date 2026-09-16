@@ -1,14 +1,35 @@
-from .services import CART_SESSION_KEY, get_active_cart
+from django.db.models import Sum
+
+from .models import Cart
+from .services import CART_SESSION_KEY
 
 
 def cart_context(request):
+    """Expose the cart badge without creating a cart on every page request."""
     count = 0
+
     if request.user.is_authenticated:
-        cart = get_active_cart(request)
-        count = sum(item.quantity for item in cart.items.all())
-    elif request.session.get(CART_SESSION_KEY) or request.session.session_key:
-        cart = get_active_cart(request)
-        count = sum(item.quantity for item in cart.items.all())
+        count = (
+            Cart.objects.filter(user=request.user, status=Cart.Status.ACTIVE)
+            .values_list("items__quantity")
+            .aggregate(total=Sum("items__quantity"))
+            .get("total")
+            or 0
+        )
+    else:
+        session_key = request.session.get(CART_SESSION_KEY) or request.session.session_key
+        if session_key:
+            count = (
+                Cart.objects.filter(
+                    session_key=session_key,
+                    user__isnull=True,
+                    status=Cart.Status.ACTIVE,
+                )
+                .values_list("items__quantity")
+                .aggregate(total=Sum("items__quantity"))
+                .get("total")
+                or 0
+            )
 
     return {
         "cart_item_count": count,
