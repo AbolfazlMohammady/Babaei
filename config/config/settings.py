@@ -8,7 +8,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', "fallback_secret_key")
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['127.0.0.1']
 SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000").rstrip("/")
-INSTALLED_APPS = ["django.contrib.admin","django.contrib.auth","django.contrib.contenttypes","django.contrib.sessions","django.contrib.messages","django.contrib.staticfiles","django.contrib.sitemaps","phonenumber_field","axes","modeltranslation","tinymce","debug_toolbar","apps.home","apps.users","apps.shop","apps.orders"]
+REMOVE_BG_API_KEY = os.environ.get("REMOVE_BG_API_KEY", "").strip()
+CUSTOMIZER_UPLOAD_PRICE = int(os.environ.get("CUSTOMIZER_UPLOAD_PRICE", "0"))
+INSTALLED_APPS = ["django.contrib.admin","django.contrib.auth","django.contrib.contenttypes","django.contrib.sessions","django.contrib.messages","django.contrib.staticfiles","django.contrib.sitemaps","phonenumber_field","axes","modeltranslation","tinymce","debug_toolbar","apps.home","apps.users","apps.shop","apps.orders","apps.customizer"]
 INTERNAL_IPS = ['127.0.0.1']
 MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware','django.middleware.security.SecurityMiddleware','django.contrib.sessions.middleware.SessionMiddleware',"django.middleware.locale.LocaleMiddleware",'django.middleware.common.CommonMiddleware','django.middleware.csrf.CsrfViewMiddleware','django.contrib.auth.middleware.AuthenticationMiddleware','axes.middleware.AxesMiddleware','django.contrib.messages.middleware.MessageMiddleware','django.middleware.clickjacking.XFrameOptionsMiddleware']
 ROOT_URLCONF = 'config.urls'
