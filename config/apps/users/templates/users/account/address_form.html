@@ -3,6 +3,11 @@
 
 {% block title %}{% if address %}ویرایش آدرس{% else %}افزودن آدرس{% endif %} | BABAEI{% endblock %}
 
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/pages/address-picker.css' %}?v=1">
+{% endblock %}
+
 {% block account_content %}
 <div class="account-page-header">
     <div>
@@ -23,29 +28,52 @@
                 <label class="form-label" for="address-phone">شماره موبایل گیرنده</label>
                 <input id="address-phone" class="form-input" name="phone" value="{{ address.phone|default:'' }}" placeholder="09123456789" inputmode="numeric" maxlength="11" dir="ltr" required>
             </div>
+
             <div class="form-group">
-                <label class="form-label" for="address-province">استان</label>
-                <select id="address-province" class="form-select" name="province" required>
-                    <option value="">انتخاب استان</option>
-                    {% for province in provinces %}
-                        <option value="{{ province.id }}" {% if selected_province_id == province.id %}selected{% endif %}>{{ province.name }}</option>
-                    {% endfor %}
-                </select>
+                <label class="form-label" for="province-picker-button">استان</label>
+                <div class="location-picker" data-picker="province">
+                    <input type="hidden" name="province" id="province-value" value="{{ selected_province_id|default:'' }}">
+                    <button type="button" class="location-picker__trigger" id="province-picker-button" aria-haspopup="listbox" aria-expanded="false">
+                        <span class="location-picker__value">{% if address %}{{ address.city.province.name }}{% else %}انتخاب استان{% endif %}</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"></path></svg>
+                    </button>
+                    <div class="location-picker__menu" role="listbox" aria-label="انتخاب استان" hidden>
+                        {% for province in provinces %}
+                        <button type="button" class="location-picker__option" role="option" data-value="{{ province.id }}" data-label="{{ province.name }}" aria-selected="{% if selected_province_id == province.id %}true{% else %}false{% endif %}">
+                            <span>{{ province.name }}</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
+
             <div class="form-group">
-                <label class="form-label" for="address-city">شهر</label>
-                <select id="address-city" class="form-select" name="city" required {% if not selected_province_id %}disabled{% endif %}>
-                    <option value="">{% if selected_province_id %}انتخاب شهر{% else %}ابتدا استان را انتخاب کنید{% endif %}</option>
-                    {% for city in cities %}
-                        <option value="{{ city.id }}" data-province="{{ city.province_id }}" {% if address.city_id == city.id %}selected{% endif %}>{{ city.name }}</option>
-                    {% endfor %}
-                </select>
+                <label class="form-label" for="city-picker-button">شهر</label>
+                <div class="location-picker location-picker--city" data-picker="city">
+                    <input type="hidden" name="city" id="city-value" value="{% if address %}{{ address.city_id }}{% endif %}">
+                    <button type="button" class="location-picker__trigger" id="city-picker-button" aria-haspopup="listbox" aria-expanded="false" {% if not selected_province_id %}disabled{% endif %}>
+                        <span class="location-picker__value">{% if address %}{{ address.city.name }}{% else %}ابتدا استان را انتخاب کنید{% endif %}</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"></path></svg>
+                    </button>
+                    <div class="location-picker__menu" role="listbox" aria-label="انتخاب شهر" hidden>
+                        {% for city in cities %}
+                        <button type="button" class="location-picker__option" role="option" data-value="{{ city.id }}" data-province="{{ city.province_id }}" data-label="{{ city.name }}" aria-selected="{% if address and address.city_id == city.id %}true{% else %}false{% endif %}">
+                            <span>{{ city.name }}</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+                        </button>
+                        {% endfor %}
+                        <div class="location-picker__empty" hidden>شهری برای این استان پیدا نشد.</div>
+                    </div>
+                </div>
             </div>
+
             <div class="form-group">
                 <label class="form-label" for="postal-code">کد پستی</label>
                 <input id="postal-code" class="form-input" name="postal_code" value="{{ address.postal_code|default:'' }}" placeholder="۱۰ رقم" maxlength="10" inputmode="numeric" dir="ltr" required>
             </div>
         </div>
+
         <div class="form-group">
             <label class="form-label" for="address-description">نشانی کامل</label>
             <textarea id="address-description" class="form-textarea" name="description" placeholder="خیابان، کوچه، پلاک، واحد و سایر جزئیات...">{{ address.description|default:'' }}</textarea>
@@ -56,37 +84,76 @@
         </div>
     </form>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const province = document.getElementById('address-province');
-    const city = document.getElementById('address-city');
-    if (!province || !city) return;
+(function () {
+    const provincePicker = document.querySelector('[data-picker="province"]');
+    const cityPicker = document.querySelector('[data-picker="city"]');
+    if (!provincePicker || !cityPicker) return;
 
-    const options = Array.from(city.querySelectorAll('option[data-province]'));
-    const currentCity = city.value;
+    const provinceValue = document.getElementById('province-value');
+    const cityValue = document.getElementById('city-value');
+    const cityTrigger = document.getElementById('city-picker-button');
+    const cityMenu = cityPicker.querySelector('.location-picker__menu');
+    const cityOptions = [...cityMenu.querySelectorAll('.location-picker__option')];
+    const cityEmpty = cityMenu.querySelector('.location-picker__empty');
 
-    function filterCities(reset = true) {
-        const provinceId = province.value;
-        city.disabled = !provinceId;
-        city.innerHTML = '';
-
-        const placeholder = document.createElement('option');
-        placeholder.value = '';
-        placeholder.textContent = provinceId ? 'انتخاب شهر' : 'ابتدا استان را انتخاب کنید';
-        city.appendChild(placeholder);
-
-        options.forEach(option => {
-            if (option.dataset.province === provinceId) city.appendChild(option.cloneNode(true));
+    function closeAll(except) {
+        document.querySelectorAll('.location-picker').forEach(picker => {
+            if (picker === except) return;
+            picker.classList.remove('is-open');
+            picker.querySelector('.location-picker__menu').hidden = true;
+            picker.querySelector('.location-picker__trigger').setAttribute('aria-expanded', 'false');
         });
-
-        if (!reset && currentCity) city.value = currentCity;
     }
 
-    province.addEventListener('change', () => filterCities(true));
-    filterCities(false);
-});
+    function openPicker(picker) {
+        const trigger = picker.querySelector('.location-picker__trigger');
+        if (trigger.disabled) return;
+        closeAll(picker);
+        picker.classList.add('is-open');
+        picker.querySelector('.location-picker__menu').hidden = false;
+        trigger.setAttribute('aria-expanded', 'true');
+    }
+
+    function selectOption(picker, option) {
+        picker.querySelector('input[type="hidden"]').value = option.dataset.value;
+        picker.querySelector('.location-picker__value').textContent = option.dataset.label;
+        picker.querySelectorAll('.location-picker__option').forEach(item => item.setAttribute('aria-selected', item === option ? 'true' : 'false'));
+        picker.classList.remove('is-open');
+        picker.querySelector('.location-picker__menu').hidden = true;
+        picker.querySelector('.location-picker__trigger').setAttribute('aria-expanded', 'false');
+    }
+
+    provincePicker.querySelector('.location-picker__trigger').addEventListener('click', () => openPicker(provincePicker));
+    provincePicker.querySelectorAll('.location-picker__option').forEach(option => {
+        option.addEventListener('click', () => {
+            selectOption(provincePicker, option);
+            provinceValue.value = option.dataset.value;
+            cityValue.value = '';
+            cityTrigger.disabled = false;
+            cityPicker.querySelector('.location-picker__value').textContent = 'انتخاب شهر';
+            cityOptions.forEach(city => {
+                city.hidden = city.dataset.province !== option.dataset.value;
+                city.setAttribute('aria-selected', 'false');
+            });
+            cityEmpty.hidden = !cityOptions.some(city => city.dataset.province === option.dataset.value);
+        });
+    });
+
+    cityTrigger.addEventListener('click', () => openPicker(cityPicker));
+    cityOptions.forEach(option => option.addEventListener('click', () => selectOption(cityPicker, option)));
+
+    const initialProvince = provinceValue.value;
+    cityOptions.forEach(city => { city.hidden = city.dataset.province !== initialProvince; });
+    cityEmpty.hidden = !cityOptions.some(city => city.dataset.province === initialProvince);
+
+    document.addEventListener('click', event => {
+        if (!event.target.closest('.location-picker')) closeAll();
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeAll();
+    });
+})();
 </script>
 {% endblock %}
