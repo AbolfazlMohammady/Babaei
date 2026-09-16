@@ -5,24 +5,65 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!input || !hidden || !picker) return;
 
-    const monthNames = [
+    const months = [
         "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
         "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
     ];
-    const weekDays = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
-    const partsFormatter = new Intl.DateTimeFormat("en-US-u-ca-persian", {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric"
-    });
+    const persianDigits = (value) => String(value).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
 
-    const toParts = (date) => {
-        const parts = partsFormatter.formatToParts(date);
-        return {
-            year: Number(parts.find((p) => p.type === "year").value),
-            month: Number(parts.find((p) => p.type === "month").value),
-            day: Number(parts.find((p) => p.type === "day").value),
-        };
+    // Jalaali <-> Gregorian conversion, kept local so the picker has no external dependency.
+    const div = (a, b) => Math.floor(a / b);
+    const mod = (a, b) => a - Math.floor(a / b) * b;
+
+    const jalaliToGregorian = (jy, jm, jd) => {
+        jy += 1595;
+        let days = -355668 + (365 * jy) + div(jy / 33) * 8 + div(((jy % 33) + 3) / 4) + jd;
+        if (jm < 7) days += (jm - 1) * 31;
+        else days += ((jm - 1) * 30) + 6;
+        let gy = 400 * div(days / 146097);
+        days = mod(days, 146097);
+        if (days > 36524) {
+            gy += 100 * div(--days / 36524);
+            days = mod(days, 36524);
+            if (days >= 365) days++;
+        }
+        gy += 4 * div(days / 1461);
+        days = mod(days, 1461);
+        if (days > 365) {
+            gy += div((days - 1) / 365);
+            days = (days - 1) % 365;
+        }
+        const gd = days + 1;
+        const leap = (gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0;
+        const monthDays = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        let gm = 0;
+        let remaining = gd;
+        while (gm < 12 && remaining > monthDays[gm]) {
+            remaining -= monthDays[gm++];
+        }
+        return new Date(gy, gm, remaining);
+    };
+
+    const gregorianToJalali = (date) => {
+        let gy = date.getFullYear() - 1600;
+        let gm = date.getMonth();
+        let gd = date.getDate() - 1;
+        const gdm = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        let days = 365 * gy + div((gy + 3) / 4) - div((gy + 99) / 100) + div((gy + 399) / 400);
+        for (let i = 0; i < gm; i++) days += gdm[i];
+        if (gm > 1 && ((gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0)) days++;
+        days += gd;
+        let jy = -1597 + 33 * div(days / 12053);
+        days %= 12053;
+        jy += 4 * div(days / 1461);
+        days %= 1461;
+        if (days > 365) {
+            jy += div((days - 1) / 365);
+            days = (days - 1) % 365;
+        }
+        const jm = days < 186 ? 1 + div(days / 31) : 7 + div((days - 186) / 30);
+        const jd = 1 + (days < 186 ? days % 31 : (days - 186) % 30);
+        return { year: jy, month: jm, day: jd };
     };
 
     const toIso = (date) => {
@@ -34,175 +75,160 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const fromIso = (value) => {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
-        const [year, month, day] = value.split("-").map(Number);
-        const date = new Date(year, month - 1, day);
-        return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
-            ? date
-            : null;
-    };
-
-    const persianDigits = (value) => String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
-
-    const formatJalali = (date) => {
-        if (!date) return "";
-        const { year, month, day } = toParts(date);
-        return `${persianDigits(year)}/${persianDigits(String(month).padStart(2, "0"))}/${persianDigits(String(day).padStart(2, "0"))}`;
+        const [y, m, d] = value.split("-").map(Number);
+        return new Date(y, m - 1, d);
     };
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const todayJ = gregorianToJalali(today);
+    const minYear = 1200;
+    const maxYear = todayJ.year;
 
-    const findGregorianForJalali = (year, month, day = 1) => {
-        const anchor = new Date(today);
-        const anchorParts = toParts(anchor);
-        const approx = new Date(anchor);
-        approx.setDate(
-            approx.getDate() +
-            (year - anchorParts.year) * 365 +
-            (month - anchorParts.month) * 31
-        );
+    const initialDate = fromIso(hidden.value);
+    let selected = initialDate ? gregorianToJalali(initialDate) : null;
+    let view = selected || { year: Math.max(1370, maxYear - 30), month: 1, day: 1 };
 
-        for (let offset = -370; offset <= 370; offset += 1) {
-            const candidate = new Date(approx);
-            candidate.setDate(approx.getDate() + offset);
-            const parts = toParts(candidate);
-            if (parts.year === year && parts.month === month && parts.day === day) return candidate;
-        }
-        return null;
+    const daysInMonth = (year, month) => {
+        if (month <= 6) return 31;
+        if (month <= 11) return 30;
+        // Last month is 29 days in ordinary years and 30 in leap years.
+        const next = jalaliToGregorian(year + 1, 1, 1);
+        const current = jalaliToGregorian(year, 1, 1);
+        const yearLength = Math.round((next - current) / 86400000);
+        return yearLength === 366 ? 30 : 29;
     };
 
-    const initialDate = fromIso(hidden.value) || today;
-    let selectedDate = fromIso(hidden.value);
-    let view = toParts(initialDate);
+    const format = (date) => date ? `${persianDigits(date.year)}/${persianDigits(String(date.month).padStart(2, "0"))}/${persianDigits(String(date.day).padStart(2, "0"))}` : "";
+
+    const scrollColumn = (column, values, selectedValue, formatter, onChange) => {
+        column.innerHTML = "";
+        const spacer = document.createElement("div");
+        spacer.className = "date-wheel__spacer";
+        column.appendChild(spacer.cloneNode(true));
+        values.forEach(value => {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "date-wheel__item";
+            if (value === selectedValue) item.classList.add("is-selected");
+            item.textContent = formatter(value);
+            item.dataset.value = value;
+            item.addEventListener("click", () => onChange(value));
+            column.appendChild(item);
+        });
+        column.appendChild(spacer.cloneNode(true));
+
+        requestAnimationFrame(() => {
+            const selectedEl = column.querySelector(".is-selected");
+            if (selectedEl) column.scrollTop = selectedEl.offsetTop - column.clientHeight / 2 + selectedEl.offsetHeight / 2;
+        });
+
+        let timer;
+        column.addEventListener("scroll", () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                const center = column.getBoundingClientRect().top + column.clientHeight / 2;
+                const items = [...column.querySelectorAll(".date-wheel__item")];
+                let closest = null;
+                let distance = Infinity;
+                items.forEach(item => {
+                    const rect = item.getBoundingClientRect();
+                    const d = Math.abs(rect.top + rect.height / 2 - center);
+                    if (d < distance) { distance = d; closest = item; }
+                });
+                if (closest) onChange(Number(closest.dataset.value), true);
+            }, 90);
+        }, { passive: true });
+    };
+
+    const render = () => {
+        picker.innerHTML = `
+            <div class="date-wheel__top">
+                <div>
+                    <span class="date-wheel__eyebrow">تاریخ تولد</span>
+                    <strong>روز، ماه و سال تولد را انتخاب کنید</strong>
+                </div>
+                <button type="button" class="date-wheel__close" aria-label="بستن">×</button>
+            </div>
+            <div class="date-wheel__columns">
+                <div class="date-wheel__column-wrap"><span>روز</span><div class="date-wheel__column" data-day></div></div>
+                <div class="date-wheel__column-wrap"><span>ماه</span><div class="date-wheel__column" data-month></div></div>
+                <div class="date-wheel__column-wrap"><span>سال</span><div class="date-wheel__column" data-year></div></div>
+                <div class="date-wheel__selection" aria-hidden="true"></div>
+            </div>
+            <div class="date-wheel__bottom">
+                <span data-preview>تاریخ انتخاب نشده</span>
+                <div>
+                    <button type="button" class="date-wheel__clear">پاک کردن</button>
+                    <button type="button" class="date-wheel__confirm">تأیید تاریخ</button>
+                </div>
+            </div>
+        `;
+
+        const dayCol = picker.querySelector("[data-day]");
+        const monthCol = picker.querySelector("[data-month]");
+        const yearCol = picker.querySelector("[data-year]");
+        const preview = picker.querySelector("[data-preview]");
+
+        const updatePreview = () => preview.textContent = selected ? format(selected) : `${persianDigits(view.year)}/${persianDigits(view.month)}/${persianDigits(view.day)}`;
+        const rebuildDay = (scroll = false) => {
+            const maxDay = daysInMonth(view.year, view.month);
+            if (view.day > maxDay) view.day = maxDay;
+            scrollColumn(dayCol, Array.from({length: maxDay}, (_, i) => i + 1), view.day, persianDigits, value => {
+                view.day = value;
+                if (!scroll) selected = null;
+                updatePreview();
+            });
+        };
+        scrollColumn(yearCol, Array.from({length: maxYear - minYear + 1}, (_, i) => maxYear - i), view.year, persianDigits, value => {
+            view.year = value;
+            selected = null;
+            rebuildDay(true);
+            updatePreview();
+        });
+        scrollColumn(monthCol, Array.from({length: 12}, (_, i) => i + 1), view.month, value => months[value - 1], value => {
+            view.month = value;
+            selected = null;
+            rebuildDay(true);
+            updatePreview();
+        });
+        rebuildDay(true);
+        updatePreview();
+
+        picker.querySelector(".date-wheel__close").addEventListener("click", closePicker);
+        picker.querySelector(".date-wheel__clear").addEventListener("click", () => {
+            selected = null;
+            hidden.value = "";
+            input.value = "";
+            closePicker();
+        });
+        picker.querySelector(".date-wheel__confirm").addEventListener("click", () => {
+            const chosen = jalaliToGregorian(view.year, view.month, Math.min(view.day, daysInMonth(view.year, view.month)));
+            if (chosen >= today) return;
+            selected = { year: view.year, month: view.month, day: view.day };
+            hidden.value = toIso(chosen);
+            input.value = format(selected);
+            closePicker();
+        });
+    };
 
     const closePicker = () => {
         picker.hidden = true;
         input.setAttribute("aria-expanded", "false");
     };
-
     const openPicker = () => {
         picker.hidden = false;
         input.setAttribute("aria-expanded", "true");
         render();
     };
 
-    const render = () => {
-        const firstDay = findGregorianForJalali(view.year, view.month, 1);
-        if (!firstDay) return;
-
-        picker.innerHTML = "";
-
-        const header = document.createElement("div");
-        header.className = "jalali-picker__header";
-        header.innerHTML = `
-            <button type="button" class="jalali-picker__nav" data-prev aria-label="ماه قبل">‹</button>
-            <strong>${monthNames[view.month - 1]} ${persianDigits(view.year)}</strong>
-            <button type="button" class="jalali-picker__nav" data-next aria-label="ماه بعد">›</button>
-        `;
-        picker.appendChild(header);
-
-        const weekdays = document.createElement("div");
-        weekdays.className = "jalali-picker__weekdays";
-        weekDays.forEach((day) => {
-            const cell = document.createElement("span");
-            cell.textContent = day;
-            weekdays.appendChild(cell);
-        });
-        picker.appendChild(weekdays);
-
-        const grid = document.createElement("div");
-        grid.className = "jalali-picker__grid";
-
-        // JS Sunday=0; Persian week starts Saturday.
-        const offset = (firstDay.getDay() + 1) % 7;
-        for (let i = 0; i < offset; i += 1) {
-            grid.appendChild(document.createElement("span"));
-        }
-
-        let cursor = new Date(firstDay);
-        while (true) {
-            const parts = toParts(cursor);
-            if (parts.year !== view.year || parts.month !== view.month) break;
-
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "jalali-picker__day";
-            button.textContent = persianDigits(parts.day);
-            button.dataset.iso = toIso(cursor);
-
-            if (selectedDate && toIso(selectedDate) === button.dataset.iso) {
-                button.classList.add("is-selected");
-            }
-
-            // Today and all future dates are unavailable for birth date.
-            if (cursor >= today) {
-                button.disabled = true;
-                button.classList.add("is-disabled");
-            }
-
-            button.addEventListener("click", () => {
-                selectedDate = new Date(cursor);
-                hidden.value = toIso(selectedDate);
-                input.value = formatJalali(selectedDate);
-                view = toParts(selectedDate);
-                closePicker();
-            });
-            grid.appendChild(button);
-
-            cursor.setDate(cursor.getDate() + 1);
-        }
-
-        picker.appendChild(grid);
-
-        const footer = document.createElement("div");
-        footer.className = "jalali-picker__footer";
-        const clear = document.createElement("button");
-        clear.type = "button";
-        clear.className = "jalali-picker__clear";
-        clear.textContent = "پاک کردن تاریخ";
-        clear.addEventListener("click", () => {
-            selectedDate = null;
-            hidden.value = "";
-            input.value = "";
-            closePicker();
-        });
-        footer.appendChild(clear);
-        picker.appendChild(footer);
-
-        picker.querySelector("[data-prev]").addEventListener("click", () => {
-            view.month -= 1;
-            if (view.month < 1) {
-                view.month = 12;
-                view.year -= 1;
-            }
-            render();
-        });
-
-        picker.querySelector("[data-next]").addEventListener("click", () => {
-            const next = { year: view.year, month: view.month + 1 };
-            if (next.month > 12) {
-                next.month = 1;
-                next.year += 1;
-            }
-            const current = toParts(today);
-            if (next.year < current.year || (next.year === current.year && next.month <= current.month)) {
-                view = next;
-                render();
-            }
-        });
-    };
-
-    if (selectedDate) input.value = formatJalali(selectedDate);
+    if (selected) input.value = format(selected);
     input.addEventListener("click", openPicker);
     input.addEventListener("focus", openPicker);
-
-    document.addEventListener("click", (event) => {
-        if (!input.closest(".jalali-picker-field")?.contains(event.target)) closePicker();
+    input.addEventListener("keydown", e => e.preventDefault());
+    input.addEventListener("paste", e => e.preventDefault());
+    document.addEventListener("click", e => {
+        if (!input.closest(".jalali-picker-field")?.contains(e.target)) closePicker();
     });
-
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") closePicker();
-    });
-
-    render();
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closePicker(); });
 });
