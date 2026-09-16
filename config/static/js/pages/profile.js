@@ -10,11 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
     ];
     const weekDays = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
-    const fa = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric"
-    });
     const partsFormatter = new Intl.DateTimeFormat("en-US-u-ca-persian", {
         year: "numeric",
         month: "numeric",
@@ -46,20 +41,26 @@ document.addEventListener("DOMContentLoaded", () => {
             : null;
     };
 
+    const persianDigits = (value) => String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
+
     const formatJalali = (date) => {
         if (!date) return "";
-        return fa.format(date).replace(/\s/g, "").replace(/،/g, "/");
+        const { year, month, day } = toParts(date);
+        return `${persianDigits(year)}/${persianDigits(String(month).padStart(2, "0"))}/${persianDigits(String(day).padStart(2, "0"))}`;
     };
-
-    const persianDigits = (value) => String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[digit]);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const findGregorianForJalali = (year, month, day = 1) => {
-        const anchor = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const anchor = new Date(today);
+        const anchorParts = toParts(anchor);
         const approx = new Date(anchor);
-        approx.setDate(approx.getDate() + (year - toParts(anchor).year) * 365 + (month - toParts(anchor).month) * 31);
+        approx.setDate(
+            approx.getDate() +
+            (year - anchorParts.year) * 365 +
+            (month - anchorParts.month) * 31
+        );
 
         for (let offset = -370; offset <= 370; offset += 1) {
             const candidate = new Date(approx);
@@ -133,6 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 button.classList.add("is-selected");
             }
 
+            // Today and all future dates are unavailable for birth date.
             if (cursor >= today) {
                 button.disabled = true;
                 button.classList.add("is-disabled");
@@ -182,7 +184,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 next.month = 1;
                 next.year += 1;
             }
-            // Never navigate beyond the current Jalali month.
             const current = toParts(today);
             if (next.year < current.year || (next.year === current.year && next.month <= current.month)) {
                 view = next;
@@ -202,10 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") closePicker();
     });
-
-    // Keep the input strictly visual; the actual submitted value is Gregorian ISO.
-    input.addEventListener("keydown", (event) => event.preventDefault());
-    input.addEventListener("paste", (event) => event.preventDefault());
 
     render();
 });
