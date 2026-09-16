@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+from django.conf import settings
 from django.contrib import messages
-from django.db.models import Case, ExpressionWrapper, F, PositiveBigIntegerField, Sum, When
+from django.db.models import Case, CharField, ExpressionWrapper, F, OuterRef, PositiveBigIntegerField, Subquery, Sum, When, Value
+from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from apps.shop.models import Product, ProductVariant
+from apps.shop.models import Product, ProductImage, ProductVariant
 
-from .models import CartItem
-from .services import CART_COUNT_SESSION_KEY, add_to_cart, clear_cart, get_active_cart, remove_cart_item, update_cart_item
+from .models import Cart, CartItem
+from .services import CART_COUNT_SESSION_KEY, CART_SESSION_KEY, add_to_cart, clear_cart, get_active_cart, remove_cart_item, update_cart_item
+
+AUTH_USER_SESSION_KEY = "_auth_user_id"
 
 
 def _is_json_request(request):
@@ -25,36 +29,47 @@ def _remember_cart_count(request, count):
 
 
 def _cart_totals(cart, request=None):
-    """Calculate badge count and subtotal in one SQL aggregation query."""
-    unit_price = Case(
-        When(variant__isnull=False, then=F("variant__price")),
-        default=F("product__base_price"),
-        output_field=PositiveBigIntegerField(),
-    )
-    line_total = ExpressionWrapper(
-        F("quantity") * unit_price,
-        output_field=PositiveBigIntegerField(),
-    )
-    totals = cart.items.aggregate(
-        count=Sum("quantity", default=0),
-        subtotal=Sum(line_total, default=0),
-    )
+    unit_price = Case(When(variant__isnull=False, then=F("variant__price")), default=F("product__base_price"), output_field=PositiveBigIntegerField())
+    line_total = ExpressionWrapper(F("quantity") * unit_price, output_field=PositiveBigIntegerField())
+    totals = cart.items.aggregate(count=Sum("quantity", default=0), subtotal=Sum(line_total, default=0))
     count = _remember_cart_count(request, totals["count"] or 0) if request is not None else totals["count"] or 0
     return {"count": count, "subtotal": totals["subtotal"] or 0}
 
 
-def cart_view(request):
-    cart = get_active_cart(request)
-    items = list(
-        cart.items.select_related(
-            "product__category",
-            "variant__color",
-            "variant__size",
-        ).prefetch_related("product__images")
+def _cart_items_queryset(request):
+    primary_images = ProductImage.objects.filter(
+        product_id=OuterRef("product_id"),
+        image_type=ProductImage.ImageType.PRIMARY,
+    ).order_by("sort_order", "id")
+    primary_image_url = Concat(
+        Value(settings.MEDIA_URL),
+        Subquery(primary_images.values("image")[:1], output_field=CharField(max_length=500)),
+        output_field=CharField(max_length=520),
     )
+    primary_image_alt = Subquery(
+        primary_images.values("alt_text")[:1],
+        output_field=CharField(max_length=180),
+    )
+    queryset = (
+        CartItem.objects
+        .select_related("cart", "product__category", "variant__color", "variant__size")
+        .annotate(primary_image_url=primary_image_url, primary_image_alt=primary_image_alt)
+    )
+    user_id = request.session.get(AUTH_USER_SESSION_KEY)
+    if user_id:
+        return queryset.filter(cart__user_id=user_id, cart__status=Cart.Status.ACTIVE).order_by("added_at", "id")
+    session_key = request.session.get(CART_SESSION_KEY) or request.session.session_key
+    if not session_key:
+        return queryset.none()
+    return queryset.filter(cart__session_key=session_key, cart__user__isnull=True, cart__status=Cart.Status.ACTIVE).order_by("added_at", "id")
+
+
+def cart_view(request):
+    items = list(_cart_items_queryset(request))
     item_count = sum(item.quantity for item in items)
     subtotal = sum(item.line_total for item in items)
     _remember_cart_count(request, item_count)
+    cart = items[0].cart if items else None
     return render(request, "orders/cart.html", {"cart": cart, "items": items, "item_count": item_count, "subtotal": subtotal})
 
 
@@ -102,8 +117,7 @@ def cart_update_view(request, item_id):
         item = None
 
     if _is_json_request(request):
-        cart = get_active_cart(request)
-        totals = _cart_totals(cart, request)
+        totals = _cart_totals(get_active_cart(request), request)
         payload = {"ok": status == 200, "message": message, **totals}
         if item is not None:
             payload.update({"item_id": item.id, "quantity": item.quantity, "line_total": item.line_total, "stock": item.variant.stock_quantity if item.variant_id else None})
@@ -119,8 +133,7 @@ def cart_update_view(request, item_id):
 def cart_remove_view(request, item_id):
     remove_cart_item(request, item_id)
     if _is_json_request(request):
-        cart = get_active_cart(request)
-        return JsonResponse({"ok": True, **_cart_totals(cart, request)})
+        return JsonResponse({"ok": True, **_cart_totals(get_active_cart(request), request)})
     messages.success(request, "محصول از سبد خرید حذف شد.")
     return redirect("orders:cart")
 

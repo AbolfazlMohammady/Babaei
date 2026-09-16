@@ -11,12 +11,23 @@ from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 from django.views.generic import DetailView, ListView
 
-from apps.orders.services import get_product_cart_variants
-
 from .models import Category, Product, ProductImage, ProductVariant
 
-CATEGORY_NAV_CACHE_KEY = "babaei:shop:active_categories:v1"
+AUTH_USER_SESSION_KEY = "_auth_user_id"
+CATEGORY_NAV_CACHE_KEY = "babaei:shop:active-categories:v1"
 CATEGORY_NAV_CACHE_TTL = 300
+
+
+def get_active_categories():
+    categories = cache.get(CATEGORY_NAV_CACHE_KEY)
+    if categories is None:
+        categories = list(
+            Category.objects.filter(is_active=True)
+            .only("id", "name", "slug", "image")
+            .order_by("sort_order", "name")
+        )
+        cache.set(CATEGORY_NAV_CACHE_KEY, categories, CATEGORY_NAV_CACHE_TTL)
+    return categories
 
 
 def absolute_url(request, path):
@@ -33,30 +44,16 @@ def toman_to_irr(value):
     return value * 10
 
 
-def get_active_categories():
-    categories = cache.get(CATEGORY_NAV_CACHE_KEY)
-    if categories is None:
-        categories = list(Category.objects.filter(is_active=True).only("id", "name", "slug", "image").order_by("sort_order", "name"))
-        cache.set(CATEGORY_NAV_CACHE_KEY, categories, CATEGORY_NAV_CACHE_TTL)
-    return categories
-
-
 def price_annotations():
     variants = ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True).order_by("price", "id")
-    return (
-        Subquery(variants.values("price")[:1], output_field=IntegerField()),
-        Subquery(variants.values("compare_at_price")[:1], output_field=IntegerField()),
-    )
+    return Subquery(variants.values("price")[:1], output_field=IntegerField()), Subquery(variants.values("compare_at_price")[:1], output_field=IntegerField())
 
 
 def primary_image_annotations():
     images = ProductImage.objects.filter(product_id=OuterRef("pk"), image_type=ProductImage.ImageType.PRIMARY).order_by("sort_order", "id")
     image_path = Subquery(images.values("image")[:1], output_field=CharField(max_length=500))
     image_alt = Subquery(images.values("alt_text")[:1], output_field=CharField(max_length=180))
-    return (
-        Concat(Value(settings.MEDIA_URL), image_path, output_field=CharField(max_length=520)),
-        image_alt,
-    )
+    return Concat(Value(settings.MEDIA_URL), image_path, output_field=CharField(max_length=520)), image_alt
 
 
 class ShopIndexView(ListView):
@@ -66,12 +63,7 @@ class ShopIndexView(ListView):
     def get_queryset(self):
         variant_price, variant_compare_price = price_annotations()
         primary_image_url, primary_image_alt = primary_image_annotations()
-        return (
-            Product.objects.filter(is_active=True, category__is_active=True)
-            .select_related("category")
-            .annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, primary_image_url=primary_image_url, primary_image_alt=primary_image_alt)
-            .order_by("-is_featured", "-created_at")[:24]
-        )
+        return Product.objects.filter(is_active=True, category__is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, primary_image_url=primary_image_url, primary_image_alt=primary_image_alt).order_by("-is_featured", "-created_at")[:24]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -101,6 +93,7 @@ class CategoryDetailView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["category"] = self.category
+        context["categories"] = get_active_categories()
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = self.category.seo_title or self.category.name
         context["og_description"] = self.category.seo_description or self.category.description or self.category.name
@@ -122,7 +115,14 @@ class ProductDetailView(DetailView):
 
     def get_queryset(self):
         images = ProductImage.objects.only("id", "product_id", "image", "alt_text", "image_type", "sort_order").annotate(type_priority=Case(When(image_type=ProductImage.ImageType.PRIMARY, then=0), When(image_type=ProductImage.ImageType.DETAIL, then=1), default=2, output_field=IntegerField())).order_by("type_priority", "sort_order", "id")
-        variants = ProductVariant.objects.filter(is_active=True).select_related("color", "size").only("id", "product_id", "color_id", "size_id", "sku", "price", "compare_at_price", "stock_quantity", "color__id", "color__name", "color__slug", "color__hex_code", "size__id", "size__name", "size__slug", "size__sort_order").order_by("color__name", "size__sort_order", "size__name")
+        from apps.orders.models import Cart, CartItem
+        user_id = self.request.session.get(AUTH_USER_SESSION_KEY)
+        if user_id:
+            cart_quantity = Subquery(CartItem.objects.filter(cart__user_id=user_id, cart__status=Cart.Status.ACTIVE, product_id=OuterRef("product_id"), variant_id=OuterRef("pk")).values("quantity")[:1], output_field=IntegerField())
+        else:
+            session_key = self.request.session.session_key
+            cart_quantity = Subquery(CartItem.objects.filter(cart__session_key=session_key, cart__user__isnull=True, cart__status=Cart.Status.ACTIVE, product_id=OuterRef("product_id"), variant_id=OuterRef("pk")).values("quantity")[:1], output_field=IntegerField()) if session_key else Value(0, output_field=IntegerField())
+        variants = ProductVariant.objects.filter(is_active=True).select_related("color", "size").only("id", "product_id", "color_id", "size_id", "sku", "price", "compare_at_price", "stock_quantity", "color__id", "color__name", "color__slug", "color__hex_code", "size__id", "size__name", "size__slug", "size__sort_order").annotate(cart_quantity=cart_quantity).order_by("color__name", "size__sort_order", "size__name")
         return Product.objects.filter(is_active=True, category__is_active=True).select_related("category").prefetch_related(Prefetch("images", queryset=images, to_attr="gallery_images"), Prefetch("variants", queryset=variants, to_attr="active_variants"))
 
     def get_context_data(self, **kwargs):
@@ -149,8 +149,7 @@ class ProductDetailView(DetailView):
         context["colors"] = colors
         context["sizes"] = sizes
         context["total_stock"] = sum(variant.stock_quantity for variant in offers)
-        cart_items = get_product_cart_variants(self.request, self.object.id)
-        context["cart_variant_data"] = schema_json({str(item_variant_id) if item_variant_id else "base": quantity for item_variant_id, quantity in cart_items.items()})
+        context["cart_variant_data"] = schema_json({str(variant.id): (variant.cart_quantity or 0) for variant in offers})
         context["variant_data"] = schema_json([{ "id": variant.id, "color_id": variant.color_id, "color": variant.color.name, "color_hex": variant.color.hex_code, "size_id": variant.size_id, "size": variant.size.name, "price": variant.price, "compare_at_price": variant.compare_at_price, "stock": variant.stock_quantity, "sku": variant.sku } for variant in offers])
         if offers:
             offer_data = {"@type": "AggregateOffer", "priceCurrency": "IRR", "lowPrice": toman_to_irr(min(prices)), "highPrice": toman_to_irr(max(prices)), "offerCount": len(offers), "availability": "https://schema.org/InStock" if any(v.in_stock for v in offers) else "https://schema.org/OutOfStock"}

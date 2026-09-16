@@ -28,9 +28,7 @@
             {% for item in items %}
             <article class="cart-item" data-cart-item data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
                 <a class="cart-item__image" href="{{ item.product.get_absolute_url }}">
-                    {% with image=item.product.images.all|first %}
-                        {% if image %}<img src="{{ image.image.url }}" alt="{{ image.alt_text|default:item.product.name }}" loading="lazy">{% else %}<img src="{% static 'images/home/Tshirt.png' %}" alt="{{ item.product.name }}" loading="lazy">{% endif %}
-                    {% endwith %}
+                    {% if item.primary_image_url %}<img src="{{ item.primary_image_url }}" alt="{{ item.primary_image_alt|default:item.product.name }}" loading="lazy">{% else %}<img src="{% static 'images/home/Tshirt.png' %}" alt="{{ item.product.name }}" loading="lazy">{% endif %}
                 </a>
                 <div class="cart-item__body">
                     <div class="cart-item__top">
