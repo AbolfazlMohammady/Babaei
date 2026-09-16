@@ -1,0 +1,339 @@
+/* =========================================================
+   BABAEI ACCOUNT — FINAL POLISH
+   Loaded after the shared account styles.
+========================================================= */
+
+.account-body {
+    background:
+        radial-gradient(circle at 80% 0%, rgba(255,255,255,.9), transparent 32%),
+        #efeee9;
+}
+
+.account-shell-header {
+    background: rgba(248,247,243,.94) !important;
+    border-bottom-color: rgba(17,17,17,.08) !important;
+}
+
+.account-page {
+    padding-top: 46px !important;
+}
+
+.account-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.account-page-title,
+.account-page-header .page-title {
+    font-size: clamp(27px, 3.2vw, 40px) !important;
+    line-height: 1.25;
+}
+
+.account-page-description,
+.account-page-header .page-description {
+    margin-top: 8px;
+    color: #77736d;
+    font-size: 12px;
+}
+
+.account-content .card,
+.account-content .account-card {
+    box-shadow: 0 18px 45px rgba(20,20,15,.045);
+}
+
+/* Profile */
+.profile-card {
+    padding: 32px !important;
+}
+
+.profile-form {
+    gap: 28px !important;
+}
+
+.profile-photo-row {
+    min-height: 96px;
+}
+
+.profile-grid {
+    gap: 18px 20px !important;
+}
+
+.profile-form .form-input,
+.profile-form .form-select,
+.profile-form .form-textarea {
+    min-height: 54px;
+    border-radius: 12px;
+    border-color: #dedbd4;
+    background: #faf9f6;
+}
+
+.profile-form .form-textarea {
+    min-height: 125px;
+    padding: 14px 15px;
+    resize: vertical;
+}
+
+.profile-form .form-input:focus,
+.profile-form .form-select:focus,
+.profile-form .form-textarea:focus {
+    border-color: #222;
+    box-shadow: 0 0 0 4px rgba(17,17,17,.045);
+}
+
+/* Address list */
+.address-list {
+    display: grid;
+    gap: 14px;
+}
+
+.address-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    padding: 24px 26px;
+    border: 1px solid #e3e0d9;
+    border-radius: 16px;
+    background: #fff;
+}
+
+.address-card__main {
+    min-width: 0;
+    flex: 1;
+}
+
+.address-card__top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 9px;
+}
+
+.address-card__top h2 {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.address-card__badge {
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #f1f0ec;
+    color: #77736d;
+    font-size: 9px;
+}
+
+.address-card__description {
+    margin-bottom: 12px;
+    color: #45423e;
+    font-size: 12px;
+    line-height: 2;
+}
+
+.address-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.address-card__meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 9px;
+    border: 1px solid #ebe8e2;
+    border-radius: 8px;
+    color: #77736d;
+    background: #faf9f6;
+    font-size: 10px;
+}
+
+.address-actions {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.address-actions .btn {
+    min-height: 40px;
+    padding-inline: 14px;
+    border-radius: 9px;
+    font-size: 11px;
+}
+
+.address-actions .btn-danger {
+    color: #a43b31;
+    border-color: #ead7d4;
+    background: #fff;
+}
+
+.address-empty {
+    display: grid;
+    place-items: center;
+    min-height: 300px;
+    padding: 40px 24px;
+    text-align: center;
+    border: 1px dashed #d8d5ce;
+    border-radius: 16px;
+    background: rgba(255,255,255,.7);
+}
+
+.address-empty__icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 17px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #171717;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+}
+
+.address-empty h2 {
+    margin-bottom: 7px;
+    font-size: 18px;
+}
+
+.address-empty p {
+    margin-bottom: 20px;
+    color: #77736d;
+    font-size: 11px;
+}
+
+/* Address create/edit */
+.address-form-card {
+    padding: 30px !important;
+}
+
+.address-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.address-form__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 18px 20px;
+}
+
+.address-form .form-group {
+    gap: 8px;
+}
+
+.address-form .form-label {
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.address-form .form-input,
+.address-form .form-select,
+.address-form .form-textarea {
+    min-height: 54px;
+    padding: 0 15px;
+    border: 1px solid #dedbd4;
+    border-radius: 12px;
+    background: #faf9f6;
+    outline: none;
+}
+
+.address-form .form-textarea {
+    min-height: 130px;
+    padding: 14px 15px;
+    resize: vertical;
+}
+
+.address-form .form-input:focus,
+.address-form .form-select:focus,
+.address-form .form-textarea:focus {
+    border-color: #222;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(17,17,17,.045);
+}
+
+.address-form__actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding-top: 2px;
+}
+
+.address-form__actions .btn {
+    min-width: 125px;
+    min-height: 46px;
+    border-radius: 10px;
+}
+
+@media (max-width: 900px) {
+    .account-page-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .address-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .address-actions {
+        width: 100%;
+    }
+
+    .address-actions .btn,
+    .address-actions form {
+        flex: 1;
+    }
+
+    .address-actions form .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .account-page {
+        padding-top: 24px !important;
+    }
+
+    .profile-card,
+    .address-form-card {
+        padding: 18px !important;
+        border-radius: 14px;
+    }
+
+    .profile-grid,
+    .address-form__grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .address-card {
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    .address-card__meta {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .address-card__meta span {
+        width: 100%;
+    }
+
+    .address-empty {
+        min-height: 260px;
+        padding: 28px 18px;
+    }
+
+    .address-form__actions {
+        flex-direction: column;
+    }
+
+    .address-form__actions .btn {
+        width: 100%;
+    }
+}
