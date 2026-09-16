@@ -63,6 +63,9 @@ class Product(models.Model):
 
     @property
     def display_price(self):
+        prefetched = getattr(self, "_prefetched_objects_cache", {}).get("active_variants")
+        if prefetched:
+            return min(variant.price for variant in prefetched)
         return self.base_price
 
     def __str__(self):
