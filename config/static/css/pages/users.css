@@ -1,4 +1,6 @@
 .auth-body { background: #f4f4f1; }
+.auth-body .site-footer { display: none; }
+.auth-body main { min-height: calc(100svh - 68px); }
 
 .auth-page { min-height: calc(100svh - 68px); display: grid; place-items: center; padding: 40px 24px; }
 .auth-shell { width: min(1080px, 100%); min-height: 620px; display: grid; grid-template-columns: minmax(0, .95fr) minmax(420px, .85fr); direction: ltr; overflow: hidden; background: #fff; border: 1px solid var(--color-border); border-radius: 18px; box-shadow: 0 24px 70px rgba(17,17,17,.08); }
@@ -30,6 +32,9 @@
 .auth-policy a { color: #555; text-decoration: underline; text-underline-offset: 3px; }
 .auth-back-link { align-self: flex-start; margin-top: 36px; color: #555; font-size: 12px; transition: color 180ms ease; }
 .auth-back-link:hover { color: #111; }
+.otp-input { direction: ltr !important; text-align: center !important; letter-spacing: 8px; font-family: Arial, sans-serif; font-size: 20px !important; }
+.auth-shell--verify .auth-brand { margin-bottom: 64px; }
+.auth-shell--verify .auth-header p strong { color: #111; font-weight: 600; direction: ltr; unicode-bidi: plaintext; }
 
 @media (max-width: 900px) {
     .auth-shell { grid-template-columns: 1fr; min-height: auto; max-width: 540px; }
