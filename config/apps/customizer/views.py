@@ -89,27 +89,33 @@ class DesignerPageView(View):
                 "max_height_mm": float(area_map.area.max_height_mm),
             })
 
-        artworks = list(
-            Artwork.objects.filter(is_active=True, source=Artwork.Source.LIBRARY)
-            .exclude(image="")
+        price_area_ids = {area.id for area in areas}
+        artwork_price_queryset = (
+            Artwork.objects.filter(
+                is_active=True,
+                source=Artwork.Source.LIBRARY,
+            )
             .only("id", "name", "image", "base_price")
+            .prefetch_related(
+                __import__("django.db.models", fromlist=["Prefetch"]).Prefetch(
+                    "area_prices",
+                    queryset=__import__(".models", fromlist=["ArtworkAreaPrice"]).ArtworkAreaPrice.objects.filter(
+                        area_id__in=price_area_ids,
+                    ).select_related("area").only("id", "artwork_id", "area_id", "price", "area__id", "area__product_id", "area__is_active"),
+                    to_attr="designer_area_prices",
+                )
+            )
             .order_by("name")
         )
+        artworks = list(artwork_price_queryset)
+
         artwork_data = []
+        price_data = {}
         for artwork in artworks:
             image = _file_url(request, artwork.image)
             if image:
                 artwork_data.append({"id": artwork.id, "name": artwork.name, "image": image, "base_price": artwork.base_price})
-
-        price_rows = Artwork.objects.filter(
-            is_active=True,
-            source=Artwork.Source.LIBRARY,
-            area_prices__area__product=product,
-            area_prices__area__is_active=True,
-        ).distinct().prefetch_related("area_prices__area")
-        price_data = {}
-        for artwork in price_rows:
-            for price in artwork.area_prices.all():
+            for price in getattr(artwork, "designer_area_prices", []):
                 if price.area.product_id == product.id and price.area.is_active:
                     price_data[f"{artwork.id}:{price.area_id}"] = price.price
 
@@ -176,8 +182,6 @@ class SaveDesignView(View):
             raw_layers = payload.get("layers", [])
             draft = save_design_draft(request=request, product=product, payload=payload, variant=variant)
 
-            # The legacy validation/storage layer keeps the canonical 2D placement.
-            # Preserve the richer surface-decal metadata beside it for the 3D preview/order snapshot.
             if raw_layers and draft.payload.get("layers"):
                 for normalized_layer, raw_layer in zip(draft.payload["layers"], raw_layers):
                     if isinstance(raw_layer, dict) and raw_layer.get("three_d"):
