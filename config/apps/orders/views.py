@@ -49,7 +49,9 @@ def cart_view(request):
     items = list(_cart_items_queryset(request))
     item_count = sum(item.quantity for item in items)
     subtotal = sum(item.line_total for item in items)
-    return render(request, "orders/cart.html", {"items": items, "item_count": item_count, "subtotal": subtotal})
+    _remember_cart_count(request, item_count)
+    cart = items[0].cart if items else None
+    return render(request, "orders/cart.html", {"cart": cart, "items": items, "item_count": item_count, "subtotal": subtotal})
 
 
 @require_POST
