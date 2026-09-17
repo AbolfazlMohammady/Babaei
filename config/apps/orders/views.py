@@ -18,7 +18,8 @@ def _is_json_request(request):
 
 def _remember_cart_count(request, count):
     count = int(count or 0)
-    request.session[CART_COUNT_SESSION_KEY] = count
+    if request.session.get(CART_COUNT_SESSION_KEY) != count:
+        request.session[CART_COUNT_SESSION_KEY] = count
     request._babaei_cart_item_count = count
     return count
 
@@ -39,10 +40,7 @@ def _cart_totals(cart, request=None):
         subtotal=Sum(line_total, default=0),
     )
     count = _remember_cart_count(request, totals["count"] or 0) if request is not None else totals["count"] or 0
-    return {
-        "count": count,
-        "subtotal": totals["subtotal"] or 0,
-    }
+    return {"count": count, "subtotal": totals["subtotal"] or 0}
 
 
 def cart_view(request):
@@ -57,16 +55,7 @@ def cart_view(request):
     item_count = sum(item.quantity for item in items)
     subtotal = sum(item.line_total for item in items)
     _remember_cart_count(request, item_count)
-    return render(
-        request,
-        "orders/cart.html",
-        {
-            "cart": cart,
-            "items": items,
-            "item_count": item_count,
-            "subtotal": subtotal,
-        },
-    )
+    return render(request, "orders/cart.html", {"cart": cart, "items": items, "item_count": item_count, "subtotal": subtotal})
 
 
 @require_POST
@@ -74,22 +63,10 @@ def cart_add_view(request):
     product_id = request.POST.get("product_id")
     variant_id = request.POST.get("variant_id") or None
     quantity = request.POST.get("quantity", "1")
-
-    product = get_object_or_404(
-        Product.objects.select_related("category"),
-        pk=product_id,
-        is_active=True,
-        category__is_active=True,
-    )
+    product = get_object_or_404(Product.objects.select_related("category"), pk=product_id, is_active=True, category__is_active=True)
     variant = None
     if variant_id:
-        variant = get_object_or_404(
-            ProductVariant,
-            pk=variant_id,
-            product=product,
-            is_active=True,
-        )
-
+        variant = get_object_or_404(ProductVariant, pk=variant_id, product=product, is_active=True)
     try:
         item = add_to_cart(request, product=product, variant=variant, quantity=quantity)
     except (ValueError, TypeError):
@@ -105,20 +82,9 @@ def cart_add_view(request):
         messages.error(request, message)
         return redirect(product.get_absolute_url())
 
-    cart = item.cart
-    totals = _cart_totals(cart, request)
+    totals = _cart_totals(item.cart, request)
     if _is_json_request(request):
-        return JsonResponse(
-            {
-                "ok": True,
-                "count": totals["count"],
-                "subtotal": totals["subtotal"],
-                "item_id": item.id,
-                "variant_id": item.variant_id,
-                "quantity": item.quantity,
-                "message": "محصول به سبد خرید اضافه شد.",
-            }
-        )
+        return JsonResponse({"ok": True, **totals, "item_id": item.id, "variant_id": item.variant_id, "quantity": item.quantity, "message": "محصول به سبد خرید اضافه شد."})
     messages.success(request, "محصول به سبد خرید اضافه شد.")
     return redirect("orders:cart")
 
@@ -138,19 +104,10 @@ def cart_update_view(request, item_id):
     if _is_json_request(request):
         cart = get_active_cart(request)
         totals = _cart_totals(cart, request)
-        payload = {
-            "ok": status == 200,
-            "message": message,
-            "count": totals["count"],
-            "subtotal": totals["subtotal"],
-        }
+        payload = {"ok": status == 200, "message": message, **totals}
         if item is not None:
-            payload["item_id"] = item.id
-            payload["quantity"] = item.quantity
-            payload["line_total"] = item.line_total
-            payload["stock"] = item.variant.stock_quantity if item.variant_id else None
+            payload.update({"item_id": item.id, "quantity": item.quantity, "line_total": item.line_total, "stock": item.variant.stock_quantity if item.variant_id else None})
         return JsonResponse(payload, status=status)
-
     if status == 200:
         messages.success(request, message)
     else:
@@ -163,8 +120,7 @@ def cart_remove_view(request, item_id):
     remove_cart_item(request, item_id)
     if _is_json_request(request):
         cart = get_active_cart(request)
-        totals = _cart_totals(cart, request)
-        return JsonResponse({"ok": True, **totals})
+        return JsonResponse({"ok": True, **_cart_totals(cart, request)})
     messages.success(request, "محصول از سبد خرید حذف شد.")
     return redirect("orders:cart")
 
