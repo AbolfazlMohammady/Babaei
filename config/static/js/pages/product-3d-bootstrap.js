@@ -20,6 +20,7 @@
 
     let timer = null;
     let starting = false;
+    let polling = false;
     let reloadScheduled = false;
 
     function setProgress(value, text) {
@@ -31,28 +32,106 @@
     }
 
     function setFailed(message) {
+        stopPolling();
         setProgress(0, message || "ساخت مدل سه‌بعدی انجام نشد.");
         retryButton?.classList.remove("is-hidden");
     }
 
+    function stopPolling() {
+        if (timer) {
+            window.clearInterval(timer);
+            timer = null;
+        }
+        polling = false;
+    }
+
+    function scheduleReload() {
+        if (reloadScheduled) return;
+        reloadScheduled = true;
+        stopPolling();
+        window.setTimeout(() => window.location.reload(), 700);
+    }
+
+    function startPolling() {
+        if (polling || !statusUrl || reloadScheduled) return;
+        polling = true;
+        timer = window.setInterval(poll, 5000);
+    }
+
+    async function poll() {
+        if (!statusUrl || reloadScheduled) return;
+        try {
+            const response = await fetch(statusUrl, {
+                credentials: "same-origin",
+                headers: { "Accept": "application/json" },
+                cache: "no-store",
+            });
+            const result = await response.json();
+            if (!response.ok || !result.ok) throw new Error(result.error || "وضعیت مدل دریافت نشد.");
+
+            if (result.ready || result.status === "ready") {
+                setProgress(100, "مدل آماده شد؛ محیط سه‌بعدی در حال ورود است…");
+                scheduleReload();
+                return;
+            }
+
+            if (result.status === "failed") {
+                setFailed(result.error || "ساخت مدل سه‌بعدی ناموفق بود.");
+                return;
+            }
+
+            const text = result.status === "removing_background"
+                ? "در حال حذف هوشمند پس‌زمینه تصاویر…"
+                : result.status === "generating"
+                    ? `در حال ساخت مدل سه‌بعدی… ${result.progress || 0}%`
+                    : result.status === "queued"
+                        ? "مدل در صف پردازش قرار گرفت…"
+                        : "در حال آماده‌سازی مدل سه‌بعدی…";
+            setProgress(result.progress || 8, text);
+        } catch (error) {
+            // A temporary status request failure must not restart the generation job.
+            setProgress(generation.progress || 8, "در حال اتصال به پردازشگر سه‌بعدی…");
+        }
+    }
+
     async function prepare() {
-        if (starting || !prepareUrl) return;
+        if (starting || !prepareUrl || reloadScheduled) return;
         starting = true;
         retryButton?.classList.add("is-hidden");
         setProgress(4, "در حال تحلیل تصاویر محصول…");
+
         try {
             const response = await fetch(prepareUrl, {
                 method: "POST",
                 headers: { "X-CSRFToken": csrf(), "Accept": "application/json" },
                 credentials: "same-origin",
+                cache: "no-store",
             });
             const result = await response.json();
             if (!response.ok || !result.ok) throw new Error(result.error || "آماده‌سازی مدل انجام نشد.");
+
             if (result.status === "ready") {
+                if (result.source === "manual") {
+                    // Manual GLB/GLTF is already part of the page data. Do not reload,
+                    // otherwise the page can enter a prepare -> reload loop.
+                    progress.classList.add("is-hidden");
+                    loading.textContent = "مدل سه‌بعدی آماده است.";
+                    stopPolling();
+                    return;
+                }
+                setProgress(100, "مدل آماده شد؛ محیط سه‌بعدی در حال ورود است…");
                 scheduleReload();
-            } else {
-                setProgress(result.progress || 8, "تصاویر محصول آماده‌سازی شد؛ ساخت مدل سه‌بعدی شروع شد…");
+                return;
             }
+
+            const text = result.status === "removing_background"
+                ? "در حال حذف هوشمند پس‌زمینه تصاویر…"
+                : result.status === "generating"
+                    ? "در حال ساخت مدل سه‌بعدی…"
+                    : "مدل در صف پردازش قرار گرفت…";
+            setProgress(result.progress || 8, text);
+            startPolling();
+            await poll();
         } catch (error) {
             setFailed(error.message);
         } finally {
@@ -60,48 +139,26 @@
         }
     }
 
-    async function poll() {
-        if (!statusUrl || reloadScheduled) return;
-        try {
-            const response = await fetch(statusUrl, { credentials: "same-origin", headers: { "Accept": "application/json" } });
-            const result = await response.json();
-            if (!response.ok || !result.ok) throw new Error(result.error || "وضعیت مدل دریافت نشد.");
-            if (result.ready || result.status === "ready") {
-                setProgress(100, "مدل آماده شد؛ محیط سه‌بعدی در حال ورود است…");
-                scheduleReload();
-                return;
-            }
-            if (result.status === "failed") {
-                setFailed(result.error || "ساخت مدل سه‌بعدی ناموفق بود.");
-                return;
-            }
-            const text = result.status === "removing_background"
-                ? "در حال حذف هوشمند پس‌زمینه تصاویر…"
-                : result.status === "generating"
-                    ? `در حال ساخت مدل سه‌بعدی… ${result.progress || 0}%`
-                    : "در حال آماده‌سازی مدل سه‌بعدی…";
-            setProgress(result.progress || 12, text);
-        } catch (error) {
-            setProgress(generation.progress || 10, "در حال اتصال به پردازشگر سه‌بعدی…");
-        }
-    }
-
-    function scheduleReload() {
-        if (reloadScheduled) return;
-        reloadScheduled = true;
-        window.setTimeout(() => window.location.reload(), 700);
-    }
-
     retryButton?.addEventListener("click", () => prepare());
 
     const hasModel = (data.views || []).some((view) => view.model);
     if (hasModel || generation.ready) {
         progress.classList.add("is-hidden");
+        stopPolling();
         return;
     }
 
-    setProgress(generation.progress || 4, generation.status === "generating" ? "در حال ساخت مدل سه‌بعدی…" : "در حال تحلیل محصول و آماده‌سازی مدل…");
+    setProgress(
+        generation.progress || 4,
+        generation.status === "generating"
+            ? "در حال ساخت مدل سه‌بعدی…"
+            : generation.status === "queued"
+                ? "مدل در صف پردازش قرار گرفت…"
+                : "در حال تحلیل محصول و آماده‌سازی مدل…"
+    );
+
+    // Exactly one prepare request per page lifecycle. All subsequent checks use
+    // the read-only status endpoint every five seconds.
     prepare();
-    timer = window.setInterval(poll, 5000);
-    window.addEventListener("beforeunload", () => timer && window.clearInterval(timer), { once: true });
+    window.addEventListener("beforeunload", stopPolling, { once: true });
 })();
