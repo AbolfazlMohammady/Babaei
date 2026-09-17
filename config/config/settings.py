@@ -51,8 +51,14 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'config.urls'
 TEMPLATES = [{'BACKEND': 'django.template.backends.django.DjangoTemplates', 'DIRS': [BASE_DIR / 'templates'], 'APP_DIRS': True, 'OPTIONS': {'context_processors': ['django.template.context_processors.debug', 'django.template.context_processors.request', 'django.contrib.auth.context_processors.auth', 'django.contrib.messages.context_processors.messages', 'apps.orders.context_processors.cart_context']}}]
 DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'data/database/db.sqlite3', 'TEST': {'NAME': ':memory:'}}}
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
+# Sessions are already backed by Redis in this project. Keeping them in the
+# database causes one SELECT on every normal page request (and often an UPDATE
+# when the session is touched). Use the cache backend so ordinary storefront
+# pages do not hit SQL just to read/write the session.
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
+
 AUTH_PASSWORD_VALIDATORS = [{'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'}, {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'}, {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'}, {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'}]
 LANGUAGE_CODE = 'en'
 USE_I18N = True
