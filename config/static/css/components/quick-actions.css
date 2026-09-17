@@ -2,7 +2,6 @@
 .babaei-quick-actions,
 .babaei-quick-actions * { box-sizing: border-box; }
 
-/* The floating menu replaces the old desktop header. */
 .site-header { display: none !important; }
 
 .babaei-quick-actions {
@@ -11,7 +10,6 @@
     --qa-surface-hover: #1d1b18;
     --qa-gold: var(--b-gold, #c9a45c);
     --qa-gold-light: var(--b-gold-light, #e4c77d);
-    --qa-gold-muted: var(--b-gold-muted, #9d7d43);
     --qa-border: rgba(228,199,125,.20);
     position: fixed;
     right: 26px;
@@ -65,6 +63,7 @@
     color: var(--qa-gold-light);
     text-decoration: none;
     cursor: pointer;
+    isolation: isolate;
     box-shadow: 0 12px 30px rgba(0,0,0,.42), inset 0 1px 0 rgba(228,199,125,.08);
     transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
@@ -94,21 +93,24 @@
     stroke-linejoin: round;
 }
 
+/* Tooltip always sits outside the circle and above the icon layer. */
 .babaei-quick-actions__tip {
     position: absolute;
-    right: calc(100% + 12px);
+    right: calc(100% + 14px);
     top: 50%;
-    translate: 6px -50%;
+    z-index: 20;
+    translate: 8px -50%;
     white-space: nowrap;
     padding: 7px 11px;
-    border: 1px solid rgba(228,199,125,.18);
-    border-radius: 7px;
+    border: 1px solid rgba(228,199,125,.20);
+    border-radius: 8px;
     background: #11100e;
     color: var(--qa-gold-light);
     font-family: var(--b-font, inherit);
     font-size: 10px;
-    font-weight: 650;
-    box-shadow: 0 10px 24px rgba(0,0,0,.35);
+    font-weight: 700;
+    line-height: 1.4;
+    box-shadow: 0 10px 24px rgba(0,0,0,.45);
     opacity: 0;
     pointer-events: none;
     transition: opacity .18s ease, translate .18s ease;
@@ -118,6 +120,30 @@
 .babaei-quick-actions__action:focus-visible .babaei-quick-actions__tip {
     opacity: 1;
     translate: 0 -50%;
+}
+
+/* Cart quantity badge — number belongs to the cart icon, not its label. */
+.babaei-quick-actions__badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    z-index: 25;
+    display: grid;
+    place-items: center;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border: 2px solid #101010;
+    border-radius: 999px;
+    background: linear-gradient(145deg, #ead08f 0%, var(--qa-gold) 55%, #a98242 100%);
+    color: #17130b;
+    font-family: var(--b-font, inherit);
+    font-size: 9px;
+    font-weight: 850;
+    line-height: 1;
+    direction: rtl;
+    box-shadow: 0 3px 10px rgba(0,0,0,.35), 0 0 10px rgba(201,164,92,.10);
+    pointer-events: none;
 }
 
 .babaei-quick-actions__fab {
