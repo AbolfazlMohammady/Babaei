@@ -7,6 +7,7 @@ from .models import Cart, CartItem
 
 
 CART_SESSION_KEY = "babaei_cart_session"
+CART_COUNT_SESSION_KEY = "babaei_cart_item_count"
 
 
 def _ensure_session_key(request) -> str:

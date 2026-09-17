@@ -93,13 +93,11 @@
             <article class="product-card">
                 <a href="{{ product.get_absolute_url }}" class="product-card__link" aria-label="مشاهده {{ product.name }}">
                     <div class="product-card__image">
-                        {% with image=product.primary_images.0 %}
-                            {% if image %}
-                                <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy">
-                            {% else %}
-                                <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy">
-                            {% endif %}
-                        {% endwith %}
+                        {% if product.primary_image_url %}
+                            <img src="{{ product.primary_image_url }}" alt="{{ product.primary_image_alt|default:product.name }}" loading="lazy">
+                        {% else %}
+                            <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy">
+                        {% endif %}
                     </div>
                     <div class="product-card__info">
                         <span class="product-card__category">{{ product.category.name }}</span>

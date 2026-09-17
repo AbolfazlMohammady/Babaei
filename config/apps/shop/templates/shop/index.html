@@ -26,13 +26,11 @@
         </div>
         <div class="shop-hero__visual" aria-hidden="true">
             {% with hero_product=products.0 %}
-                {% with hero_image=hero_product.primary_images.0 %}
-                    {% if hero_image %}
-                        <img src="{{ hero_image.image.url }}" alt="" fetchpriority="high" decoding="async">
-                    {% else %}
-                        <img src="{% static 'images/home/Tshirt.png' %}" alt="" fetchpriority="high" decoding="async">
-                    {% endif %}
-                {% endwith %}
+                {% if hero_product.primary_image_url %}
+                    <img src="{{ hero_product.primary_image_url }}" alt="" fetchpriority="high" decoding="async">
+                {% else %}
+                    <img src="{% static 'images/home/Tshirt.png' %}" alt="" fetchpriority="high" decoding="async">
+                {% endif %}
             {% endwith %}
             <div class="shop-hero__label">DESIGN YOUR STORY</div>
         </div>
@@ -67,13 +65,11 @@
             {% for product in products %}
                 <a class="product-card" href="{% url 'shop:product' product.slug %}">
                     <div class="product-card__image">
-                        {% with image=product.primary_images.0 %}
-                            {% if image %}
-                                <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async">
-                            {% else %}
-                                <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async">
-                            {% endif %}
-                        {% endwith %}
+                        {% if product.primary_image_url %}
+                            <img src="{{ product.primary_image_url }}" alt="{{ product.primary_image_alt|default:product.name }}" loading="lazy" decoding="async">
+                        {% else %}
+                            <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async">
+                        {% endif %}
                         {% if product.has_discount %}<span class="product-card__discount">{{ product.discount_percent|discount_percent }}</span>{% endif %}
                     </div>
                     <div class="product-card__category">{{ product.category.name }}</div>

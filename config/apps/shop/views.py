@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 from django.conf import settings
-from django.db.models import Case, IntegerField, OuterRef, Prefetch, Subquery, When
+from django.db.models import Case, CharField, Concat, IntegerField, OuterRef, Prefetch, Subquery, Value, When
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
@@ -36,20 +36,35 @@ def price_annotations():
     )
 
 
+def primary_image_annotations():
+    images = ProductImage.objects.filter(
+        product_id=OuterRef("pk"),
+        image_type=ProductImage.ImageType.PRIMARY,
+    ).order_by("sort_order", "id")
+    image_path = Subquery(images.values("image")[:1], output_field=CharField(max_length=500))
+    image_alt = Subquery(images.values("alt_text")[:1], output_field=CharField(max_length=180))
+    return (
+        Concat(Value(settings.MEDIA_URL), image_path, output_field=CharField(max_length=520)),
+        image_alt,
+    )
+
+
 class ShopIndexView(ListView):
     template_name = "shop/index.html"
     context_object_name = "products"
 
     def get_queryset(self):
-        primary_images = ProductImage.objects.filter(image_type=ProductImage.ImageType.PRIMARY).only(
-            "id", "product_id", "image", "alt_text"
-        )
         variant_price, variant_compare_price = price_annotations()
+        primary_image_url, primary_image_alt = primary_image_annotations()
         return (
             Product.objects.filter(is_active=True, category__is_active=True)
             .select_related("category")
-            .annotate(listed_price=variant_price, listed_compare_price=variant_compare_price)
-            .prefetch_related(Prefetch("images", queryset=primary_images, to_attr="primary_images"))
+            .annotate(
+                listed_price=variant_price,
+                listed_compare_price=variant_compare_price,
+                primary_image_url=primary_image_url,
+                primary_image_alt=primary_image_alt,
+            )
             .order_by("-is_featured", "-created_at")[:24]
         )
 
@@ -83,15 +98,17 @@ class CategoryDetailView(ListView):
             slug=self.kwargs["slug"],
             is_active=True,
         )
-        primary_images = ProductImage.objects.filter(image_type=ProductImage.ImageType.PRIMARY).only(
-            "id", "product_id", "image", "alt_text"
-        )
         variant_price, variant_compare_price = price_annotations()
+        primary_image_url, primary_image_alt = primary_image_annotations()
         return (
             Product.objects.filter(category_id=self.category.id, is_active=True)
             .select_related("category")
-            .annotate(listed_price=variant_price, listed_compare_price=variant_compare_price)
-            .prefetch_related(Prefetch("images", queryset=primary_images, to_attr="primary_images"))
+            .annotate(
+                listed_price=variant_price,
+                listed_compare_price=variant_compare_price,
+                primary_image_url=primary_image_url,
+                primary_image_alt=primary_image_alt,
+            )
         )
 
     def get_context_data(self, **kwargs):

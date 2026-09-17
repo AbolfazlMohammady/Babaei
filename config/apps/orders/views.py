@@ -9,14 +9,21 @@ from django.views.decorators.http import require_POST
 from apps.shop.models import Product, ProductVariant
 
 from .models import CartItem
-from .services import add_to_cart, clear_cart, get_active_cart, remove_cart_item, update_cart_item
+from .services import CART_COUNT_SESSION_KEY, add_to_cart, clear_cart, get_active_cart, remove_cart_item, update_cart_item
 
 
 def _is_json_request(request):
     return request.headers.get("X-Requested-With") == "XMLHttpRequest" or "application/json" in request.headers.get("Accept", "")
 
 
-def _cart_totals(cart):
+def _remember_cart_count(request, count):
+    count = int(count or 0)
+    request.session[CART_COUNT_SESSION_KEY] = count
+    request._babaei_cart_item_count = count
+    return count
+
+
+def _cart_totals(cart, request=None):
     """Calculate badge count and subtotal in one SQL aggregation query."""
     unit_price = Case(
         When(variant__isnull=False, then=F("variant__price")),
@@ -31,8 +38,9 @@ def _cart_totals(cart):
         count=Sum("quantity", default=0),
         subtotal=Sum(line_total, default=0),
     )
+    count = _remember_cart_count(request, totals["count"] or 0) if request is not None else totals["count"] or 0
     return {
-        "count": totals["count"] or 0,
+        "count": count,
         "subtotal": totals["subtotal"] or 0,
     }
 
@@ -46,15 +54,17 @@ def cart_view(request):
             "variant__size",
         ).prefetch_related("product__images")
     )
-    totals = _cart_totals(cart)
+    item_count = sum(item.quantity for item in items)
+    subtotal = sum(item.line_total for item in items)
+    _remember_cart_count(request, item_count)
     return render(
         request,
         "orders/cart.html",
         {
             "cart": cart,
             "items": items,
-            "item_count": totals["count"],
-            "subtotal": totals["subtotal"],
+            "item_count": item_count,
+            "subtotal": subtotal,
         },
     )
 
@@ -95,8 +105,8 @@ def cart_add_view(request):
         messages.error(request, message)
         return redirect(product.get_absolute_url())
 
-    cart = get_active_cart(request)
-    totals = _cart_totals(cart)
+    cart = item.cart
+    totals = _cart_totals(cart, request)
     if _is_json_request(request):
         return JsonResponse(
             {
@@ -127,7 +137,7 @@ def cart_update_view(request, item_id):
 
     if _is_json_request(request):
         cart = get_active_cart(request)
-        totals = _cart_totals(cart)
+        totals = _cart_totals(cart, request)
         payload = {
             "ok": status == 200,
             "message": message,
@@ -153,7 +163,7 @@ def cart_remove_view(request, item_id):
     remove_cart_item(request, item_id)
     if _is_json_request(request):
         cart = get_active_cart(request)
-        totals = _cart_totals(cart)
+        totals = _cart_totals(cart, request)
         return JsonResponse({"ok": True, **totals})
     messages.success(request, "محصول از سبد خرید حذف شد.")
     return redirect("orders:cart")
@@ -162,6 +172,7 @@ def cart_remove_view(request, item_id):
 @require_POST
 def cart_clear_view(request):
     clear_cart(request)
+    _remember_cart_count(request, 0)
     if _is_json_request(request):
         return JsonResponse({"ok": True, "count": 0, "subtotal": 0})
     messages.success(request, "سبد خرید خالی شد.")
