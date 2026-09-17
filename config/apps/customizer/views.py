@@ -4,6 +4,7 @@ import json
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models import Prefetch
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -134,24 +135,41 @@ class PrepareProduct3DView(View):
         product = get_object_or_404(Product, slug=slug, is_active=True, category__is_active=True)
         manual_model = product.designer_views.filter(is_active=True).exclude(model_3d="").exists() or product.designer_views.filter(is_active=True).exclude(model_3d_url="").exists()
         if manual_model:
-            return JsonResponse({"ok": True, "status": "ready", "source": "manual"})
+            return JsonResponse({"ok": True, "status": "ready", "source": "manual", "progress": 100})
+
         images = product_images(product)
         if not images:
             return JsonResponse({"ok": False, "error": "این محصول تصویر قابل تحلیل ندارد."}, status=422)
+
         signature = source_signature(images)
-        asset, _ = Product3DAsset.objects.get_or_create(product=product, defaults={"source_signature": signature})
-        if asset.status == Product3DAsset.Status.READY and asset.source_signature == signature and (asset.model_3d or asset.model_url):
-            return JsonResponse({"ok": True, "status": "ready", "progress": 100})
-        if asset.status in {Product3DAsset.Status.REMOVING_BACKGROUND, Product3DAsset.Status.GENERATING} and asset.task_id:
-            return JsonResponse({"ok": True, "status": asset.status, "progress": asset.progress})
-        asset.status = Product3DAsset.Status.QUEUED
-        asset.source_signature = signature
-        asset.task_id = ""
-        asset.progress = 0
-        asset.error_message = ""
-        asset.model_url = ""
-        asset.save(update_fields=["status", "source_signature", "task_id", "progress", "error_message", "model_url", "updated_at"])
-        prepare_product_3d.delay(asset.id)
+        with transaction.atomic():
+            asset, _ = Product3DAsset.objects.get_or_create(product=product, defaults={"source_signature": signature})
+            asset = Product3DAsset.objects.select_for_update().get(pk=asset.pk)
+
+            if asset.status == Product3DAsset.Status.READY and asset.source_signature == signature and (asset.model_3d or asset.model_url):
+                return JsonResponse({"ok": True, "status": "ready", "source": "generated", "progress": 100})
+
+            # task_id is the Celery task id while the job is queued/running and is
+            # replaced by the Meshy task id once the worker starts generation.
+            if asset.status in {
+                Product3DAsset.Status.QUEUED,
+                Product3DAsset.Status.REMOVING_BACKGROUND,
+                Product3DAsset.Status.GENERATING,
+            } and asset.task_id:
+                return JsonResponse({"ok": True, "status": asset.status, "progress": asset.progress})
+
+            asset.status = Product3DAsset.Status.QUEUED
+            asset.source_signature = signature
+            asset.task_id = ""
+            asset.progress = 0
+            asset.error_message = ""
+            asset.model_url = ""
+            asset.save(update_fields=["status", "source_signature", "task_id", "progress", "error_message", "model_url", "updated_at"])
+
+            task_result = prepare_product_3d.delay(asset.id)
+            asset.task_id = task_result.id
+            asset.save(update_fields=["task_id", "updated_at"])
+
         return JsonResponse({"ok": True, "status": asset.status, "progress": 0}, status=202)
 
 
