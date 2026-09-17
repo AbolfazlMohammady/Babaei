@@ -11,6 +11,8 @@ from apps.shop.models import Product, ProductVariant
 from .models import Cart, CartItem
 from .services import CART_COUNT_SESSION_KEY, CART_SESSION_KEY, add_to_cart, clear_cart, get_active_cart, remove_cart_item, update_cart_item
 
+AUTH_USER_SESSION_KEY = "_auth_user_id"
+
 
 def _is_json_request(request):
     return request.headers.get("X-Requested-With") == "XMLHttpRequest" or "application/json" in request.headers.get("Accept", "")
@@ -25,11 +27,7 @@ def _remember_cart_count(request, count):
 
 
 def _cart_totals(cart, request=None):
-    unit_price = Case(
-        When(variant__isnull=False, then=F("variant__price")),
-        default=F("product__base_price"),
-        output_field=PositiveBigIntegerField(),
-    )
+    unit_price = Case(When(variant__isnull=False, then=F("variant__price")), default=F("product__base_price"), output_field=PositiveBigIntegerField())
     line_total = ExpressionWrapper(F("quantity") * unit_price, output_field=PositiveBigIntegerField())
     totals = cart.items.aggregate(count=Sum("quantity", default=0), subtotal=Sum(line_total, default=0))
     count = _remember_cart_count(request, totals["count"] or 0) if request is not None else totals["count"] or 0
@@ -37,14 +35,10 @@ def _cart_totals(cart, request=None):
 
 
 def _cart_items_queryset(request):
-    queryset = CartItem.objects.select_related(
-        "cart",
-        "product__category",
-        "variant__color",
-        "variant__size",
-    ).prefetch_related("product__images")
-    if request.user.is_authenticated:
-        return queryset.filter(cart__user=request.user, cart__status=Cart.Status.ACTIVE).order_by("added_at", "id")
+    queryset = CartItem.objects.select_related("cart", "product__category", "variant__color", "variant__size").prefetch_related("product__images")
+    user_id = request.session.get(AUTH_USER_SESSION_KEY)
+    if user_id:
+        return queryset.filter(cart__user_id=user_id, cart__status=Cart.Status.ACTIVE).order_by("added_at", "id")
     session_key = request.session.get(CART_SESSION_KEY) or request.session.session_key
     if not session_key:
         return queryset.none()
@@ -55,7 +49,6 @@ def cart_view(request):
     items = list(_cart_items_queryset(request))
     item_count = sum(item.quantity for item in items)
     subtotal = sum(item.line_total for item in items)
-    # Do not rewrite the session on every GET. Cart mutations keep the badge cache authoritative.
     return render(request, "orders/cart.html", {"items": items, "item_count": item_count, "subtotal": subtotal})
 
 
