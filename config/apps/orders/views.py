@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from django.conf import settings
 from django.contrib import messages
-from django.db.models import Case, ExpressionWrapper, F, PositiveBigIntegerField, Sum, When
+from django.db.models import Case, CharField, ExpressionWrapper, F, OuterRef, PositiveBigIntegerField, Subquery, Sum, When, Value
+from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from apps.shop.models import Product, ProductVariant
+from apps.shop.models import Product, ProductImage, ProductVariant
 
 from .models import Cart, CartItem
 from .services import CART_COUNT_SESSION_KEY, CART_SESSION_KEY, add_to_cart, clear_cart, get_active_cart, remove_cart_item, update_cart_item
@@ -35,7 +37,24 @@ def _cart_totals(cart, request=None):
 
 
 def _cart_items_queryset(request):
-    queryset = CartItem.objects.select_related("cart", "product__category", "variant__color", "variant__size").prefetch_related("product__images")
+    primary_images = ProductImage.objects.filter(
+        product_id=OuterRef("product_id"),
+        image_type=ProductImage.ImageType.PRIMARY,
+    ).order_by("sort_order", "id")
+    primary_image_url = Concat(
+        Value(settings.MEDIA_URL),
+        Subquery(primary_images.values("image")[:1], output_field=CharField(max_length=500)),
+        output_field=CharField(max_length=520),
+    )
+    primary_image_alt = Subquery(
+        primary_images.values("alt_text")[:1],
+        output_field=CharField(max_length=180),
+    )
+    queryset = (
+        CartItem.objects
+        .select_related("cart", "product__category", "variant__color", "variant__size")
+        .annotate(primary_image_url=primary_image_url, primary_image_alt=primary_image_alt)
+    )
     user_id = request.session.get(AUTH_USER_SESSION_KEY)
     if user_id:
         return queryset.filter(cart__user_id=user_id, cart__status=Cart.Status.ACTIVE).order_by("added_at", "id")
