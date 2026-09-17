@@ -12,6 +12,8 @@ from django.views.generic import DetailView, ListView
 
 from .models import Category, Product, ProductImage, ProductVariant
 
+AUTH_USER_SESSION_KEY = "_auth_user_id"
+
 
 def absolute_url(request, path):
     if path.startswith("http://") or path.startswith("https://"):
@@ -97,17 +99,14 @@ class ProductDetailView(DetailView):
 
     def get_queryset(self):
         images = ProductImage.objects.only("id", "product_id", "image", "alt_text", "image_type", "sort_order").annotate(type_priority=Case(When(image_type=ProductImage.ImageType.PRIMARY, then=0), When(image_type=ProductImage.ImageType.DETAIL, then=1), default=2, output_field=IntegerField())).order_by("type_priority", "sort_order", "id")
-
         from apps.orders.models import Cart, CartItem
-        cart_quantity = None
-        if self.request.user.is_authenticated:
-            cart_quantity = Subquery(CartItem.objects.filter(cart__user=self.request.user, cart__status=Cart.Status.ACTIVE, product_id=OuterRef("product_id"), variant_id=OuterRef("pk")).values("quantity")[:1], output_field=IntegerField())
+        user_id = self.request.session.get(AUTH_USER_SESSION_KEY)
+        if user_id:
+            cart_quantity = Subquery(CartItem.objects.filter(cart__user_id=user_id, cart__status=Cart.Status.ACTIVE, product_id=OuterRef("product_id"), variant_id=OuterRef("pk")).values("quantity")[:1], output_field=IntegerField())
         else:
             session_key = self.request.session.session_key
-            if session_key:
-                cart_quantity = Subquery(CartItem.objects.filter(cart__session_key=session_key, cart__user__isnull=True, cart__status=Cart.Status.ACTIVE, product_id=OuterRef("product_id"), variant_id=OuterRef("pk")).values("quantity")[:1], output_field=IntegerField())
-
-        variants = ProductVariant.objects.filter(is_active=True).select_related("color", "size").only("id", "product_id", "color_id", "size_id", "sku", "price", "compare_at_price", "stock_quantity", "color__id", "color__name", "color__slug", "color__hex_code", "size__id", "size__name", "size__slug", "size__sort_order").annotate(cart_quantity=cart_quantity if cart_quantity is not None else Value(0, output_field=IntegerField())).order_by("color__name", "size__sort_order", "size__name")
+            cart_quantity = Subquery(CartItem.objects.filter(cart__session_key=session_key, cart__user__isnull=True, cart__status=Cart.Status.ACTIVE, product_id=OuterRef("product_id"), variant_id=OuterRef("pk")).values("quantity")[:1], output_field=IntegerField()) if session_key else Value(0, output_field=IntegerField())
+        variants = ProductVariant.objects.filter(is_active=True).select_related("color", "size").only("id", "product_id", "color_id", "size_id", "sku", "price", "compare_at_price", "stock_quantity", "color__id", "color__name", "color__slug", "color__hex_code", "size__id", "size__name", "size__slug", "size__sort_order").annotate(cart_quantity=cart_quantity).order_by("color__name", "size__sort_order", "size__name")
         return Product.objects.filter(is_active=True, category__is_active=True).select_related("category").prefetch_related(Prefetch("images", queryset=images, to_attr="gallery_images"), Prefetch("variants", queryset=variants, to_attr="active_variants"))
 
     def get_context_data(self, **kwargs):
