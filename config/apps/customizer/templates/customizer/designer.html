@@ -24,7 +24,7 @@
         <div>
             <a class="customizer-back" href="{{ product.get_absolute_url }}">بازگشت به {{ product.name }}</a>
             <h1>لباست را خودت طراحی کن</h1>
-            <p>لیبل را انتخاب کن، ناحیه چاپ را مشخص کن و با چرخاندن نماهای لباس جای آن را دقیق تنظیم کن.</p>
+            <p>لباس را در فضای سه‌بعدی بچرخان، لیبل را روی سطح قرار بده و اندازه و زاویه‌اش را دقیق تنظیم کن.</p>
         </div>
         <div class="customizer-price-card" aria-live="polite">
             <span>قیمت نهایی</span>
@@ -43,7 +43,11 @@
     {% else %}
     <div class="customizer-toolbar">
         <div class="view-switcher" id="view-switcher" role="tablist" aria-label="نمای لباس"></div>
-        <div class="toolbar-hint">روی لیبل بکش · اسکرول برای بزرگ‌نمایی · دکمه‌ها برای چرخش</div>
+        <div class="customizer-mode-switch" role="group" aria-label="حالت نمایش">
+            {% if designer_has_3d %}<button type="button" class="mode-button is-active" data-mode="3d">سه‌بعدی</button>{% endif %}
+            <button type="button" class="mode-button{% if not designer_has_3d %} is-active{% endif %}" data-mode="2d">نمای چاپ</button>
+        </div>
+        <div class="toolbar-hint">در سه‌بعدی با ماوس/لمس بچرخان · برای زوم اسکرول یا دو انگشتی استفاده کن</div>
     </div>
 
     <main class="customizer-workspace">
@@ -67,8 +71,17 @@
 
         <section class="customizer-stage-wrap" aria-label="محیط طراحی لباس">
             <div class="customizer-stage" id="stage-shell">
-                <canvas id="designer-canvas" aria-label="پیش‌نمایش لباس و لیبل‌ها"></canvas>
-                <div class="stage-loading" id="stage-loading">در حال آماده‌سازی لباس…</div>
+                {% if designer_has_3d %}
+                <div class="designer-3d-stage" id="designer-3d-stage" aria-label="پیش‌نمایش سه‌بعدی لباس">
+                    <canvas id="designer-3d-canvas"></canvas>
+                    <div class="designer-3d-loading" id="designer-3d-loading">در حال آماده‌سازی مدل سه‌بعدی…</div>
+                    <div class="designer-3d-hint" id="designer-3d-hint">برای چرخاندن لباس بکش</div>
+                </div>
+                {% endif %}
+                <div class="designer-2d-stage{% if designer_has_3d %} is-hidden{% endif %}" id="designer-2d-stage">
+                    <canvas id="designer-canvas" aria-label="پیش‌نمایش چاپ لباس"></canvas>
+                    <div class="stage-loading" id="stage-loading">در حال آماده‌سازی لباس…</div>
+                </div>
             </div>
             <div class="stage-controls">
                 <div class="stage-control-group">
@@ -120,4 +133,15 @@
 
 {% block extra_js %}
 <script src="{% static 'js/pages/customizer.js' %}" defer></script>
+{% if designer_has_3d %}
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="{% static 'js/pages/customizer-3d.js' %}"></script>
+{% endif %}
 {% endblock %}
