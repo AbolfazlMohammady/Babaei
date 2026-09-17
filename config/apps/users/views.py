@@ -1,10 +1,11 @@
 import logging
 import secrets
-from datetime import date, timedelta
+from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -17,17 +18,24 @@ User = get_user_model()
 AUTH_BACKEND = "apps.users.backends.BabaeiAxesBackend"
 MIN_PROFILE_AGE = 13
 
+ADDRESS_PROVINCES_CACHE_KEY = "babaei:users:provinces:v1"
+ADDRESS_CITIES_CACHE_KEY = "babaei:users:cities:v1"
+ADDRESS_GEO_CACHE_TTL = 1800
+AUTH_USER_SESSION_KEY = "_auth_user_id"
+
+
+def _is_authenticated_session(request):
+    return bool(request.session.get(AUTH_USER_SESSION_KEY))
+
 
 def login_view(request):
-    if request.user.is_authenticated:
+    if _is_authenticated_session(request):
         return redirect("users:profile")
-
     if request.method == "POST":
         phone = request.POST.get("phone", "").strip()
         if not phone:
             messages.error(request, "شماره موبایل را وارد کنید.")
             return render(request, "users/auth/login.html", {"phone": phone})
-
         otp = OTP(phone=phone, code=f"{secrets.randbelow(1_000_000):06d}")
         otp.save()
         request.session["otp_phone"] = phone
@@ -35,19 +43,16 @@ def login_view(request):
         logger.info("OTP requested for phone %s", phone)
         logger.info("Development OTP: %s", otp.code)
         return redirect("users:verify_otp")
-
     return render(request, "users/auth/login.html")
 
 
 def verify_otp_view(request):
-    if request.user.is_authenticated:
+    if _is_authenticated_session(request):
         return redirect("users:profile")
-
     phone = request.session.get("otp_phone")
     otp_id = request.session.get("otp_id")
     if not phone or not otp_id:
         return redirect("users:login")
-
     otp = get_object_or_404(OTP, id=otp_id, phone=phone)
     if request.method == "POST":
         code = request.POST.get("code", "").strip()
@@ -57,19 +62,16 @@ def verify_otp_view(request):
         if otp.code != code:
             messages.error(request, "کد تأیید صحیح نیست.")
             return render(request, "users/auth/verify_otp.html", {"phone": phone})
-
         otp.is_used = True
         otp.save(update_fields=["is_used"])
         user, _ = User.objects.get_or_create(phone=phone, defaults={"role": "customer"})
         if not user.is_active:
             messages.error(request, "حساب کاربری شما غیرفعال است.")
             return redirect("users:login")
-
         login(request, user, backend=AUTH_BACKEND)
         request.session.pop("otp_phone", None)
         request.session.pop("otp_id", None)
         return redirect("users:profile")
-
     return render(request, "users/auth/verify_otp.html", {"phone": phone})
 
 
@@ -87,7 +89,6 @@ def profile_update_view(request):
         user.last_name = request.POST.get("last_name", "").strip()
         user.email = request.POST.get("email", "").strip() or None
         user.gender = request.POST.get("gender") or None
-
         birth_date = request.POST.get("birth_date", "").strip()
         if birth_date:
             try:
@@ -95,7 +96,6 @@ def profile_update_view(request):
             except ValueError:
                 messages.error(request, "تاریخ تولد نامعتبر است.")
                 return render(request, "users/account/profile.html", {"user": user})
-
             today = timezone.localdate()
             minimum_birth_date = date(today.year - MIN_PROFILE_AGE, today.month, today.day)
             if parsed_birth_date >= today:
@@ -107,14 +107,11 @@ def profile_update_view(request):
             user.birth_date = parsed_birth_date
         else:
             user.birth_date = None
-
         if "image" in request.FILES:
             user.image = request.FILES["image"]
-
         user.save()
         messages.success(request, "اطلاعات حساب با موفقیت ذخیره شد.")
         return redirect("users:profile")
-
     return render(request, "users/account/profile.html", {"user": request.user})
 
 
@@ -125,16 +122,17 @@ def addresses_view(request):
 
 
 def _address_context(address=None, selected_province_id=None):
-    provinces = Province.objects.order_by("name")
-    cities = City.objects.select_related("province").order_by("province__name", "name")
+    provinces = cache.get(ADDRESS_PROVINCES_CACHE_KEY)
+    if provinces is None:
+        provinces = list(Province.objects.only("id", "name").order_by("name"))
+        cache.set(ADDRESS_PROVINCES_CACHE_KEY, provinces, ADDRESS_GEO_CACHE_TTL)
+    cities = cache.get(ADDRESS_CITIES_CACHE_KEY)
+    if cities is None:
+        cities = list(City.objects.select_related("province").only("id", "name", "province_id", "province__id", "province__name").order_by("province__name", "name"))
+        cache.set(ADDRESS_CITIES_CACHE_KEY, cities, ADDRESS_GEO_CACHE_TTL)
     if selected_province_id is None and address and address.city_id:
         selected_province_id = address.city.province_id
-    return {
-        "address": address,
-        "provinces": provinces,
-        "cities": cities,
-        "selected_province_id": int(selected_province_id) if selected_province_id else None,
-    }
+    return {"address": address, "provinces": provinces, "cities": cities, "selected_province_id": int(selected_province_id) if selected_province_id else None}
 
 
 def _validate_city_province(city_id, province_id):
@@ -150,13 +148,7 @@ def _validate_city_province(city_id, province_id):
 @require_http_methods(["GET", "POST"])
 def address_create_view(request):
     if request.method == "POST":
-        address = Address(
-            user=request.user,
-            title=request.POST.get("title", "").strip(),
-            phone=request.POST.get("phone", "").strip(),
-            description=request.POST.get("description", "").strip(),
-            postal_code=request.POST.get("postal_code", "").strip(),
-        )
+        address = Address(user=request.user, title=request.POST.get("title", "").strip(), phone=request.POST.get("phone", "").strip(), description=request.POST.get("description", "").strip(), postal_code=request.POST.get("postal_code", "").strip())
         province_id = request.POST.get("province")
         try:
             address.city = _validate_city_province(request.POST.get("city"), province_id)
@@ -164,11 +156,9 @@ def address_create_view(request):
         except ValidationError as exc:
             messages.error(request, exc.messages[0] if exc.messages else "اطلاعات آدرس صحیح نیست.")
             return render(request, "users/account/address_form.html", _address_context(address, province_id))
-
         address.save()
         messages.success(request, "آدرس با موفقیت اضافه شد.")
         return redirect("users:addresses")
-
     return render(request, "users/account/address_form.html", _address_context())
 
 
@@ -188,11 +178,9 @@ def address_update_view(request, pk):
         except ValidationError as exc:
             messages.error(request, exc.messages[0] if exc.messages else "اطلاعات آدرس صحیح نیست.")
             return render(request, "users/account/address_form.html", _address_context(address, province_id))
-
         address.save()
         messages.success(request, "آدرس با موفقیت ویرایش شد.")
         return redirect("users:addresses")
-
     return render(request, "users/account/address_form.html", _address_context(address))
 
 
