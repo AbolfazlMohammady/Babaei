@@ -10,10 +10,7 @@
 {% block og_description %}خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی.{% endblock %}
 {% block og_image %}{% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}">{% endif %}{% endblock %}
 {% block extra_head %}<script type="application/ld+json">{{ website_schema }}</script>{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}">
-{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}">{% endblock %}
 
 {% block content %}
 <div class="shop-shell">
@@ -25,13 +22,11 @@
             <a class="shop-hero__cta" href="#products">مشاهده محصولات</a>
         </div>
         <div class="shop-hero__visual" aria-hidden="true">
-            {% with hero_product=products.0 %}
-                {% if hero_product.primary_image_url %}
-                    <img src="{{ hero_product.primary_image_url }}" alt="" fetchpriority="high" decoding="async">
-                {% else %}
-                    <img src="{% static 'images/home/Tshirt.png' %}" alt="" fetchpriority="high" decoding="async">
-                {% endif %}
-            {% endwith %}
+            {% if hero_product and hero_product.primary_image_url %}
+                <img src="{{ hero_product.primary_image_url }}" alt="" fetchpriority="high" decoding="async">
+            {% else %}
+                <img src="{% static 'images/home/Tshirt.png' %}" alt="" fetchpriority="high" decoding="async">
+            {% endif %}
             <div class="shop-hero__label">DESIGN YOUR STORY</div>
         </div>
     </section>
@@ -43,11 +38,8 @@
             {% for category in categories %}
                 <a class="category-card" href="{% url 'shop:category' category.slug %}">
                     <div class="category-card__image">
-                        {% if category.image %}
-                            <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">
-                        {% else %}
-                            <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ category.name }}" loading="lazy" decoding="async">
-                        {% endif %}
+                        {% if category.image %}<img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">
+                        {% else %}<img src="{% static 'images/home/Tshirt.png' %}" alt="{{ category.name }}" loading="lazy" decoding="async">{% endif %}
                     </div>
                     <div class="category-card__title">{{ category.name }}</div>
                 </a>
@@ -65,11 +57,8 @@
             {% for product in products %}
                 <a class="product-card" href="{% url 'shop:product' product.slug %}">
                     <div class="product-card__image">
-                        {% if product.primary_image_url %}
-                            <img src="{{ product.primary_image_url }}" alt="{{ product.primary_image_alt|default:product.name }}" loading="lazy" decoding="async">
-                        {% else %}
-                            <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async">
-                        {% endif %}
+                        {% if product.primary_image_url %}<img src="{{ product.primary_image_url }}" alt="{{ product.primary_image_alt|default:product.name }}" loading="lazy" decoding="async">
+                        {% else %}<img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async">{% endif %}
                         {% if product.has_discount %}<span class="product-card__discount">{{ product.discount_percent|discount_percent }}</span>{% endif %}
                     </div>
                     <div class="product-card__category">{{ product.category.name }}</div>
@@ -79,9 +68,7 @@
                         {% if product.has_discount %}<del>{{ product.display_compare_price|price }} تومان</del>{% endif %}
                     </div>
                 </a>
-            {% empty %}
-                <div class="empty-state">هنوز محصولی برای نمایش وجود ندارد.</div>
-            {% endfor %}
+            {% empty %}<div class="empty-state">هنوز محصولی برای نمایش وجود ندارد.</div>{% endfor %}
         </div>
     </section>
 </div>
