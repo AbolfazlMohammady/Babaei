@@ -1,0 +1,161 @@
+/* BABAEI — floating quick actions */
+.babaei-quick-actions,
+.babaei-quick-actions * {
+    box-sizing: border-box;
+}
+
+.babaei-quick-actions {
+    --qa-ink: var(--color-black, #171614);
+    --qa-surface: var(--color-surface, #ffffff);
+    --qa-bg: var(--color-bg, #f7f5f1);
+    --qa-border: var(--color-border, #dedbd5);
+    --qa-muted: var(--color-muted, #77736c);
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 900;
+    direction: ltr;
+}
+
+.babaei-quick-actions__ring {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.babaei-quick-actions__item {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    translate: 0 0;
+    scale: .3;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        translate .45s cubic-bezier(.34, 1.4, .4, 1),
+        scale .45s cubic-bezier(.34, 1.4, .4, 1),
+        opacity .25s ease,
+        visibility 0s .45s;
+    transition-delay: calc(var(--i) * 45ms);
+}
+
+.babaei-quick-actions.is-open .babaei-quick-actions__item {
+    translate: calc(cos(var(--a)) * 108px) calc(sin(var(--a)) * -1 * 108px);
+    scale: 1;
+    opacity: 1;
+    visibility: visible;
+    transition:
+        translate .45s cubic-bezier(.34, 1.4, .4, 1),
+        scale .45s cubic-bezier(.34, 1.4, .4, 1),
+        opacity .25s ease,
+        visibility 0s;
+    transition-delay: calc(var(--i) * 55ms);
+}
+
+.babaei-quick-actions__action {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin: -24px;
+    border: 1px solid var(--qa-border);
+    border-radius: 50%;
+    background: var(--qa-surface);
+    color: var(--qa-ink);
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 12px 26px rgba(23, 22, 20, .10), 0 1px 0 rgba(255,255,255,.8) inset;
+    transition: transform .18s ease, background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+
+.babaei-quick-actions__action:hover {
+    transform: translateY(-2px);
+    border-color: var(--qa-ink);
+    background: var(--qa-bg);
+}
+
+.babaei-quick-actions__action:focus-visible,
+.babaei-quick-actions__fab:focus-visible {
+    outline: 2px solid var(--qa-ink);
+    outline-offset: 4px;
+}
+
+.babaei-quick-actions__action svg,
+.babaei-quick-actions__fab svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.babaei-quick-actions__tip {
+    position: absolute;
+    right: calc(100% + 10px);
+    top: 50%;
+    translate: 5px -50%;
+    white-space: nowrap;
+    padding: 6px 10px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 8px;
+    background: var(--qa-ink);
+    color: #fff;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 750;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease, translate .18s ease;
+}
+
+.babaei-quick-actions__action:hover .babaei-quick-actions__tip,
+.babaei-quick-actions__action:focus-visible .babaei-quick-actions__tip {
+    opacity: 1;
+    translate: 0 -50%;
+}
+
+.babaei-quick-actions__fab {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 60px;
+    height: 60px;
+    border: 1px solid var(--qa-ink);
+    border-radius: 50%;
+    background: var(--qa-ink);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 16px 34px rgba(23, 22, 20, .20);
+    transition: rotate .35s cubic-bezier(.34, 1.4, .4, 1), transform .18s ease, box-shadow .25s ease;
+}
+
+.babaei-quick-actions__fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 19px 38px rgba(23, 22, 20, .24);
+}
+
+.babaei-quick-actions.is-open .babaei-quick-actions__fab {
+    rotate: 135deg;
+    box-shadow: 0 9px 22px rgba(23, 22, 20, .16);
+}
+
+@media (max-width: 900px) {
+    .babaei-quick-actions {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .babaei-quick-actions * {
+        transition-duration: .01s !important;
+        transition-delay: 0s !important;
+    }
+}
