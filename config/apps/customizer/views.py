@@ -4,6 +4,7 @@ import json
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db.models import Prefetch
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils.safestring import mark_safe
@@ -11,7 +12,7 @@ from django.views import View
 
 from apps.shop.models import Product, ProductVariant
 
-from .models import Artwork, DesignerView as DesignerViewModel, PrintArea, PrintAreaView
+from .models import Artwork, ArtworkAreaPrice, DesignerView as DesignerViewModel, PrintArea, PrintAreaView
 from .services import create_uploaded_artwork, save_design_draft
 
 
@@ -90,24 +91,20 @@ class DesignerPageView(View):
             })
 
         price_area_ids = {area.id for area in areas}
-        artwork_price_queryset = (
-            Artwork.objects.filter(
-                is_active=True,
-                source=Artwork.Source.LIBRARY,
-            )
+        artworks = list(
+            Artwork.objects.filter(is_active=True, source=Artwork.Source.LIBRARY)
             .only("id", "name", "image", "base_price")
             .prefetch_related(
-                __import__("django.db.models", fromlist=["Prefetch"]).Prefetch(
+                Prefetch(
                     "area_prices",
-                    queryset=__import__(".models", fromlist=["ArtworkAreaPrice"]).ArtworkAreaPrice.objects.filter(
-                        area_id__in=price_area_ids,
-                    ).select_related("area").only("id", "artwork_id", "area_id", "price", "area__id", "area__product_id", "area__is_active"),
+                    queryset=ArtworkAreaPrice.objects.filter(area_id__in=price_area_ids)
+                    .select_related("area")
+                    .only("id", "artwork_id", "area_id", "price", "area__id", "area__product_id", "area__is_active"),
                     to_attr="designer_area_prices",
                 )
             )
             .order_by("name")
         )
-        artworks = list(artwork_price_queryset)
 
         artwork_data = []
         price_data = {}
