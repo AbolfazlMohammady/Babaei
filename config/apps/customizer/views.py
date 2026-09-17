@@ -26,15 +26,21 @@ def _schema(data):
 
 
 def _file_url(request, field):
-    """Return a media URL only when an ImageField actually has a file."""
+    """Return a media URL only when an ImageField/FileField actually has a file."""
     if not field or not getattr(field, "name", None):
         return None
     try:
         return absolute_url(request, field.url)
     except (ValueError, OSError):
-        # A database record can outlive its physical media file. The designer
-        # must remain usable instead of failing the whole product page.
         return None
+
+
+def _model_url(request, view):
+    """Prefer an uploaded GLB/GLTF, then allow a trusted CDN/demo URL."""
+    uploaded = _file_url(request, view.model_3d)
+    if uploaded:
+        return uploaded
+    return view.model_3d_url or None
 
 
 class DesignerPageView(View):
@@ -48,13 +54,8 @@ class DesignerPageView(View):
             category__is_active=True,
         )
 
-        # Ignore incomplete designer views. ImageField.url raises ValueError
-        # when the field has no file, which previously crashed the whole page.
         raw_views = list(
-            DesignerViewModel.objects.filter(
-                product=product,
-                is_active=True,
-            )
+            DesignerViewModel.objects.filter(product=product, is_active=True)
             .exclude(background_image="")
             .order_by("sort_order", "id")
         )
@@ -83,6 +84,8 @@ class DesignerPageView(View):
                     "angle": view.angle,
                     "background": background,
                     "mask": _file_url(request, view.mask_image),
+                    "model": _model_url(request, view),
+                    "model_scale": float(view.model_3d_scale or 1),
                     "width": view.canvas_width,
                     "height": view.canvas_height,
                     "areas": [],
@@ -107,10 +110,7 @@ class DesignerPageView(View):
             )
 
         artworks = list(
-            Artwork.objects.filter(
-                is_active=True,
-                source=Artwork.Source.LIBRARY,
-            )
+            Artwork.objects.filter(is_active=True, source=Artwork.Source.LIBRARY)
             .exclude(image="")
             .only("id", "name", "image", "base_price")
             .order_by("name")
@@ -158,10 +158,12 @@ class DesignerPageView(View):
         ]
 
         first_background = view_data[0]["background"] if view_data else None
+        has_3d_model = any(item["model"] for item in view_data)
         context = {
             "product": product,
             "designer_views": views,
             "designer_ready": bool(view_data and areas and area_maps),
+            "designer_has_3d": has_3d_model,
             "designer_data": _schema(
                 {
                     "base_price": product.base_price,
@@ -169,6 +171,7 @@ class DesignerPageView(View):
                     "artworks": artwork_data,
                     "prices": price_data,
                     "variants": variant_data,
+                    "mode": "3d" if has_3d_model else "2d",
                 }
             ),
             "canonical_url": absolute_url(request, request.path),
