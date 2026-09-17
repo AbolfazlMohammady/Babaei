@@ -15,7 +15,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260917-1">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260917-2">
 {% endblock %}
 
 {% block content %}
@@ -52,15 +52,12 @@
     <main class="customizer-workspace customizer-workspace--premium" aria-label="محیط طراحی تیشرت">
         <aside class="customizer-panel customizer-panel--settings customizer-panel--premium-left">
             <div class="babaei-studio-mark"><strong>BABAEI</strong><span>3D T-SHIRT MODEL</span></div>
-            <div class="premium-view-strip" aria-label="نماهای لباس">
-                <div id="view-switcher-mobile" class="view-switcher"></div>
-            </div>
+            <div class="premium-view-strip" aria-label="نماهای لباس"><div id="view-switcher-mobile" class="view-switcher"></div></div>
             <a class="premium-product-card" href="{{ product.get_absolute_url }}">
                 <div class="premium-product-card__image">{% if product_image_url %}<img src="{{ product_image_url }}" alt="{{ product.name }}">{% endif %}</div>
                 <div class="premium-product-card__copy"><strong>{{ product.name }}</strong><span>{{ product.short_description|truncatechars:55 }}</span><b>{{ product.display_price|floatformat:0 }} تومان</b></div>
             </a>
-            <div class="premium-panel-section"><div class="panel-kicker">PRODUCT COLOR</div><div class="premium-color-list" id="variant-color-list"></div></div>
-            <div class="premium-panel-section"><div class="panel-heading panel-heading--compact"><div><span class="panel-kicker">PLACEMENT</span><h2>جای چاپ</h2></div></div><div id="area-list" class="area-list"></div></div>
+            <div class="premium-panel-section"><div class="panel-kicker">PLACEMENT</div><div id="area-list" class="area-list"></div></div>
         </aside>
 
         <section class="customizer-stage-wrap customizer-stage-wrap--premium" aria-label="محیط سه‌بعدی طراحی">
@@ -89,9 +86,9 @@
             <input id="artwork-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden>
             <div id="upload-status" class="upload-status" aria-live="polite"></div>
             <div class="premium-selected-artwork" id="premium-selected-artwork"></div>
-            <div class="variant-card" id="variant-card"><div class="panel-kicker">SIZE</div><strong>{{ product.name }}</strong><select id="variant-select" aria-label="انتخاب رنگ و سایز"><option value="">انتخاب رنگ و سایز</option></select></div>
+            <div class="variant-card" id="variant-card"><select id="variant-select" aria-label="انتخاب رنگ و سایز"><option value="">انتخاب رنگ و سایز</option></select></div>
             <div class="premium-setting-group"><h3>موقعیت طرح</h3><div class="premium-placement-hint">برای جابه‌جایی، طرح انتخاب‌شده را روی لباس بکش.</div></div>
-            <div class="premium-setting-group"><h3>اندازه و چرخش</h3><div class="premium-control-hint">از کنترل‌های پایین مدل برای بزرگ‌نمایی، کوچک‌نمایی و چرخش استفاده کن.</div></div>
+            <div class="premium-setting-group"><h3>اندازه و چرخش</h3><div class="premium-control-hint">کنترل‌های پایین مدل برای تغییر اندازه و زاویه فعال هستند.</div></div>
             <div class="price-breakdown" id="price-breakdown"></div>
             <button type="button" class="save-design-button premium-save-button" id="save-design">اعمال طرح +</button>
             <div id="save-status" class="save-status" aria-live="polite"></div>
@@ -108,5 +105,6 @@
 {% if designer_has_3d %}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
 <script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260917-2"></script>
+<script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260917-1" defer></script>
 {% endif %}
 {% endblock %}
