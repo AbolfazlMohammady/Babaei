@@ -64,34 +64,15 @@ class Artwork(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(_("نام لیبل"), max_length=160)
     slug = models.SlugField(_("اسلاگ"), max_length=190, unique=True, allow_unicode=True)
-    image = models.ImageField(
-        _("لیبل آماده"),
-        upload_to=_asset_path,
-        validators=[FileExtensionValidator(IMAGE_EXTENSIONS)],
-    )
-    original_image = models.ImageField(
-        _("تصویر اصلی"),
-        upload_to=_original_asset_path,
-        blank=True,
-        null=True,
-        validators=[FileExtensionValidator(IMAGE_EXTENSIONS)],
-    )
+    image = models.ImageField(_("لیبل آماده"), upload_to=_asset_path, validators=[FileExtensionValidator(IMAGE_EXTENSIONS)])
+    original_image = models.ImageField(_("تصویر اصلی"), upload_to=_original_asset_path, blank=True, null=True, validators=[FileExtensionValidator(IMAGE_EXTENSIONS)])
     source = models.CharField(_("منبع"), max_length=20, choices=Source.choices, default=Source.LIBRARY)
-    processing_status = models.CharField(
-        _("وضعیت پردازش"), max_length=20, choices=ProcessingStatus.choices, default=ProcessingStatus.READY
-    )
+    processing_status = models.CharField(_("وضعیت پردازش"), max_length=20, choices=ProcessingStatus.choices, default=ProcessingStatus.READY)
     background_removed = models.BooleanField(_("پس‌زمینه حذف شده"), default=True)
     base_price = models.PositiveBigIntegerField(_("قیمت پایه لیبل"), default=0, validators=[MinValueValidator(0)])
     min_width_px = models.PositiveIntegerField(_("حداقل عرض فایل"), default=500)
     is_active = models.BooleanField(_("فعال"), default=True, db_index=True)
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name="customizer_artworks",
-        verbose_name=_("مالک"),
-    )
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True, related_name="customizer_artworks", verbose_name=_("مالک"))
     session_key = models.CharField(_("کلید نشست"), max_length=64, blank=True, db_index=True)
     created_at = models.DateTimeField(_("زمان ایجاد"), auto_now_add=True)
     updated_at = models.DateTimeField(_("آخرین بروزرسانی"), auto_now=True)
@@ -115,19 +96,8 @@ class DesignerView(models.Model):
     name = models.CharField(_("نام نما"), max_length=80)
     background_image = models.ImageField(_("تصویر لباس"), upload_to=_view_image_path)
     mask_image = models.ImageField(_("ماسک و سایه"), upload_to=_mask_image_path, blank=True, null=True)
-    model_3d = models.FileField(
-        _("مدل سه‌بعدی لباس (GLB/GLTF)"),
-        upload_to=_model_path,
-        blank=True,
-        null=True,
-        validators=[FileExtensionValidator(MODEL_EXTENSIONS)],
-        help_text=_("مدل ترجیحاً GLB باشد و UV mapping مناسب برای چاپ داشته باشد."),
-    )
-    model_3d_url = models.URLField(
-        _("آدرس مدل سه‌بعدی"),
-        blank=True,
-        help_text=_("برای CDN یا مدل دمو؛ در صورت وجود فایل محلی، فایل اولویت دارد."),
-    )
+    model_3d = models.FileField(_("مدل سه‌بعدی لباس (GLB/GLTF)"), upload_to=_model_path, blank=True, null=True, validators=[FileExtensionValidator(MODEL_EXTENSIONS)], help_text=_("مدل ترجیحاً GLB باشد و UV mapping مناسب برای چاپ داشته باشد."))
+    model_3d_url = models.URLField(_("آدرس مدل سه‌بعدی"), blank=True, help_text=_("برای CDN یا مدل دمو؛ در صورت وجود فایل محلی، فایل اولویت دارد."))
     model_3d_scale = models.FloatField(_("مقیاس مدل سه‌بعدی"), default=1.0, validators=[MinValueValidator(0.01)])
     canvas_width = models.PositiveIntegerField(_("عرض مرجع"), default=1600)
     canvas_height = models.PositiveIntegerField(_("ارتفاع مرجع"), default=1600)
@@ -249,3 +219,6 @@ class DesignLayer(models.Model):
 
     def __str__(self):
         return f"{self.draft.uuid} / {self.artwork.name}"
+
+
+from .ai_models import Product3DAsset, Product3DSource
