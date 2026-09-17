@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "apps.shop",
     "apps.orders",
     "apps.customizer",
+    "apps.saved",
 ]
 
 INTERNAL_IPS = ['127.0.0.1']
