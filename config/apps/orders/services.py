@@ -37,6 +37,30 @@ def get_active_cart(request) -> Cart:
     return cart
 
 
+def get_product_cart_variants(request, product_id: int):
+    """Return quantities for one product using one CartItem query."""
+    if request.user.is_authenticated:
+        return dict(
+            CartItem.objects.filter(
+                cart__user=request.user,
+                cart__status=Cart.Status.ACTIVE,
+                product_id=product_id,
+            ).values_list("variant_id", "quantity")
+        )
+
+    session_key = request.session.get(CART_SESSION_KEY) or request.session.session_key
+    if not session_key:
+        return {}
+    return dict(
+        CartItem.objects.filter(
+            cart__session_key=session_key,
+            cart__user__isnull=True,
+            cart__status=Cart.Status.ACTIVE,
+            product_id=product_id,
+        ).values_list("variant_id", "quantity")
+    )
+
+
 def merge_guest_cart(request, user) -> None:
     """Merge the browser cart into the user's cart after OTP login."""
     session_key = request.session.get(CART_SESSION_KEY) or request.session.session_key
