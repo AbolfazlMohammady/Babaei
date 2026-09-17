@@ -108,10 +108,10 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/customizer.js' %}" defer></script>
+<script src="{% static 'js/pages/customizer.js' %}?v=20260917-2" defer></script>
 {% if designer_has_3d %}
-<script src="{% static 'js/pages/product-3d-bootstrap.js' %}" defer></script>
+<script src="{% static 'js/pages/product-3d-bootstrap.js' %}?v=20260917-2" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
-<script type="module" src="{% static 'js/pages/customizer-3d-v2.js' %}"></script>
+<script type="module" src="{% static 'js/pages/customizer-3d-v2.js' %}?v=20260917-3"></script>
 {% endif %}
 {% endblock %}
