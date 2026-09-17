@@ -6,13 +6,12 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
+
 SECRET_KEY = os.environ.get('SECRET_KEY', "fallback_secret_key")
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['127.0.0.1']
 SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000").rstrip("/")
-REMOVE_BG_API_KEY = os.environ.get("REMOVE_BG_API_KEY", "").strip()
-MESHY_API_KEY = os.environ.get("MESHY_API_KEY", "").strip()
-MESHY_MODEL = os.environ.get("MESHY_MODEL", "latest").strip() or "latest"
+
 CUSTOMIZER_UPLOAD_PRICE = int(os.environ.get("CUSTOMIZER_UPLOAD_PRICE", "0"))
 
 INSTALLED_APPS = [
