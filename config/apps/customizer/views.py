@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import uuid
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -158,19 +159,26 @@ class PrepareProduct3DView(View):
             } and asset.task_id:
                 return JsonResponse({"ok": True, "status": asset.status, "progress": asset.progress})
 
+            celery_task_id = uuid.uuid4().hex
             asset.status = Product3DAsset.Status.QUEUED
             asset.source_signature = signature
-            asset.task_id = ""
+            asset.task_id = celery_task_id
             asset.progress = 0
             asset.error_message = ""
             asset.model_url = ""
             asset.save(update_fields=["status", "source_signature", "task_id", "progress", "error_message", "model_url", "updated_at"])
 
-            task_result = prepare_product_3d.delay(asset.id)
-            asset.task_id = task_result.id
-            asset.save(update_fields=["task_id", "updated_at"])
+            # Use an explicit task id and publish only after the DB transaction
+            # commits. This prevents a worker racing the view from overwriting
+            # the task id with stale data and prevents duplicate jobs.
+            transaction.on_commit(
+                lambda asset_id=asset.id, task_id=celery_task_id: prepare_product_3d.apply_async(
+                    args=[asset_id],
+                    task_id=task_id,
+                )
+            )
 
-        return JsonResponse({"ok": True, "status": asset.status, "progress": 0}, status=202)
+        return JsonResponse({"ok": True, "status": Product3DAsset.Status.QUEUED, "progress": 0}, status=202)
 
 
 class Product3DStatusView(View):
