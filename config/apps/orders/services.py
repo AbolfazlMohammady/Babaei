@@ -8,6 +8,7 @@ from .models import Cart, CartItem
 CART_SESSION_KEY = "babaei_cart_session"
 CART_COUNT_SESSION_KEY = "babaei_cart_item_count"
 CART_PRODUCTS_SESSION_KEY = "babaei_cart_products"
+AUTH_USER_SESSION_KEY = "_auth_user_id"
 
 
 def _ensure_session_key(request) -> str:
@@ -16,12 +17,17 @@ def _ensure_session_key(request) -> str:
     return request.session.session_key
 
 
+def _authenticated_user_id(request):
+    return request.session.get(AUTH_USER_SESSION_KEY)
+
+
 def get_active_cart(request) -> Cart:
     cached_cart = getattr(request, "_babaei_active_cart", None)
     if cached_cart is not None:
         return cached_cart
-    if request.user.is_authenticated:
-        cart, _ = Cart.objects.get_or_create(user=request.user, status=Cart.Status.ACTIVE)
+    user_id = _authenticated_user_id(request)
+    if user_id:
+        cart, _ = Cart.objects.get_or_create(user_id=user_id, status=Cart.Status.ACTIVE)
     else:
         session_key = _ensure_session_key(request)
         if request.session.get(CART_SESSION_KEY) != session_key:
@@ -70,8 +76,9 @@ def get_product_cart_variants(request, product_id: int):
     if product_data is not None:
         return {None if key == "base" else int(key): int(value) for key, value in product_data.items()}
 
-    if request.user.is_authenticated:
-        rows = CartItem.objects.filter(cart__user=request.user, cart__status=Cart.Status.ACTIVE, product_id=product_id).values_list("variant_id", "quantity")
+    user_id = _authenticated_user_id(request)
+    if user_id:
+        rows = CartItem.objects.filter(cart__user_id=user_id, cart__status=Cart.Status.ACTIVE, product_id=product_id).values_list("variant_id", "quantity")
     else:
         session_key = request.session.get(CART_SESSION_KEY) or request.session.session_key
         if not session_key:
