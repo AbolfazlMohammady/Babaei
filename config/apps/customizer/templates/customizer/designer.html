@@ -14,21 +14,19 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
-{% if designer_has_3d %}<link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">{% endif %}
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="customizer-shell customizer-shell--premium" id="customizer"
      data-product-slug="{{ product.slug }}"
      data-save-url="{% url 'customizer:save_design' product.slug %}"
-     data-upload-url="{% url 'customizer:upload_artwork' product.slug %}"
-     data-three-d-prepare-url="{% url 'customizer:prepare_3d' product.slug %}"
-     data-three-d-status-url="{% url 'customizer:3d_status' product.slug %}">
+     data-upload-url="{% url 'customizer:upload_artwork' product.slug %}">
     <header class="customizer-header">
         <div>
             <a class="customizer-back" href="{{ product.get_absolute_url }}">بازگشت به {{ product.name }}</a>
-            <h1>لباست را خودت طراحی کن</h1>
-            <p>اول خود محصول را تحلیل می‌کنیم، پس‌زمینه تصاویرش را حذف می‌کنیم و بعد مدل سه‌بعدی قابل چرخش می‌سازیم؛ سپس طرح را روی سطح واقعی آن قرار می‌دهی.</p>
+            <h1>تیشرتت را خودت طراحی کن</h1>
+            <p>یک مدل سه‌بعدی ثابت و تمیز داریم؛ رنگ تیشرت را انتخاب کن، لیبلت را اضافه کن و آن را روی سطح لباس جابه‌جا کن.</p>
         </div>
         <div class="customizer-price-card" aria-live="polite"><span>قیمت نهایی</span><strong id="designer-total">—</strong><small>تومان</small></div>
     </header>
@@ -36,8 +34,8 @@
     {% if not designer_ready %}
     <section class="designer-setup-state">
         <span class="designer-setup-state__icon">◎</span>
-        <h2>این محصول هنوز برای طراحی آماده نشده است</h2>
-        <p>برای این محصول حداقل یک نمای محصول و ناحیه چاپ تعریف کنید.</p>
+        <h2>محیط طراحی هنوز آماده نشده است</h2>
+        <p>برای این محصول حداقل یک ناحیه چاپ تعریف کنید.</p>
         <a href="{{ product.get_absolute_url }}">بازگشت به محصول</a>
     </section>
     {% else %}
@@ -47,10 +45,10 @@
             <button type="button" class="mode-button is-active" data-mode="3d">سه‌بعدی</button>
             <button type="button" class="mode-button" data-mode="2d">نمای چاپ</button>
         </div>
-        <div class="toolbar-hint">اول مدل را تحلیل می‌کنیم · بعد با ماوس/لمس بچرخان · لیبل را روی سطح قرار بده</div>
+        <div class="toolbar-hint">با ماوس یا لمس بچرخان · لیبل را انتخاب کن و روی تیشرت قرار بده</div>
     </div>
 
-    <main class="customizer-workspace customizer-workspace--premium" aria-label="محیط طراحی محصول">
+    <main class="customizer-workspace customizer-workspace--premium" aria-label="محیط طراحی تیشرت">
         <aside class="customizer-panel customizer-panel--settings customizer-panel--premium-left">
             <a class="premium-product-card" href="{{ product.get_absolute_url }}">
                 <div class="premium-product-card__image">{% if product_image_url %}<img src="{{ product_image_url }}" alt="{{ product.name }}">{% endif %}</div>
@@ -67,22 +65,13 @@
 
         <section class="customizer-stage-wrap customizer-stage-wrap--premium" aria-label="محیط سه‌بعدی طراحی">
             <div class="customizer-stage customizer-stage--premium" id="stage-shell">
-                <div class="designer-3d-stage" id="designer-3d-stage" aria-label="پیش‌نمایش سه‌بعدی محصول">
-                    <div class="designer-3d-topbar"><span class="designer-3d-badge"><i></i> مدل سه‌بعدی محصول</span><span class="designer-3d-quality">AI GENERATED · PBR</span></div>
+                <div class="designer-3d-stage" id="designer-3d-stage" aria-label="پیش‌نمایش سه‌بعدی تیشرت">
+                    <div class="designer-3d-topbar"><span class="designer-3d-badge"><i></i> تیشرت سه‌بعدی BABAEI</span><span class="designer-3d-quality">PROCEDURAL · PBR</span></div>
                     <canvas id="designer-3d-canvas"></canvas>
-                    <div class="designer-3d-loading" id="designer-3d-loading">در حال تحلیل تصاویر محصول…</div>
-                    <div class="designer-3d-progress" id="designer-3d-progress">
-                        <div class="designer-3d-progress__icon">✦</div>
-                        <strong>در حال ساخت محیط طراحی</strong>
-                        <p id="designer-3d-progress-text">در حال تحلیل محصول و آماده‌سازی مدل…</p>
-                        <div class="designer-3d-progress__track"><span id="designer-3d-progress-bar"></span></div>
-                        <small>تصاویر محصول → حذف پس‌زمینه → بازسازی حجم → مدل GLB → محیط سه‌بعدی</small>
-                        <button type="button" id="designer-3d-retry" class="is-hidden">تلاش دوباره</button>
-                    </div>
-                    <div class="designer-3d-hint" id="designer-3d-hint">لیبل را انتخاب کن؛ سپس روی هر نقطه از محصول کلیک یا آن را روی سطح بکش</div>
-                    <div class="designer-3d-bottom-controls"><span>360°</span><input id="designer-3d-rotation" type="range" min="-180" max="180" value="0" step="1" aria-label="چرخش ۳۶۰ درجه محصول"><button type="button" id="designer-3d-reset" title="بازنشانی نما">↻</button></div>
+                    <div class="designer-3d-hint" id="designer-3d-hint">لیبل را انتخاب کن؛ سپس روی سطح تیشرت کلیک یا آن را روی لباس بکش</div>
+                    <div class="designer-3d-bottom-controls"><span>360°</span><input id="designer-3d-rotation" type="range" min="-180" max="180" value="0" step="1" aria-label="چرخش ۳۶۰ درجه تیشرت"><button type="button" id="designer-3d-reset" title="بازنشانی نما">↻</button></div>
                 </div>
-                <div class="designer-2d-stage is-hidden" id="designer-2d-stage"><canvas id="designer-canvas" aria-label="پیش‌نمایش چاپ لباس"></canvas><div class="stage-loading" id="stage-loading">در حال آماده‌سازی لباس…</div></div>
+                <div class="designer-2d-stage is-hidden" id="designer-2d-stage"><canvas id="designer-canvas" aria-label="پیش‌نمایش چاپ لباس"></canvas><div class="stage-loading" id="stage-loading">نمای چاپ</div></div>
             </div>
             <div class="stage-controls stage-controls--premium">
                 <div class="stage-control-group"><button type="button" data-action="zoom-out">−</button><span id="zoom-label">100%</span><button type="button" data-action="zoom-in">+</button></div>
@@ -93,9 +82,9 @@
         <aside class="customizer-panel customizer-panel--assets customizer-panel--premium-right">
             <div class="panel-heading"><div><span class="panel-kicker">LABELS</span><h2>لیبل‌ها</h2></div><button type="button" class="panel-icon-button" id="open-upload" title="آپلود لیبل">+</button></div>
             <div class="premium-tabs"><span class="is-active">کتابخانه لیبل‌ها</span><span>آپلود تصویر</span></div>
-            <p class="panel-description">لیبل را انتخاب کن و روی هر نقطه از مدل سه‌بعدی قرار بده.</p>
+            <p class="panel-description">لیبل را انتخاب کن و روی هر نقطه از تیشرت قرار بده.</p>
             <div class="artwork-grid artwork-grid--premium" id="artwork-grid"></div>
-            <label class="upload-dropzone upload-dropzone--premium" for="artwork-upload"><span>＋ تصویر خودت را اضافه کن</span><small>PNG / JPG / WEBP · حداکثر ۸MB · پس‌زمینه در صورت نیاز حذف می‌شود</small></label>
+            <label class="upload-dropzone upload-dropzone--premium" for="artwork-upload"><span>＋ تصویر خودت را اضافه کن</span><small>PNG / JPG / WEBP · حداکثر ۸MB</small></label>
             <input id="artwork-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden>
             <div id="upload-status" class="upload-status" aria-live="polite"></div>
             <div class="premium-selected-artwork" id="premium-selected-artwork"></div>
@@ -108,10 +97,9 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/customizer.js' %}?v=20260917-2" defer></script>
+<script src="{% static 'js/pages/customizer.js' %}?v=20260917-3" defer></script>
 {% if designer_has_3d %}
-<script src="{% static 'js/pages/product-3d-bootstrap.js' %}?v=20260917-2" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
-<script type="module" src="{% static 'js/pages/customizer-3d-v2.js' %}?v=20260917-3"></script>
+<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260917-1"></script>
 {% endif %}
 {% endblock %}
