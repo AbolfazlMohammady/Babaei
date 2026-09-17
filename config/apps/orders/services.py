@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from django.db import IntegrityError, transaction
+from django.db import transaction
 
 from .models import Cart, CartItem
 
@@ -24,25 +24,33 @@ def get_active_cart(request) -> Cart:
         cart, _ = Cart.objects.get_or_create(user=request.user, status=Cart.Status.ACTIVE)
     else:
         session_key = _ensure_session_key(request)
-        request.session[CART_SESSION_KEY] = session_key
+        if request.session.get(CART_SESSION_KEY) != session_key:
+            request.session[CART_SESSION_KEY] = session_key
         cart, _ = Cart.objects.get_or_create(session_key=session_key, user=None, status=Cart.Status.ACTIVE)
     request._babaei_active_cart = cart
     return cart
 
 
 def _product_cart_cache(request) -> dict:
-    value = request.session.get(CART_PRODUCTS_SESSION_KEY, {})
-    return value if isinstance(value, dict) else {}
+    value = getattr(request, "_babaei_cart_products", None)
+    if value is None:
+        value = request.session.get(CART_PRODUCTS_SESSION_KEY, {})
+        if not isinstance(value, dict):
+            value = {}
+        request._babaei_cart_products = value
+    return value
+
+
+def _save_product_cart_cache(request, cache: dict) -> None:
+    request.session[CART_PRODUCTS_SESSION_KEY] = cache
+    request._babaei_cart_products = cache
 
 
 def cache_cart_items(request, items) -> None:
     cache = {}
     for item in items:
-        product_key = str(item.product_id)
-        product_cache = cache.setdefault(product_key, {})
-        product_cache[str(item.variant_id) if item.variant_id else "base"] = item.quantity
-    request.session[CART_PRODUCTS_SESSION_KEY] = cache
-    request._babaei_cart_products = cache
+        cache.setdefault(str(item.product_id), {})[str(item.variant_id) if item.variant_id else "base"] = item.quantity
+    _save_product_cart_cache(request, cache)
 
 
 def invalidate_product_cart_cache(request) -> None:
@@ -50,37 +58,28 @@ def invalidate_product_cart_cache(request) -> None:
     request._babaei_cart_products = {}
 
 
-def get_product_cart_variants(request, product_id: int):
-    cached = getattr(request, "_babaei_cart_products", None)
-    if cached is None:
-        cached = _product_cart_cache(request)
-        request._babaei_cart_products = cached
+def _cache_item(request, item: CartItem) -> None:
+    cache = _product_cart_cache(request)
+    cache.setdefault(str(item.product_id), {})[str(item.variant_id) if item.variant_id else "base"] = item.quantity
+    _save_product_cart_cache(request, cache)
 
+
+def get_product_cart_variants(request, product_id: int):
+    cached = _product_cart_cache(request)
     product_data = cached.get(str(product_id))
     if product_data is not None:
         return {None if key == "base" else int(key): int(value) for key, value in product_data.items()}
 
-    # Backward-compatible lazy warm-up for sessions created before this cache existed.
     if request.user.is_authenticated:
-        rows = CartItem.objects.filter(
-            cart__user=request.user,
-            cart__status=Cart.Status.ACTIVE,
-            product_id=product_id,
-        ).values_list("variant_id", "quantity")
+        rows = CartItem.objects.filter(cart__user=request.user, cart__status=Cart.Status.ACTIVE, product_id=product_id).values_list("variant_id", "quantity")
     else:
         session_key = request.session.get(CART_SESSION_KEY) or request.session.session_key
         if not session_key:
             return {}
-        rows = CartItem.objects.filter(
-            cart__session_key=session_key,
-            cart__user__isnull=True,
-            cart__status=Cart.Status.ACTIVE,
-            product_id=product_id,
-        ).values_list("variant_id", "quantity")
+        rows = CartItem.objects.filter(cart__session_key=session_key, cart__user__isnull=True, cart__status=Cart.Status.ACTIVE, product_id=product_id).values_list("variant_id", "quantity")
     result = dict(rows)
-    product_cache = {"base" if variant_id is None else str(variant_id): quantity for variant_id, quantity in result.items()}
-    cached[str(product_id)] = product_cache
-    request.session[CART_PRODUCTS_SESSION_KEY] = cached
+    cached[str(product_id)] = {"base" if variant_id is None else str(variant_id): quantity for variant_id, quantity in result.items()}
+    _save_product_cart_cache(request, cached)
     return result
 
 
@@ -94,12 +93,7 @@ def merge_guest_cart(request, user) -> None:
     with transaction.atomic():
         user_cart, _ = Cart.objects.get_or_create(user=user, status=Cart.Status.ACTIVE)
         for guest_item in guest.items.select_related("product", "variant").select_for_update():
-            item, created = CartItem.objects.get_or_create(
-                cart=user_cart,
-                product=guest_item.product,
-                variant=guest_item.variant,
-                defaults={"quantity": guest_item.quantity},
-            )
+            item, created = CartItem.objects.get_or_create(cart=user_cart, product=guest_item.product, variant=guest_item.variant, defaults={"quantity": guest_item.quantity})
             if not created:
                 item.quantity += guest_item.quantity
                 if item.variant_id:
@@ -127,19 +121,15 @@ def add_to_cart(request, *, product, variant=None, quantity=1) -> CartItem:
                 raise ValueError("تعداد انتخاب‌شده بیشتر از موجودی است.")
         elif product.variants.filter(is_active=True).exists():
             raise ValueError("لطفاً رنگ و سایز محصول را انتخاب کنید.")
-        item, created = CartItem.objects.select_for_update().get_or_create(
-            cart=cart,
-            product=product,
-            variant=variant,
-            defaults={"quantity": quantity},
-        )
+        item, created = CartItem.objects.select_for_update().get_or_create(cart=cart, product=product, variant=variant, defaults={"quantity": quantity})
         if not created:
             new_quantity = item.quantity + quantity
             if variant is not None and new_quantity > variant.stock_quantity:
                 raise ValueError("تعداد انتخاب‌شده بیشتر از موجودی است.")
             item.quantity = new_quantity
             item.save(update_fields=["quantity", "updated_at"])
-        return item
+    _cache_item(request, item)
+    return item
 
 
 def update_cart_item(request, item_id: int, quantity: int) -> CartItem:
@@ -155,14 +145,26 @@ def update_cart_item(request, item_id: int, quantity: int) -> CartItem:
                 raise ValueError("تعداد انتخاب‌شده بیشتر از موجودی است.")
         item.quantity = quantity
         item.save(update_fields=["quantity", "updated_at"])
-        return item
+    _cache_item(request, item)
+    return item
 
 
 def remove_cart_item(request, item_id: int) -> None:
     cart = get_active_cart(request)
+    item = CartItem.objects.filter(cart=cart, pk=item_id).values("product_id", "variant_id").first()
+    if not item:
+        return
     CartItem.objects.filter(cart=cart, pk=item_id).delete()
+    cache = _product_cart_cache(request)
+    product_cache = cache.get(str(item["product_id"]))
+    if product_cache:
+        product_cache.pop(str(item["variant_id"]) if item["variant_id"] else "base", None)
+        if not product_cache:
+            cache.pop(str(item["product_id"]), None)
+    _save_product_cart_cache(request, cache)
 
 
 def clear_cart(request) -> None:
     cart = get_active_cart(request)
     cart.items.all().delete()
+    invalidate_product_cart_cache(request)
