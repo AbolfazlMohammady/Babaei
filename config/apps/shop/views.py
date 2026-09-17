@@ -38,10 +38,7 @@ def price_annotations():
 
 
 def primary_image_annotations():
-    images = ProductImage.objects.filter(
-        product_id=OuterRef("pk"),
-        image_type=ProductImage.ImageType.PRIMARY,
-    ).order_by("sort_order", "id")
+    images = ProductImage.objects.filter(product_id=OuterRef("pk"), image_type=ProductImage.ImageType.PRIMARY).order_by("sort_order", "id")
     image_path = Subquery(images.values("image")[:1], output_field=CharField(max_length=500))
     image_alt = Subquery(images.values("alt_text")[:1], output_field=CharField(max_length=180))
     return (
@@ -60,17 +57,15 @@ class ShopIndexView(ListView):
         return (
             Product.objects.filter(is_active=True, category__is_active=True)
             .select_related("category")
-            .annotate(
-                listed_price=variant_price,
-                listed_compare_price=variant_compare_price,
-                primary_image_url=primary_image_url,
-                primary_image_alt=primary_image_alt,
-            )
+            .annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, primary_image_url=primary_image_url, primary_image_alt=primary_image_alt)
             .order_by("-is_featured", "-created_at")[:24]
         )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        products = list(context["products"])
+        context["products"] = products
+        context["hero_product"] = products[0] if products else None
         context["categories"] = Category.objects.filter(is_active=True).only("id", "name", "slug", "image")
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
@@ -86,22 +81,13 @@ class CategoryDetailView(ListView):
     paginate_by = 24
 
     def get_queryset(self):
-        self.category = get_object_or_404(
-            Category.objects.only("id", "name", "slug", "description", "seo_title", "seo_description", "image"),
-            slug=self.kwargs["slug"],
-            is_active=True,
-        )
+        self.category = get_object_or_404(Category.objects.only("id", "name", "slug", "description", "seo_title", "seo_description", "image"), slug=self.kwargs["slug"], is_active=True)
         variant_price, variant_compare_price = price_annotations()
         primary_image_url, primary_image_alt = primary_image_annotations()
         return (
             Product.objects.filter(category_id=self.category.id, is_active=True)
             .select_related("category")
-            .annotate(
-                listed_price=variant_price,
-                listed_compare_price=variant_compare_price,
-                primary_image_url=primary_image_url,
-                primary_image_alt=primary_image_alt,
-            )
+            .annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, primary_image_url=primary_image_url, primary_image_alt=primary_image_alt)
         )
 
     def get_context_data(self, **kwargs):
@@ -129,34 +115,16 @@ class ProductDetailView(DetailView):
     def get_queryset(self):
         images = (
             ProductImage.objects.only("id", "product_id", "image", "alt_text", "image_type", "sort_order")
-            .annotate(
-                type_priority=Case(
-                    When(image_type=ProductImage.ImageType.PRIMARY, then=0),
-                    When(image_type=ProductImage.ImageType.DETAIL, then=1),
-                    default=2,
-                    output_field=IntegerField(),
-                )
-            )
+            .annotate(type_priority=Case(When(image_type=ProductImage.ImageType.PRIMARY, then=0), When(image_type=ProductImage.ImageType.DETAIL, then=1), default=2, output_field=IntegerField()))
             .order_by("type_priority", "sort_order", "id")
         )
         variants = (
             ProductVariant.objects.filter(is_active=True)
             .select_related("color", "size")
-            .only(
-                "id", "product_id", "color_id", "size_id", "sku", "price", "compare_at_price", "stock_quantity",
-                "color__id", "color__name", "color__slug", "color__hex_code",
-                "size__id", "size__name", "size__slug", "size__sort_order",
-            )
+            .only("id", "product_id", "color_id", "size_id", "sku", "price", "compare_at_price", "stock_quantity", "color__id", "color__name", "color__slug", "color__hex_code", "size__id", "size__name", "size__slug", "size__sort_order")
             .order_by("color__name", "size__sort_order", "size__name")
         )
-        return (
-            Product.objects.filter(is_active=True, category__is_active=True)
-            .select_related("category")
-            .prefetch_related(
-                Prefetch("images", queryset=images, to_attr="gallery_images"),
-                Prefetch("variants", queryset=variants, to_attr="active_variants"),
-            )
-        )
+        return Product.objects.filter(is_active=True, category__is_active=True).select_related("category").prefetch_related(Prefetch("images", queryset=images, to_attr="gallery_images"), Prefetch("variants", queryset=variants, to_attr="active_variants"))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -175,35 +143,28 @@ class ProductDetailView(DetailView):
 
         offers = self.object.active_variants
         prices = [variant.price for variant in offers]
-        colors = []
-        sizes = []
-        seen_colors = set()
-        seen_sizes = set()
+        colors, sizes = [], []
+        seen_colors, seen_sizes = set(), set()
         for variant in offers:
             if variant.color_id not in seen_colors:
                 colors.append(variant.color)
                 seen_colors.add(variant.color_id)
             if variant.size_id not in seen_sizes:
                 sizes.append(variant.size)
-            if variant.size_id not in seen_sizes:
                 seen_sizes.add(variant.size_id)
-
         context["colors"] = colors
         context["sizes"] = sizes
         context["total_stock"] = sum(variant.stock_quantity for variant in offers)
-
         cart_items = get_product_cart_variants(self.request, self.object.id)
         context["cart_variant_data"] = schema_json({str(item_variant_id) if item_variant_id else "base": quantity for item_variant_id, quantity in cart_items.items()})
         context["variant_data"] = schema_json([
             {"id": variant.id, "color_id": variant.color_id, "color": variant.color.name, "color_hex": variant.color.hex_code, "size_id": variant.size_id, "size": variant.size.name, "price": variant.price, "compare_at_price": variant.compare_at_price, "stock": variant.stock_quantity, "sku": variant.sku}
             for variant in offers
         ])
-
         if offers:
             offer_data = {"@type": "AggregateOffer", "priceCurrency": "IRR", "lowPrice": toman_to_irr(min(prices)), "highPrice": toman_to_irr(max(prices)), "offerCount": len(offers), "availability": "https://schema.org/InStock" if any(v.in_stock for v in offers) else "https://schema.org/OutOfStock"}
         else:
             offer_data = {"@type": "Offer", "priceCurrency": "IRR", "price": toman_to_irr(self.object.base_price), "availability": "https://schema.org/InStock", "url": canonical_url}
-
         context["product_schema"] = schema_json({"@context": "https://schema.org", "@type": "Product", "name": self.object.name, "description": self.object.seo_description or self.object.short_description or self.object.description, "url": canonical_url, "image": [absolute_url(self.request, image.image.url) for image in self.object.gallery_images if image.image], "brand": {"@type": "Brand", "name": "BABAEI"}, "category": self.object.category.name, "offers": offer_data, "inLanguage": "fa-IR"})
         context["breadcrumb_schema"] = schema_json({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": position, "name": item["name"], "item": item["url"]} for position, item in enumerate(breadcrumbs, start=1)]})
         return context
