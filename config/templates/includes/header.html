@@ -1,12 +1,9 @@
 <header class="site-header">
     <div class="site-header__inner">
-
         <button type="button" class="header-icon header-menu-button" data-mobile-menu aria-label="باز کردن منو" aria-expanded="false">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
         </button>
-
         <a href="/" class="site-logo" aria-label="BABAEI">BABAEI</a>
-
         <nav class="site-nav" aria-label="منوی اصلی">
             <a href="/">خانه</a>
             <a href="{% url 'shop:index' %}">فروشگاه</a>
@@ -14,22 +11,13 @@
             <a href="#">بلاگ</a>
             <a href="#">درباره ما</a>
         </nav>
-
         <div class="site-actions">
             <button type="button" class="header-icon" aria-label="جستجو">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 5 5"></path></svg>
             </button>
-
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'users:profile' %}" class="header-icon" aria-label="پروفایل">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c.8-3.7 3.1-5.5 7-5.5s6.2 1.8 7 5.5"></path></svg>
-                </a>
-            {% else %}
-                <a href="{% url 'users:login' %}" class="header-icon" aria-label="ورود">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c.8-3.7 3.1-5.5 7-5.5s6.2 1.8 7 5.5"></path></svg>
-                </a>
-            {% endif %}
-
+            <a href="{% url 'users:profile' %}" class="header-icon" aria-label="حساب کاربری">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c.8-3.7 3.1-5.5 7-5.5s6.2 1.8 7 5.5"></path></svg>
+            </a>
             <a href="{% url 'orders:cart' %}" class="header-icon header-cart" aria-label="سبد خرید">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l1.6 10.2a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>
                 <span class="header-cart__badge">{{ cart_item_count|default:0 }}</span>
@@ -51,7 +39,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 5 5"></path></svg>
         <span>جستجو</span>
     </button>
-    <a href="{% if request.user.is_authenticated %}{% url 'users:profile' %}{% else %}{% url 'users:login' %}{% endif %}" class="{% if request.resolver_match.namespace == 'users' %}is-active{% endif %}" aria-label="حساب کاربری">
+    <a href="{% url 'users:profile' %}" class="{% if request.resolver_match.namespace == 'users' %}is-active{% endif %}" aria-label="حساب کاربری">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c.8-3.7 3.1-5.5 7-5.5s6.2 1.8 7 5.5"></path></svg>
         <span>حساب</span>
     </a>
