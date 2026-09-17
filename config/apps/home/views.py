@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.db.models import CharField, Concat, IntegerField, OuterRef, Subquery, Value
+from django.db.models import CharField, IntegerField, OuterRef, Subquery, Value
+from django.db.models.functions import Concat
 from django.views.generic import TemplateView
 
 from apps.shop.models import Category, Product, ProductImage, ProductVariant
