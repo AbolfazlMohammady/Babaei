@@ -5,7 +5,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
     dependencies = [
         ("customizer", "0004_remove_demo_3d_models"),
-        ("shop", "0001_initial"),
+        ("shop", "0004_alter_productsize_slug_and_more"),
     ]
 
     operations = [
