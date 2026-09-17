@@ -3,7 +3,8 @@ from __future__ import annotations
 import json
 
 from django.conf import settings
-from django.db.models import Case, CharField, Concat, IntegerField, OuterRef, Prefetch, Subquery, Value, When
+from django.db.models import Case, CharField, IntegerField, OuterRef, Prefetch, Subquery, Value, When
+from django.db.models.functions import Concat
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
@@ -75,15 +76,7 @@ class ShopIndexView(ListView):
         context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
         context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
         context["og_image_url"] = absolute_url(self.request, "/static/images/home/Tshirt.png")
-        context["website_schema"] = schema_json(
-            {
-                "@context": "https://schema.org",
-                "@type": "WebSite",
-                "name": "BABAEI",
-                "url": settings.SITE_URL,
-                "inLanguage": "fa-IR",
-            }
-        )
+        context["website_schema"] = schema_json({"@context": "https://schema.org", "@type": "WebSite", "name": "BABAEI", "url": settings.SITE_URL, "inLanguage": "fa-IR"})
         return context
 
 
@@ -118,16 +111,7 @@ class CategoryDetailView(ListView):
         context["og_title"] = self.category.seo_title or self.category.name
         context["og_description"] = self.category.seo_description or self.category.description or self.category.name
         context["og_image_url"] = absolute_url(self.request, self.category.image.url) if self.category.image else None
-        context["category_schema"] = schema_json(
-            {
-                "@context": "https://schema.org",
-                "@type": "CollectionPage",
-                "name": self.category.name,
-                "url": context["canonical_url"],
-                "description": self.category.seo_description or self.category.description,
-                "inLanguage": "fa-IR",
-            }
-        )
+        context["category_schema"] = schema_json({"@context": "https://schema.org", "@type": "CollectionPage", "name": self.category.name, "url": context["canonical_url"], "description": self.category.seo_description or self.category.description, "inLanguage": "fa-IR"})
         return context
 
     def get(self, request, *args, **kwargs):
@@ -209,71 +193,17 @@ class ProductDetailView(DetailView):
 
         cart = get_active_cart(self.request)
         cart_items = cart.items.filter(product_id=self.object.id).only("variant_id", "quantity")
-        context["cart_variant_data"] = schema_json(
-            {
-                str(item.variant_id) if item.variant_id else "base": item.quantity
-                for item in cart_items
-            }
-        )
-
-        context["variant_data"] = schema_json(
-            [
-                {
-                    "id": variant.id,
-                    "color_id": variant.color_id,
-                    "color": variant.color.name,
-                    "color_hex": variant.color.hex_code,
-                    "size_id": variant.size_id,
-                    "size": variant.size.name,
-                    "price": variant.price,
-                    "compare_at_price": variant.compare_at_price,
-                    "stock": variant.stock_quantity,
-                    "sku": variant.sku,
-                }
-                for variant in offers
-            ]
-        )
+        context["cart_variant_data"] = schema_json({str(item.variant_id) if item.variant_id else "base": item.quantity for item in cart_items})
+        context["variant_data"] = schema_json([
+            {"id": variant.id, "color_id": variant.color_id, "color": variant.color.name, "color_hex": variant.color.hex_code, "size_id": variant.size_id, "size": variant.size.name, "price": variant.price, "compare_at_price": variant.compare_at_price, "stock": variant.stock_quantity, "sku": variant.sku}
+            for variant in offers
+        ])
 
         if offers:
-            offer_data = {
-                "@type": "AggregateOffer",
-                "priceCurrency": "IRR",
-                "lowPrice": toman_to_irr(min(prices)),
-                "highPrice": toman_to_irr(max(prices)),
-                "offerCount": len(offers),
-                "availability": "https://schema.org/InStock" if any(v.in_stock for v in offers) else "https://schema.org/OutOfStock",
-            }
+            offer_data = {"@type": "AggregateOffer", "priceCurrency": "IRR", "lowPrice": toman_to_irr(min(prices)), "highPrice": toman_to_irr(max(prices)), "offerCount": len(offers), "availability": "https://schema.org/InStock" if any(v.in_stock for v in offers) else "https://schema.org/OutOfStock"}
         else:
-            offer_data = {
-                "@type": "Offer",
-                "priceCurrency": "IRR",
-                "price": toman_to_irr(self.object.base_price),
-                "availability": "https://schema.org/InStock",
-                "url": canonical_url,
-            }
+            offer_data = {"@type": "Offer", "priceCurrency": "IRR", "price": toman_to_irr(self.object.base_price), "availability": "https://schema.org/InStock", "url": canonical_url}
 
-        context["product_schema"] = schema_json(
-            {
-                "@context": "https://schema.org",
-                "@type": "Product",
-                "name": self.object.name,
-                "description": self.object.seo_description or self.object.short_description or self.object.description,
-                "url": canonical_url,
-                "image": [absolute_url(self.request, image.image.url) for image in self.object.gallery_images if image.image],
-                "brand": {"@type": "Brand", "name": "BABAEI"},
-                "category": self.object.category.name,
-                "offers": offer_data,
-                "inLanguage": "fa-IR",
-            }
-        )
-        context["breadcrumb_schema"] = schema_json(
-            {
-                "@context": "https://schema.org",
-                "@type": "BreadcrumbList",
-                "itemListElement": [
-                    {"@type": "ListItem", "position": position, "name": item["name"], "item": item["url"]}
-                    for position, item in enumerate(breadcrumbs, start=1)
-                ],
-            }
-        )
+        context["product_schema"] = schema_json({"@context": "https://schema.org", "@type": "Product", "name": self.object.name, "description": self.object.seo_description or self.object.short_description or self.object.description, "url": canonical_url, "image": [absolute_url(self.request, image.image.url) for image in self.object.gallery_images if image.image], "brand": {"@type": "Brand", "name": "BABAEI"}, "category": self.object.category.name, "offers": offer_data, "inLanguage": "fa-IR"})
+        context["breadcrumb_schema"] = schema_json({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": position, "name": item["name"], "item": item["url"]} for position, item in enumerate(breadcrumbs, start=1)]})
         return context
