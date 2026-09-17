@@ -16,6 +16,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
+{% if designer_has_3d %}<link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">{% endif %}
 {% endblock %}
 
 {% block content %}
