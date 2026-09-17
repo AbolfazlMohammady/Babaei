@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db.models import Case, CharField, IntegerField, OuterRef, Prefetch, Subquery, Value, When
 from django.db.models.functions import Concat
 from django.http import HttpResponsePermanentRedirect
@@ -13,6 +14,20 @@ from django.views.generic import DetailView, ListView
 from .models import Category, Product, ProductImage, ProductVariant
 
 AUTH_USER_SESSION_KEY = "_auth_user_id"
+CATEGORY_NAV_CACHE_KEY = "babaei:shop:active-categories:v1"
+CATEGORY_NAV_CACHE_TTL = 300
+
+
+def get_active_categories():
+    categories = cache.get(CATEGORY_NAV_CACHE_KEY)
+    if categories is None:
+        categories = list(
+            Category.objects.filter(is_active=True)
+            .only("id", "name", "slug", "image")
+            .order_by("sort_order", "name")
+        )
+        cache.set(CATEGORY_NAV_CACHE_KEY, categories, CATEGORY_NAV_CACHE_TTL)
+    return categories
 
 
 def absolute_url(request, path):
@@ -55,7 +70,7 @@ class ShopIndexView(ListView):
         products = list(context["products"])
         context["products"] = products
         context["hero_product"] = products[0] if products else None
-        context["categories"] = Category.objects.filter(is_active=True).only("id", "name", "slug", "image")
+        context["categories"] = get_active_categories()
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
         context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
@@ -78,6 +93,7 @@ class CategoryDetailView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["category"] = self.category
+        context["categories"] = get_active_categories()
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = self.category.seo_title or self.category.name
         context["og_description"] = self.category.seo_description or self.category.description or self.category.name
