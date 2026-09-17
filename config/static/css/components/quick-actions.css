@@ -93,14 +93,15 @@
     stroke-linejoin: round;
 }
 
-/* Tooltip is placed to the LEFT of every radial action, away from neighboring icons. */
+/* Tooltip stays directly above its own icon; it never crosses another action. */
 .babaei-quick-actions__tip {
     position: absolute;
-    left: calc(100% + 14px);
+    left: 50%;
     right: auto;
-    top: 50%;
-    z-index: 20;
-    translate: -8px -50%;
+    top: auto;
+    bottom: calc(100% + 11px);
+    z-index: 30;
+    translate: -50% 6px;
     white-space: nowrap;
     padding: 7px 11px;
     border: 1px solid rgba(228,199,125,.20);
@@ -120,10 +121,9 @@
 .babaei-quick-actions__action:hover .babaei-quick-actions__tip,
 .babaei-quick-actions__action:focus-visible .babaei-quick-actions__tip {
     opacity: 1;
-    translate: 0 -50%;
+    translate: -50% 0;
 }
 
-/* Cart quantity badge — number belongs to the cart icon, not its label. */
 .babaei-quick-actions__badge {
     position: absolute;
     top: -6px;
