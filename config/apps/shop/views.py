@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db.models import Case, CharField, IntegerField, OuterRef, Prefetch, Subquery, Value, When
 from django.db.models.functions import Concat
 from django.http import HttpResponsePermanentRedirect
@@ -13,6 +14,9 @@ from django.views.generic import DetailView, ListView
 from apps.orders.services import get_product_cart_variants
 
 from .models import Category, Product, ProductImage, ProductVariant
+
+CATEGORY_NAV_CACHE_KEY = "babaei:shop:active_categories:v1"
+CATEGORY_NAV_CACHE_TTL = 300
 
 
 def absolute_url(request, path):
@@ -27,6 +31,14 @@ def schema_json(data):
 
 def toman_to_irr(value):
     return value * 10
+
+
+def get_active_categories():
+    categories = cache.get(CATEGORY_NAV_CACHE_KEY)
+    if categories is None:
+        categories = list(Category.objects.filter(is_active=True).only("id", "name", "slug", "image").order_by("sort_order", "name"))
+        cache.set(CATEGORY_NAV_CACHE_KEY, categories, CATEGORY_NAV_CACHE_TTL)
+    return categories
 
 
 def price_annotations():
@@ -66,7 +78,7 @@ class ShopIndexView(ListView):
         products = list(context["products"])
         context["products"] = products
         context["hero_product"] = products[0] if products else None
-        context["categories"] = Category.objects.filter(is_active=True).only("id", "name", "slug", "image")
+        context["categories"] = get_active_categories()
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
         context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
@@ -84,11 +96,7 @@ class CategoryDetailView(ListView):
         self.category = get_object_or_404(Category.objects.only("id", "name", "slug", "description", "seo_title", "seo_description", "image"), slug=self.kwargs["slug"], is_active=True)
         variant_price, variant_compare_price = price_annotations()
         primary_image_url, primary_image_alt = primary_image_annotations()
-        return (
-            Product.objects.filter(category_id=self.category.id, is_active=True)
-            .select_related("category")
-            .annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, primary_image_url=primary_image_url, primary_image_alt=primary_image_alt)
-        )
+        return Product.objects.filter(category_id=self.category.id, is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, primary_image_url=primary_image_url, primary_image_alt=primary_image_alt)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -113,34 +121,20 @@ class ProductDetailView(DetailView):
     slug_url_kwarg = "slug"
 
     def get_queryset(self):
-        images = (
-            ProductImage.objects.only("id", "product_id", "image", "alt_text", "image_type", "sort_order")
-            .annotate(type_priority=Case(When(image_type=ProductImage.ImageType.PRIMARY, then=0), When(image_type=ProductImage.ImageType.DETAIL, then=1), default=2, output_field=IntegerField()))
-            .order_by("type_priority", "sort_order", "id")
-        )
-        variants = (
-            ProductVariant.objects.filter(is_active=True)
-            .select_related("color", "size")
-            .only("id", "product_id", "color_id", "size_id", "sku", "price", "compare_at_price", "stock_quantity", "color__id", "color__name", "color__slug", "color__hex_code", "size__id", "size__name", "size__slug", "size__sort_order")
-            .order_by("color__name", "size__sort_order", "size__name")
-        )
+        images = ProductImage.objects.only("id", "product_id", "image", "alt_text", "image_type", "sort_order").annotate(type_priority=Case(When(image_type=ProductImage.ImageType.PRIMARY, then=0), When(image_type=ProductImage.ImageType.DETAIL, then=1), default=2, output_field=IntegerField())).order_by("type_priority", "sort_order", "id")
+        variants = ProductVariant.objects.filter(is_active=True).select_related("color", "size").only("id", "product_id", "color_id", "size_id", "sku", "price", "compare_at_price", "stock_quantity", "color__id", "color__name", "color__slug", "color__hex_code", "size__id", "size__name", "size__slug", "size__sort_order").order_by("color__name", "size__sort_order", "size__name")
         return Product.objects.filter(is_active=True, category__is_active=True).select_related("category").prefetch_related(Prefetch("images", queryset=images, to_attr="gallery_images"), Prefetch("variants", queryset=variants, to_attr="active_variants"))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         canonical_url = absolute_url(self.request, self.request.path)
-        breadcrumbs = [
-            {"name": "فروشگاه", "url": absolute_url(self.request, "/shop/")},
-            {"name": self.object.category.name, "url": absolute_url(self.request, self.object.category.get_absolute_url())},
-            {"name": self.object.name, "url": canonical_url},
-        ]
+        breadcrumbs = [{"name": "فروشگاه", "url": absolute_url(self.request, "/shop/")}, {"name": self.object.category.name, "url": absolute_url(self.request, self.object.category.get_absolute_url())}, {"name": self.object.name, "url": canonical_url}]
         context["breadcrumbs"] = breadcrumbs
         context["canonical_url"] = canonical_url
         context["og_title"] = self.object.seo_title or self.object.name
         context["og_description"] = self.object.seo_description or self.object.short_description or self.object.name
         first_image = next((image for image in self.object.gallery_images if image.image), None)
         context["og_image_url"] = absolute_url(self.request, first_image.image.url) if first_image else None
-
         offers = self.object.active_variants
         prices = [variant.price for variant in offers]
         colors, sizes = [], []
@@ -157,10 +151,7 @@ class ProductDetailView(DetailView):
         context["total_stock"] = sum(variant.stock_quantity for variant in offers)
         cart_items = get_product_cart_variants(self.request, self.object.id)
         context["cart_variant_data"] = schema_json({str(item_variant_id) if item_variant_id else "base": quantity for item_variant_id, quantity in cart_items.items()})
-        context["variant_data"] = schema_json([
-            {"id": variant.id, "color_id": variant.color_id, "color": variant.color.name, "color_hex": variant.color.hex_code, "size_id": variant.size_id, "size": variant.size.name, "price": variant.price, "compare_at_price": variant.compare_at_price, "stock": variant.stock_quantity, "sku": variant.sku}
-            for variant in offers
-        ])
+        context["variant_data"] = schema_json([{ "id": variant.id, "color_id": variant.color_id, "color": variant.color.name, "color_hex": variant.color.hex_code, "size_id": variant.size_id, "size": variant.size.name, "price": variant.price, "compare_at_price": variant.compare_at_price, "stock": variant.stock_quantity, "sku": variant.sku } for variant in offers])
         if offers:
             offer_data = {"@type": "AggregateOffer", "priceCurrency": "IRR", "lowPrice": toman_to_irr(min(prices)), "highPrice": toman_to_irr(max(prices)), "offerCount": len(offers), "availability": "https://schema.org/InStock" if any(v.in_stock for v in offers) else "https://schema.org/OutOfStock"}
         else:
