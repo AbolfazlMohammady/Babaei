@@ -36,7 +36,7 @@
                 <a href="{% url 'users:profile' %}" class="{% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_update' %}is-active{% endif %}"><span>اطلاعات شخصی</span><span>01</span></a>
                 <a href="{% url 'users:addresses' %}" class="{% if request.resolver_match.url_name == 'addresses' or request.resolver_match.url_name == 'address_create' or request.resolver_match.url_name == 'address_update' %}is-active{% endif %}"><span>آدرس‌ها</span><span>02</span></a>
                 <a href="#"><span>سفارش‌های من</span><span>03</span></a>
-                <a href="#"><span>علاقه‌مندی‌ها</span><span>04</span></a>
+                <a href="{% url 'saved:saved' %}" class="{% if request.resolver_match.url_name == 'saved' %}is-active{% endif %}"><span>علاقه‌مندی‌ها و ذخیره‌ها</span><span>04</span></a>
             </nav>
         </aside>
         <div class="account-content">{% block account_content %}{% endblock %}</div>
