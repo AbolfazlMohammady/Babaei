@@ -17,18 +17,23 @@ def _ensure_session_key(request) -> str:
 
 
 def get_active_cart(request) -> Cart:
-    """Return one active cart for the current authenticated user or browser session."""
+    """Return one active cart for the current request/user/session."""
+    cached_cart = getattr(request, "_babaei_active_cart", None)
+    if cached_cart is not None:
+        return cached_cart
+
     if request.user.is_authenticated:
         cart, _ = Cart.objects.get_or_create(user=request.user, status=Cart.Status.ACTIVE)
-        return cart
+    else:
+        session_key = _ensure_session_key(request)
+        request.session[CART_SESSION_KEY] = session_key
+        cart, _ = Cart.objects.get_or_create(
+            session_key=session_key,
+            user=None,
+            status=Cart.Status.ACTIVE,
+        )
 
-    session_key = _ensure_session_key(request)
-    request.session[CART_SESSION_KEY] = session_key
-    cart, _ = Cart.objects.get_or_create(
-        session_key=session_key,
-        user=None,
-        status=Cart.Status.ACTIVE,
-    )
+    request._babaei_active_cart = cart
     return cart
 
 
