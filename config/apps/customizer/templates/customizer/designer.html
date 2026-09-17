@@ -54,18 +54,12 @@
     <main class="customizer-workspace">
         <aside class="customizer-panel customizer-panel--assets">
             <div class="panel-heading">
-                <div>
-                    <span class="panel-kicker">LABELS</span>
-                    <h2>لیبل‌ها</h2>
-                </div>
+                <div><span class="panel-kicker">LABELS</span><h2>لیبل‌ها</h2></div>
                 <button type="button" class="panel-icon-button" id="open-upload" title="آپلود لیبل">+</button>
             </div>
             <p class="panel-description">لیبل آماده را انتخاب کن یا تصویر خودت را آپلود کن.</p>
             <div class="artwork-grid" id="artwork-grid"></div>
-            <label class="upload-dropzone" for="artwork-upload">
-                <span>آپلود تصویر</span>
-                <small>PNG / JPG / WEBP · حداکثر ۸MB</small>
-            </label>
+            <label class="upload-dropzone" for="artwork-upload"><span>آپلود تصویر</span><small>PNG / JPG / WEBP · حداکثر ۸MB</small></label>
             <input id="artwork-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden>
             <div id="upload-status" class="upload-status" aria-live="polite"></div>
         </aside>
@@ -76,7 +70,7 @@
                 <div class="designer-3d-stage" id="designer-3d-stage" aria-label="پیش‌نمایش سه‌بعدی لباس">
                     <canvas id="designer-3d-canvas"></canvas>
                     <div class="designer-3d-loading" id="designer-3d-loading">در حال آماده‌سازی مدل سه‌بعدی…</div>
-                    <div class="designer-3d-hint" id="designer-3d-hint">برای چرخاندن لباس بکش</div>
+                    <div class="designer-3d-hint" id="designer-3d-hint">برای چرخاندن لباس بکش · برای جابه‌جایی لیبل روی آن بکش</div>
                 </div>
                 {% endif %}
                 <div class="designer-2d-stage{% if designer_has_3d %} is-hidden{% endif %}" id="designer-2d-stage">
@@ -85,42 +79,19 @@
                 </div>
             </div>
             <div class="stage-controls">
-                <div class="stage-control-group">
-                    <button type="button" data-action="zoom-out" aria-label="کوچک کردن">−</button>
-                    <span id="zoom-label">100%</span>
-                    <button type="button" data-action="zoom-in" aria-label="بزرگ کردن">+</button>
-                </div>
+                <div class="stage-control-group"><button type="button" data-action="zoom-out">−</button><span id="zoom-label">100%</span><button type="button" data-action="zoom-in">+</button></div>
                 <div class="stage-control-group stage-control-group--selected" id="selected-controls">
-                    <button type="button" data-action="rotate-left" aria-label="چرخش به چپ">↶</button>
-                    <button type="button" data-action="rotate-right" aria-label="چرخش به راست">↷</button>
-                    <button type="button" data-action="scale-down" aria-label="کوچک کردن لیبل">−</button>
-                    <button type="button" data-action="scale-up" aria-label="بزرگ کردن لیبل">+</button>
-                    <button type="button" data-action="delete" aria-label="حذف لیبل">حذف</button>
+                    <button type="button" data-action="rotate-left">↶</button><button type="button" data-action="rotate-right">↷</button>
+                    <button type="button" data-action="scale-down">−</button><button type="button" data-action="scale-up">+</button><button type="button" data-action="delete">حذف</button>
                 </div>
             </div>
         </section>
 
         <aside class="customizer-panel customizer-panel--settings">
-            <div class="panel-heading">
-                <div>
-                    <span class="panel-kicker">PLACEMENT</span>
-                    <h2>جای چاپ</h2>
-                </div>
-            </div>
+            <div class="panel-heading"><div><span class="panel-kicker">PLACEMENT</span><h2>جای چاپ</h2></div></div>
             <div id="area-list" class="area-list"></div>
-
-            <div class="selected-card" id="selected-card">
-                <span class="selected-card__empty">یک لیبل را انتخاب کنید.</span>
-            </div>
-
-            <div class="variant-card" id="variant-card">
-                <div class="panel-kicker">PRODUCT</div>
-                <strong>{{ product.name }}</strong>
-                <select id="variant-select" aria-label="انتخاب رنگ و سایز">
-                    <option value="">انتخاب رنگ و سایز</option>
-                </select>
-            </div>
-
+            <div class="selected-card" id="selected-card"><span class="selected-card__empty">یک لیبل را انتخاب کنید.</span></div>
+            <div class="variant-card" id="variant-card"><div class="panel-kicker">PRODUCT</div><strong>{{ product.name }}</strong><select id="variant-select" aria-label="انتخاب رنگ و سایز"><option value="">انتخاب رنگ و سایز</option></select></div>
             <div class="price-breakdown" id="price-breakdown"></div>
             <button type="button" class="save-design-button" id="save-design">ذخیره طراحی و ادامه</button>
             <div id="save-status" class="save-status" aria-live="polite"></div>
@@ -136,13 +107,8 @@
 <script src="{% static 'js/pages/customizer.js' %}" defer></script>
 {% if designer_has_3d %}
 <script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
-  }
-}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}
 </script>
-<script type="module" src="{% static 'js/pages/customizer-3d.js' %}"></script>
+<script type="module" src="{% static 'js/pages/customizer-3d-v2.js' %}"></script>
 {% endif %}
 {% endblock %}
