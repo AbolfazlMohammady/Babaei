@@ -26,48 +26,33 @@ def _schema(data):
 
 
 def _file_url(request, field):
-    """Return a media URL only when an ImageField actually has a file."""
+    """Return a media URL only when an ImageField/FileField actually has a file."""
     if not field or not getattr(field, "name", None):
         return None
     try:
         return absolute_url(request, field.url)
     except (ValueError, OSError):
-        # A database record can outlive its physical media file. The designer
-        # must remain usable instead of failing the whole product page.
         return None
+
+
+def _model_url(request, view):
+    """Prefer an uploaded GLB/GLTF, then allow a CDN/demo URL."""
+    uploaded = _file_url(request, view.model_3d)
+    if uploaded:
+        return uploaded
+    return view.model_3d_url or None
 
 
 class DesignerPageView(View):
     template_name = "customizer/designer.html"
 
     def get(self, request, slug):
-        product = get_object_or_404(
-            Product.objects.select_related("category"),
-            slug=slug,
-            is_active=True,
-            category__is_active=True,
-        )
-
-        # Ignore incomplete designer views. ImageField.url raises ValueError
-        # when the field has no file, which previously crashed the whole page.
-        raw_views = list(
-            DesignerViewModel.objects.filter(
-                product=product,
-                is_active=True,
-            )
-            .exclude(background_image="")
-            .order_by("sort_order", "id")
-        )
+        product = get_object_or_404(Product.objects.select_related("category"), slug=slug, is_active=True, category__is_active=True)
+        raw_views = list(DesignerViewModel.objects.filter(product=product, is_active=True).exclude(background_image="").order_by("sort_order", "id"))
         views = [view for view in raw_views if _file_url(request, view.background_image)]
-
         areas = list(PrintArea.objects.filter(product=product, is_active=True).order_by("sort_order", "id"))
         area_maps = list(
-            PrintAreaView.objects.filter(
-                area__in=areas,
-                view__in=views,
-                area__is_active=True,
-                view__is_active=True,
-            ).select_related("area", "view")
+            PrintAreaView.objects.filter(area__in=areas, view__in=views, area__is_active=True, view__is_active=True).select_related("area", "view")
         )
 
         view_data = []
@@ -75,42 +60,37 @@ class DesignerPageView(View):
             background = _file_url(request, view.background_image)
             if not background:
                 continue
-            view_data.append(
-                {
-                    "id": view.id,
-                    "key": view.key,
-                    "name": view.name,
-                    "angle": view.angle,
-                    "background": background,
-                    "mask": _file_url(request, view.mask_image),
-                    "width": view.canvas_width,
-                    "height": view.canvas_height,
-                    "areas": [],
-                }
-            )
+            view_data.append({
+                "id": view.id,
+                "key": view.key,
+                "name": view.name,
+                "angle": view.angle,
+                "background": background,
+                "mask": _file_url(request, view.mask_image),
+                "model": _model_url(request, view),
+                "model_scale": float(view.model_3d_scale or 1),
+                "width": view.canvas_width,
+                "height": view.canvas_height,
+                "areas": [],
+            })
 
         view_lookup = {item["id"]: item for item in view_data}
         for area_map in area_maps:
             target_view = view_lookup.get(area_map.view_id)
             if not target_view:
                 continue
-            target_view["areas"].append(
-                {
-                    "id": area_map.area_id,
-                    "key": area_map.area.key,
-                    "name": area_map.area.name,
-                    "geometry": area_map.geometry,
-                    "max_layers": area_map.area.max_layers,
-                    "max_width_mm": float(area_map.area.max_width_mm),
-                    "max_height_mm": float(area_map.area.max_height_mm),
-                }
-            )
+            target_view["areas"].append({
+                "id": area_map.area_id,
+                "key": area_map.area.key,
+                "name": area_map.area.name,
+                "geometry": area_map.geometry,
+                "max_layers": area_map.area.max_layers,
+                "max_width_mm": float(area_map.area.max_width_mm),
+                "max_height_mm": float(area_map.area.max_height_mm),
+            })
 
         artworks = list(
-            Artwork.objects.filter(
-                is_active=True,
-                source=Artwork.Source.LIBRARY,
-            )
+            Artwork.objects.filter(is_active=True, source=Artwork.Source.LIBRARY)
             .exclude(image="")
             .only("id", "name", "image", "base_price")
             .order_by("name")
@@ -119,14 +99,7 @@ class DesignerPageView(View):
         for artwork in artworks:
             image = _file_url(request, artwork.image)
             if image:
-                artwork_data.append(
-                    {
-                        "id": artwork.id,
-                        "name": artwork.name,
-                        "image": image,
-                        "base_price": artwork.base_price,
-                    }
-                )
+                artwork_data.append({"id": artwork.id, "name": artwork.name, "image": image, "base_price": artwork.base_price})
 
         price_rows = Artwork.objects.filter(
             is_active=True,
@@ -147,44 +120,37 @@ class DesignerPageView(View):
             .order_by("price", "id")
         )
         variant_data = [
-            {
-                "id": variant.id,
-                "price": variant.price,
-                "stock": variant.stock_quantity,
-                "color": variant.color.name,
-                "size": variant.size.name,
-            }
+            {"id": variant.id, "price": variant.price, "stock": variant.stock_quantity, "color": variant.color.name, "size": variant.size.name}
             for variant in variants
         ]
 
         first_background = view_data[0]["background"] if view_data else None
+        has_3d_model = any(item["model"] for item in view_data)
         context = {
             "product": product,
             "designer_views": views,
             "designer_ready": bool(view_data and areas and area_maps),
-            "designer_data": _schema(
-                {
-                    "base_price": product.base_price,
-                    "views": view_data,
-                    "artworks": artwork_data,
-                    "prices": price_data,
-                    "variants": variant_data,
-                }
-            ),
+            "designer_has_3d": has_3d_model,
+            "designer_data": _schema({
+                "base_price": product.base_price,
+                "views": view_data,
+                "artworks": artwork_data,
+                "prices": price_data,
+                "variants": variant_data,
+                "mode": "3d" if has_3d_model else "2d",
+            }),
             "canonical_url": absolute_url(request, request.path),
             "og_title": f"طراحی {product.name} | BABAEI",
             "og_description": "لیبل‌ها را روی ناحیه‌های مجاز لباس قرار دهید، نماهای مختلف را ببینید و قیمت نهایی را لحظه‌ای محاسبه کنید.",
             "og_image_url": first_background,
-            "designer_schema": _schema(
-                {
-                    "@context": "https://schema.org",
-                    "@type": "WebPage",
-                    "name": f"طراحی {product.name}",
-                    "url": absolute_url(request, request.path),
-                    "isPartOf": {"@type": "WebSite", "name": "BABAEI", "url": settings.SITE_URL},
-                    "inLanguage": "fa-IR",
-                }
-            ),
+            "designer_schema": _schema({
+                "@context": "https://schema.org",
+                "@type": "WebPage",
+                "name": f"طراحی {product.name}",
+                "url": absolute_url(request, request.path),
+                "isPartOf": {"@type": "WebSite", "name": "BABAEI", "url": settings.SITE_URL},
+                "inLanguage": "fa-IR",
+            }),
         }
         return render(request, self.template_name, context)
 
@@ -206,7 +172,18 @@ class SaveDesignView(View):
             variant = None
             if variant_id:
                 variant = get_object_or_404(ProductVariant, id=variant_id, product=product, is_active=True)
+
+            raw_layers = payload.get("layers", [])
             draft = save_design_draft(request=request, product=product, payload=payload, variant=variant)
+
+            # The legacy validation/storage layer keeps the canonical 2D placement.
+            # Preserve the richer surface-decal metadata beside it for the 3D preview/order snapshot.
+            if raw_layers and draft.payload.get("layers"):
+                for normalized_layer, raw_layer in zip(draft.payload["layers"], raw_layers):
+                    if isinstance(raw_layer, dict) and raw_layer.get("three_d"):
+                        normalized_layer["three_d"] = raw_layer["three_d"]
+                draft.save(update_fields=["payload", "updated_at"])
+
             if preview:
                 draft.preview_image.save(f"{draft.uuid}.png", preview, save=True)
         except (json.JSONDecodeError, UnicodeDecodeError):
@@ -231,15 +208,13 @@ class UploadArtworkView(View):
         image = _file_url(request, artwork.image)
         if not image:
             return JsonResponse({"ok": False, "error": "تصویر پردازش‌شده در دسترس نیست."}, status=500)
-        return JsonResponse(
-            {
-                "ok": True,
-                "artwork": {
-                    "id": artwork.id,
-                    "name": artwork.name,
-                    "image": image,
-                    "base_price": artwork.base_price,
-                    "background_removed": artwork.background_removed,
-                },
-            }
-        )
+        return JsonResponse({
+            "ok": True,
+            "artwork": {
+                "id": artwork.id,
+                "name": artwork.name,
+                "image": image,
+                "base_price": artwork.base_price,
+                "background_removed": artwork.background_removed,
+            },
+        })

@@ -12,6 +12,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp"]
+MODEL_EXTENSIONS = ["glb", "gltf"]
 
 
 def _asset_path(instance, filename):
@@ -32,6 +33,11 @@ def _view_image_path(instance, filename):
 def _mask_image_path(instance, filename):
     extension = Path(filename).suffix.lower() or ".webp"
     return f"customizer/masks/{instance.product.uuid}/{instance.key}/{uuid.uuid4().hex}{extension}"
+
+
+def _model_path(instance, filename):
+    extension = Path(filename).suffix.lower() or ".glb"
+    return f"customizer/models/{instance.product.uuid}/{uuid.uuid4().hex}{extension}"
 
 
 def _validate_geometry(value):
@@ -109,6 +115,20 @@ class DesignerView(models.Model):
     name = models.CharField(_("نام نما"), max_length=80)
     background_image = models.ImageField(_("تصویر لباس"), upload_to=_view_image_path)
     mask_image = models.ImageField(_("ماسک و سایه"), upload_to=_mask_image_path, blank=True, null=True)
+    model_3d = models.FileField(
+        _("مدل سه‌بعدی لباس (GLB/GLTF)"),
+        upload_to=_model_path,
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(MODEL_EXTENSIONS)],
+        help_text=_("مدل ترجیحاً GLB باشد و UV mapping مناسب برای چاپ داشته باشد."),
+    )
+    model_3d_url = models.URLField(
+        _("آدرس مدل سه‌بعدی"),
+        blank=True,
+        help_text=_("برای CDN یا مدل دمو؛ در صورت وجود فایل محلی، فایل اولویت دارد."),
+    )
+    model_3d_scale = models.FloatField(_("مقیاس مدل سه‌بعدی"), default=1.0, validators=[MinValueValidator(0.01)])
     canvas_width = models.PositiveIntegerField(_("عرض مرجع"), default=1600)
     canvas_height = models.PositiveIntegerField(_("ارتفاع مرجع"), default=1600)
     angle = models.SmallIntegerField(_("زاویه"), default=0, validators=[MinValueValidator(-180), MaxValueValidator(180)])
