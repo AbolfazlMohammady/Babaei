@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static shop_tags %}
+{% load static shop_tags saved_tags %}
 {% block title %}{{ product.seo_title|default:product.name }} | BABAEI{% endblock %}
 {% block meta_description %}{{ product.seo_description|default:product.short_description|default:product.name|truncatechars:160 }}{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ canonical_url }}">{% endblock %}
@@ -7,17 +7,17 @@
 {% block body_class %}shop-page{% endblock %}
 {% block og_type %}product{% endblock %}
 {% block og_title %}{{ product.seo_title|default:product.name }} | BABAEI{% endblock %}
-{% block og_description %}{{ product.seo_description|default:product.short_description|default:product.name|truncatechars:160 }}{% endblock %}
+{% block og_description %}{{ product.seo_description|default:product.short_description|default:product.name }}{% endblock %}
 {% block og_image %}{% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}">{% endif %}{% endblock %}
 {% block extra_head %}<script type="application/ld+json">{{ product_schema }}</script><script type="application/ld+json">{{ breadcrumb_schema }}</script>{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}"><link rel="stylesheet" href="{% static 'css/pages/product-quantity.css' %}?v=2"><link rel="stylesheet" href="{% static 'css/pages/shop-designer-cta.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}"><link rel="stylesheet" href="{% static 'css/pages/product-quantity.css' %}?v=2"><link rel="stylesheet" href="{% static 'css/pages/shop-designer-cta.css' %}"><link rel="stylesheet" href="{% static 'css/pages/product-saved.css' %}?v=1">{% endblock %}
 {% block content %}
 <div class="product-shell">
 <nav class="breadcrumbs" aria-label="مسیر صفحه">{% for item in breadcrumbs %}{% if not forloop.last %}<a href="{{ item.url }}">{{ item.name }}</a><span aria-hidden="true">/</span>{% else %}<span aria-current="page">{{ item.name }}</span>{% endif %}{% endfor %}</nav>
 <div class="product-layout">
 <section class="product-gallery" aria-label="تصاویر {{ product.name }}"><div class="gallery-main">{% with image=product.gallery_images.0 %}{% if image %}<img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" fetchpriority="high" decoding="async">{% else %}<img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" fetchpriority="high" decoding="async">{% endif %}{% endwith %}</div></section>
 <article class="product-info">
-<div class="product-eyebrow">BABAEI / PRODUCT</div><h1>{{ product.name }}</h1>{% if product.short_description %}<div class="product-short">{{ product.short_description }}</div>{% endif %}
+<div class="product-eyebrow">BABAEI / PRODUCT</div><div class="product-title-row"><h1>{{ product.name }}</h1>{% saved_status request.user product as saved_state %}<div class="product-save-actions"><form method="post" action="{% url 'saved:toggle_favorite' product.id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="product-save-button{% if saved_state.favorite %} is-active{% endif %}" aria-label="{% if saved_state.favorite %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}"><span aria-hidden="true">{% if saved_state.favorite %}♥{% else %}♡{% endif %}</span></button></form><form method="post" action="{% url 'saved:toggle_saved' product.id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="product-save-button{% if saved_state.saved %} is-active{% endif %}" aria-label="{% if saved_state.saved %}حذف از ذخیره‌ها{% else %}ذخیره محصول{% endif %}"><span aria-hidden="true">{% if saved_state.saved %}🔖{% else %}🔖{% endif %}</span></button></form></div></div>{% if product.short_description %}<div class="product-short">{{ product.short_description }}</div>{% endif %}
 <div class="product-price-box" aria-live="polite"><div class="price-row"><strong id="product-price" class="price">{{ product.display_price|price }}</strong><span class="price-unit">تومان</span></div><div id="product-old-price-row" class="old-price-row{% if not product.has_discount %} is-hidden{% endif %}"><del id="product-old-price">{{ product.display_compare_price|price }}</del><span id="product-discount" class="discount-badge">{{ product.discount_percent|discount_percent }}</span></div><small class="price-note">قیمت‌ها به تومان هستند</small></div>
 {% if product.active_variants %}
 <section class="product-options" aria-label="انتخاب رنگ و سایز"><div class="stock-summary"><span>موجودی کل</span><strong id="total-stock">{{ total_stock|price }} عدد</strong></div>
