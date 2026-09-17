@@ -31,10 +31,19 @@ class ArtworkAdmin(admin.ModelAdmin):
 
 @admin.register(DesignerView)
 class DesignerViewAdmin(admin.ModelAdmin):
-    list_display = ("product", "name", "key", "angle", "sort_order", "is_active")
+    list_display = ("product", "name", "key", "has_3d_model", "angle", "sort_order", "is_active")
     list_filter = ("is_active", "product")
     search_fields = ("product__name", "name", "key")
     autocomplete_fields = ("product",)
+    fieldsets = (
+        (None, {"fields": ("product", "key", "name", "is_active", "sort_order", "angle")}),
+        ("نمای دوبعدی", {"fields": ("background_image", "mask_image", "canvas_width", "canvas_height")}),
+        ("مدل سه‌بعدی", {"fields": ("model_3d", "model_3d_url", "model_3d_scale")}),
+    )
+
+    @admin.display(boolean=True, description="مدل ۳D")
+    def has_3d_model(self, obj):
+        return bool(obj.model_3d or obj.model_3d_url)
 
 
 @admin.register(PrintArea)
