@@ -52,7 +52,11 @@ def _generation_payload(product):
     images = product_images(product)
     signature = source_signature(images) if images else ""
     asset = Product3DAsset.objects.filter(product=product).first()
-    if asset and asset.source_signature != signature and asset.status not in {Product3DAsset.Status.REMOVING_BACKGROUND, Product3DAsset.Status.GENERATING}:
+    if asset and asset.source_signature != signature and asset.status not in {
+        Product3DAsset.Status.QUEUED,
+        Product3DAsset.Status.REMOVING_BACKGROUND,
+        Product3DAsset.Status.GENERATING,
+    }:
         asset.status = Product3DAsset.Status.QUEUED
         asset.task_id = ""
         asset.progress = 0
@@ -80,8 +84,10 @@ class DesignerPageView(View):
         views = [view for view in raw_views if _file_url(request, view.background_image)]
         areas = list(PrintArea.objects.filter(product=product, is_active=True).order_by("sort_order", "id"))
         area_maps = list(PrintAreaView.objects.filter(area__in=areas, view__in=views, area__is_active=True, view__is_active=True).select_related("area", "view"))
-        generated_asset = Product3DAsset.objects.filter(product=product).first()
         generation = _generation_payload(product)
+        # Re-read after generation state normalization so a freshly completed
+        # Celery job is reflected in designer_data/model URLs on this request.
+        generated_asset = Product3DAsset.objects.filter(product=product).first()
 
         view_data = []
         for view in views:
@@ -134,9 +140,10 @@ class DesignerPageView(View):
 class PrepareProduct3DView(View):
     def post(self, request, slug):
         product = get_object_or_404(Product, slug=slug, is_active=True, category__is_active=True)
-        manual_model = product.designer_views.filter(is_active=True).exclude(model_3d="").exists() or product.designer_views.filter(is_active=True).exclude(model_3d_url="").exists()
-        if manual_model:
-            return JsonResponse({"ok": True, "status": "ready", "source": "manual", "progress": 100})
+        manual_views = list(product.designer_views.filter(is_active=True).order_by("sort_order", "id"))
+        manual_url = next((_model_url(request, view) for view in manual_views if _model_url(request, view)), None)
+        if manual_url:
+            return JsonResponse({"ok": True, "status": "ready", "source": "manual", "progress": 100, "model_url": manual_url})
 
         images = product_images(product)
         if not images:
@@ -146,19 +153,10 @@ class PrepareProduct3DView(View):
         with transaction.atomic():
             asset, _ = Product3DAsset.objects.get_or_create(product=product, defaults={"source_signature": signature})
             asset = Product3DAsset.objects.select_for_update().get(pk=asset.pk)
-
             if asset.status == Product3DAsset.Status.READY and asset.source_signature == signature and (asset.model_3d or asset.model_url):
-                return JsonResponse({"ok": True, "status": "ready", "source": "generated", "progress": 100})
-
-            # task_id is the Celery task id while the job is queued/running and is
-            # replaced by the Meshy task id once the worker starts generation.
-            if asset.status in {
-                Product3DAsset.Status.QUEUED,
-                Product3DAsset.Status.REMOVING_BACKGROUND,
-                Product3DAsset.Status.GENERATING,
-            } and asset.task_id:
+                return JsonResponse({"ok": True, "status": "ready", "source": "generated", "progress": 100, "model_url": _file_url(request, asset.model_3d) or asset.model_url or None})
+            if asset.status in {Product3DAsset.Status.QUEUED, Product3DAsset.Status.REMOVING_BACKGROUND, Product3DAsset.Status.GENERATING} and asset.task_id:
                 return JsonResponse({"ok": True, "status": asset.status, "progress": asset.progress})
-
             celery_task_id = uuid.uuid4().hex
             asset.status = Product3DAsset.Status.QUEUED
             asset.source_signature = signature
@@ -167,17 +165,7 @@ class PrepareProduct3DView(View):
             asset.error_message = ""
             asset.model_url = ""
             asset.save(update_fields=["status", "source_signature", "task_id", "progress", "error_message", "model_url", "updated_at"])
-
-            # Use an explicit task id and publish only after the DB transaction
-            # commits. This prevents a worker racing the view from overwriting
-            # the task id with stale data and prevents duplicate jobs.
-            transaction.on_commit(
-                lambda asset_id=asset.id, task_id=celery_task_id: prepare_product_3d.apply_async(
-                    args=[asset_id],
-                    task_id=task_id,
-                )
-            )
-
+            transaction.on_commit(lambda asset_id=asset.id, task_id=celery_task_id: prepare_product_3d.apply_async(args=[asset_id], task_id=task_id))
         return JsonResponse({"ok": True, "status": Product3DAsset.Status.QUEUED, "progress": 0}, status=202)
 
 
@@ -186,6 +174,10 @@ class Product3DStatusView(View):
         product = get_object_or_404(Product, slug=slug, is_active=True, category__is_active=True)
         asset = Product3DAsset.objects.filter(product=product).first()
         if not asset:
+            manual_views = list(product.designer_views.filter(is_active=True).order_by("sort_order", "id"))
+            manual_url = next((_model_url(request, view) for view in manual_views if _model_url(request, view)), None)
+            if manual_url:
+                return JsonResponse({"ok": True, "status": "ready", "source": "manual", "progress": 100, "ready": True, "model_url": manual_url, "preview_url": None})
             return JsonResponse({"ok": True, "status": "not_started", "progress": 0})
         if asset.status == Product3DAsset.Status.GENERATING and asset.task_id:
             try:
