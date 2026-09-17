@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="{% static 'css/brand-final-v4.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'css/brand-final-v5.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'css/brand-final-v6.css' %}?v=1">
-    <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=3">
 </head>
 <body class="{% block body_class %}{% endblock %}">
     {% include "includes/header.html" %}
@@ -50,7 +50,8 @@
             <li class="babaei-quick-actions__item" style="--i:1;--a:120deg">
                 <a class="babaei-quick-actions__action" href="{% url 'orders:cart' %}" aria-label="سبد خرید">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h2l1.5 9.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 1.9-1.5L20 9H7"></path><path d="M9 19.5h.01M18 19.5h.01"></path></svg>
-                    <span class="babaei-quick-actions__tip">سبد خرید{% if cart_item_count %} ({{ cart_item_count }}){% endif %}</span>
+                    {% if cart_item_count %}<span class="babaei-quick-actions__badge" aria-label="{{ cart_item_count }} محصول در سبد">{{ cart_item_count }}</span>{% endif %}
+                    <span class="babaei-quick-actions__tip">سبد خرید</span>
                 </a>
             </li>
             <li class="babaei-quick-actions__item" style="--i:2;--a:150deg">
@@ -73,7 +74,7 @@
 
     <script src="{% static 'js/app.js' %}" defer></script>
     <script src="{% static 'js/components.js' %}" defer></script>
-    <script src="{% static 'js/components/quick-actions.js' %}?v=1" defer></script>
+    <script src="{% static 'js/components/quick-actions.js' %}?v=2" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
