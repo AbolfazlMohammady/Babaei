@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="{% static 'css/brand-final-v4.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'css/brand-final-v5.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'css/brand-final-v6.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=1">
 </head>
 <body class="{% block body_class %}{% endblock %}">
     {% include "includes/header.html" %}
@@ -37,8 +38,42 @@
     {% include "includes/messages.html" %}
     <main>{% block content %}{% endblock %}</main>
     {% include "includes/footer.html" %}
+
+    <nav class="babaei-quick-actions" data-quick-actions aria-label="دسترسی‌های سریع">
+        <ul class="babaei-quick-actions__ring" id="babaei-quick-actions-menu">
+            <li class="babaei-quick-actions__item" style="--i:0;--a:90deg">
+                <a class="babaei-quick-actions__action" href="{% url 'shop:index' %}" aria-label="فروشگاه">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1 11H5L4 9zM7 9a5 5 0 0 1 10 0"></path><path d="M8 13h8"></path></svg>
+                    <span class="babaei-quick-actions__tip">فروشگاه</span>
+                </a>
+            </li>
+            <li class="babaei-quick-actions__item" style="--i:1;--a:120deg">
+                <a class="babaei-quick-actions__action" href="{% url 'orders:cart' %}" aria-label="سبد خرید">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l1.6 10.2a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>
+                    <span class="babaei-quick-actions__tip">سبد خرید{% if cart_item_count %} ({{ cart_item_count }}){% endif %}</span>
+                </a>
+            </li>
+            <li class="babaei-quick-actions__item" style="--i:2;--a:150deg">
+                <a class="babaei-quick-actions__action" href="{% url 'users:profile' %}" aria-label="حساب کاربری">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c.8-3.7 3.1-5.5 7-5.5s6.2 1.8 7 5.5"></path></svg>
+                    <span class="babaei-quick-actions__tip">حساب کاربری</span>
+                </a>
+            </li>
+            <li class="babaei-quick-actions__item" style="--i:3;--a:180deg">
+                <a class="babaei-quick-actions__action" href="#" aria-label="طراحی اختصاصی">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"></path><path d="m13.5 6.5 4 4"></path></svg>
+                    <span class="babaei-quick-actions__tip">طراحی اختصاصی</span>
+                </a>
+            </li>
+        </ul>
+        <button type="button" class="babaei-quick-actions__fab" data-quick-actions-toggle aria-expanded="false" aria-controls="babaei-quick-actions-menu" aria-label="باز کردن دسترسی‌های سریع">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        </button>
+    </nav>
+
     <script src="{% static 'js/app.js' %}" defer></script>
     <script src="{% static 'js/components.js' %}" defer></script>
+    <script src="{% static 'js/components/quick-actions.js' %}?v=1" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
