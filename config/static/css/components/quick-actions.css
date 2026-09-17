@@ -1,19 +1,22 @@
-/* BABAEI — floating quick actions */
+/* BABAEI — floating quick actions / gold luxury */
 .babaei-quick-actions,
-.babaei-quick-actions * {
-    box-sizing: border-box;
-}
+.babaei-quick-actions * { box-sizing: border-box; }
+
+/* The floating menu replaces the old desktop header. */
+.site-header { display: none !important; }
 
 .babaei-quick-actions {
-    --qa-ink: var(--color-black, #171614);
-    --qa-surface: var(--color-surface, #ffffff);
-    --qa-bg: var(--color-bg, #f7f5f1);
-    --qa-border: var(--color-border, #dedbd5);
-    --qa-muted: var(--color-muted, #77736c);
+    --qa-bg: #0a0a0a;
+    --qa-surface: #151515;
+    --qa-surface-hover: #1d1b18;
+    --qa-gold: var(--b-gold, #c9a45c);
+    --qa-gold-light: var(--b-gold-light, #e4c77d);
+    --qa-gold-muted: var(--b-gold-muted, #9d7d43);
+    --qa-border: rgba(228,199,125,.20);
     position: fixed;
-    right: 24px;
-    bottom: 24px;
-    z-index: 900;
+    right: 26px;
+    bottom: 26px;
+    z-index: 1200;
     direction: ltr;
 }
 
@@ -33,27 +36,19 @@
     right: 0;
     bottom: 0;
     translate: 0 0;
-    scale: .3;
+    scale: .25;
     opacity: 0;
     visibility: hidden;
-    transition:
-        translate .45s cubic-bezier(.34, 1.4, .4, 1),
-        scale .45s cubic-bezier(.34, 1.4, .4, 1),
-        opacity .25s ease,
-        visibility 0s .45s;
+    transition: translate .46s cubic-bezier(.34,1.45,.4,1), scale .46s cubic-bezier(.34,1.45,.4,1), opacity .25s ease, visibility 0s .46s;
     transition-delay: calc(var(--i) * 45ms);
 }
 
 .babaei-quick-actions.is-open .babaei-quick-actions__item {
-    translate: calc(cos(var(--a)) * 108px) calc(sin(var(--a)) * -1 * 108px);
+    translate: calc(cos(var(--a)) * 112px) calc(sin(var(--a)) * -1 * 112px);
     scale: 1;
     opacity: 1;
     visibility: visible;
-    transition:
-        translate .45s cubic-bezier(.34, 1.4, .4, 1),
-        scale .45s cubic-bezier(.34, 1.4, .4, 1),
-        opacity .25s ease,
-        visibility 0s;
+    transition: translate .46s cubic-bezier(.34,1.45,.4,1), scale .46s cubic-bezier(.34,1.45,.4,1), opacity .25s ease, visibility 0s;
     transition-delay: calc(var(--i) * 55ms);
 }
 
@@ -61,56 +56,59 @@
     position: relative;
     display: grid;
     place-items: center;
-    width: 48px;
-    height: 48px;
-    margin: -24px;
+    width: 52px;
+    height: 52px;
+    margin: -26px;
     border: 1px solid var(--qa-border);
     border-radius: 50%;
-    background: var(--qa-surface);
-    color: var(--qa-ink);
+    background: radial-gradient(circle at 35% 25%, #24211c 0, var(--qa-surface) 58%, #0f0f0f 100%);
+    color: var(--qa-gold-light);
     text-decoration: none;
     cursor: pointer;
-    box-shadow: 0 12px 26px rgba(23, 22, 20, .10), 0 1px 0 rgba(255,255,255,.8) inset;
-    transition: transform .18s ease, background-color .18s ease, color .18s ease, border-color .18s ease;
+    box-shadow: 0 12px 30px rgba(0,0,0,.42), inset 0 1px 0 rgba(228,199,125,.08);
+    transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
 
 .babaei-quick-actions__action:hover {
-    transform: translateY(-2px);
-    border-color: var(--qa-ink);
-    background: var(--qa-bg);
+    transform: translateY(-3px) scale(1.04);
+    border-color: rgba(228,199,125,.55);
+    background: radial-gradient(circle at 35% 25%, #2b261e 0, var(--qa-surface-hover) 62%, #101010 100%);
+    color: #f0d58e;
+    box-shadow: 0 16px 34px rgba(0,0,0,.5), 0 0 22px rgba(201,164,92,.08), inset 0 1px 0 rgba(228,199,125,.12);
 }
 
 .babaei-quick-actions__action:focus-visible,
 .babaei-quick-actions__fab:focus-visible {
-    outline: 2px solid var(--qa-ink);
+    outline: 2px solid var(--qa-gold-light);
     outline-offset: 4px;
 }
 
 .babaei-quick-actions__action svg,
 .babaei-quick-actions__fab svg {
-    width: 20px;
-    height: 20px;
+    width: 21px;
+    height: 21px;
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.8;
+    stroke-width: 1.65;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
 
 .babaei-quick-actions__tip {
     position: absolute;
-    right: calc(100% + 10px);
+    right: calc(100% + 12px);
     top: 50%;
-    translate: 5px -50%;
+    translate: 6px -50%;
     white-space: nowrap;
-    padding: 6px 10px;
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 8px;
-    background: var(--qa-ink);
-    color: #fff;
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 750;
+    padding: 7px 11px;
+    border: 1px solid rgba(228,199,125,.18);
+    border-radius: 7px;
+    background: #11100e;
+    color: var(--qa-gold-light);
+    font-family: var(--b-font, inherit);
+    font-size: 10px;
+    font-weight: 650;
+    box-shadow: 0 10px 24px rgba(0,0,0,.35);
     opacity: 0;
     pointer-events: none;
     transition: opacity .18s ease, translate .18s ease;
@@ -126,36 +124,31 @@
     position: relative;
     display: grid;
     place-items: center;
-    width: 60px;
-    height: 60px;
-    border: 1px solid var(--qa-ink);
+    width: 64px;
+    height: 64px;
+    border: 1px solid #d4ad64;
     border-radius: 50%;
-    background: var(--qa-ink);
-    color: #fff;
+    background: linear-gradient(145deg, #e1bf73 0%, #c9a45c 48%, #a98242 100%);
+    color: #0a0a0a;
     cursor: pointer;
-    box-shadow: 0 16px 34px rgba(23, 22, 20, .20);
-    transition: rotate .35s cubic-bezier(.34, 1.4, .4, 1), transform .18s ease, box-shadow .25s ease;
+    box-shadow: 0 16px 34px rgba(0,0,0,.46), 0 0 28px rgba(201,164,92,.13), inset 0 1px 0 rgba(255,245,210,.45);
+    transition: rotate .38s cubic-bezier(.34,1.45,.4,1), transform .2s ease, box-shadow .25s ease;
 }
 
 .babaei-quick-actions__fab:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 19px 38px rgba(23, 22, 20, .24);
+    transform: translateY(-3px) scale(1.025);
+    box-shadow: 0 20px 40px rgba(0,0,0,.52), 0 0 34px rgba(201,164,92,.18), inset 0 1px 0 rgba(255,245,210,.5);
 }
 
 .babaei-quick-actions.is-open .babaei-quick-actions__fab {
     rotate: 135deg;
-    box-shadow: 0 9px 22px rgba(23, 22, 20, .16);
+    box-shadow: 0 10px 25px rgba(0,0,0,.4), 0 0 22px rgba(201,164,92,.10);
 }
 
 @media (max-width: 900px) {
-    .babaei-quick-actions {
-        display: none;
-    }
+    .babaei-quick-actions { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .babaei-quick-actions * {
-        transition-duration: .01s !important;
-        transition-delay: 0s !important;
-    }
+    .babaei-quick-actions * { transition-duration: .01s !important; transition-delay: 0s !important; }
 }
