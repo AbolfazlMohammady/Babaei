@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Artwork, ArtworkAreaPrice, DesignDraft, DesignLayer, DesignerView, PrintArea, PrintAreaView
+from .models import Artwork, ArtworkAreaPrice, DesignDraft, DesignLayer, DesignerView, PrintArea, PrintAreaView, Product3DAsset, Product3DSource
 
 
 class PrintAreaViewInline(admin.TabularInline):
@@ -53,6 +53,29 @@ class PrintAreaAdmin(admin.ModelAdmin):
     search_fields = ("product__name", "name", "key")
     autocomplete_fields = ("product",)
     inlines = (PrintAreaViewInline,)
+
+
+@admin.register(Product3DAsset)
+class Product3DAssetAdmin(admin.ModelAdmin):
+    list_display = ("product", "status", "provider", "progress", "task_id", "updated_at")
+    list_filter = ("status", "provider")
+    search_fields = ("product__name", "task_id", "error_message")
+    autocomplete_fields = ("product",)
+    readonly_fields = ("status", "task_id", "progress", "analysis", "source_signature", "error_message", "created_at", "updated_at")
+    fieldsets = (
+        (None, {"fields": ("product", "provider", "status", "progress", "task_id")}),
+        ("مدل نهایی", {"fields": ("model_3d", "model_url", "preview_image")}),
+        ("تحلیل تصاویر", {"fields": ("analysis", "source_signature", "error_message")}),
+        ("زمان‌ها", {"fields": ("created_at", "updated_at")}),
+    )
+
+
+@admin.register(Product3DSource)
+class Product3DSourceAdmin(admin.ModelAdmin):
+    list_display = ("asset", "product_image", "background_removed", "sort_order", "created_at")
+    list_filter = ("background_removed",)
+    autocomplete_fields = ("asset", "product_image")
+    readonly_fields = ("created_at",)
 
 
 @admin.register(DesignDraft)
