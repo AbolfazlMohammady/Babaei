@@ -93,13 +93,14 @@
     stroke-linejoin: round;
 }
 
-/* Tooltip always sits outside the circle and above the icon layer. */
+/* Tooltip is placed to the LEFT of every radial action, away from neighboring icons. */
 .babaei-quick-actions__tip {
     position: absolute;
-    right: calc(100% + 14px);
+    left: calc(100% + 14px);
+    right: auto;
     top: 50%;
     z-index: 20;
-    translate: 8px -50%;
+    translate: -8px -50%;
     white-space: nowrap;
     padding: 7px 11px;
     border: 1px solid rgba(228,199,125,.20);
