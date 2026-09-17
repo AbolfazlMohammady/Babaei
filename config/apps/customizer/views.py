@@ -25,6 +25,18 @@ def _schema(data):
     return mark_safe(json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c"))
 
 
+def _file_url(request, field):
+    """Return a media URL only when an ImageField actually has a file."""
+    if not field or not getattr(field, "name", None):
+        return None
+    try:
+        return absolute_url(request, field.url)
+    except (ValueError, OSError):
+        # A database record can outlive its physical media file. The designer
+        # must remain usable instead of failing the whole product page.
+        return None
+
+
 class DesignerPageView(View):
     template_name = "customizer/designer.html"
 
@@ -35,7 +47,19 @@ class DesignerPageView(View):
             is_active=True,
             category__is_active=True,
         )
-        views = list(DesignerViewModel.objects.filter(product=product, is_active=True).order_by("sort_order", "id"))
+
+        # Ignore incomplete designer views. ImageField.url raises ValueError
+        # when the field has no file, which previously crashed the whole page.
+        raw_views = list(
+            DesignerViewModel.objects.filter(
+                product=product,
+                is_active=True,
+            )
+            .exclude(background_image="")
+            .order_by("sort_order", "id")
+        )
+        views = [view for view in raw_views if _file_url(request, view.background_image)]
+
         areas = list(PrintArea.objects.filter(product=product, is_active=True).order_by("sort_order", "id"))
         area_maps = list(
             PrintAreaView.objects.filter(
@@ -46,23 +70,31 @@ class DesignerPageView(View):
             ).select_related("area", "view")
         )
 
-        view_data = [
-            {
-                "id": view.id,
-                "key": view.key,
-                "name": view.name,
-                "angle": view.angle,
-                "background": absolute_url(request, view.background_image.url),
-                "mask": absolute_url(request, view.mask_image.url) if view.mask_image else None,
-                "width": view.canvas_width,
-                "height": view.canvas_height,
-                "areas": [],
-            }
-            for view in views
-        ]
+        view_data = []
+        for view in views:
+            background = _file_url(request, view.background_image)
+            if not background:
+                continue
+            view_data.append(
+                {
+                    "id": view.id,
+                    "key": view.key,
+                    "name": view.name,
+                    "angle": view.angle,
+                    "background": background,
+                    "mask": _file_url(request, view.mask_image),
+                    "width": view.canvas_width,
+                    "height": view.canvas_height,
+                    "areas": [],
+                }
+            )
+
         view_lookup = {item["id"]: item for item in view_data}
         for area_map in area_maps:
-            view_lookup[area_map.view_id]["areas"].append(
+            target_view = view_lookup.get(area_map.view_id)
+            if not target_view:
+                continue
+            target_view["areas"].append(
                 {
                     "id": area_map.area_id,
                     "key": area_map.area.key,
@@ -75,19 +107,26 @@ class DesignerPageView(View):
             )
 
         artworks = list(
-            Artwork.objects.filter(is_active=True, source=Artwork.Source.LIBRARY)
+            Artwork.objects.filter(
+                is_active=True,
+                source=Artwork.Source.LIBRARY,
+            )
+            .exclude(image="")
             .only("id", "name", "image", "base_price")
             .order_by("name")
         )
-        artwork_data = [
-            {
-                "id": artwork.id,
-                "name": artwork.name,
-                "image": absolute_url(request, artwork.image.url),
-                "base_price": artwork.base_price,
-            }
-            for artwork in artworks
-        ]
+        artwork_data = []
+        for artwork in artworks:
+            image = _file_url(request, artwork.image)
+            if image:
+                artwork_data.append(
+                    {
+                        "id": artwork.id,
+                        "name": artwork.name,
+                        "image": image,
+                        "base_price": artwork.base_price,
+                    }
+                )
 
         price_rows = Artwork.objects.filter(
             is_active=True,
@@ -118,10 +157,11 @@ class DesignerPageView(View):
             for variant in variants
         ]
 
+        first_background = view_data[0]["background"] if view_data else None
         context = {
             "product": product,
             "designer_views": views,
-            "designer_ready": bool(views and areas and area_maps),
+            "designer_ready": bool(view_data and areas and area_maps),
             "designer_data": _schema(
                 {
                     "base_price": product.base_price,
@@ -134,7 +174,7 @@ class DesignerPageView(View):
             "canonical_url": absolute_url(request, request.path),
             "og_title": f"طراحی {product.name} | BABAEI",
             "og_description": "لیبل‌ها را روی ناحیه‌های مجاز لباس قرار دهید، نماهای مختلف را ببینید و قیمت نهایی را لحظه‌ای محاسبه کنید.",
-            "og_image_url": absolute_url(request, views[0].background_image.url) if views else None,
+            "og_image_url": first_background,
             "designer_schema": _schema(
                 {
                     "@context": "https://schema.org",
@@ -188,13 +228,16 @@ class UploadArtworkView(View):
         except ValidationError as exc:
             message = exc.message if hasattr(exc, "message") else str(exc)
             return JsonResponse({"ok": False, "error": message}, status=422)
+        image = _file_url(request, artwork.image)
+        if not image:
+            return JsonResponse({"ok": False, "error": "تصویر پردازش‌شده در دسترس نیست."}, status=500)
         return JsonResponse(
             {
                 "ok": True,
                 "artwork": {
                     "id": artwork.id,
                     "name": artwork.name,
-                    "image": absolute_url(request, artwork.image.url),
+                    "image": image,
                     "base_price": artwork.base_price,
                     "background_removed": artwork.background_removed,
                 },
