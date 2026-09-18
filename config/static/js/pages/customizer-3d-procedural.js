@@ -311,7 +311,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     function disposeLayer(item) {
         if (!item?.mesh) return;
         item.mesh.geometry?.dispose();
-        item.mesh.material?.map?.dispose?.();
+        // Textures are cached/shared between projections; dispose only the
+        // per-decal material, otherwise a drag would invalidate the cached texture. 
         item.mesh.material?.dispose();
         item.mesh.parent?.remove(item.mesh);
         if (item.frame) {
