@@ -628,3 +628,19 @@
         height: 29px !important;
     }
 }
+
+
+/* Pro studio controls: dock the model toolbar to the lower-left. */
+.designer-3d-bottom-controls {
+    left: 14px !important;
+    right: auto !important;
+    transform: none !important;
+}
+@media (max-width: 820px) {
+    .designer-3d-bottom-controls {
+        left: 10px !important;
+        right: auto !important;
+        transform: none !important;
+        max-width: calc(100% - 20px);
+    }
+}
