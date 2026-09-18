@@ -244,11 +244,38 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     function resize() {
         if (!renderer || !camera) return;
         const width = Math.max(1, stage.clientWidth);
-        const height = Math.max(1, stage.clientHeight);
+        const stageHeight = Math.max(1, stage.clientHeight);
+        const mobile = window.matchMedia("(max-width: 820px)").matches;
+
+        // A phone viewport is extremely tall relative to its width. Rendering the
+        // 3D scene with that raw aspect ratio forces the perspective camera far
+        // away and makes the shirt look tiny. Keep the render viewport close to
+        // a product-preview ratio and center it inside the tall mobile stage.
+        const height = mobile
+            ? Math.min(stageHeight, Math.round(width / 0.78))
+            : stageHeight;
+
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         renderer.setSize(width, height, false);
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
+
+        if (mobile) {
+            canvas.style.position = "absolute";
+            canvas.style.left = "0";
+            canvas.style.right = "0";
+            canvas.style.top = `${Math.max(0, (stageHeight - height) / 2)}px`;
+            canvas.style.width = "100%";
+            canvas.style.height = `${height}px`;
+        } else {
+            canvas.style.position = "";
+            canvas.style.left = "";
+            canvas.style.right = "";
+            canvas.style.top = "";
+            canvas.style.width = "";
+            canvas.style.height = "";
+        }
+
         if (garment) fitCamera();
         else render();
     }
