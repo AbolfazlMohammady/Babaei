@@ -324,19 +324,20 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             if (!layers.has(item.id)) return;
 
             disposeLayer(item);
-            item.position = point.clone();
             item.normal = normal.clone().normalize();
+            // Lift the decal slightly off the garment so curved/sleeve surfaces do not clip it.
+            item.position = point.clone().addScaledVector(item.normal, 0.018);
 
             const aspect = Math.max(
                 0.15,
                 (texture.image?.width || 1) / Math.max(1, texture.image?.height || 1)
             );
 
-            const width = Math.max(0.08, Math.min(0.95, 0.82 * Number(item.layer.width || 0.35)));
+            const width = Math.max(0.08, Math.min(1.05, 0.86 * Number(item.layer.width || 0.35)));
             const size = new THREE.Vector3(
                 width,
                 width / aspect,
-                Math.max(0.012, width * 0.04)
+                Math.max(0.06, width * 0.22)
             );
             item.size = size;
 
@@ -537,12 +538,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
             if (event.button === 1 || event.altKey) return;
 
-            if (selectedId != null && intersections[0]) {
-                drag = { pointerId: event.pointerId };
-                controls.enabled = false;
-                canvas.setPointerCapture(event.pointerId);
-                moveSelected(event);
-            }
+            // A selected label must only move after the user starts dragging the label itself.
+            // Clicking another point on the garment must never teleport the selected label.
+            return;
         });
 
         canvas.addEventListener("pointermove", event => {
@@ -573,8 +571,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
                 if (action === "scale-up" || action === "scale-down") {
                     const factor = action === "scale-up" ? 1.06 : 0.94;
-                    item.layer.width = Math.min(0.78, Math.max(0.06, item.layer.width * factor));
-                    item.layer.height = Math.min(0.78, Math.max(0.04, item.layer.height * factor));
+                    item.layer.width = Math.min(1.2, Math.max(0.06, item.layer.width * factor));
+                    item.layer.height = Math.min(1.2, Math.max(0.04, item.layer.height * factor));
                     project(item, item.position, item.normal);
                 } else if (action === "rotate-left" || action === "rotate-right") {
                     item.layer.rotation = Math.max(
@@ -624,7 +622,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         document.getElementById("label-scale")?.addEventListener("input", event => {
             const item = layers.get(selectedId);
             if (!item) return;
-            const value = THREE.MathUtils.clamp(Number(event.target.value) / 100, 0.06, 0.78);
+            const value = THREE.MathUtils.clamp(Number(event.target.value) / 100, 0.06, 1.2);
             item.layer.width = value;
             item.layer.height = Math.max(0.04, Math.min(0.78, value * 0.72));
             project(item, item.position, item.normal);
