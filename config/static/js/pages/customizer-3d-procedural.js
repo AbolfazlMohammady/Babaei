@@ -35,6 +35,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     let scene, camera, renderer, controls, garment;
     let garmentMeshes = [];
     let garmentMaterials = [];
+    let garmentMaxSize = 3;
+    let baseCameraDistance = 5.6;
     let currentVariant = null;
     let selectedId = null;
     let activeAreaId = areas[0]?.id || null;
@@ -131,7 +133,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const center = box.getCenter(new THREE.Vector3());
         const maxSize = Math.max(size.x, size.y, size.z) || 1;
 
-        const targetHeight = 3.25;
+        const targetHeight = 2.72;
         rootObject.scale.setScalar(targetHeight / maxSize);
 
         const scaledBox = new THREE.Box3().setFromObject(rootObject);
@@ -143,11 +145,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const finalSize = finalBox.getSize(new THREE.Vector3());
         const finalMax = Math.max(finalSize.x, finalSize.y, finalSize.z);
 
-        camera.position.set(0, finalSize.y * 0.02, Math.max(4.1, finalMax * 1.42));
+        garmentMaxSize = finalMax;
         controls.target.set(0, finalSize.y * 0.03, 0);
-        controls.minDistance = Math.max(2.7, finalMax * 0.72);
-        controls.maxDistance = Math.max(6.5, finalMax * 2.0);
-        camera.updateProjectionMatrix();
+        controls.minDistance = Math.max(2.6, finalMax * 0.72);
+        controls.maxDistance = Math.max(8.5, finalMax * 2.5);
+        fitCamera(true);
     }
 
     async function loadGarment() {
@@ -195,6 +197,50 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         render();
     }
 
+
+    function fitCamera(initial = false) {
+        if (!camera || !controls) return;
+        const aspect = Math.max(0.45, camera.aspect || 1);
+        const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+        const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
+        const verticalDistance = garmentMaxSize / (2 * Math.tan(verticalFov / 2));
+        const horizontalDistance = garmentMaxSize / (2 * Math.tan(horizontalFov / 2));
+        const distance = Math.max(4.7, verticalDistance, horizontalDistance) * 1.16;
+        baseCameraDistance = distance;
+        camera.position.set(0, garmentMaxSize * 0.015, distance);
+        controls.target.set(0, garmentMaxSize * 0.025, 0);
+        if (initial) controls.update();
+        camera.updateProjectionMatrix();
+        render();
+        updateCameraZoomLabel();
+    }
+
+    function updateCameraZoomLabel() {
+        const label = document.getElementById("camera-zoom-label");
+        if (!label || !camera || !controls) return;
+        const current = camera.position.distanceTo(controls.target);
+        const percent = Math.round((baseCameraDistance / Math.max(current, 0.01)) * 100);
+        label.textContent = `${percent}%`;
+    }
+
+    function changeCameraZoom(factor) {
+        if (!camera || !controls) return;
+        const target = controls.target.clone();
+        const direction = camera.position.clone().sub(target).normalize();
+        const current = camera.position.distanceTo(target);
+        const next = THREE.MathUtils.clamp(current * factor, controls.minDistance, controls.maxDistance);
+        camera.position.copy(target).add(direction.multiplyScalar(next));
+        controls.update();
+        updateCameraZoomLabel();
+        render();
+    }
+
+    function rotateGarment(step) {
+        if (!garment) return;
+        garment.rotation.y += THREE.MathUtils.degToRad(step);
+        render();
+    }
+
     function resize() {
         if (!renderer || !camera) return;
         const width = Math.max(1, stage.clientWidth);
@@ -203,7 +249,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         renderer.setSize(width, height, false);
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
-        render();
+        if (garment) fitCamera();
+        else render();
     }
 
     function render() {
@@ -410,6 +457,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const card = document.getElementById("selected-card");
         const controls = document.getElementById("selected-controls");
         const chosen = document.getElementById("premium-selected-artwork");
+        const scaleInput = document.getElementById("label-scale");
+        const rotationInput = document.getElementById("label-rotation");
 
         if (card) {
             card.innerHTML = selected
@@ -418,6 +467,14 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         }
 
         if (controls) controls.hidden = !selected;
+        if (scaleInput) {
+            scaleInput.disabled = !selected;
+            scaleInput.value = selected ? String(Math.round(selected.layer.width * 100)) : "35";
+        }
+        if (rotationInput) {
+            rotationInput.disabled = !selected;
+            rotationInput.value = selected ? String(Math.round(selected.layer.rotation)) : "0";
+        }
 
         if (chosen) {
             chosen.innerHTML = selected
@@ -525,6 +582,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                         Math.min(180, item.layer.rotation + (action === "rotate-left" ? -5 : 5))
                     );
                     project(item, item.position, item.normal);
+                } else if (action === "center-label") {
+                    const hit = centerHit();
+                    if (hit) {
+                        item.target = hit.object;
+                        project(item, hit.point, hitNormal(hit));
+                    }
                 } else if (action === "delete") {
                     disposeLayer(item);
                     layers.delete(selectedId);
@@ -558,11 +621,44 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             render();
         });
 
+        document.getElementById("label-scale")?.addEventListener("input", event => {
+            const item = layers.get(selectedId);
+            if (!item) return;
+            const value = THREE.MathUtils.clamp(Number(event.target.value) / 100, 0.06, 0.78);
+            item.layer.width = value;
+            item.layer.height = Math.max(0.04, Math.min(0.78, value * 0.72));
+            project(item, item.position, item.normal);
+            sync();
+        });
+
+        document.getElementById("label-rotation")?.addEventListener("input", event => {
+            const item = layers.get(selectedId);
+            if (!item) return;
+            item.layer.rotation = THREE.MathUtils.clamp(Number(event.target.value), -180, 180);
+            project(item, item.position, item.normal);
+            sync();
+        });
+
+        document.querySelectorAll("[data-camera-action]").forEach(button => {
+            button.addEventListener("click", () => {
+                const action = button.dataset.cameraAction;
+                if (action === "rotate-left") rotateGarment(-15);
+                if (action === "rotate-right") rotateGarment(15);
+                if (action === "zoom-in") changeCameraZoom(0.88);
+                if (action === "zoom-out") changeCameraZoom(1.14);
+                if (action === "fit") fitCamera();
+                if (action === "reset") {
+                    if (garment) garment.rotation.y = 0;
+                    controls?.reset();
+                    fitCamera();
+                }
+            });
+        });
+
         document.getElementById("designer-3d-reset")?.addEventListener("click", () => {
             if (garment) garment.rotation.y = 0;
             controls?.reset();
-            const slider = document.getElementById("designer-3d-rotation");
-            if (slider) slider.value = "0";
+            fitCamera();
             render();
         });
 
