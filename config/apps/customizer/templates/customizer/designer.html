@@ -15,7 +15,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260918-2">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260918-3">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260918-2">
 {% endblock %}
 
@@ -122,7 +122,7 @@
 <script src="{% static 'js/pages/customizer.js' %}?v=20260917-4" defer></script>
 {% if designer_has_3d %}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
-<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260918-2"></script>
+<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260918-3"></script>
 <script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260917-1" defer></script>
 {% endif %}
 {% endblock %}
