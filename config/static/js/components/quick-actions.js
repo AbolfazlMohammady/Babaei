@@ -31,17 +31,8 @@
     });
 
     actions.forEach((action) => {
-        action.addEventListener('click', (event) => {
-            const href = action.getAttribute('href');
-
-            if (action.closest('.babaei-quick-actions__item--design') && href) {
-                event.preventDefault();
-                window.location.assign(href);
-                return;
-            }
-
+        action.addEventListener('click', () => {
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
             action.animate(
                 [
                     { transform: 'scale(.86)' },
