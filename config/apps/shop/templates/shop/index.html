@@ -61,11 +61,18 @@
                         {% else %}<img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async">{% endif %}
                         {% if product.has_discount %}<span class="product-card__discount">{{ product.discount_percent|discount_percent }}</span>{% endif %}
                     </div>
-                    <div class="product-card__category">{{ product.category.name }}</div>
-                    <div class="product-card__name">{{ product.name }}</div>
-                    <div class="product-card__price-row">
-                        <div class="product-card__price">{{ product.display_price|price }} <span>تومان</span></div>
-                        {% if product.has_discount %}<del>{{ product.display_compare_price|price }} تومان</del>{% endif %}
+                    <div class="product-card__overlay">
+                        <div class="product-card__meta">
+                            <div class="product-card__category">{{ product.category.name }}</div>
+                            <div class="product-card__name">{{ product.name }}</div>
+                            <div class="product-card__price-row">
+                                <div class="product-card__price">{{ product.display_price|price }} <span>تومان</span></div>
+                                {% if product.has_discount %}<del>{{ product.display_compare_price|price }} تومان</del>{% endif %}
+                            </div>
+                        </div>
+                        <span class="product-card__arrow" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M7 17 17 7"></path><path d="M8 7h9v9"></path></svg>
+                        </span>
                     </div>
                 </a>
             {% empty %}<div class="empty-state">هنوز محصولی برای نمایش وجود ندارد.</div>{% endfor %}
