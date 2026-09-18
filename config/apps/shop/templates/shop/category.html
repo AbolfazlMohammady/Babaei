@@ -12,7 +12,7 @@
 {% block extra_head %}<script type="application/ld+json">{{ category_schema }}</script>{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}"><script src="{% static 'js/pages/shop-cards.js' %}?v=1" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -31,22 +31,38 @@
 
     <div class="products" aria-label="محصولات {{ category.name }}">
         {% for product in products %}
-            <a class="product-card" href="{% url 'shop:product' product.slug %}">
-                <div class="product-card__image">
-                    {% if product.primary_image_url %}
-                        <img src="{{ product.primary_image_url }}" alt="{{ product.primary_image_alt|default:product.name }}" loading="lazy" decoding="async">
-                    {% else %}
-                        <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async">
-                    {% endif %}
+            <article class="product-card" data-product-card>
+                <div class="product-card__media">
+                    <a class="product-card__gallery" href="{% url 'shop:product' product.slug %}" aria-label="{{ product.name }}">
+                        <div class="product-card__slides">
+                            {% for image in product.card_images %}
+                                <div class="product-card__slide{% if forloop.first %} is-active{% endif %}" data-card-slide><img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async"></div>
+                            {% empty %}
+                                <div class="product-card__slide is-active" data-card-slide><img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async"></div>
+                            {% endfor %}
+                        </div>
+                    </a>
+                    <form method="post" action="{% url 'saved:toggle_favorite' product.id %}" class="product-card__favorite-form">
+                        {% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+                        <button type="submit" class="product-card__favorite{% if product.is_favorite %} is-active{% endif %}" data-favorite-button aria-label="{% if product.is_favorite %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.7c0 5.4-8.8 10.1-8.8 10.1S3.2 14.1 3.2 8.7A4.7 4.7 0 0 1 12 6.1a4.7 4.7 0 0 1 8.8 2.6Z"></path></svg>
+                        </button>
+                    </form>
                     {% if product.has_discount %}<span class="product-card__discount">{{ product.discount_percent|discount_percent }}</span>{% endif %}
+                    {% if product.card_images|length > 1 %}<div class="product-card__dots" aria-hidden="true">{% for image in product.card_images %}<span class="product-card__dot{% if forloop.first %} is-active{% endif %}" data-card-dot></span>{% endfor %}</div>{% endif %}
                 </div>
-                <div class="product-card__category">{{ product.category.name }}</div>
-                <div class="product-card__name">{{ product.name }}</div>
-                <div class="product-card__price-row">
-                    <div class="product-card__price">{{ product.display_price|price }} <span>تومان</span></div>
-                    {% if product.has_discount %}<del>{{ product.display_compare_price|price }}</del>{% endif %}
+                <div class="product-card__body">
+                    <a href="{% url 'shop:product' product.slug %}" class="product-card__info">
+                        <div class="product-card__category">{{ product.category.name }}</div>
+                        <div class="product-card__name">{{ product.name }}</div>
+                        {% if product.short_description %}<p class="product-card__description">{{ product.short_description|truncatechars:90 }}</p>{% endif %}
+                        <div class="product-card__price-row"><div class="product-card__price">{{ product.display_price|price }} <span>تومان</span></div>{% if product.has_discount %}<del>{{ product.display_compare_price|price }} تومان</del>{% endif %}</div>
+                    </a>
+                    {% if product.has_variants %}<a class="product-card__cart" href="{% url 'shop:product' product.slug %}">انتخاب و افزودن</a>{% else %}
+                    <form method="post" action="{% url 'orders:cart_add' %}" class="product-card__cart-form">{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="quantity" value="1"><button type="submit" class="product-card__cart">افزودن به سبد خرید</button></form>
+                    {% endif %}
                 </div>
-            </a>
+            </article>
         {% empty %}
             <p class="empty-state">در این دسته‌بندی محصول فعالی وجود ندارد.</p>
         {% endfor %}
