@@ -180,6 +180,7 @@
     }
 
     function renderViews() {
+        if (!viewSwitcher) return;
         viewSwitcher.innerHTML = views.map((view, index) => `<button type="button" class="view-button ${index === activeViewIndex ? "is-active" : ""}" data-view-index="${index}">${escapeHtml(view.name)}</button>`).join("");
         viewSwitcher.querySelectorAll(".view-button").forEach((button) => button.addEventListener("click", () => {
             activeViewIndex = Number(button.dataset.viewIndex);
@@ -217,6 +218,7 @@
     }
 
     function renderSelection() {
+        if (!selectedCard || !selectedControls) return;
         const layer = layers.find((item) => item.id === selectedLayerId);
         if (!layer) {
             selectedCard.innerHTML = `<span class="selected-card__empty">یک لیبل را انتخاب کنید.</span>`;
