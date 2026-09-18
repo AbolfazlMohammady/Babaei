@@ -156,6 +156,7 @@
 }
 
 .babaei-quick-actions__fab {
+    pointer-events: auto;
     position: relative;
     display: grid;
     place-items: center;
