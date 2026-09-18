@@ -287,12 +287,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     function garmentHits(event) {
         pointerOf(event);
         raycaster.setFromCamera(pointer, camera);
-        return raycaster.intersectObjects(garmentMeshes, true);
+        return raycaster.intersectObjects(garmentMeshes, false);
     }
 
     function centerHit() {
         raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-        return raycaster.intersectObjects(garmentMeshes, true)[0] || null;
+        return raycaster.intersectObjects(garmentMeshes, false)[0] || null;
     }
 
     function hitNormal(hit) {
@@ -505,7 +505,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // while ordinary clicks still never move a selected label.
         pointerOf(event);
         raycaster.setFromCamera(pointer, camera);
-        const hit = raycaster.intersectObjects(garmentMeshes, true)[0];
+        const hit = raycaster.intersectObjects(garmentMeshes, false)[0];
         if (!hit) return;
 
         item.target = hit.object;
@@ -656,8 +656,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
                 if (action === "scale-up" || action === "scale-down") {
                     const factor = action === "scale-up" ? 1.06 : 0.94;
-                    item.layer.width = Math.min(1.2, Math.max(0.06, item.layer.width * factor));
-                    item.layer.height = Math.min(1.2, Math.max(0.04, item.layer.height * factor));
+                    item.layer.width = Math.min(0.98, Math.max(0.06, item.layer.width * factor));
+                    item.layer.height = Math.min(0.98, Math.max(0.04, item.layer.height * factor));
                     project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);
                 } else if (action === "rotate-left" || action === "rotate-right") {
                     item.layer.rotation = Math.max(
@@ -707,7 +707,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         document.getElementById("label-scale")?.addEventListener("input", event => {
             const item = layers.get(selectedId);
             if (!item) return;
-            const value = THREE.MathUtils.clamp(Number(event.target.value) / 100, 0.06, 1.2);
+            const value = THREE.MathUtils.clamp(Number(event.target.value) / 100, 0.06, 0.98);
             item.layer.width = value;
             item.layer.height = Math.max(0.04, Math.min(0.78, value * 0.72));
             project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);

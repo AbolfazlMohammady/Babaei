@@ -97,7 +97,7 @@
             <div class="premium-setting-group premium-label-tools"><h3>کنترل لیبل</h3>
                 <div class="label-tool-row">
                     <button type="button" data-action="scale-down">−</button>
-                    <input id="label-scale" type="range" min="6" max="120" value="35" step="1" aria-label="اندازه لیبل">
+                    <input id="label-scale" type="range" min="6" max="98" value="35" step="1" aria-label="اندازه لیبل">
                     <button type="button" data-action="scale-up">+</button>
                 </div>
                 <div class="label-tool-row">
@@ -122,7 +122,7 @@
 <script src="{% static 'js/pages/customizer.js' %}?v=20260917-4" defer></script>
 {% if designer_has_3d %}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
-<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260918-5"></script>
+<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260918-6"></script>
 <script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260917-1" defer></script>
 {% endif %}
 {% endblock %}
