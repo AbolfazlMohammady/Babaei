@@ -313,7 +313,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         item.mesh.geometry?.dispose();
         item.mesh.material?.map?.dispose?.();
         item.mesh.material?.dispose();
-        scene.remove(item.mesh);
+        item.mesh.parent?.remove(item.mesh);
+        if (item.frame) {
+            item.frame.geometry?.dispose();
+            item.frame.material?.dispose();
+            item.frame.parent?.remove(item.frame);
+            item.frame = null;
+        }
         item.mesh = null;
     }
 
@@ -337,7 +343,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             const size = new THREE.Vector3(
                 width,
                 width / aspect,
-                Math.max(0.06, width * 0.22)
+                Math.max(0.18, width * 0.68)
             );
             item.size = size;
 
@@ -364,12 +370,43 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 side: THREE.DoubleSide,
             });
 
+            // DecalGeometry is generated in world space. Convert it into the target
+            // mesh's local space and parent it to that mesh so it stays physically
+            // attached when the garment rotates.
+            geometry.applyMatrix4(target.matrixWorld.clone().invert());
+
             const mesh = new THREE.Mesh(geometry, material);
             mesh.renderOrder = 30 + Number(item.layer.z_index || 0);
             mesh.userData.customizerLayerId = item.id;
-            scene.add(mesh);
+            target.add(mesh);
+
+            // Professional selection frame: a subtle gold outline that follows the
+            // same surface/rotation as the decal and remains attached to the garment.
+            const frameGeometry = new THREE.EdgesGeometry(
+                new THREE.PlaneGeometry(size.x, size.y)
+            );
+            const frameMaterial = new THREE.LineBasicMaterial({
+                color: 0xd8b66b,
+                transparent: true,
+                opacity: 0.92,
+                depthTest: false,
+                depthWrite: false,
+            });
+            const frame = new THREE.LineSegments(frameGeometry, frameMaterial);
+            const targetWorldPosition = item.position.clone();
+            target.worldToLocal(targetWorldPosition);
+            frame.position.copy(targetWorldPosition);
+            const worldQuaternion = new THREE.Quaternion().setFromEuler(
+                orientation(item.normal, item.layer.rotation)
+            );
+            const targetWorldQuaternion = target.getWorldQuaternion(new THREE.Quaternion());
+            frame.quaternion.copy(targetWorldQuaternion.invert().multiply(worldQuaternion));
+            frame.userData.customizerLayerId = item.id;
+            frame.renderOrder = 80;
+            target.add(frame);
 
             item.mesh = mesh;
+            item.frame = frame;
             render();
         }).catch(() => status("تصویر لیبل برای پیش‌نمایش بارگذاری نشد."));
     }
@@ -413,6 +450,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             position: hit.point.clone(),
             normal: hitNormal(hit),
             mesh: null,
+            frame: null,
             size: null,
         };
 
@@ -468,6 +506,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         }
 
         if (controls) controls.hidden = !selected;
+        layers.forEach(item => {
+            if (item.frame) item.frame.visible = item.id === selectedId;
+        });
         if (scaleInput) {
             scaleInput.disabled = !selected;
             scaleInput.value = selected ? String(Math.round(selected.layer.width * 100)) : "35";
