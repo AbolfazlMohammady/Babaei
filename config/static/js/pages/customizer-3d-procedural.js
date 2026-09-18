@@ -462,9 +462,15 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function moveSelected(event) {
         const item = layers.get(selectedId);
-        const hit = garmentHits(event)[0];
-        if (!item || !hit) return;
-        item.target = hit.object;
+        if (!item || !item.target) return;
+
+        // Lock the decal to the mesh it was placed on. This prevents a sleeve
+        // decal from suddenly jumping onto the torso (or vice versa) while dragging.
+        pointerOf(event);
+        raycaster.setFromCamera(pointer, camera);
+        const hit = raycaster.intersectObject(item.target, false)[0];
+        if (!hit) return;
+
         project(item, hit.point, hitNormal(hit));
     }
 
