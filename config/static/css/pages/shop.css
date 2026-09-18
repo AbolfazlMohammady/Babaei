@@ -116,6 +116,10 @@
     margin-bottom: 54px;
 }
 
+.shop-page .products {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .shop-page .category-card,
 .shop-page .product-card {
     position: relative;
@@ -216,6 +220,16 @@
 
 .shop-page .product-card__favorite.is-active svg {
     fill: currentColor;
+}
+
+.shop-page .product-card__favorite.is-popping {
+    animation: product-card-heart-pop .34s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes product-card-heart-pop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.32); }
+    100% { transform: scale(1); }
 }
 
 .shop-page .product-card__discount {
