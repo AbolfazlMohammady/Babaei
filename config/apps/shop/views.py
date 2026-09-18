@@ -4,7 +4,7 @@ import json
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Case, CharField, IntegerField, OuterRef, Prefetch, Subquery, Value, When
+from django.db.models import Case, CharField, Exists, IntegerField, OuterRef, Prefetch, Subquery, Value, When
 from django.db.models.functions import Concat
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404
@@ -12,6 +12,7 @@ from django.utils.safestring import mark_safe
 from django.views.generic import DetailView, ListView
 
 from .models import Category, Product, ProductImage, ProductVariant
+from apps.saved.models import FavoriteProduct
 
 AUTH_USER_SESSION_KEY = "_auth_user_id"
 CATEGORY_NAV_CACHE_KEY = "babaei:shop:active-categories:v1"
@@ -56,14 +57,39 @@ def primary_image_annotations():
     return Concat(Value(settings.MEDIA_URL), image_path, output_field=CharField(max_length=520)), image_alt
 
 
+def card_annotations(request):
+    primary_image_url, primary_image_alt = primary_image_annotations()
+    gallery_images = ProductImage.objects.filter(product_id=OuterRef("pk"))
+    has_variants = ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True)
+    annotations = {
+        "primary_image_url": primary_image_url,
+        "primary_image_alt": primary_image_alt,
+        "has_variants": Exists(has_variants),
+    }
+    if request.user.is_authenticated:
+        annotations["is_favorite"] = Exists(
+            FavoriteProduct.objects.filter(user_id=request.user.id, product_id=OuterRef("pk"))
+        )
+    else:
+        annotations["is_favorite"] = Value(False)
+    return annotations
+
+
 class ShopIndexView(ListView):
     template_name = "shop/index.html"
     context_object_name = "products"
 
     def get_queryset(self):
         variant_price, variant_compare_price = price_annotations()
-        primary_image_url, primary_image_alt = primary_image_annotations()
-        return Product.objects.filter(is_active=True, category__is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, primary_image_url=primary_image_url, primary_image_alt=primary_image_alt).order_by("-is_featured", "-created_at")[:24]
+        annotations = card_annotations(self.request)
+        card_images = ProductImage.objects.annotate(
+            type_priority=Case(
+                When(image_type=ProductImage.ImageType.PRIMARY, then=0),
+                default=1,
+                output_field=IntegerField(),
+            )
+        ).order_by("type_priority", "sort_order", "id")
+        return Product.objects.filter(is_active=True, category__is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, **annotations).prefetch_related(Prefetch("images", queryset=card_images, to_attr="card_images")).order_by("-is_featured", "-created_at")[:24]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -87,8 +113,15 @@ class CategoryDetailView(ListView):
     def get_queryset(self):
         self.category = get_object_or_404(Category.objects.only("id", "name", "slug", "description", "seo_title", "seo_description", "image"), slug=self.kwargs["slug"], is_active=True)
         variant_price, variant_compare_price = price_annotations()
-        primary_image_url, primary_image_alt = primary_image_annotations()
-        return Product.objects.filter(category_id=self.category.id, is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, primary_image_url=primary_image_url, primary_image_alt=primary_image_alt)
+        annotations = card_annotations(self.request)
+        card_images = ProductImage.objects.annotate(
+            type_priority=Case(
+                When(image_type=ProductImage.ImageType.PRIMARY, then=0),
+                default=1,
+                output_field=IntegerField(),
+            )
+        ).order_by("type_priority", "sort_order", "id")
+        return Product.objects.filter(category_id=self.category.id, is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, **annotations).prefetch_related(Prefetch("images", queryset=card_images, to_attr="card_images"))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
