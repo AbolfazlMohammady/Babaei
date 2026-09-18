@@ -326,7 +326,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             disposeLayer(item);
             item.normal = normal.clone().normalize();
             // Lift the decal slightly off the garment so curved/sleeve surfaces do not clip it.
-            item.position = point.clone().addScaledVector(item.normal, 0.012);
+            item.position = point.clone().addScaledVector(item.normal, 0.018);
 
             const aspect = Math.max(
                 0.15,
@@ -337,7 +337,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             const size = new THREE.Vector3(
                 width,
                 width / aspect,
-                Math.max(0.045, width * 0.12)
+                Math.max(0.06, width * 0.22)
             );
             item.size = size;
 
