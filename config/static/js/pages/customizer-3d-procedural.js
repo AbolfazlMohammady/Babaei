@@ -327,13 +327,22 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     function project(item, point, normal) {
         if (!item?.artwork?.image || !garmentMeshes.length) return;
 
+        // Keep the real cloth anchor separate from the tiny visual lift. The old
+        // code re-used item.position when resizing, so the 0.018 offset was added
+        // again and again until the decal floated away and disappeared.
+        const surfacePoint = point.clone();
+        const surfaceNormal = normal.clone().normalize();
+        const revision = (item.projectRevision || 0) + 1;
+        item.projectRevision = revision;
+
         loadTexture(item.artwork.image).then(texture => {
-            if (!layers.has(item.id)) return;
+            if (!layers.has(item.id) || item.projectRevision !== revision) return;
 
             disposeLayer(item);
-            item.normal = normal.clone().normalize();
-            // Lift the decal slightly off the garment so curved/sleeve surfaces do not clip it.
-            item.position = point.clone().addScaledVector(item.normal, 0.018);
+            item.normal = surfaceNormal.clone();
+            item.surfacePoint = surfacePoint.clone();
+            item.surfaceNormal = surfaceNormal.clone();
+            item.position = surfacePoint.clone().addScaledVector(surfaceNormal, 0.008);
 
             const aspect = Math.max(
                 0.15,
@@ -450,6 +459,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             target: hit.object,
             position: hit.point.clone(),
             normal: hitNormal(hit),
+            surfacePoint: hit.point.clone(),
+            surfaceNormal: hitNormal(hit),
+            projectRevision: 0,
             mesh: null,
             frame: null,
             size: null,
@@ -457,21 +469,23 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         layers.set(item.id, item);
         selectedId = item.id;
-        project(item, item.position, item.normal);
+        project(item, item.surfacePoint, item.surfaceNormal);
         sync();
     }
 
     function moveSelected(event) {
         const item = layers.get(selectedId);
-        if (!item || !item.target) return;
+        if (!item) return;
 
-        // Lock the decal to the mesh it was placed on. This prevents a sleeve
-        // decal from suddenly jumping onto the torso (or vice versa) while dragging.
+        // A drag is an explicit placement action, so follow the garment mesh
+        // currently under the pointer. This allows torso -> sleeve placement,
+        // while ordinary clicks still never move a selected label.
         pointerOf(event);
         raycaster.setFromCamera(pointer, camera);
-        const hit = raycaster.intersectObject(item.target, false)[0];
+        const hit = raycaster.intersectObjects(garmentMeshes, true)[0];
         if (!hit) return;
 
+        item.target = hit.object;
         project(item, hit.point, hitNormal(hit));
     }
 
@@ -621,13 +635,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                     const factor = action === "scale-up" ? 1.06 : 0.94;
                     item.layer.width = Math.min(1.2, Math.max(0.06, item.layer.width * factor));
                     item.layer.height = Math.min(1.2, Math.max(0.04, item.layer.height * factor));
-                    project(item, item.position, item.normal);
+                    project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);
                 } else if (action === "rotate-left" || action === "rotate-right") {
                     item.layer.rotation = Math.max(
                         -180,
                         Math.min(180, item.layer.rotation + (action === "rotate-left" ? -5 : 5))
                     );
-                    project(item, item.position, item.normal);
+                    project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);
                 } else if (action === "center-label") {
                     const hit = centerHit();
                     if (hit) {
@@ -673,7 +687,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             const value = THREE.MathUtils.clamp(Number(event.target.value) / 100, 0.06, 1.2);
             item.layer.width = value;
             item.layer.height = Math.max(0.04, Math.min(0.78, value * 0.72));
-            project(item, item.position, item.normal);
+            project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);
             sync();
         });
 
@@ -681,7 +695,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             const item = layers.get(selectedId);
             if (!item) return;
             item.layer.rotation = THREE.MathUtils.clamp(Number(event.target.value), -180, 180);
-            project(item, item.position, item.normal);
+            project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);
             sync();
         });
 
