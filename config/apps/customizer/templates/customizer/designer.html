@@ -42,7 +42,6 @@
     </section>
     {% else %}
     <div class="customizer-toolbar customizer-toolbar--premium">
-        <div class="view-switcher" id="view-switcher" role="tablist" aria-label="نمای لباس"></div>
         <div class="customizer-mode-switch" role="group" aria-label="حالت نمایش">
             <button type="button" class="mode-button is-active" data-mode="3d">سه‌بعدی</button>
             <button type="button" class="mode-button" data-mode="2d">نمای چاپ</button>
@@ -63,10 +62,11 @@
 
         <section class="customizer-stage-wrap customizer-stage-wrap--premium" aria-label="محیط سه‌بعدی طراحی">
             <div class="customizer-stage customizer-stage--premium" id="stage-shell">
-                <div class="designer-3d-stage" id="designer-3d-stage" aria-label="پیش‌نمایش سه‌بعدی تیشرت">
+                <div class="designer-3d-stage" id="designer-3d-stage" data-model-url="{% static 'Glb/whit_t_shirt.glb' %}" aria-label="پیش‌نمایش سه‌بعدی تیشرت">
                     <div class="designer-3d-brand"><strong>BABAEI</strong><span>3D T-SHIRT MODEL</span></div>
                     <div class="designer-3d-topbar"><span class="designer-3d-badge"><i></i> تیشرت سه‌بعدی</span><span class="designer-3d-quality">PBR STUDIO</span></div>
                     <canvas id="designer-3d-canvas"></canvas>
+                    <div class="designer-3d-loading" id="designer-3d-loading">در حال بارگذاری مدل سه‌بعدی…</div>
                     <div class="designer-3d-hint" id="designer-3d-hint">لیبل را انتخاب کن؛ سپس روی سطح تیشرت بکش</div>
                     <div class="designer-3d-bottom-controls"><span>360°</span><input id="designer-3d-rotation" type="range" min="-180" max="180" value="0" step="1" aria-label="چرخش ۳۶۰ درجه تیشرت"><button type="button" id="designer-3d-reset" title="بازنشانی نما">↻</button></div>
                 </div>
@@ -105,7 +105,7 @@
 <script src="{% static 'js/pages/customizer.js' %}?v=20260917-4" defer></script>
 {% if designer_has_3d %}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
-<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260917-2"></script>
+<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260918-1"></script>
 <script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260917-1" defer></script>
 {% endif %}
 {% endblock %}

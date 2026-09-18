@@ -171,3 +171,24 @@
     .customizer-panel--premium-left { order: 2; }
     .customizer-panel--premium-right { order: 3; }
 }
+
+
+.designer-3d-loading {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    z-index: 12;
+    transform: translate(-50%, -50%);
+    min-width: 190px;
+    padding: 10px 16px;
+    border: 1px solid #3b3b3f;
+    border-radius: 10px;
+    background: rgba(9,9,10,.86);
+    color: #d8b66b;
+    font-size: 10px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+}
+.designer-3d-loading.is-hidden { display: none; }
+
+.designer-3d-stage.is-hidden { display: none !important; }
