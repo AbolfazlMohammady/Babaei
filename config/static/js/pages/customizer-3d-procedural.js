@@ -338,7 +338,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         loadTexture(item.artwork.image).then(texture => {
             if (!layers.has(item.id) || item.projectRevision !== revision) return;
 
-            disposeLayer(item);
             item.normal = surfaceNormal.clone();
             item.surfacePoint = surfacePoint.clone();
             item.surfaceNormal = surfaceNormal.clone();
@@ -353,7 +352,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             const size = new THREE.Vector3(
                 width,
                 width / aspect,
-                Math.max(0.18, width * 0.68)
+                Math.max(0.24, width * 0.9)
             );
             item.size = size;
 
@@ -364,6 +363,15 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 orientation(item.normal, item.layer.rotation),
                 size
             );
+
+            // DecalGeometry can legitimately produce an empty geometry when the
+            // pointer is on a thin/angled part of the garment (especially sleeves).
+            // Never remove the currently visible label until the replacement has
+            // actually intersected the garment.
+            if (!geometry.attributes.position?.count) {
+                geometry.dispose();
+                return;
+            }
 
             const material = new THREE.MeshPhysicalMaterial({
                 map: texture,
@@ -415,8 +423,23 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             frame.renderOrder = 80;
             target.add(frame);
 
+            const previousMesh = item.mesh;
+            const previousFrame = item.frame;
+
             item.mesh = mesh;
             item.frame = frame;
+
+            if (previousMesh) {
+                previousMesh.geometry?.dispose();
+                previousMesh.material?.dispose();
+                previousMesh.parent?.remove(previousMesh);
+            }
+            if (previousFrame) {
+                previousFrame.geometry?.dispose();
+                previousFrame.material?.dispose();
+                previousFrame.parent?.remove(previousFrame);
+            }
+
             render();
         }).catch(() => status("تصویر لیبل برای پیش‌نمایش بارگذاری نشد."));
     }
