@@ -31,11 +31,6 @@
     pointer-events: none;
 }
 
-/* Keep the design action fully inside the viewport and mouse-selectable. */
-.babaei-quick-actions__item--design {
-    margin-bottom: 78px;
-}
-
 .babaei-quick-actions__item {
     position: absolute;
     right: 0;
@@ -46,6 +41,11 @@
     visibility: hidden;
     transition: translate .46s cubic-bezier(.34,1.45,.4,1), scale .46s cubic-bezier(.34,1.45,.4,1), opacity .25s ease, visibility 0s .46s;
     transition-delay: calc(var(--i) * 45ms);
+}
+
+/* Design stays on its own slot above the lower actions without changing the ring layout. */
+.babaei-quick-actions.is-open .babaei-quick-actions__item--design {
+    translate: calc(cos(var(--a)) * 112px) calc(sin(var(--a)) * -1 * 112px - 86px);
 }
 
 .babaei-quick-actions.is-open .babaei-quick-actions__item {
