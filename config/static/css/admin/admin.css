@@ -1,0 +1,425 @@
+:root {
+    --ba-admin-bg: #090909;
+    --ba-admin-panel: #111111;
+    --ba-admin-panel-2: #151515;
+    --ba-admin-border: rgba(255,255,255,.09);
+    --ba-admin-text: #f4f1eb;
+    --ba-admin-muted: #96918a;
+    --ba-admin-gold: #d2ad5f;
+    --ba-admin-gold-soft: rgba(210,173,95,.12);
+}
+
+html, body {
+    background: var(--ba-admin-bg) !important;
+}
+
+body {
+    font-family: Peyda, "Segoe UI", Tahoma, sans-serif;
+    color: var(--ba-admin-text);
+}
+
+#header {
+    min-height: 74px;
+    padding: 0 32px;
+    background: #0d0d0d;
+    border-bottom: 1px solid var(--ba-admin-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#branding { padding: 0; }
+#user-tools { color: var(--ba-admin-muted); }
+#user-tools a { color: var(--ba-admin-text) !important; }
+
+.babaei-admin-brand a {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--ba-admin-text) !important;
+    text-decoration: none;
+}
+
+.babaei-admin-brand__mark {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(210,173,95,.5);
+    border-radius: 11px;
+    color: var(--ba-admin-gold);
+    font-family: Georgia, serif;
+    font-size: 21px;
+}
+
+.babaei-admin-brand strong {
+    display: block;
+    color: var(--ba-admin-gold);
+    letter-spacing: .22em;
+    font: 700 17px Georgia, serif;
+}
+
+.babaei-admin-brand small {
+    display: block;
+    margin-top: 2px;
+    color: var(--ba-admin-muted);
+    font-size: 8px;
+    letter-spacing: .22em;
+    direction: ltr;
+}
+
+.babaei-admin-global {
+    display: flex;
+    gap: 8px;
+    margin-inline-start: auto;
+    margin-inline-end: 28px;
+}
+
+.babaei-admin-global a {
+    padding: 9px 13px;
+    border: 1px solid var(--ba-admin-border);
+    border-radius: 9px;
+    color: var(--ba-admin-muted) !important;
+    text-decoration: none;
+    font-size: 11px;
+}
+
+.babaei-admin-global a:hover,
+.babaei-admin-global a.is-active {
+    border-color: rgba(210,173,95,.45);
+    color: var(--ba-admin-gold) !important;
+    background: var(--ba-admin-gold-soft);
+}
+
+#container {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 28px 32px 70px;
+}
+
+#content {
+    width: 100%;
+    padding: 0;
+}
+
+.breadcrumbs {
+    background: transparent !important;
+    color: var(--ba-admin-muted) !important;
+    padding: 0 0 18px !important;
+}
+
+.babaei-admin-dashboard { direction: rtl; }
+
+.babaei-admin-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    padding: 12px 0 28px;
+}
+
+.babaei-admin-eyebrow {
+    color: var(--ba-admin-gold);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .2em;
+    direction: ltr;
+}
+
+.babaei-admin-hero h1 {
+    margin: 7px 0 5px;
+    font-size: 32px;
+    letter-spacing: -.03em;
+}
+
+.babaei-admin-hero p {
+    margin: 0;
+    color: var(--ba-admin-muted);
+    font-size: 13px;
+}
+
+.babaei-admin-hero__actions {
+    display: flex;
+    gap: 9px;
+}
+
+.babaei-admin-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 15px;
+    border: 1px solid var(--ba-admin-border);
+    border-radius: 10px;
+    color: var(--ba-admin-text) !important;
+    background: var(--ba-admin-panel);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.babaei-admin-button--gold {
+    color: #15110a !important;
+    border-color: var(--ba-admin-gold);
+    background: var(--ba-admin-gold);
+}
+
+.babaei-admin-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.babaei-admin-kpi {
+    display: block;
+    min-height: 128px;
+    padding: 18px;
+    border: 1px solid var(--ba-admin-border);
+    border-radius: 14px;
+    background: linear-gradient(145deg,#151515,#101010);
+    color: var(--ba-admin-text) !important;
+    text-decoration: none;
+    transition: transform .2s ease, border-color .2s ease;
+}
+
+.babaei-admin-kpi:hover {
+    transform: translateY(-2px);
+    border-color: rgba(210,173,95,.4);
+}
+
+.babaei-admin-kpi span,
+.babaei-admin-kpi small {
+    display: block;
+    color: var(--ba-admin-muted);
+    font-size: 10px;
+}
+
+.babaei-admin-kpi strong {
+    display: block;
+    margin: 9px 0 4px;
+    color: var(--ba-admin-gold);
+    font: 600 31px Georgia, serif;
+}
+
+.babaei-admin-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(280px, .8fr);
+    gap: 14px;
+}
+
+.babaei-admin-panel,
+.babaei-admin-modules {
+    padding: 19px;
+    border: 1px solid var(--ba-admin-border);
+    border-radius: 15px;
+    background: var(--ba-admin-panel);
+}
+
+.babaei-admin-panel__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.babaei-admin-panel__head span {
+    color: var(--ba-admin-gold);
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: .18em;
+    direction: ltr;
+}
+
+.babaei-admin-panel__head h2 {
+    margin: 4px 0 0;
+    font-size: 17px;
+}
+
+.babaei-admin-panel__head > a {
+    color: var(--ba-admin-gold);
+    font-size: 10px;
+    text-decoration: none;
+}
+
+.babaei-admin-order {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--ba-admin-border);
+    color: var(--ba-admin-text) !important;
+    text-decoration: none;
+}
+
+.babaei-admin-order:last-child { border-bottom: 0; }
+
+.babaei-admin-order div:last-child {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.babaei-admin-order strong,
+.babaei-admin-order b {
+    font-size: 11px;
+}
+
+.babaei-admin-order span {
+    display: block;
+    margin-top: 3px;
+    color: var(--ba-admin-muted);
+    font-size: 9px;
+}
+
+.babaei-admin-status {
+    display: inline-block !important;
+    margin: 0 !important;
+    padding: 4px 7px;
+    border: 1px solid var(--ba-admin-border);
+    border-radius: 999px;
+}
+
+.babaei-admin-links {
+    display: grid;
+    gap: 7px;
+}
+
+.babaei-admin-links a,
+.babaei-admin-model {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 12px;
+    border: 1px solid var(--ba-admin-border);
+    border-radius: 9px;
+    color: var(--ba-admin-text) !important;
+    text-decoration: none;
+    font-size: 11px;
+}
+
+.babaei-admin-links a:hover,
+.babaei-admin-model:hover {
+    border-color: rgba(210,173,95,.35);
+    background: var(--ba-admin-gold-soft);
+}
+
+.babaei-admin-links b { color: var(--ba-admin-gold); }
+
+.babaei-admin-modules { margin-top: 14px; }
+
+.babaei-admin-apps {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 12px;
+}
+
+.babaei-admin-app {
+    overflow: hidden;
+    border: 1px solid var(--ba-admin-border);
+    border-radius: 12px;
+    background: #0e0e0e;
+}
+
+.babaei-admin-app__head {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--ba-admin-border);
+    background: #121212;
+}
+
+.babaei-admin-app__head h3 {
+    margin: 0;
+    font-size: 13px;
+}
+
+.babaei-admin-model {
+    border: 0;
+    border-radius: 0;
+    border-bottom: 1px solid var(--ba-admin-border);
+}
+
+.babaei-admin-model:last-child { border-bottom: 0; }
+
+.babaei-admin-model > div {
+    display: flex;
+    gap: 8px;
+}
+
+.babaei-admin-model > div a {
+    color: var(--ba-admin-gold) !important;
+    text-decoration: none;
+}
+
+.babaei-admin-empty {
+    padding: 24px 0;
+    color: var(--ba-admin-muted);
+    text-align: center;
+    font-size: 11px;
+}
+
+#changelist,
+.module,
+.inline-group,
+.submit-row {
+    border-color: var(--ba-admin-border) !important;
+    border-radius: 12px;
+}
+
+#changelist,
+.module {
+    background: var(--ba-admin-panel) !important;
+}
+
+#changelist-filter {
+    background: #0f0f0f !important;
+    border-color: var(--ba-admin-border) !important;
+}
+
+#changelist-filter h2,
+.module caption,
+.module h2 {
+    background: #151515 !important;
+    color: var(--ba-admin-text) !important;
+}
+
+#changelist-filter a,
+.results a,
+.object-tools a,
+.addlink,
+.changelink {
+    color: var(--ba-admin-gold) !important;
+}
+
+input, textarea, select, .vTextField {
+    border: 1px solid var(--ba-admin-border) !important;
+    border-radius: 8px !important;
+    background: #0d0d0d !important;
+    color: var(--ba-admin-text) !important;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: rgba(210,173,95,.65) !important;
+    box-shadow: 0 0 0 2px rgba(210,173,95,.08) !important;
+}
+
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    border-radius: 8px !important;
+}
+
+@media (max-width: 900px) {
+    #header { padding: 0 16px; }
+    #container { padding: 20px 14px 50px; }
+    .babaei-admin-global { display: none; }
+    .babaei-admin-hero { align-items: flex-start; flex-direction: column; }
+    .babaei-admin-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .babaei-admin-grid,
+    .babaei-admin-apps { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 520px) {
+    .babaei-admin-kpis { grid-template-columns: 1fr; }
+    .babaei-admin-hero h1 { font-size: 25px; }
+    .babaei-admin-order { align-items: flex-start; flex-direction: column; }
+}
