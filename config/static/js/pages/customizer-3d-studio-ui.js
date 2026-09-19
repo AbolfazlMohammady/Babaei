@@ -86,6 +86,58 @@
     renderSizes();
     renderViews();
 
+    /* Fullscreen studio drawers: the 3D garment always stays underneath. */
+    const workspace = document.querySelector(".customizer-workspace--premium");
+    const leftDrawer = document.querySelector(".customizer-panel--premium-left");
+    const rightDrawer = document.querySelector(".customizer-panel--premium-right");
+    const leftToggle = document.getElementById("studio-drawer-left-toggle");
+    const rightToggle = document.getElementById("studio-drawer-right-toggle");
+
+    function setDrawer(side, open) {
+        const drawer = side === "left" ? leftDrawer : rightDrawer;
+        const toggle = side === "left" ? leftToggle : rightToggle;
+        if (!workspace || !drawer || !toggle) return;
+        drawer.classList.toggle("is-drawer-closed", !open);
+        workspace.classList.toggle(side === "left" ? "left-drawer-closed" : "right-drawer-closed", !open);
+        toggle.setAttribute("aria-expanded", String(open));
+        toggle.setAttribute("aria-label", open
+            ? (side === "left" ? "بستن ابزار طراحی" : "بستن تنظیمات محصول")
+            : (side === "left" ? "باز کردن ابزار طراحی" : "باز کردن تنظیمات محصول"));
+    }
+
+    // Start with the model unobstructed. Edge handles reopen each drawer instantly.
+    setDrawer("left", false);
+    setDrawer("right", false);
+
+    leftToggle?.addEventListener("click", () => {
+        const open = leftDrawer?.classList.contains("is-drawer-closed");
+        setDrawer("left", open);
+    });
+    rightToggle?.addEventListener("click", () => {
+        const open = rightDrawer?.classList.contains("is-drawer-closed");
+        setDrawer("right", open);
+    });
+
+    document.getElementById("label-library-trigger")?.addEventListener("click", () => {
+        setDrawer("right", true);
+    });
+
+    // When a label is added, switch the user directly to its transform controls.
+    document.addEventListener("babaei:label-added", () => {
+        setDrawer("right", false);
+        setDrawer("left", true);
+    });
+
+    window.BabaeiStudioDrawers = {
+        open: side => setDrawer(side, true),
+        close: side => setDrawer(side, false),
+        toggle: side => {
+            const drawer = side === "left" ? leftDrawer : rightDrawer;
+            setDrawer(side, drawer?.classList.contains("is-drawer-closed"));
+        },
+    };
+
+
     const current = variants.find(item => String(item.id) === String(select?.value)) || variants.find(item => Number(item.stock) > 0) || variants[0];
     if (current) chooseVariant(current);
 })();
