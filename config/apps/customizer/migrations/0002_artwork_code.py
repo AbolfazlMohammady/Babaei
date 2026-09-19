@@ -1,4 +1,13 @@
+import uuid
+
 from django.db import migrations, models
+
+
+def populate_artwork_codes(apps, schema_editor):
+    Artwork = apps.get_model("customizer", "Artwork")
+    for artwork in Artwork.objects.filter(code__isnull=True):
+        artwork.code = f"LBL-{uuid.uuid4().hex[:10].upper()}"
+        artwork.save(update_fields=["code"])
 
 
 class Migration(migrations.Migration):
@@ -11,13 +20,25 @@ class Migration(migrations.Migration):
             model_name="artwork",
             name="code",
             field=models.CharField(
+                blank=True,
                 db_index=True,
-                default="",
+                max_length=40,
+                null=True,
+                unique=True,
+                verbose_name="کد لیبل",
+            ),
+        ),
+        migrations.RunPython(populate_artwork_codes, migrations.RunPython.noop),
+        migrations.AlterField(
+            model_name="artwork",
+            name="code",
+            field=models.CharField(
+                db_index=True,
+                default=lambda: f"LBL-{uuid.uuid4().hex[:10].upper()}",
                 editable=False,
                 max_length=40,
                 unique=True,
                 verbose_name="کد لیبل",
             ),
-            preserve_default=False,
         ),
     ]
