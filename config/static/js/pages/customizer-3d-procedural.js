@@ -210,7 +210,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         baseCameraDistance = distance;
         camera.position.set(0, garmentMaxSize * 0.015, distance);
         const mobile = window.matchMedia("(max-width: 820px)").matches;
-        const targetY = mobile ? garmentMaxSize * 0.18 : garmentMaxSize * 0.025;
+        const targetY = mobile ? garmentMaxSize * 0.02 : garmentMaxSize * 0.025;
         controls.target.set(0, targetY, 0);
         if (initial) controls.update();
         camera.updateProjectionMatrix();
@@ -219,7 +219,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function mobileFrameScale() {
-        return window.matchMedia("(max-width: 820px)").matches ? 0.78 : 1;
+        return window.matchMedia("(max-width: 820px)").matches ? 0.72 : 1;
     }
 
     function updateCameraZoomLabel() {
@@ -258,9 +258,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // 3D scene with that raw aspect ratio forces the perspective camera far
         // away and makes the shirt look tiny. Keep the render viewport close to
         // a product-preview ratio and center it inside the tall mobile stage.
-        const height = mobile
-            ? Math.min(stageHeight, Math.round(width / 0.78))
-            : stageHeight;
+        const height = stageHeight;
 
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         renderer.setSize(width, height, false);
