@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
 {% load static %}
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{% if title %}{{ title }} | {% endif %}BABAEI{% endblock %}
-{% block extrastyle %}<link rel="stylesheet" href="{% static 'css/admin/admin.css' %}?v=4">{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/admin/admin.css' %}?v=5">{% endblock %}
 {% block branding %}
 <a href="{% url 'admin:index' %}" class="ba-brand"><span class="ba-brand__mark">B</span><span><b>BABAEI</b><small>CONTROL CENTER</small></span></a>
 {% endblock %}
