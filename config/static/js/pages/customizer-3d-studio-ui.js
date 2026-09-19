@@ -172,6 +172,25 @@
     const mobileLayerOpacity = document.getElementById("mobile-layer-opacity");
     const mobileLayerOpacityValue = document.getElementById("mobile-layer-opacity-value");
     const mobileLayerColorCustom = document.getElementById("mobile-layer-color-custom");
+    const mobileTextStyleSheet = document.getElementById("mobile-text-style-sheet");
+    const mobileTextSize = document.getElementById("mobile-text-size");
+    const mobileTextSizeValue = document.getElementById("mobile-text-size-value");
+    const mobileTextCurve = document.getElementById("mobile-text-curve");
+    const mobileTextCurveValue = document.getElementById("mobile-text-curve-value");
+    const mobileTextSpacing = document.getElementById("mobile-text-spacing");
+    const mobileTextSpacingValue = document.getElementById("mobile-text-spacing-value");
+    const mobileTextBold = document.getElementById("mobile-text-bold");
+    const mobileTextItalic = document.getElementById("mobile-text-italic");
+    const desktopTextStyle = document.getElementById("desktop-text-style");
+    const desktopTextSize = document.getElementById("desktop-text-size");
+    const desktopTextSizeValue = document.getElementById("desktop-text-size-value");
+    const desktopTextCurve = document.getElementById("desktop-text-curve");
+    const desktopTextCurveValue = document.getElementById("desktop-text-curve-value");
+    const desktopTextSpacing = document.getElementById("desktop-text-spacing");
+    const desktopTextSpacingValue = document.getElementById("desktop-text-spacing-value");
+    const desktopTextBold = document.getElementById("desktop-text-bold");
+    const desktopTextItalic = document.getElementById("desktop-text-italic");
+    let selectedTextStyle = null;
 
     function closeMobileText() {
         if (mobileTextSheet) mobileTextSheet.hidden = true;
@@ -285,6 +304,80 @@
         }
     });
 
+    function emitTextStyle(patch) {
+        selectedTextStyle = { ...(selectedTextStyle || {}), ...patch };
+        document.dispatchEvent(new CustomEvent("babaei:set-text-style", { detail: patch }));
+        syncTextStyleControls(selectedTextStyle);
+    }
+
+    function syncTextStyleControls(style = {}) {
+        selectedTextStyle = {
+            fontSize: 118,
+            fontWeight: 700,
+            italic: false,
+            curve: 0,
+            letterSpacing: 0,
+            ...style,
+        };
+        const s = selectedTextStyle;
+        if (desktopTextStyle) desktopTextStyle.hidden = !(selectedMobile && s.__isText);
+        if (desktopTextSize) desktopTextSize.value = String(s.fontSize);
+        if (desktopTextSizeValue) desktopTextSizeValue.textContent = String(s.fontSize);
+        if (desktopTextCurve) desktopTextCurve.value = String(s.curve);
+        if (desktopTextCurveValue) desktopTextCurveValue.textContent = String(s.curve);
+        if (desktopTextSpacing) desktopTextSpacing.value = String(s.letterSpacing);
+        if (desktopTextSpacingValue) desktopTextSpacingValue.textContent = String(s.letterSpacing);
+        if (desktopTextBold) desktopTextBold.classList.toggle("is-active", Number(s.fontWeight) >= 800);
+        if (desktopTextItalic) desktopTextItalic.classList.toggle("is-active", Boolean(s.italic));
+
+        if (mobileTextSize) mobileTextSize.value = String(s.fontSize);
+        if (mobileTextSizeValue) mobileTextSizeValue.textContent = String(s.fontSize);
+        if (mobileTextCurve) mobileTextCurve.value = String(s.curve);
+        if (mobileTextCurveValue) mobileTextCurveValue.textContent = String(s.curve);
+        if (mobileTextSpacing) mobileTextSpacing.value = String(s.letterSpacing);
+        if (mobileTextSpacingValue) mobileTextSpacingValue.textContent = String(s.letterSpacing);
+        if (mobileTextBold) mobileTextBold.classList.toggle("is-active", Number(s.fontWeight) >= 800);
+        if (mobileTextItalic) mobileTextItalic.classList.toggle("is-active", Boolean(s.italic));
+    }
+
+    function openMobileTextStyle() {
+        if (!selectedTextStyle?.__isText || !mobileTextStyleSheet) return;
+        mobileTextStyleSheet.hidden = false;
+        document.body.classList.add("customizer-mobile-sheet-open");
+        syncTextStyleControls(selectedTextStyle);
+    }
+
+    function closeMobileTextStyle() {
+        if (mobileTextStyleSheet) mobileTextStyleSheet.hidden = true;
+        const drawerOpen = !leftDrawer?.classList.contains("is-drawer-closed") ||
+            !rightDrawer?.classList.contains("is-drawer-closed");
+        if (!drawerOpen && mobileTextSheet?.hidden !== false && mobileColorSheet?.hidden !== false) {
+            document.body.classList.remove("customizer-mobile-sheet-open");
+        }
+    }
+
+    const styleBindings = [
+        [desktopTextSize, desktopTextSizeValue, "fontSize", Number],
+        [desktopTextCurve, desktopTextCurveValue, "curve", Number],
+        [desktopTextSpacing, desktopTextSpacingValue, "letterSpacing", Number],
+        [mobileTextSize, mobileTextSizeValue, "fontSize", Number],
+        [mobileTextCurve, mobileTextCurveValue, "curve", Number],
+        [mobileTextSpacing, mobileTextSpacingValue, "letterSpacing", Number],
+    ];
+    styleBindings.forEach(([input, output, key, cast]) => {
+        input?.addEventListener("input", () => {
+            const value = cast(input.value);
+            if (output) output.textContent = String(value);
+            emitTextStyle({ [key]: value });
+        });
+    });
+    desktopTextBold?.addEventListener("click", () => emitTextStyle({ fontWeight: Number(selectedTextStyle?.fontWeight) >= 800 ? 700 : 850 }));
+    desktopTextItalic?.addEventListener("click", () => emitTextStyle({ italic: !selectedTextStyle?.italic }));
+    mobileTextBold?.addEventListener("click", () => emitTextStyle({ fontWeight: Number(selectedTextStyle?.fontWeight) >= 800 ? 700 : 850 }));
+    mobileTextItalic?.addEventListener("click", () => emitTextStyle({ italic: !selectedTextStyle?.italic }));
+    document.getElementById("mobile-text-style-close")?.addEventListener("click", closeMobileTextStyle);
+    document.getElementById("mobile-text-style-done")?.addEventListener("click", closeMobileTextStyle);
+
     document.addEventListener("babaei:drawer-state", event => {
         const open = Boolean(event.detail?.open);
         document.body.classList.toggle("customizer-mobile-sheet-open", open);
@@ -293,7 +386,17 @@
 
     document.addEventListener("babaei:selection-changed", event => {
         selectedMobile = Boolean(event.detail?.selected);
-        if (!selectedMobile) editingMobile = false;
+        if (!selectedMobile) {
+            editingMobile = false;
+            closeMobileTextStyle();
+            selectedTextStyle = null;
+        } else {
+            selectedTextStyle = {
+                ...(event.detail?.textStyle || {}),
+                __isText: Boolean(event.detail?.isText),
+            };
+            syncTextStyleControls(selectedTextStyle);
+        }
         const drawerOpen = Boolean(
             !leftDrawer?.classList.contains("is-drawer-closed") ||
             !rightDrawer?.classList.contains("is-drawer-closed")
@@ -362,6 +465,10 @@
         if (event.key !== "Escape") return;
         if (mobileColorSheet && !mobileColorSheet.hidden) {
             closeMobileColorSheet();
+            return;
+        }
+        if (mobileTextStyleSheet && !mobileTextStyleSheet.hidden) {
+            closeMobileTextStyle();
             return;
         }
         if (mobileTextSheet && !mobileTextSheet.hidden) {
