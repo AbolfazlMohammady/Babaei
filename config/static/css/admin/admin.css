@@ -270,3 +270,8 @@ body.login{background:#080808!important}.login .ba-shell,.login .ba-topbar,.logi
   .ba-login{display:block;min-height:100svh}.ba-login__visual{display:none}.ba-login__form{width:min(420px,calc(100% - 32px));min-height:100svh;padding:32px 0}
 }
 @media(max-width:380px){.ba-user__avatar{width:29px;height:29px}.ba-brand b{font-size:13px}.babaei-admin-pipeline__track{grid-template-columns:1fr}.ba-login__form{width:calc(100% - 24px)}}
+
+.ba-nav-group.is-current>.ba-nav-group__head{color:#c9c1b7}
+.ba-nav-group.is-current>.ba-nav-group__head .ba-nav-group__dot{background:var(--ba-gold);box-shadow:0 0 0 3px rgba(210,173,95,.08)}
+.ba-nav-group.is-current>.ba-nav-group__head b{color:var(--ba-gold)}
+@media(max-width:980px){.ba-footer{padding-bottom:calc(11px + env(safe-area-inset-bottom));}.ba-main{padding-bottom:calc(55px + env(safe-area-inset-bottom));}}
