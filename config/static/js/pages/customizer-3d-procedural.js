@@ -207,9 +207,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const horizontalDistance = garmentMaxSize / (2 * Math.tan(horizontalFov / 2));
         const framingScale = mobileFrameScale();
         const distance = Math.max(4.7, verticalDistance, horizontalDistance) * 1.06 * framingScale;
-        baseCameraDistance = distance;
-        camera.position.set(0, garmentMaxSize * 0.015, distance);
         const mobile = window.matchMedia("(max-width: 820px)").matches;
+        baseCameraDistance = distance;
+        camera.position.set(0, mobile ? garmentMaxSize * 0.46 : garmentMaxSize * 0.015, distance);
         const targetY = mobile ? 0 : garmentMaxSize * 0.025;
         controls.target.set(0, targetY, 0);
         if (initial) controls.update();
@@ -629,6 +629,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function sync() {
         const selected = layers.get(selectedId);
+        document.dispatchEvent(new CustomEvent("babaei:selection-changed", { detail: { selected: Boolean(selected), id: selectedId } }));
         const card = document.getElementById("selected-card");
         const controls = document.getElementById("selected-controls");
         const chosen = document.getElementById("premium-selected-artwork");
@@ -829,6 +830,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             if (garment) garment.rotation.y = 0;
             controls?.reset();
             fitCamera();
+            render();
+        });
+
+        document.addEventListener("babaei:deselect-label", () => {
+            selectedId = null;
+            sync();
             render();
         });
 
