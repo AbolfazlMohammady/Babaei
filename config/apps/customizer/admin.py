@@ -22,9 +22,9 @@ class DesignLayerInline(admin.TabularInline):
 
 @admin.register(Artwork)
 class ArtworkAdmin(admin.ModelAdmin):
-    list_display = ("name", "source", "base_price", "processing_status", "background_removed", "is_active", "created_at")
+    list_display = ("code", "name", "source", "base_price", "processing_status", "background_removed", "is_active", "created_at")
     list_filter = ("source", "processing_status", "background_removed", "is_active")
-    search_fields = ("name", "slug")
+    search_fields = ("code", "name", "slug")
     prepopulated_fields = {"slug": ("name",)}
     inlines = (ArtworkAreaPriceInline,)
 
