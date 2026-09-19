@@ -30,6 +30,10 @@ def _view_image_path(instance, filename):
     return f"customizer/views/{instance.product.uuid}/{instance.key}/{uuid.uuid4().hex}{extension}"
 
 
+def _artwork_code():
+    return f"LBL-{uuid.uuid4().hex[:10].upper()}"
+
+
 def _mask_image_path(instance, filename):
     extension = Path(filename).suffix.lower() or ".webp"
     return f"customizer/masks/{instance.product.uuid}/{instance.key}/{uuid.uuid4().hex}{extension}"
@@ -63,6 +67,7 @@ class Artwork(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(_("نام لیبل"), max_length=160)
+    code = models.CharField(_("کد لیبل"), max_length=40, unique=True, default=_artwork_code, editable=False, db_index=True)
     slug = models.SlugField(_("اسلاگ"), max_length=190, unique=True, allow_unicode=True)
     image = models.ImageField(_("لیبل آماده"), upload_to=_asset_path, validators=[FileExtensionValidator(IMAGE_EXTENSIONS)])
     original_image = models.ImageField(_("تصویر اصلی"), upload_to=_original_asset_path, blank=True, null=True, validators=[FileExtensionValidator(IMAGE_EXTENSIONS)])
