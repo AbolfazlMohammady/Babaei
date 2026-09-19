@@ -2514,3 +2514,44 @@ body.customizer-page .customizer-price-card {
         height: 40px !important;
     }
 }
+
+
+.studio-drawer-toggle {
+    gap: 5px !important;
+    flex-direction: column !important;
+}
+.studio-drawer-toggle__icon {
+    display: block;
+    font-size: 24px !important;
+    line-height: .75;
+    font-family: Arial, sans-serif;
+    font-weight: 300;
+}
+.studio-drawer-toggle__label {
+    display: block;
+    font-size: 7px;
+    line-height: 1;
+    color: rgba(255,255,255,.58);
+    letter-spacing: .02em;
+}
+.studio-drawer-toggle--left .studio-drawer-toggle__icon {
+    transform: none !important;
+}
+.studio-drawer-toggle--right .studio-drawer-toggle__icon {
+    transform: none !important;
+}
+.studio-drawer-toggle[aria-expanded="true"] .studio-drawer-toggle__icon {
+    opacity: .75;
+}
+@media (max-width: 820px) {
+    .studio-drawer-toggle {
+        flex-direction: row !important;
+        gap: 5px !important;
+    }
+    .studio-drawer-toggle__icon {
+        font-size: 20px !important;
+    }
+    .studio-drawer-toggle__label {
+        font-size: 7px;
+    }
+}
