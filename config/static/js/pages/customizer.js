@@ -195,7 +195,16 @@
         artworkGrid.innerHTML = artworks.length
             ? artworks.map((artwork) => `<button type="button" class="artwork-card" data-artwork-id="${artwork.id}"><img src="${escapeHtml(artwork.image)}" alt=""><strong>${escapeHtml(artwork.name)}</strong><small>${formatPrice(artwork.base_price)} تومان</small></button>`).join("")
             : `<div class="selected-card__empty">هنوز لیبلی در کتابخانه وجود ندارد.</div>`;
-        artworkGrid.querySelectorAll(".artwork-card").forEach((button) => button.addEventListener("click", () => addLayer(Number(button.dataset.artworkId))));
+        artworkGrid.querySelectorAll(".artwork-card").forEach((button) => button.addEventListener("click", () => {
+            const artworkId = Number(button.dataset.artworkId);
+            // The 3D studio owns placement when the real GLB editor is active.
+            // Keep the legacy 2D renderer as the fallback for non-3D products.
+            if (window.BabaeiCustomizer3D?.isReady?.()) {
+                window.BabaeiCustomizer3D.addArtwork(artworkId);
+                return;
+            }
+            addLayer(artworkId);
+        }));
     }
 
     function renderAreas() {

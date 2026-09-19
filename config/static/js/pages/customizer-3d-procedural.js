@@ -295,6 +295,27 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         return raycaster.intersectObjects(garmentMeshes, false)[0] || null;
     }
 
+    function placementHit() {
+        // The exact viewport center can occasionally fall inside the collar/hole
+        // or between thin mesh parts. Try a small set of nearby points so an
+        // uploaded artwork always gets a valid cloth anchor.
+        const candidates = [
+            [0, 0],
+            [0, 0.08],
+            [0, -0.08],
+            [-0.08, 0],
+            [0.08, 0],
+            [-0.06, 0.08],
+            [0.06, 0.08],
+        ];
+        for (const [x, y] of candidates) {
+            raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+            const hit = raycaster.intersectObjects(garmentMeshes, false)[0];
+            if (hit) return hit;
+        }
+        return null;
+    }
+
     function hitNormal(hit) {
         return (hit.face?.normal?.clone() || frontAxis.clone())
             .transformDirection(hit.object.matrixWorld)
@@ -447,7 +468,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     function addLayer(artworkId) {
         const artwork = artworkById(artworkId);
         const area = areaById(activeAreaId);
-        const hit = centerHit();
+        const hit = placementHit();
 
         if (!artwork || !area || !hit) {
             status("ابتدا ناحیه چاپ را انتخاب کنید.");
@@ -640,11 +661,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 canvas.releasePointerCapture?.(event.pointerId);
                 sync();
             });
-        });
-
-        document.getElementById("artwork-grid")?.addEventListener("click", event => {
-            const card = event.target.closest(".artwork-card");
-            if (card) addLayer(Number(card.dataset.artworkId));
         });
 
         document.querySelectorAll("[data-action]").forEach(button => {
