@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.db.models import Count, Min, Sum
+from django.db.models import Count, Min, Prefetch, Sum
 from django.utils.html import format_html
 
 from .models import Category, Product, ProductColor, ProductImage, ProductSize, ProductVariant
@@ -107,17 +107,24 @@ class ProductAdmin(ShopAdminMixin, admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
+        primary_images = ProductImage.objects.filter(
+            image_type=ProductImage.ImageType.PRIMARY
+        ).only("id", "product_id", "image").order_by("id")
         return (
             super().get_queryset(request)
             .annotate(
                 _stock=Sum("variants__stock_quantity"),
                 _min_price=Min("variants__price"),
             )
+            .prefetch_related(
+                Prefetch("images", queryset=primary_images, to_attr="_admin_primary_images")
+            )
         )
 
     @admin.display(description="پیش‌نمایش")
     def admin_preview(self, obj):
-        image = obj.images.filter(image_type=ProductImage.ImageType.PRIMARY).first()
+        images = getattr(obj, "_admin_primary_images", [])
+        image = images[0] if images else None
         if not image:
             image = obj.images.first()
         if not image:
@@ -188,7 +195,6 @@ class ProductVariantAdmin(ShopAdminMixin, admin.ModelAdmin):
     search_fields = ("product__name", "sku", "color__name", "size__name")
     list_select_related = ("product", "color", "size")
     autocomplete_fields = ("product", "color", "size")
-    list_editable = ("price_display",) if False else ()
     ordering = ("product", "color", "size")
 
     @admin.display(description="رنگ")
