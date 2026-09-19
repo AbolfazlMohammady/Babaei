@@ -149,17 +149,38 @@
 
         <nav class="mobile-customizer-toolbar" id="mobile-customizer-toolbar" aria-label="ابزارهای طراحی">
             <button type="button" class="mobile-customizer-action" data-mobile-action="product">
-                <span class="mobile-customizer-action__icon">◐</span><strong>رنگ</strong>
+                <span class="mobile-customizer-action__icon">◐</span><strong>رنگ</strong><small>رنگ لباس</small>
             </button>
             <button type="button" class="mobile-customizer-action" data-mobile-action="artwork">
-                <span class="mobile-customizer-action__icon">＋</span><strong>طرح</strong>
+                <span class="mobile-customizer-action__icon">＋</span><strong>طرح</strong><small>افزودن عکس</small>
             </button>
             <button type="button" class="mobile-customizer-action" data-mobile-action="text">
-                <span class="mobile-customizer-action__icon">T</span><strong>متن</strong>
+                <span class="mobile-customizer-action__icon">T</span><strong>متن</strong><small>نوشتن متن</small>
             </button>
             <button type="button" class="mobile-customizer-action" data-mobile-action="tools">
-                <span class="mobile-customizer-action__icon">✦</span><strong>ویرایش</strong>
+                <span class="mobile-customizer-action__icon">✦</span><strong>ویرایش</strong><small>تغییر طرح</small>
             </button>
+        </nav>
+
+        <nav class="mobile-selection-toolbar" id="mobile-selection-toolbar" aria-label="ویرایش طرح انتخاب‌شده" hidden>
+            <div class="mobile-selection-toolbar__main">
+                <button type="button" class="mobile-selection-action mobile-selection-action--layout" data-mobile-selection="layout">
+                    <span>☷</span><strong>چیدمان</strong>
+                </button>
+                <button type="button" class="mobile-selection-action mobile-selection-action--delete" data-action="delete">
+                    <span>⌫</span><strong>حذف</strong>
+                </button>
+                <button type="button" class="mobile-selection-action mobile-selection-action--done" data-mobile-selection="done">
+                    <span>✓</span><strong>انجام شد</strong>
+                </button>
+            </div>
+            <div class="mobile-selection-toolbar__controls">
+                <button type="button" data-action="scale-down"><span>−</span><small>کوچک</small></button>
+                <button type="button" data-action="scale-up"><span>＋</span><small>بزرگ</small></button>
+                <button type="button" data-action="rotate-left"><span>↶</span><small>چرخش چپ</small></button>
+                <button type="button" data-action="rotate-right"><span>↷</span><small>چرخش راست</small></button>
+                <button type="button" data-action="center-label"><span>⊙</span><small>مرکز</small></button>
+            </div>
         </nav>
 
         <div class="mobile-text-sheet" id="mobile-text-sheet" hidden>
