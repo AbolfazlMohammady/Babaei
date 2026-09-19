@@ -2,9 +2,8 @@ from django import template
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
 
-from apps.orders.models import Cart, Order
-from apps.saved.models import FavoriteProduct, SavedProduct
-from apps.shop.models import Category, Product
+from apps.orders.models import Order
+from apps.shop.models import Product
 from apps.customizer.models import DesignDraft
 from apps.users.models import User
 
@@ -27,7 +26,6 @@ def get_admin_dashboard():
     )
     return {
         "products": Product.objects.filter(is_active=True).count(),
-        "categories": Category.objects.filter(is_active=True).count(),
         "users": User.objects.filter(is_active=True).count(),
         "orders": order_stats["total"] or 0,
         "pending_orders": order_stats["pending"] or 0,
@@ -37,9 +35,6 @@ def get_admin_dashboard():
         "cancelled_orders": order_stats["cancelled"] or 0,
         "today_orders": order_stats["today"] or 0,
         "sales": order_stats["sales"] or 0,
-        "active_carts": Cart.objects.filter(status=Cart.Status.ACTIVE).count(),
-        "favorites": FavoriteProduct.objects.count(),
-        "saved": SavedProduct.objects.count(),
         "drafts": DesignDraft.objects.count(),
         "recent_orders": list(orders.select_related("user").order_by("-created_at")[:6]),
     }
