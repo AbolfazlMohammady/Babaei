@@ -225,7 +225,7 @@ class DesignDraftAdmin(CustomizerAdminMixin, admin.ModelAdmin):
 
     @admin.display(description="مبلغ")
     def total_price_display(self, obj):
-        return format_html('{:,} <small>تومان</small>', obj.total_price)
+        return format_html('{} <small>تومان</small>', f'{obj.total_price:,}')
 
 
 @admin.register(ArtworkAreaPrice)
