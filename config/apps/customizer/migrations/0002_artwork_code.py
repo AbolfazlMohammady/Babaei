@@ -3,6 +3,10 @@ import uuid
 from django.db import migrations, models
 
 
+def generate_artwork_code():
+    return f"LBL-{uuid.uuid4().hex[:10].upper()}"
+
+
 def populate_artwork_codes(apps, schema_editor):
     Artwork = apps.get_model("customizer", "Artwork")
     for artwork in Artwork.objects.filter(code__isnull=True):
@@ -34,7 +38,7 @@ class Migration(migrations.Migration):
             name="code",
             field=models.CharField(
                 db_index=True,
-                default=lambda: f"LBL-{uuid.uuid4().hex[:10].upper()}",
+                default=generate_artwork_code,
                 editable=False,
                 max_length=40,
                 unique=True,
