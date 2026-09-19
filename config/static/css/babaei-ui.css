@@ -2666,3 +2666,100 @@ body:not(.customizer-page) .site-footer {
         background-attachment: scroll !important;
     }
 }
+
+
+/* --------------------------------------------------------------------------
+   SHOP MOBILE READABILITY — 2026-09-19
+   Final override: keep mobile product cards readable without touching desktop.
+   -------------------------------------------------------------------------- */
+@media (max-width: 620px) {
+    html body.shop-page .shop-shell,
+    html body.shop-page .category-shell,
+    html body.shop-page .product-shell {
+        width: calc(100% - 20px) !important;
+        padding-block: 16px 76px !important;
+    }
+
+    html body.shop-page .products,
+    html body.shop-page .categories {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+
+    html body.shop-page .product-card {
+        aspect-ratio: auto !important;
+        min-width: 0 !important;
+        border-radius: 13px !important;
+    }
+
+    html body.shop-page .product-card__media {
+        height: auto !important;
+        aspect-ratio: 1 / 1.08 !important;
+    }
+
+    html body.shop-page .product-card__slide img {
+        object-fit: cover !important;
+        object-position: center center !important;
+    }
+
+    html body.shop-page .product-card__body {
+        gap: 8px !important;
+        padding: 11px 10px 12px !important;
+    }
+
+    html body.shop-page .product-card__category {
+        margin-bottom: 3px !important;
+        font-size: 8.5px !important;
+    }
+
+    html body.shop-page .product-card__name {
+        margin-bottom: 5px !important;
+        font-size: 12.5px !important;
+        line-height: 1.55 !important;
+        white-space: nowrap !important;
+    }
+
+    html body.shop-page .product-card__description {
+        display: none !important;
+    }
+
+    html body.shop-page .product-card__price {
+        font-size: 12.5px !important;
+        line-height: 1.5 !important;
+    }
+
+    html body.shop-page .product-card__price span {
+        font-size: 8px !important;
+    }
+
+    html body.shop-page .product-card__price-row del {
+        font-size: 8.5px !important;
+    }
+
+    html body.shop-page .product-card__cart {
+        min-height: 38px !important;
+        padding: 8px 7px !important;
+        border-radius: 9px !important;
+        font-size: 9.5px !important;
+    }
+
+    html body.shop-page .product-card__favorite {
+        width: 34px !important;
+        height: 34px !important;
+        top: 8px !important;
+        right: 8px !important;
+    }
+
+    html body.shop-page .product-card__favorite svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    html body.shop-page .product-card__discount {
+        top: 8px !important;
+        left: 8px !important;
+        min-width: 34px !important;
+        padding: 4px 6px !important;
+        font-size: 8.5px !important;
+    }
+}
