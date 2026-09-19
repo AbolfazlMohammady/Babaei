@@ -38,6 +38,19 @@
         </div>
     </section>
 
+    <section class="babaei-admin-panel babaei-admin-pipeline">
+        <div class="babaei-admin-panel__head">
+            <div><span>ORDER PIPELINE</span><h2>جریان سفارش‌ها</h2></div>
+            <a href="{% url 'admin:orders_order_changelist' %}">مدیریت سفارش‌ها ↗</a>
+        </div>
+        <div class="babaei-admin-pipeline__track">
+            <a href="{% url 'admin:orders_order_changelist' %}?status__exact=pending"><b>{{ dashboard.pending_orders }}</b><span>در انتظار پرداخت</span></a>
+            <a href="{% url 'admin:orders_order_changelist' %}?status__exact=processing"><b>{{ dashboard.processing_orders }}</b><span>آماده‌سازی</span></a>
+            <a href="{% url 'admin:orders_order_changelist' %}?status__exact=shipped"><b>{{ dashboard.shipped_orders }}</b><span>ارسال‌شده</span></a>
+            <a href="{% url 'admin:orders_order_changelist' %}?status__exact=delivered"><b>{{ dashboard.delivered_orders }}</b><span>تحویل‌شده</span></a>
+            <a href="{% url 'admin:orders_order_changelist' %}?status__exact=cancelled"><b>{{ dashboard.cancelled_orders }}</b><span>لغوشده</span></a>
+        </div>
+    </section>
     <div class="babaei-admin-grid">
         <section class="babaei-admin-panel babaei-admin-panel--wide">
             <div class="babaei-admin-panel__head">
