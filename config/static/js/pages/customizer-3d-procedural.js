@@ -207,10 +207,10 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const horizontalDistance = garmentMaxSize / (2 * Math.tan(horizontalFov / 2));
         const framingScale = mobileFrameScale();
         const distance = Math.max(4.7, verticalDistance, horizontalDistance) * 1.06 * framingScale;
-        baseCameraDistance = distance;
-        camera.position.set(0, garmentMaxSize * 0.015, distance);
         const mobile = window.matchMedia("(max-width: 820px)").matches;
-        const targetY = mobile ? garmentMaxSize * 0.10 : garmentMaxSize * 0.025;
+        const targetY = mobile ? garmentMaxSize * 0.46 : garmentMaxSize * 0.025;
+        baseCameraDistance = distance;
+        camera.position.set(0, targetY, distance);
         controls.target.set(0, targetY, 0);
         if (initial) controls.update();
         camera.updateProjectionMatrix();
@@ -219,7 +219,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function mobileFrameScale() {
-        return window.matchMedia("(max-width: 820px)").matches ? 0.72 : 1;
+        return window.matchMedia("(max-width: 820px)").matches ? 0.68 : 1;
     }
 
     function updateCameraZoomLabel() {
