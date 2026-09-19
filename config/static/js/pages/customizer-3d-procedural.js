@@ -427,6 +427,14 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             item.frame.parent?.remove(item.frame);
             item.frame = null;
         }
+        if (item.handles) {
+            item.handles.traverse(child => {
+                child.geometry?.dispose();
+                child.material?.dispose();
+            });
+            item.handles.parent?.remove(item.handles);
+            item.handles = null;
+        }
         item.mesh = null;
     }
 
@@ -531,11 +539,45 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             frame.renderOrder = 80;
             target.add(frame);
 
+            // Four compact handles make the selected artwork feel like a real
+            // mobile design editor without adding another DOM overlay.
+            const handleGroup = new THREE.Group();
+            handleGroup.position.copy(targetWorldPosition);
+            handleGroup.quaternion.copy(targetWorldQuaternion.invert().multiply(worldQuaternion));
+            handleGroup.userData.customizerLayerId = item.id;
+            handleGroup.renderOrder = 81;
+
+            const handleSize = Math.max(0.026, Math.min(size.x, size.y) * 0.045);
+            const handleGeometry = new THREE.SphereGeometry(handleSize, 12, 8);
+            const handleMaterial = new THREE.MeshBasicMaterial({
+                color: 0xf4f0e7,
+                transparent: true,
+                opacity: 0.98,
+                depthTest: false,
+                depthWrite: false,
+            });
+
+            [
+                [-size.x / 2, -size.y / 2],
+                [ size.x / 2, -size.y / 2],
+                [ size.x / 2,  size.y / 2],
+                [-size.x / 2,  size.y / 2],
+            ].forEach(([x, y]) => {
+                const handle = new THREE.Mesh(handleGeometry.clone(), handleMaterial.clone());
+                handle.position.set(x, y, 0);
+                handle.renderOrder = 82;
+                handle.userData.customizerLayerId = item.id;
+                handleGroup.add(handle);
+            });
+            target.add(handleGroup);
+
             const previousMesh = item.mesh;
             const previousFrame = item.frame;
+            const previousHandles = item.handles;
 
             item.mesh = mesh;
             item.frame = frame;
+            item.handles = handleGroup;
 
             if (previousMesh) {
                 previousMesh.geometry?.dispose();
@@ -546,6 +588,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 previousFrame.geometry?.dispose();
                 previousFrame.material?.dispose();
                 previousFrame.parent?.remove(previousFrame);
+            }
+            if (previousHandles) {
+                previousHandles.traverse(child => {
+                    child.geometry?.dispose();
+                    child.material?.dispose();
+                });
+                previousHandles.parent?.remove(previousHandles);
             }
 
             render();
@@ -697,7 +746,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         if (controls) controls.hidden = !selected;
         layers.forEach(item => {
-            if (item.frame) item.frame.visible = item.id === selectedId;
+            const visible = item.id === selectedId;
+            if (item.frame) item.frame.visible = visible;
+            if (item.handles) item.handles.visible = visible;
         });
         if (scaleInput) {
             scaleInput.disabled = !selected;
