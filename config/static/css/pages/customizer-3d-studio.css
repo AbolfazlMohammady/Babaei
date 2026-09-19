@@ -4076,3 +4076,248 @@ body.customizer-page .customizer-shell--premium {
     .mobile-selection-toolbar__main{grid-template-columns:1fr .78fr 1fr!important}
     .mobile-selection-action{min-height:46px!important;font-size:10px!important}
 }
+
+
+/* =========================================================
+   Mobile editor v5 — contextual tools + reliable dismissal
+   ========================================================= */
+@media (max-width: 820px) {
+    body.customizer-page.customizer-mobile-sheet-open {
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+    }
+
+    .mobile-context-toolbar {
+        position: fixed;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 118;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 7px;
+        width: 74px;
+        padding: 7px;
+        border: 1px solid rgba(255,255,255,.13);
+        border-radius: 18px;
+        background: rgba(13,13,15,.92);
+        box-shadow: 0 18px 55px rgba(0,0,0,.5);
+        backdrop-filter: blur(22px) saturate(135%);
+        -webkit-backdrop-filter: blur(22px) saturate(135%);
+    }
+
+    .mobile-context-toolbar[hidden] {
+        display: none !important;
+    }
+
+    .mobile-context-action {
+        min-height: 58px;
+        padding: 6px 4px;
+        border: 1px solid rgba(255,255,255,.07);
+        border-radius: 13px;
+        background: rgba(255,255,255,.035);
+        color: #eee9df;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        cursor: pointer;
+    }
+
+    .mobile-context-action:active {
+        transform: scale(.97);
+        background: rgba(216,182,107,.12);
+    }
+
+    .mobile-context-action__icon {
+        width: 24px;
+        height: 24px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        background: rgba(216,182,107,.10);
+        color: #e4c475;
+        font-size: 14px;
+        line-height: 1;
+    }
+
+    .mobile-context-action strong {
+        font-size: 8px;
+        font-weight: 850;
+        line-height: 1;
+    }
+
+    .mobile-context-action small {
+        color: #77736d;
+        font-size: 5.5px;
+        white-space: nowrap;
+    }
+
+    .mobile-color-sheet {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: max(10px, env(safe-area-inset-bottom));
+        z-index: 145;
+        padding: 14px;
+        border: 1px solid rgba(255,255,255,.13);
+        border-radius: 21px;
+        background: rgba(13,13,15,.97);
+        color: #eee9df;
+        box-shadow: 0 24px 70px rgba(0,0,0,.62);
+        backdrop-filter: blur(24px) saturate(135%);
+        -webkit-backdrop-filter: blur(24px) saturate(135%);
+    }
+
+    .mobile-color-sheet[hidden] {
+        display: none !important;
+    }
+
+    .mobile-color-sheet__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 11px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .mobile-color-sheet__head div {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .mobile-color-sheet__head small {
+        color: #77736d;
+        font-size: 7px;
+    }
+
+    .mobile-color-sheet__head strong {
+        font-size: 14px;
+    }
+
+    .mobile-color-sheet__head button {
+        width: 38px;
+        height: 38px;
+        border: 1px solid rgba(255,255,255,.18);
+        border-radius: 11px;
+        background: rgba(255,255,255,.07);
+        color: #fff;
+        font: 300 24px/1 Arial, sans-serif;
+        display: grid;
+        place-items: center;
+    }
+
+    .mobile-color-sheet__section {
+        padding: 14px 2px 0;
+    }
+
+    .mobile-color-sheet__section > span,
+    .mobile-color-sheet__section--range span {
+        color: #aaa49a;
+        font-size: 9px;
+        font-weight: 800;
+    }
+
+    .mobile-color-swatches {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 7px;
+        margin-top: 9px;
+    }
+
+    .mobile-color-swatches button {
+        width: 100%;
+        aspect-ratio: 1;
+        border: 2px solid rgba(255,255,255,.12);
+        border-radius: 50%;
+        background: var(--swatch);
+        box-shadow: 0 5px 14px rgba(0,0,0,.28);
+    }
+
+    .mobile-color-swatches button:focus-visible,
+    .mobile-color-swatches button.is-active {
+        outline: 2px solid #e4c475;
+        outline-offset: 2px;
+    }
+
+    .mobile-color-sheet__section--range > div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .mobile-color-sheet__section--range output {
+        color: #e4c475;
+        font-size: 9px;
+        font-weight: 850;
+    }
+
+    .mobile-color-sheet__section--range input {
+        width: 100%;
+        margin-top: 10px;
+        accent-color: #d8b66b;
+    }
+
+    .mobile-color-sheet__done {
+        width: 100%;
+        min-height: 44px;
+        margin-top: 14px;
+        border: 1px solid rgba(83,190,92,.26);
+        border-radius: 12px;
+        background: rgba(83,190,92,.16);
+        color: #a9e9ae;
+        font-size: 10px;
+        font-weight: 850;
+    }
+
+    /* Keep the close action visible even when the sheet content scrolls. */
+    .customizer-panel--premium-left .studio-tools-panel__heading,
+    .customizer-panel--premium-right .panel-heading {
+        position: sticky !important;
+        top: -14px !important;
+        z-index: 150 !important;
+        background: rgba(13,13,15,.98) !important;
+        border-radius: 12px !important;
+    }
+
+    .customizer-panel--premium-left,
+    .customizer-panel--premium-right {
+        overscroll-behavior: contain !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .customizer-workspace--premium.mobile-drawer-open .mobile-context-toolbar,
+    .customizer-workspace--premium.mobile-drawer-open .mobile-selection-toolbar {
+        display: none !important;
+    }
+}
+
+@media (max-width: 430px) {
+    .mobile-context-toolbar {
+        right: 8px;
+        width: 68px;
+        padding: 6px;
+        gap: 5px;
+    }
+
+    .mobile-context-action {
+        min-height: 54px;
+    }
+
+    .mobile-context-action small {
+        display: none;
+    }
+
+    .mobile-color-sheet {
+        left: 8px;
+        right: 8px;
+        bottom: max(8px, env(safe-area-inset-bottom));
+    }
+
+    .mobile-color-swatches {
+        gap: 6px;
+    }
+}
