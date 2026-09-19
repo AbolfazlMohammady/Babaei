@@ -161,6 +161,21 @@
                 <span class="mobile-customizer-action__icon">✦</span><strong>ویرایش</strong><small>تغییر طرح</small>
             </button>
         </nav>
+        <nav class="mobile-context-toolbar" id="mobile-context-toolbar" aria-label="ابزارهای سریع طرح انتخاب‌شده" hidden>
+            <button type="button" class="mobile-context-action" data-mobile-context="color">
+                <span class="mobile-context-action__icon">●</span><strong>رنگ</strong><small>رنگ طرح</small>
+            </button>
+            <button type="button" class="mobile-context-action" data-mobile-context="paint">
+                <span class="mobile-context-action__icon">✎</span><strong>Paint</strong><small>رنگ‌آمیزی</small>
+            </button>
+            <button type="button" class="mobile-context-action" data-mobile-context="background">
+                <span class="mobile-context-action__icon">◐</span><strong>پس‌زمینه</strong><small>رنگ لباس</small>
+            </button>
+            <button type="button" class="mobile-context-action" data-mobile-context="edit">
+                <span class="mobile-context-action__icon">↗</span><strong>ویرایش</strong><small>جابجایی و اندازه</small>
+            </button>
+        </nav>
+
         <nav class="mobile-selection-toolbar" id="mobile-selection-toolbar" aria-label="ویرایش طرح انتخاب‌شده" hidden>
             <div class="mobile-selection-toolbar__main">
                 <button type="button" class="mobile-selection-action mobile-selection-action--layout" data-mobile-selection="layout"><span>☷</span><strong>چیدمان</strong></button>
@@ -175,6 +190,34 @@
                 <button type="button" data-action="center-label"><span>⊙</span><small>مرکز</small></button>
             </div>
         </nav>
+
+        <div class="mobile-color-sheet" id="mobile-color-sheet" hidden>
+            <div class="mobile-color-sheet__head">
+                <div>
+                    <small id="mobile-color-sheet-mode">ویرایش طرح</small>
+                    <strong id="mobile-color-sheet-title">رنگ طرح</strong>
+                </div>
+                <button type="button" id="mobile-color-sheet-close" aria-label="بستن">×</button>
+            </div>
+            <div class="mobile-color-sheet__section">
+                <span>رنگ</span>
+                <div class="mobile-color-swatches" id="mobile-color-swatches">
+                    <button type="button" data-layer-color="#ffffff" style="--swatch:#ffffff" aria-label="سفید"></button>
+                    <button type="button" data-layer-color="#111111" style="--swatch:#111111" aria-label="مشکی"></button>
+                    <button type="button" data-layer-color="#e53935" style="--swatch:#e53935" aria-label="قرمز"></button>
+                    <button type="button" data-layer-color="#f59e0b" style="--swatch:#f59e0b" aria-label="نارنجی"></button>
+                    <button type="button" data-layer-color="#facc15" style="--swatch:#facc15" aria-label="زرد"></button>
+                    <button type="button" data-layer-color="#22c55e" style="--swatch:#22c55e" aria-label="سبز"></button>
+                    <button type="button" data-layer-color="#3b82f6" style="--swatch:#3b82f6" aria-label="آبی"></button>
+                    <button type="button" data-layer-color="#8b5cf6" style="--swatch:#8b5cf6" aria-label="بنفش"></button>
+                </div>
+            </div>
+            <div class="mobile-color-sheet__section mobile-color-sheet__section--range">
+                <div><span>شدت / شفافیت</span><output id="mobile-layer-opacity-value">100%</output></div>
+                <input id="mobile-layer-opacity" type="range" min="20" max="100" value="100" step="1" aria-label="شدت رنگ">
+            </div>
+            <button type="button" class="mobile-color-sheet__done" id="mobile-color-sheet-done">انجام شد</button>
+        </div>
 
         <div class="mobile-text-sheet" id="mobile-text-sheet" hidden>
             <div class="mobile-text-sheet__head">
