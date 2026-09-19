@@ -127,7 +127,7 @@ class OrderAdmin(OrdersAdminMixin, admin.ModelAdmin):
 
     @admin.display(description="مبلغ")
     def total_display(self, obj):
-        return format_html('<strong class="ba-price">{:,}</strong> <small>تومان</small>', obj.total_amount)
+        return format_html('<strong class="ba-price">{}</strong> <small>تومان</small>', f"{obj.total_amount:,}")
 
     @admin.display(description="جمع نهایی")
     def total_display_readonly(self, obj):
