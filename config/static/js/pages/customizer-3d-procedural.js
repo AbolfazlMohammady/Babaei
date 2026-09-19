@@ -32,14 +32,24 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }[char]));
     const money = value => Number(value || 0).toLocaleString("fa-IR");
 
-    const textArtworkSvg = (text, color) => {
+    const textArtworkSvg = (text, color, options = {}) => {
         const safeText = esc(text);
         const safeColor = /^#[0-9a-f]{6}$/i.test(String(color || "")) ? color : "#ffffff";
+        const fontSize = THREE?.MathUtils?.clamp(Number(options.fontSize || 118), 60, 220) || 118;
+        const fontWeight = Number(options.fontWeight || 700) >= 800 ? 850 : 700;
+        const italic = options.italic ? "italic" : "normal";
+        const letterSpacing = THREE?.MathUtils?.clamp(Number(options.letterSpacing || 0), -10, 30) || 0;
+        const curve = THREE?.MathUtils?.clamp(Number(options.curve || 0), -100, 100) || 0;
+        const curveAmount = curve * 0.72;
+        const pathD = `M 100 225 Q 450 ${225 - curveAmount} 800 225`;
+        const pathId = `textPath-${Math.random().toString(36).slice(2)}`;
+        const textNode = Math.abs(curve) < 1
+            ? `<text x="450" y="225" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="${fontWeight}" font-style="${italic}" letter-spacing="${letterSpacing}" fill="${safeColor}">${safeText}</text>`
+            : `<path id="${pathId}" d="${pathD}" fill="none"/><text font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="${fontWeight}" font-style="${italic}" letter-spacing="${letterSpacing}" fill="${safeColor}"><textPath href="#${pathId}" startOffset="50%" text-anchor="middle">${safeText}</textPath></text>`;
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
             <rect width="900" height="420" fill="none"/>
-            <text x="450" y="225" text-anchor="middle" dominant-baseline="middle"
-                  font-family="Arial, sans-serif" font-size="118" font-weight="700"
-                  fill="${safeColor}">${safeText}</text>
+            <defs></defs>
+            ${textNode}
         </svg>`;
         return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
     };
@@ -319,7 +329,38 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function render() {
-        if (renderer && scene && camera) renderer.render(scene, camera);
+        if (renderer && scene && camera) {
+            renderer.render(scene, camera);
+            positionSelectionToolbar();
+        }
+    }
+
+    function positionSelectionToolbar() {
+        const host = document.getElementById("selection-floating-toolbar");
+        const item = layers.get(selectedId);
+        if (!host || !item?.surfacePoint || !camera) {
+            if (host) host.hidden = true;
+            return;
+        }
+
+        const rect = stage.getBoundingClientRect();
+        const point = item.surfacePoint.clone().project(camera);
+        if (point.z < -1 || point.z > 1 || rect.width < 1 || rect.height < 1) {
+            host.hidden = true;
+            return;
+        }
+
+        const x = (point.x * 0.5 + 0.5) * rect.width;
+        const y = (-point.y * 0.5 + 0.5) * rect.height;
+        const toolbarWidth = Math.min(268, Math.max(188, host.offsetWidth || 220));
+        const clampedX = Math.max(toolbarWidth / 2 + 8, Math.min(rect.width - toolbarWidth / 2 - 8, x));
+        const above = y > 86;
+        const top = above ? Math.max(8, y - 58) : Math.min(rect.height - 52, y + 18);
+
+        host.style.left = `${clampedX}px`;
+        host.style.top = `${top}px`;
+        host.classList.toggle("is-below", !above);
+        host.hidden = false;
     }
 
     function scheduleRenderLoop() {
@@ -558,37 +599,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             frame.renderOrder = 80;
             target.add(frame);
 
-            // Four compact handles make the selected artwork feel like a real
-            // mobile design editor without adding another DOM overlay.
-            const handleGroup = new THREE.Group();
-            handleGroup.position.copy(targetWorldPosition);
-            handleGroup.quaternion.copy(targetWorldQuaternion.clone().invert().multiply(worldQuaternion));
-            handleGroup.userData.customizerLayerId = item.id;
-            handleGroup.renderOrder = 81;
-
-            const handleSize = Math.max(0.026, Math.min(size.x, size.y) * 0.045);
-            const handleGeometry = new THREE.SphereGeometry(handleSize, 12, 8);
-            const handleMaterial = new THREE.MeshBasicMaterial({
-                color: 0xf4f0e7,
-                transparent: true,
-                opacity: 0.98,
-                depthTest: false,
-                depthWrite: false,
-            });
-
-            [
-                [-size.x / 2, -size.y / 2],
-                [ size.x / 2, -size.y / 2],
-                [ size.x / 2,  size.y / 2],
-                [-size.x / 2,  size.y / 2],
-            ].forEach(([x, y]) => {
-                const handle = new THREE.Mesh(handleGeometry.clone(), handleMaterial.clone());
-                handle.position.set(x, y, 0);
-                handle.renderOrder = 82;
-                handle.userData.customizerLayerId = item.id;
-                handleGroup.add(handle);
-            });
-            target.add(handleGroup);
+            // Selection controls are rendered as a lightweight DOM toolbar
+            // anchored to the projected decal instead of extra 3D meshes.
+            const handleGroup = null;
 
             const previousMesh = item.mesh;
             const previousFrame = item.frame;
@@ -596,7 +609,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
             item.mesh = mesh;
             item.frame = frame;
-            item.handles = handleGroup;
+            item.handles = null;
 
             if (previousMesh) {
                 previousMesh.geometry?.dispose();
@@ -624,7 +637,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const text = String(event.detail?.text || "").trim().slice(0, 60);
         if (!text) return;
 
-        const image = textArtworkSvg(text, "#ffffff");
+        const image = textArtworkSvg(text, "#ffffff", { fontSize: 118, fontWeight: 700, italic: false, curve: 0, letterSpacing: 0 });
         const artwork = {
             id: `text-${Date.now()}`,
             name: text,
@@ -663,6 +676,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             color: "#ffffff",
             opacity: 1,
             z_index: layers.size,
+            text_style: artwork.is_text || artwork.code === "TEXT" ? {
+                fontSize: 118,
+                fontWeight: 700,
+                italic: false,
+                curve: 0,
+                letterSpacing: 0,
+            } : null,
         };
 
         const item = {
@@ -687,20 +707,43 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         document.dispatchEvent(new CustomEvent("babaei:label-added"));
     }
 
-    function moveSelected(event) {
+    function moveSelected(event, commit = false) {
         const item = layers.get(selectedId);
         if (!item) return;
 
-        // A drag is an explicit placement action, so follow the garment mesh
-        // currently under the pointer. This allows torso -> sleeve placement,
-        // while ordinary clicks still never move a selected label.
         pointerOf(event);
         raycaster.setFromCamera(pointer, camera);
         const hit = raycaster.intersectObjects(garmentMeshes, false)[0];
         if (!hit) return;
 
+        const normal = hitNormal(hit);
+        item.pendingTarget = hit.object;
+        item.pendingPoint = hit.point.clone();
+        item.pendingNormal = normal.clone();
+
+        // During drag, move the existing decal transform only. Rebuilding
+        // DecalGeometry on every pointermove was the source of the visible
+        // stutter. A single accurate projection is committed on pointerup.
+        if (!commit && item.mesh && hit.object === item.target) {
+            const localPoint = hit.object.worldToLocal(hit.point.clone());
+            item.mesh.position.copy(localPoint);
+            const worldQuaternion = new THREE.Quaternion().setFromEuler(orientation(normal, item.layer.rotation));
+            const targetQuaternion = hit.object.getWorldQuaternion(new THREE.Quaternion());
+            item.mesh.quaternion.copy(targetQuaternion.clone().invert().multiply(worldQuaternion));
+            item.position = hit.point.clone().addScaledVector(normal, 0.008);
+            item.surfacePoint = hit.point.clone();
+            item.surfaceNormal = normal.clone();
+            item.normal = normal.clone();
+            if (item.frame) {
+                item.frame.position.copy(localPoint);
+                item.frame.quaternion.copy(item.mesh.quaternion);
+            }
+            render();
+            return;
+        }
+
         item.target = hit.object;
-        project(item, hit.point, hitNormal(hit));
+        project(item, hit.point, normal);
     }
 
     function moveSelectedBy(dx, dy) {
@@ -767,8 +810,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         layers.forEach(item => {
             const visible = item.id === selectedId;
             if (item.frame) item.frame.visible = visible;
-            if (item.handles) item.handles.visible = visible;
+            if (item.handles) item.handles.visible = false;
         });
+        positionSelectionToolbar();
         if (scaleInput) {
             scaleInput.disabled = !selected;
             scaleInput.value = selected ? String(Math.round(selected.layer.width * 100)) : "35";
@@ -822,6 +866,24 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         }));
     }
 
+    function updateSelectedTextStyle(patch) {
+        const item = layers.get(selectedId);
+        if (!item?.artwork?.is_text && item?.artwork?.code !== "TEXT") return;
+
+        item.layer.text_style = {
+            fontSize: 118,
+            fontWeight: 700,
+            italic: false,
+            curve: 0,
+            letterSpacing: 0,
+            ...(item.layer.text_style || {}),
+            ...patch,
+        };
+        item.artwork.image = textArtworkSvg(item.artwork.name || "TEXT", item.layer.color || "#ffffff", item.layer.text_style);
+        project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);
+        sync();
+    }
+
     function bind() {
         canvas.addEventListener("pointerdown", event => {
             const intersections = garmentHits(event);
@@ -853,6 +915,14 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         ["pointerup", "pointercancel"].forEach(type => {
             canvas.addEventListener(type, event => {
                 if (drag?.pointerId !== event.pointerId) return;
+                const item = layers.get(selectedId);
+                if (item?.pendingPoint && item?.pendingNormal) {
+                    item.target = item.pendingTarget || item.target;
+                    project(item, item.pendingPoint, item.pendingNormal);
+                    item.pendingPoint = null;
+                    item.pendingNormal = null;
+                    item.pendingTarget = null;
+                }
                 drag = null;
                 controls.enabled = true;
                 canvas.releasePointerCapture?.(event.pointerId);
@@ -973,13 +1043,17 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
             item.layer.color = color;
             if (item.artwork?.is_text || item.artwork?.code === "TEXT") {
-                item.artwork.image = textArtworkSvg(item.artwork.name || "TEXT", color);
+                item.artwork.image = textArtworkSvg(item.artwork.name || "TEXT", color, item.layer.text_style || {});
                 project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);
             } else if (item.mesh?.material?.color) {
                 item.mesh.material.color.set(color);
                 item.mesh.material.needsUpdate = true;
             }
             render();
+        });
+
+        document.addEventListener("babaei:set-text-style", event => {
+            updateSelectedTextStyle(event.detail || {});
         });
 
         document.addEventListener("babaei:set-layer-opacity", event => {
