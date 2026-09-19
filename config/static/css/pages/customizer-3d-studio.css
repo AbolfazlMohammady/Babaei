@@ -5773,3 +5773,47 @@ body.customizer-page.customizer-mobile-sheet-open .selection-floating-toolbar,
         max-width: 290px;
     }
 }
+
+
+/* =========================================================
+   Studio UI v10 — stable selection + centered phone canvas
+   ========================================================= */
+#selection-floating-toolbar {
+    display: none !important;
+}
+
+@media (max-width: 1023px) {
+    /* Selection never replaces the primary action bar. */
+    .mobile-customizer-toolbar.is-hidden {
+        display: grid !important;
+    }
+
+    /* The old contextual rail is retired; the bottom bar is the single
+       mobile navigation surface. */
+    .mobile-context-toolbar {
+        display: none !important;
+    }
+
+    .customizer-workspace--premium.mobile-drawer-open .mobile-customizer-toolbar {
+        display: none !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .mobile-customizer-toolbar {
+        position: fixed !important;
+        left: max(8px, env(safe-area-inset-left)) !important;
+        right: max(8px, env(safe-area-inset-right)) !important;
+        bottom: max(8px, env(safe-area-inset-bottom)) !important;
+        z-index: 120 !important;
+    }
+
+    .mobile-selection-toolbar {
+        z-index: 150 !important;
+    }
+
+    /* Keep the 3D stage free of artificial floor/shadow UI on phones. */
+    .designer-3d-stage::after {
+        display: none !important;
+    }
+}
