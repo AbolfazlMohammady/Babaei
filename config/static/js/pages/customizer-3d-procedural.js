@@ -221,8 +221,15 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const verticalDistance = garmentMaxSize / (2 * Math.tan(verticalFov / 2));
         const horizontalDistance = garmentMaxSize / (2 * Math.tan(horizontalFov / 2));
         const framingScale = mobileFrameScale();
-        const distance = Math.max(4.7, verticalDistance, horizontalDistance) * 1.06 * framingScale;
         const mobile = compactMedia.matches;
+
+        // In portrait, fitting against horizontal FOV is the wrong constraint:
+        // it makes the shirt tiny because a phone has a very narrow horizontal
+        // field of view. Fit against the garment's vertical footprint instead.
+        const fitDistance = mobile
+            ? verticalDistance
+            : Math.max(4.7, verticalDistance, horizontalDistance);
+        const distance = fitDistance * 1.06 * framingScale;
         baseCameraDistance = distance;
 
         // Phone screens are much taller than they are wide. The old framing
