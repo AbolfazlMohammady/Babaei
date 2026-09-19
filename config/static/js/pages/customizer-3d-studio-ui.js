@@ -158,11 +158,48 @@
 
     const mobileToolbar = document.getElementById("mobile-customizer-toolbar");
     const mobileSelectionToolbar = document.getElementById("mobile-selection-toolbar");
+    const mobileContextToolbar = document.getElementById("mobile-context-toolbar");
     const mobileTextSheet = document.getElementById("mobile-text-sheet");
     const mobileTextInput = document.getElementById("mobile-text-input");
+    const mobileColorSheet = document.getElementById("mobile-color-sheet");
+    const mobileColorSheetMode = document.getElementById("mobile-color-sheet-mode");
+    const mobileColorSheetTitle = document.getElementById("mobile-color-sheet-title");
+    const mobileLayerOpacity = document.getElementById("mobile-layer-opacity");
+    const mobileLayerOpacityValue = document.getElementById("mobile-layer-opacity-value");
 
     function closeMobileText() {
         if (mobileTextSheet) mobileTextSheet.hidden = true;
+    }
+
+    function setMobileEditorUi({ selected = false, drawerOpen = false } = {}) {
+        if (drawerOpen) {
+            mobileToolbar?.classList.add("is-hidden");
+            mobileSelectionToolbar?.setAttribute("hidden", "");
+            mobileContextToolbar?.setAttribute("hidden", "");
+            return;
+        }
+
+        mobileToolbar?.classList.toggle("is-hidden", selected);
+        if (selected) {
+            mobileSelectionToolbar?.removeAttribute("hidden");
+            mobileContextToolbar?.removeAttribute("hidden");
+        } else {
+            mobileSelectionToolbar?.setAttribute("hidden", "");
+            mobileContextToolbar?.setAttribute("hidden", "");
+        }
+    }
+
+    function openMobileColorSheet(mode = "color") {
+        if (!mobileColorSheet) return;
+        if (mobileColorSheetMode) mobileColorSheetMode.textContent = mode === "paint" ? "ویرایش رنگ طرح" : "ویرایش طرح";
+        if (mobileColorSheetTitle) mobileColorSheetTitle.textContent = mode === "paint" ? "رنگ‌آمیزی طرح" : "رنگ طرح";
+        mobileColorSheet.hidden = false;
+        document.dispatchEvent(new CustomEvent("babaei:mobile-color-sheet", { detail: { open: true, mode } }));
+    }
+
+    function closeMobileColorSheet() {
+        if (mobileColorSheet) mobileColorSheet.hidden = true;
+        document.dispatchEvent(new CustomEvent("babaei:mobile-color-sheet", { detail: { open: false } }));
     }
 
     document.querySelectorAll("[data-mobile-action]").forEach(button => {
@@ -196,15 +233,19 @@
 
     document.addEventListener("babaei:drawer-state", event => {
         const open = Boolean(event.detail?.open);
-        mobileToolbar?.classList.toggle("is-hidden", open);
-        if (open) mobileSelectionToolbar?.setAttribute("hidden", "");
+        document.body.classList.toggle("customizer-mobile-sheet-open", open);
+        setMobileEditorUi({ selected: Boolean(selectedMobile), drawerOpen: open });
     });
 
+    let selectedMobile = false;
+
     document.addEventListener("babaei:selection-changed", event => {
-        const selected = Boolean(event.detail?.selected);
-        mobileToolbar?.classList.toggle("is-hidden", selected);
-        if (selected) mobileSelectionToolbar?.removeAttribute("hidden");
-        else mobileSelectionToolbar?.setAttribute("hidden", "");
+        selectedMobile = Boolean(event.detail?.selected);
+        const drawerOpen = Boolean(
+            !leftDrawer?.classList.contains("is-drawer-closed") ||
+            !rightDrawer?.classList.contains("is-drawer-closed")
+        );
+        setMobileEditorUi({ selected: selectedMobile, drawerOpen });
     });
 
     document.querySelectorAll("[data-mobile-selection]").forEach(button => {
@@ -213,6 +254,66 @@
             if (action === "layout") setDrawer("left", true);
             if (action === "done") document.dispatchEvent(new CustomEvent("babaei:deselect-label"));
         });
+    });
+
+
+    document.querySelectorAll("[data-mobile-context]").forEach(button => {
+        button.addEventListener("click", () => {
+            const action = button.dataset.mobileContext;
+            if (action === "color") openMobileColorSheet("color");
+            if (action === "paint") openMobileColorSheet("paint");
+            if (action === "background") setDrawer("right", true);
+            if (action === "edit") setDrawer("left", true);
+        });
+    });
+
+    document.getElementById("mobile-color-sheet-close")?.addEventListener("click", closeMobileColorSheet);
+    document.getElementById("mobile-color-sheet-done")?.addEventListener("click", closeMobileColorSheet);
+
+    document.querySelectorAll("[data-layer-color]").forEach(button => {
+        button.addEventListener("click", () => {
+            document.dispatchEvent(new CustomEvent("babaei:set-layer-color", {
+                detail: { color: button.dataset.layerColor }
+            }));
+            document.querySelectorAll("[data-layer-color]").forEach(item => item.classList.toggle("is-active", item === button));
+        });
+    });
+
+    mobileLayerOpacity?.addEventListener("input", () => {
+        const value = Number(mobileLayerOpacity.value || 100);
+        if (mobileLayerOpacityValue) mobileLayerOpacityValue.textContent = value + "%";
+        document.dispatchEvent(new CustomEvent("babaei:set-layer-opacity", {
+            detail: { opacity: value / 100 }
+        }));
+    });
+
+    document.addEventListener("babaei:mobile-color-sheet", event => {
+        const open = Boolean(event.detail?.open);
+        if (open) {
+            mobileToolbar?.classList.add("is-hidden");
+            mobileSelectionToolbar?.setAttribute("hidden", "");
+            mobileContextToolbar?.setAttribute("hidden", "");
+        } else {
+            setMobileEditorUi({ selected: selectedMobile, drawerOpen: false });
+        }
+    });
+
+    document.addEventListener("keydown", event => {
+        if (event.key !== "Escape") return;
+        if (mobileColorSheet && !mobileColorSheet.hidden) {
+            closeMobileColorSheet();
+            return;
+        }
+        if (mobileTextSheet && !mobileTextSheet.hidden) {
+            closeMobileText();
+            return;
+        }
+        const drawerOpen = !leftDrawer?.classList.contains("is-drawer-closed") ||
+            !rightDrawer?.classList.contains("is-drawer-closed");
+        if (drawerOpen) {
+            setDrawer("left", false);
+            setDrawer("right", false);
+        }
     });
 
     window.BabaeiStudioDrawers = {
