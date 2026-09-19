@@ -154,6 +154,45 @@
         setDrawer("left", true);
     });
 
+    const mobileToolbar = document.getElementById("mobile-customizer-toolbar");
+    const mobileTextSheet = document.getElementById("mobile-text-sheet");
+    const mobileTextInput = document.getElementById("mobile-text-input");
+
+    function closeMobileText() {
+        if (mobileTextSheet) mobileTextSheet.hidden = true;
+    }
+
+    document.querySelectorAll("[data-mobile-action]").forEach(button => {
+        button.addEventListener("click", () => {
+            const action = button.dataset.mobileAction;
+            if (action === "product") setDrawer("right", true);
+            if (action === "artwork") {
+                setDrawer("right", true);
+                setTimeout(() => document.getElementById("label-library-trigger")?.click(), 30);
+            }
+            if (action === "tools") setDrawer("left", true);
+            if (action === "text") {
+                closeMobileText();
+                if (mobileTextSheet) mobileTextSheet.hidden = false;
+                mobileTextInput?.focus();
+            }
+            if (action === "save") document.getElementById("save-design")?.click();
+        });
+    });
+
+    document.getElementById("mobile-text-close")?.addEventListener("click", closeMobileText);
+    document.getElementById("mobile-text-add")?.addEventListener("click", () => {
+        const value = mobileTextInput?.value?.trim();
+        if (!value) return mobileTextInput?.focus();
+        document.dispatchEvent(new CustomEvent("babaei:add-text", { detail: { text: value } }));
+        mobileTextInput.value = "";
+        closeMobileText();
+    });
+
+    document.addEventListener("babaei:drawer-state", event => {
+        mobileToolbar?.classList.toggle("is-hidden", Boolean(event.detail?.open));
+    });
+
     window.BabaeiStudioDrawers = {
         open: side => setDrawer(side, true),
         close: side => setDrawer(side, false),
