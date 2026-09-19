@@ -6,7 +6,8 @@
 
     const data = JSON.parse(document.getElementById("designer-data")?.textContent || "{}");
     const canvas = document.getElementById("designer-canvas");
-    const ctx = canvas.getContext("2d");
+    const has3DStudio = Boolean(document.getElementById("designer-3d-stage"));
+    const ctx = canvas?.getContext("2d");
     const stage = document.getElementById("stage-shell");
     const loading = document.getElementById("stage-loading");
     const viewSwitcher = document.getElementById("view-switcher");
@@ -376,7 +377,7 @@
         renderSelection();
         renderPrices();
         zoomLabel.textContent = `${Math.round(stageZoom * 100)}%`;
-        renderCanvas();
+        if (!has3DStudio) renderCanvas();
     }
 
     function addLayer(artworkId) {
@@ -482,21 +483,23 @@
         renderCanvas();
     }, { passive: false });
 
-    document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", () => {
-        const action = button.dataset.action, layer = layers.find((item) => item.id === selectedLayerId);
-        if (action === "zoom-in") stageZoom = clamp(stageZoom + .1, .7, 1.5);
-        if (action === "zoom-out") stageZoom = clamp(stageZoom - .1, .7, 1.5);
-        if (layer && action === "scale-up") scaleLayer(layer, 1.06);
-        if (layer && action === "scale-down") scaleLayer(layer, .94);
-        if (layer && action === "rotate-left") rotateLayer(layer, -5);
-        if (layer && action === "rotate-right") rotateLayer(layer, 5);
-        if (layer && action === "delete") {
-            const index = layers.findIndex((item) => item.id === layer.id);
-            if (index >= 0) layers.splice(index, 1);
-            selectedLayerId = null;
-        }
-        renderAll();
-    }));
+    if (!has3DStudio) {
+        document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", () => {
+            const action = button.dataset.action, layer = layers.find((item) => item.id === selectedLayerId);
+            if (action === "zoom-in") stageZoom = clamp(stageZoom + .1, .7, 1.5);
+            if (action === "zoom-out") stageZoom = clamp(stageZoom - .1, .7, 1.5);
+            if (layer && action === "scale-up") scaleLayer(layer, 1.06);
+            if (layer && action === "scale-down") scaleLayer(layer, .94);
+            if (layer && action === "rotate-left") rotateLayer(layer, -5);
+            if (layer && action === "rotate-right") rotateLayer(layer, 5);
+            if (layer && action === "delete") {
+                const index = layers.findIndex((item) => item.id === layer.id);
+                if (index >= 0) layers.splice(index, 1);
+                selectedLayerId = null;
+            }
+            renderAll();
+        }));
+    }
 
     variantSelect.addEventListener("change", renderPrices);
 
@@ -545,7 +548,7 @@
         }
     });
 
-    window.addEventListener("resize", () => renderCanvas());
+    if (!has3DStudio) window.addEventListener("resize", () => renderCanvas());
 
     renderArtworks();
     renderVariants();
