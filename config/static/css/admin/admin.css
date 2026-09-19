@@ -792,3 +792,40 @@ textarea {
 
 .babaei-admin-kpi--static { cursor: default; }
 .babaei-admin-kpi--static:hover { transform: none; border-color: var(--ba-admin-border); }
+
+.babaei-admin-pipeline { margin: 14px 0; }
+.babaei-admin-pipeline__track {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0,1fr));
+    gap: 8px;
+}
+.babaei-admin-pipeline__track a {
+    display: flex;
+    min-height: 82px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid var(--ba-admin-border);
+    border-radius: 11px;
+    background: #0e0e0e;
+    color: var(--ba-admin-text) !important;
+    text-decoration: none;
+    transition: .2s ease;
+}
+.babaei-admin-pipeline__track a:hover {
+    transform: translateY(-2px);
+    border-color: rgba(210,173,95,.35);
+    background: var(--ba-admin-gold-soft);
+}
+.babaei-admin-pipeline__track b {
+    color: var(--ba-admin-gold);
+    font: 600 23px Georgia, serif;
+}
+.babaei-admin-pipeline__track span {
+    color: var(--ba-admin-muted);
+    font-size: 9px;
+}
+@media (max-width: 900px) {
+    .babaei-admin-pipeline__track { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
