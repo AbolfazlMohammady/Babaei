@@ -2999,3 +2999,180 @@ body.customizer-page .customizer-shell--premium{
  .studio-drawer-toggle{width:84px!important;min-width:84px!important;height:42px!important;}
  .studio-drawer-toggle__label{font-size:8px!important;}
 }
+
+
+/* =========================================================
+   Mobile polish v5 — centered garment + familiar navigation
+   ========================================================= */
+@media (max-width: 820px) {
+    /* Keep the garment centered in the visual viewport instead of the raw
+       portrait canvas. The bottom navigation is part of the usable viewport. */
+    .designer-3d-stage #designer-3d-canvas {
+        transform: none !important;
+    }
+
+    .mobile-bottom-nav {
+        position: fixed !important;
+        left: 10px !important;
+        right: 10px !important;
+        bottom: max(8px, env(safe-area-inset-bottom)) !important;
+        z-index: 70 !important;
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        align-items: stretch !important;
+        min-height: 58px !important;
+        padding: 6px !important;
+        gap: 2px !important;
+        border: 1px solid rgba(255,255,255,.12) !important;
+        border-radius: 18px !important;
+        background: rgba(12,12,14,.82) !important;
+        color: #aaa69f !important;
+        box-shadow: 0 18px 55px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.035) !important;
+        backdrop-filter: blur(22px) saturate(130%) !important;
+        -webkit-backdrop-filter: blur(22px) saturate(130%) !important;
+    }
+
+    .mobile-bottom-nav a,
+    .mobile-bottom-nav button {
+        min-width: 0 !important;
+        min-height: 46px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 3px !important;
+        border-radius: 12px !important;
+        background: transparent !important;
+        color: #817d77 !important;
+        font-family: inherit !important;
+    }
+
+    .mobile-bottom-nav svg {
+        width: 18px !important;
+        height: 18px !important;
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 1.35 !important;
+        stroke-linecap: round !important;
+        stroke-linejoin: round !important;
+    }
+
+    .mobile-bottom-nav span {
+        display: block !important;
+        font-size: 7px !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+
+    .mobile-bottom-nav a.is-active,
+    .mobile-bottom-nav a:hover,
+    .mobile-bottom-nav button:hover {
+        color: #e3c579 !important;
+        background: rgba(216,182,107,.09) !important;
+    }
+
+    /* Main editor actions sit directly above the familiar site navigation. */
+    .studio-drawer-toggle {
+        bottom: max(76px, calc(env(safe-area-inset-bottom) + 68px)) !important;
+        z-index: 75 !important;
+        width: 112px !important;
+        min-width: 112px !important;
+        height: 42px !important;
+        padding: 0 10px !important;
+        border-radius: 13px !important;
+        gap: 7px !important;
+        background: rgba(15,15,18,.84) !important;
+    }
+
+    .studio-drawer-toggle--left,
+    .customizer-workspace--premium.left-drawer-closed .studio-drawer-toggle--left {
+        left: 12px !important;
+        right: auto !important;
+    }
+
+    .studio-drawer-toggle--right,
+    .customizer-workspace--premium.right-drawer-closed .studio-drawer-toggle--right {
+        right: 12px !important;
+        left: auto !important;
+    }
+
+    .studio-drawer-toggle__icon {
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 15px !important;
+    }
+
+    .studio-drawer-toggle__label {
+        display: inline-block !important;
+        font-size: 9px !important;
+        font-weight: 800 !important;
+    }
+
+    /* Camera tools stay centered and separated from the action buttons. */
+    .designer-3d-bottom-controls {
+        bottom: max(128px, calc(env(safe-area-inset-bottom) + 120px)) !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        z-index: 25 !important;
+        padding: 4px !important;
+    }
+
+    .designer-3d-bottom-controls button {
+        width: 29px !important;
+        min-width: 29px !important;
+        height: 29px !important;
+        border-radius: 8px !important;
+    }
+
+    .designer-3d-bottom-controls span {
+        min-width: 34px !important;
+        font-size: 7px !important;
+    }
+
+    /* Give the camera a little more breathing room around the product. */
+    .designer-3d-stage {
+        padding-bottom: 110px !important;
+    }
+
+    .customizer-panel--premium-left,
+    .customizer-panel--premium-right {
+        bottom: max(74px, calc(env(safe-area-inset-bottom) + 66px)) !important;
+        z-index: 80 !important;
+    }
+}
+
+@media (max-width: 430px) {
+    .mobile-bottom-nav {
+        left: 8px !important;
+        right: 8px !important;
+        bottom: max(6px, env(safe-area-inset-bottom)) !important;
+        min-height: 56px !important;
+        border-radius: 17px !important;
+    }
+
+    .mobile-bottom-nav a,
+    .mobile-bottom-nav button {
+        min-height: 44px !important;
+    }
+
+    .mobile-bottom-nav svg {
+        width: 17px !important;
+        height: 17px !important;
+    }
+
+    .mobile-bottom-nav span {
+        font-size: 6.5px !important;
+    }
+
+    .studio-drawer-toggle {
+        width: 108px !important;
+        min-width: 108px !important;
+        height: 40px !important;
+        bottom: max(72px, calc(env(safe-area-inset-bottom) + 64px)) !important;
+    }
+
+    .designer-3d-bottom-controls {
+        bottom: max(124px, calc(env(safe-area-inset-bottom) + 116px)) !important;
+    }
+}
