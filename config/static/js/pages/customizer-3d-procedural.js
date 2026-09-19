@@ -205,7 +205,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
         const verticalDistance = garmentMaxSize / (2 * Math.tan(verticalFov / 2));
         const horizontalDistance = garmentMaxSize / (2 * Math.tan(horizontalFov / 2));
-        const distance = Math.max(4.7, verticalDistance, horizontalDistance) * 1.16;
+        const distance = Math.max(4.7, verticalDistance, horizontalDistance) * 1.06;
         baseCameraDistance = distance;
         camera.position.set(0, garmentMaxSize * 0.015, distance);
         controls.target.set(0, garmentMaxSize * 0.025, 0);
@@ -536,6 +536,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         selectedId = item.id;
         project(item, item.surfacePoint, item.surfaceNormal);
         sync();
+        document.dispatchEvent(new CustomEvent("babaei:label-added"));
     }
 
     function moveSelected(event) {
