@@ -210,7 +210,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         baseCameraDistance = distance;
         camera.position.set(0, garmentMaxSize * 0.015, distance);
         const mobile = window.matchMedia("(max-width: 820px)").matches;
-        const targetY = mobile ? garmentMaxSize * 0.02 : garmentMaxSize * 0.025;
+        const targetY = mobile ? garmentMaxSize * 0.16 : garmentMaxSize * 0.025;
         controls.target.set(0, targetY, 0);
         if (initial) controls.update();
         camera.updateProjectionMatrix();
