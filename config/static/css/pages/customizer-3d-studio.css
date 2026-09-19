@@ -3239,63 +3239,89 @@ body.customizer-page .customizer-shell--premium {
     }
 }
 
-/* Mobile: the sheet must always expose an obvious close action. */
+/* Studio v3.1 — always-visible mobile sheet close actions. */
+.studio-panel-heading-actions {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+.studio-drawer-close {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 34px !important;
+    height: 34px !important;
+    flex: 0 0 34px !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    border: 1px solid rgba(255,255,255,.16) !important;
+    border-radius: 10px !important;
+    background: rgba(255,255,255,.06) !important;
+    color: #f2ede4 !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 22px !important;
+    font-weight: 300 !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,.22) !important;
+    transition: background .18s ease, border-color .18s ease, transform .18s ease !important;
+}
+.studio-drawer-close:hover,
+.studio-drawer-close:focus-visible {
+    background: rgba(216,182,107,.16) !important;
+    border-color: rgba(216,182,107,.62) !important;
+    color: #fff7e8 !important;
+    transform: translateY(-1px) !important;
+}
+.customizer-panel--premium-left .studio-tools-panel__heading,
+.customizer-panel--premium-right .panel-heading {
+    position: relative !important;
+}
 @media (max-width: 820px) {
-    .customizer-panel--premium-left,
-    .customizer-panel--premium-right {
-        position: absolute !important;
-    }
-
     .customizer-panel--premium-left .studio-tools-panel__heading,
     .customizer-panel--premium-right .panel-heading {
-        position: relative !important;
-        padding-right: 48px !important;
+        min-height: 40px !important;
+        padding: 2px 2px 9px !important;
+        margin-bottom: 10px !important;
+        display: flex !important;
+        align-items: center !important;
     }
-
-    .customizer-panel--premium-left .studio-drawer-close,
-    .customizer-panel--premium-right .studio-drawer-close {
-        position: absolute !important;
-        top: 0 !important;
-        right: 0 !important;
-        z-index: 50 !important;
-        width: 38px !important;
-        height: 38px !important;
-        display: grid !important;
-        place-items: center !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        border: 1px solid rgba(255,255,255,.22) !important;
+    .studio-panel-heading-actions {
+        gap: 6px !important;
+    }
+    .studio-drawer-close {
+        width: 36px !important;
+        height: 36px !important;
+        flex-basis: 36px !important;
         border-radius: 11px !important;
-        background: rgba(255,255,255,.09) !important;
-        color: #fff !important;
-        font-family: Arial, sans-serif !important;
-        font-size: 25px !important;
-        font-weight: 300 !important;
-        line-height: 1 !important;
-        box-shadow: 0 8px 24px rgba(0,0,0,.35) !important;
+        background: rgba(255,255,255,.075) !important;
+        border-color: rgba(255,255,255,.2) !important;
+        font-size: 23px !important;
     }
-
-    .customizer-panel--premium-left .studio-drawer-close:active,
-    .customizer-panel--premium-right .studio-drawer-close:active {
-        transform: scale(.94) !important;
-    }
-
-    .customizer-panel--premium-left .studio-tools-panel__status {
+    .studio-tools-panel__status {
         display: none !important;
     }
+    .customizer-panel--premium-left .studio-tools-panel__heading h2,
+    .customizer-panel--premium-right .panel-heading h2 {
+        font-size: 15px !important;
+    }
+    .customizer-panel--premium-left .studio-tools-panel__heading .panel-kicker,
+    .customizer-panel--premium-right .panel-heading .panel-kicker {
+        font-size: 7px !important;
+    }
 }
-
 @media (max-width: 430px) {
-    .customizer-panel--premium-left .studio-drawer-close,
-    .customizer-panel--premium-right .studio-drawer-close {
-        width: 40px !important;
-        height: 40px !important;
-        font-size: 26px !important;
+    .studio-drawer-close {
+        width: 38px !important;
+        height: 38px !important;
+        flex-basis: 38px !important;
+        border-radius: 12px !important;
+        font-size: 24px !important;
     }
 }
 
 
-/* Mobile sheet dismissal — make closing obvious and always tappable. */
+/* Studio v4 — obvious mobile sheet dismissal */
 .studio-panel-heading-actions {
     display: inline-flex !important;
     align-items: center !important;
@@ -3305,33 +3331,34 @@ body.customizer-page .customizer-shell--premium {
 .studio-drawer-close {
     appearance: none !important;
     -webkit-appearance: none !important;
-    width: 34px !important;
-    height: 34px !important;
-    min-width: 34px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
     padding: 0 !important;
     margin: 0 !important;
     display: grid !important;
     place-items: center !important;
-    border: 1px solid rgba(255,255,255,.14) !important;
+    border: 1px solid rgba(255,255,255,.13) !important;
     border-radius: 10px !important;
-    background: rgba(255,255,255,.06) !important;
-    color: #f1ece3 !important;
-    font: 400 21px/1 Arial, sans-serif !important;
+    background: rgba(255,255,255,.055) !important;
+    color: #eee9df !important;
+    font: 400 20px/1 Arial, sans-serif !important;
     cursor: pointer !important;
-    position: relative !important;
-    z-index: 5 !important;
 }
 .studio-drawer-close:hover,
 .studio-drawer-close:focus-visible {
     border-color: rgba(216,182,107,.65) !important;
     background: rgba(216,182,107,.12) !important;
+    color: #fff !important;
     outline: none !important;
 }
+
+/* Backdrop only belongs to an open mobile sheet. */
 .studio-drawer-backdrop {
-    display: none !important;
     position: fixed !important;
     inset: 0 !important;
-    z-index: 25 !important;
+    z-index: 24 !important;
+    display: none !important;
     border: 0 !important;
     padding: 0 !important;
     background: rgba(0,0,0,.48) !important;
@@ -3342,19 +3369,455 @@ body.customizer-page .customizer-shell--premium {
     .customizer-workspace--premium.mobile-drawer-open .studio-drawer-backdrop {
         display: block !important;
     }
+
     .customizer-panel--premium-left,
     .customizer-panel--premium-right {
         z-index: 40 !important;
     }
+
     .customizer-panel--premium-left .studio-tools-panel__heading,
     .customizer-panel--premium-right .panel-heading {
         position: relative !important;
         min-height: 38px !important;
+        padding: 0 0 10px !important;
     }
+
+    .customizer-panel--premium-left .studio-panel-heading-actions,
+    .customizer-panel--premium-right .panel-heading .studio-drawer-close {
+        flex-shrink: 0 !important;
+    }
+
     .customizer-panel--premium-left .studio-drawer-close,
     .customizer-panel--premium-right .studio-drawer-close {
         width: 34px !important;
         height: 34px !important;
         min-width: 34px !important;
+        border-radius: 10px !important;
+        font-size: 21px !important;
+    }
+}
+
+/* When a sheet is open, its edge trigger stays usable as a secondary close. */
+@media (max-width: 820px) {
+    .customizer-workspace--premium.mobile-drawer-open .studio-drawer-toggle {
+        z-index: 46 !important;
+    }
+}
+
+/* =========================================================
+   Mobile configurator v4 — simple, task-first bottom UI
+   Inspired by modern mobile apparel editors.
+   ========================================================= */
+@media (max-width: 820px) {
+    .studio-drawer-toggle--left,
+    .studio-drawer-toggle--right {
+        display: none !important;
+    }
+
+    .mobile-customizer-toolbar {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: calc(58px + env(safe-area-inset-bottom));
+        z-index: 80;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        padding: 7px;
+        border: 1px solid rgba(255,255,255,.11);
+        border-radius: 18px;
+        background: rgba(17,17,19,.88);
+        box-shadow: 0 18px 55px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.04);
+        backdrop-filter: blur(22px) saturate(125%);
+        -webkit-backdrop-filter: blur(22px) saturate(125%);
+        transition: transform .25s ease, opacity .2s ease;
+    }
+    .mobile-customizer-toolbar.is-hidden {
+        opacity: 0;
+        transform: translateY(120%);
+        pointer-events: none;
+    }
+    .mobile-customizer-action {
+        min-width: 0;
+        height: 58px;
+        padding: 5px 3px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border: 0;
+        border-radius: 13px;
+        background: transparent;
+        color: #aaa7a1;
+        cursor: pointer;
+    }
+    .mobile-customizer-action:active {
+        background: rgba(216,182,107,.12);
+        color: #f3eadc;
+        transform: scale(.97);
+    }
+    .mobile-customizer-action__icon {
+        width: 26px;
+        height: 26px;
+        display: grid;
+        place-items: center;
+        color: #f0ece4;
+        font: 600 18px/1 Arial, sans-serif;
+    }
+    .mobile-customizer-action strong {
+        font-size: 9px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .mobile-text-sheet {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: calc(58px + env(safe-area-inset-bottom));
+        z-index: 95;
+        padding: 14px;
+        border: 1px solid rgba(255,255,255,.13);
+        border-radius: 19px;
+        background: linear-gradient(180deg, rgba(28,28,31,.97), rgba(11,11,13,.98));
+        box-shadow: 0 24px 90px rgba(0,0,0,.68);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+    }
+    .mobile-text-sheet[hidden] { display: none !important; }
+    .mobile-text-sheet__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .mobile-text-sheet__head small {
+        display: block;
+        color: #77746f;
+        font-size: 8px;
+        margin-bottom: 3px;
+    }
+    .mobile-text-sheet__head strong {
+        display: block;
+        color: #f2ede5;
+        font-size: 14px;
+    }
+    .mobile-text-sheet__head button {
+        width: 34px;
+        height: 34px;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 10px;
+        background: rgba(255,255,255,.05);
+        color: #fff;
+        font-size: 22px;
+    }
+    .mobile-text-sheet textarea {
+        width: 100%;
+        min-height: 86px;
+        resize: none;
+        box-sizing: border-box;
+        padding: 12px;
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: 13px;
+        outline: none;
+        background: #111113;
+        color: #f5f1e9;
+        font: 600 16px/1.6 sans-serif;
+        direction: rtl;
+    }
+    .mobile-text-sheet textarea:focus {
+        border-color: rgba(216,182,107,.65);
+    }
+    .mobile-text-sheet__add {
+        width: 100%;
+        min-height: 48px;
+        margin-top: 9px;
+        border: 0;
+        border-radius: 12px;
+        background: #d8b66b;
+        color: #17130d;
+        font-size: 11px;
+        font-weight: 900;
+    }
+
+    /* The sheet itself gets an obvious close action; no need to tap the card again. */
+    .customizer-panel--premium-left,
+    .customizer-panel--premium-right {
+        padding-top: 10px !important;
+    }
+    .customizer-panel--premium-left::before,
+    .customizer-panel--premium-right::before {
+        margin-bottom: 7px !important;
+    }
+    .studio-panel-heading-actions {
+        display: flex !important;
+        align-items: center;
+        gap: 7px;
+    }
+    .studio-drawer-close {
+        width: 32px !important;
+        height: 32px !important;
+        display: grid !important;
+        place-items: center !important;
+        border: 1px solid rgba(255,255,255,.12) !important;
+        border-radius: 9px !important;
+        background: rgba(255,255,255,.055) !important;
+        color: #f3eee6 !important;
+        font-size: 20px !important;
+        line-height: 1 !important;
+        cursor: pointer;
+    }
+}
+
+/* =========================================================
+   Mobile Studio — app-like editor navigation
+   ========================================================= */
+.mobile-studio-nav {
+    display: none;
+}
+
+@media (max-width: 820px) {
+    /* The 3D canvas must sit naturally in the viewport. Older overrides
+       translated it vertically and made the garment look stuck near the top. */
+    .designer-3d-stage #designer-3d-canvas {
+        transform: none !important;
+    }
+
+    /* Hide the technical camera toolbar by default on phones. The user can
+       still rotate/zoom with touch; the toolbar is not the primary action. */
+    .designer-3d-bottom-controls {
+        bottom: 92px !important;
+        opacity: .92 !important;
+    }
+
+    .mobile-studio-nav {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: max(10px, env(safe-area-inset-bottom));
+        z-index: 70;
+        height: 62px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        align-items: stretch;
+        gap: 5px;
+        padding: 5px;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 18px;
+        background: rgba(12,12,14,.88);
+        box-shadow: 0 18px 55px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.045);
+        backdrop-filter: blur(22px) saturate(135%);
+        -webkit-backdrop-filter: blur(22px) saturate(135%);
+    }
+
+    .mobile-studio-nav__item {
+        appearance: none;
+        border: 0;
+        border-radius: 13px;
+        background: transparent;
+        color: #8d8982;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        font: inherit;
+        font-size: 9px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .mobile-studio-nav__icon {
+        width: 23px;
+        height: 23px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        color: #b9b4aa;
+        background: rgba(255,255,255,.045);
+        font-size: 13px;
+        line-height: 1;
+    }
+
+    .mobile-studio-nav__item--primary {
+        color: #f1ece4;
+        background: rgba(216,182,107,.10);
+        box-shadow: inset 0 0 0 1px rgba(216,182,107,.15);
+    }
+
+    .mobile-studio-nav__item--primary .mobile-studio-nav__icon {
+        color: #e3c372;
+        background: rgba(216,182,107,.13);
+    }
+
+    .mobile-studio-nav__item:active {
+        transform: scale(.97);
+    }
+
+    /* When a sheet is open, dim the stage but keep the nav usable. */
+    .customizer-workspace--premium.mobile-drawer-open .mobile-studio-nav {
+        opacity: .96;
+    }
+
+    /* Sheets match the reference app: one focused panel, rounded top,
+       obvious close button, and no duplicate side handles underneath. */
+    .customizer-panel--premium-left,
+    .customizer-panel--premium-right {
+        bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+        height: min(55svh, 470px) !important;
+        max-height: min(55svh, 470px) !important;
+        border-radius: 22px !important;
+        padding: 14px !important;
+        z-index: 80 !important;
+    }
+
+    .customizer-panel--premium-left::before,
+    .customizer-panel--premium-right::before {
+        width: 38px !important;
+        height: 4px !important;
+        margin: 0 auto 10px !important;
+        background: rgba(255,255,255,.22) !important;
+    }
+
+    .customizer-panel--premium-left .studio-tools-panel__heading,
+    .customizer-panel--premium-right .panel-heading {
+        min-height: 44px !important;
+        margin-bottom: 10px !important;
+        padding: 0 0 10px !important;
+        border-bottom: 1px solid rgba(255,255,255,.08) !important;
+    }
+
+    .studio-panel-heading-actions {
+        gap: 6px !important;
+    }
+
+    .studio-drawer-close {
+        width: 36px !important;
+        height: 36px !important;
+        flex-basis: 36px !important;
+        border-radius: 11px !important;
+        font-size: 22px !important;
+        background: rgba(255,255,255,.07) !important;
+        border: 1px solid rgba(255,255,255,.17) !important;
+    }
+
+    /* Side drawer buttons are intentionally hidden while the bottom nav is
+       present; this removes the duplicated left/right affordances. */
+    .studio-drawer-toggle {
+        display: none !important;
+    }
+
+    .customizer-panel--premium-right .premium-setting-group {
+        padding: 12px !important;
+        margin-top: 8px !important;
+        border-radius: 14px !important;
+    }
+
+    .customizer-panel--premium-right .premium-color-list {
+        gap: 12px !important;
+    }
+
+    .customizer-panel--premium-right .premium-color-button {
+        width: 34px !important;
+        height: 34px !important;
+    }
+
+    .customizer-panel--premium-right .premium-size-list {
+        gap: 6px !important;
+    }
+
+    .customizer-panel--premium-right .premium-size-button {
+        min-height: 38px !important;
+        border-radius: 10px !important;
+        font-size: 9px !important;
+    }
+
+    .customizer-panel--premium-right .label-library-trigger {
+        min-height: 58px !important;
+        border-radius: 14px !important;
+    }
+
+    .selected-label-tools--left {
+        padding: 12px !important;
+        border-radius: 15px !important;
+    }
+
+    .selected-label-tools__controls {
+        grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+        gap: 6px !important;
+    }
+
+    .selected-label-tools__controls button {
+        min-height: 48px !important;
+        height: 48px !important;
+        border-radius: 11px !important;
+    }
+
+    /* The library gets its own focused sheet, with an explicit close action. */
+    .label-library-panel {
+        position: fixed !important;
+        left: 10px !important;
+        right: 10px !important;
+        bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+        inset-inline: 10px !important;
+        width: auto !important;
+        max-height: min(64svh, 540px) !important;
+        margin: 0 !important;
+        padding: 14px !important;
+        z-index: 100 !important;
+        border-radius: 20px !important;
+        background: rgba(12,12,14,.97) !important;
+    }
+
+    .label-library-panel::before {
+        inset: 0 !important;
+        border-radius: inherit !important;
+        background: rgba(0,0,0,.58) !important;
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+    }
+
+    .label-library-panel__head {
+        min-height: 42px;
+    }
+
+    .label-library-close {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 11px !important;
+        font-size: 22px !important;
+    }
+}
+
+@media (max-width: 430px) {
+    .mobile-studio-nav {
+        height: 60px;
+        left: 8px;
+        right: 8px;
+        bottom: max(8px, env(safe-area-inset-bottom));
+        border-radius: 17px;
+    }
+
+    .mobile-studio-nav__item {
+        font-size: 8px;
+    }
+
+    .mobile-studio-nav__icon {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+    }
+
+    .customizer-panel--premium-left,
+    .customizer-panel--premium-right {
+        bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+        height: min(57svh, 460px) !important;
+        max-height: min(57svh, 460px) !important;
+    }
+
+    .designer-3d-bottom-controls {
+        bottom: calc(76px + env(safe-area-inset-bottom)) !important;
     }
 }

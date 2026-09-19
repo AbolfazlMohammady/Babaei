@@ -210,7 +210,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         baseCameraDistance = distance;
         camera.position.set(0, garmentMaxSize * 0.015, distance);
         const mobile = window.matchMedia("(max-width: 820px)").matches;
-        const targetY = mobile ? garmentMaxSize * 0.02 : garmentMaxSize * 0.025;
+        const targetY = mobile ? garmentMaxSize * 0.10 : garmentMaxSize * 0.025;
         controls.target.set(0, targetY, 0);
         if (initial) controls.update();
         camera.updateProjectionMatrix();
@@ -520,6 +520,27 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             render();
         }).catch(() => status("تصویر لیبل برای پیش‌نمایش بارگذاری نشد."));
     }
+
+    document.addEventListener("babaei:add-text", event => {
+        const text = String(event.detail?.text || "").trim().slice(0, 60);
+        if (!text) return;
+
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+            <rect width="900" height="420" fill="none"/>
+            <text x="450" y="225" text-anchor="middle" dominant-baseline="middle"
+                  font-family="Arial, sans-serif" font-size="118" font-weight="700"
+                  fill="#ffffff">${esc(text)}</text>
+        </svg>`;
+        const image = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+        const artwork = {
+            id: `text-${Date.now()}`,
+            name: text,
+            code: "TEXT",
+            image,
+            base_price: 0,
+        };
+        addLayer(artwork);
+    });
 
     function addLayer(artworkOrId) {
         // Uploaded artworks are added to the legacy customizer state after
