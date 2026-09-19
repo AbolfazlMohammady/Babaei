@@ -147,6 +147,23 @@
             <span class="studio-drawer-toggle__icon" aria-hidden="true"></span><span class="studio-drawer-toggle__label">رنگ و سایز</span>
         </button>
     </main>
+
+        <nav class="mobile-customizer-toolbar" id="mobile-customizer-toolbar" aria-label="ابزارهای طراحی">
+            <button type="button" class="mobile-customizer-action" data-mobile-action="product"><span class="mobile-customizer-action__icon">◐</span><strong>رنگ</strong></button>
+            <button type="button" class="mobile-customizer-action" data-mobile-action="artwork"><span class="mobile-customizer-action__icon">＋</span><strong>طرح</strong></button>
+            <button type="button" class="mobile-customizer-action" data-mobile-action="text"><span class="mobile-customizer-action__icon">T</span><strong>متن</strong></button>
+            <button type="button" class="mobile-customizer-action" data-mobile-action="tools"><span class="mobile-customizer-action__icon">✦</span><strong>ویرایش</strong></button>
+        </nav>
+        <nav class="mobile-studio-nav" aria-label="ناوبری استودیو">
+            <button type="button" class="mobile-studio-nav__item" data-mobile-action="product"><span class="mobile-studio-nav__icon">◈</span><span>محصول</span></button>
+            <button type="button" class="mobile-studio-nav__item mobile-studio-nav__item--active" data-mobile-action="tools"><span class="mobile-studio-nav__icon">✦</span><span>استودیو</span></button>
+            <button type="button" class="mobile-studio-nav__item" data-mobile-action="save"><span class="mobile-studio-nav__icon">▣</span><span>ذخیره</span></button>
+        </nav>
+        <div class="mobile-text-sheet" id="mobile-text-sheet" hidden>
+            <div class="mobile-text-sheet__head"><div><small>افزودن به لباس</small><strong>متن خودت را بنویس</strong></div><button type="button" id="mobile-text-close" aria-label="بستن">×</button></div>
+            <textarea id="mobile-text-input" maxlength="60" placeholder="مثلاً: BABAEI"></textarea>
+            <button type="button" id="mobile-text-add" class="mobile-text-sheet__add">افزودن متن به تیشرت</button>
+        </div>
     {% endif %}
 </div>
 
