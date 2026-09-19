@@ -64,6 +64,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     let activeAreaId = areas[0]?.id || null;
     let nextId = 1;
     let drag = null;
+    let dragMoveFrameId = 0;
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const layers = new Map();
@@ -250,8 +251,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // Keep the shirt centered in the actual mobile work area. The bottom
         // toolbar occupies the lower part of the viewport, so the visual center
         // must sit slightly above the viewport center — not near the top.
-        const mobileCameraY = mobile ? 0 : garmentMaxSize * 0.015;
-        const targetY = mobile ? 0 : garmentMaxSize * 0.025;
+        const mobileCameraY = mobile ? garmentMaxSize * 0.12 : garmentMaxSize * 0.015;
+        const targetY = mobile ? garmentMaxSize * 0.12 : garmentMaxSize * 0.025;
         camera.position.set(0, mobileCameraY, distance);
         controls.target.set(0, targetY, 0);
         if (initial) controls.update();
@@ -332,36 +333,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     function render() {
         if (renderer && scene && camera) {
             renderer.render(scene, camera);
-            positionSelectionToolbar();
         }
-    }
-
-    function positionSelectionToolbar() {
-        const host = document.getElementById("selection-floating-toolbar");
-        const item = layers.get(selectedId);
-        if (!host || !item?.surfacePoint || !camera) {
-            if (host) host.hidden = true;
-            return;
-        }
-
-        const rect = stage.getBoundingClientRect();
-        const point = item.surfacePoint.clone().project(camera);
-        if (point.z < -1 || point.z > 1 || rect.width < 1 || rect.height < 1) {
-            host.hidden = true;
-            return;
-        }
-
-        const x = (point.x * 0.5 + 0.5) * rect.width;
-        const y = (-point.y * 0.5 + 0.5) * rect.height;
-        const toolbarWidth = Math.min(268, Math.max(188, host.offsetWidth || 220));
-        const clampedX = Math.max(toolbarWidth / 2 + 8, Math.min(rect.width - toolbarWidth / 2 - 8, x));
-        const above = y > 86;
-        const top = above ? Math.max(8, y - 58) : Math.min(rect.height - 52, y + 18);
-
-        host.style.left = `${clampedX}px`;
-        host.style.top = `${top}px`;
-        host.classList.toggle("is-below", !above);
-        host.hidden = false;
     }
 
     function scheduleRenderLoop() {
@@ -572,6 +544,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
             const mesh = new THREE.Mesh(geometry, material);
             mesh.renderOrder = 30 + Number(item.layer.z_index || 0);
+            const localAnchor = target.worldToLocal(surfacePoint.clone());
             mesh.userData.customizerLayerId = item.id;
             target.add(mesh);
 
@@ -600,10 +573,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             frame.renderOrder = 80;
             target.add(frame);
 
-            // Selection controls are rendered as a lightweight DOM toolbar
-            // anchored to the projected decal instead of extra 3D meshes.
-            const handleGroup = null;
-
             const previousMesh = item.mesh;
             const previousFrame = item.frame;
             const previousHandles = item.handles;
@@ -611,6 +580,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             item.mesh = mesh;
             item.frame = frame;
             item.handles = null;
+            item.previewAnchorLocal = localAnchor.clone();
+            item.previewTarget = target;
 
             if (previousMesh) {
                 previousMesh.geometry?.dispose();
@@ -722,23 +693,16 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         item.pendingPoint = hit.point.clone();
         item.pendingNormal = normal.clone();
 
-        // During drag, move the existing decal transform only. Rebuilding
-        // DecalGeometry on every pointermove was the source of the visible
-        // stutter. A single accurate projection is committed on pointerup.
-        if (!commit && item.mesh && hit.object === item.target) {
+        // During drag, translate the already-generated decal by a delta from
+        // its baked local anchor. The previous implementation copied the full
+        // local point into mesh.position even though DecalGeometry had already
+        // baked that point into the geometry, which caused visible jumps.
+        // The exact surface projection is rebuilt once on pointerup.
+        if (!commit && item.mesh && hit.object === item.previewTarget && item.previewAnchorLocal) {
             const localPoint = hit.object.worldToLocal(hit.point.clone());
-            item.mesh.position.copy(localPoint);
-            const worldQuaternion = new THREE.Quaternion().setFromEuler(orientation(normal, item.layer.rotation));
-            const targetQuaternion = hit.object.getWorldQuaternion(new THREE.Quaternion());
-            item.mesh.quaternion.copy(targetQuaternion.clone().invert().multiply(worldQuaternion));
-            item.position = hit.point.clone().addScaledVector(normal, 0.008);
-            item.surfacePoint = hit.point.clone();
-            item.surfaceNormal = normal.clone();
-            item.normal = normal.clone();
-            if (item.frame) {
-                item.frame.position.copy(localPoint);
-                item.frame.quaternion.copy(item.mesh.quaternion);
-            }
+            const delta = localPoint.clone().sub(item.previewAnchorLocal);
+            item.mesh.position.copy(delta);
+            if (item.frame) item.frame.position.copy(localPoint);
             render();
             return;
         }
@@ -917,12 +881,29 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         });
 
         canvas.addEventListener("pointermove", event => {
-            if (drag?.pointerId === event.pointerId) moveSelected(event);
+            if (drag?.pointerId !== event.pointerId) return;
+            drag.latest = {
+                pointerId: event.pointerId,
+                clientX: event.clientX,
+                clientY: event.clientY,
+            };
+            if (dragMoveFrameId) return;
+            dragMoveFrameId = requestAnimationFrame(() => {
+                dragMoveFrameId = 0;
+                if (drag?.latest) moveSelected(drag.latest);
+            });
         });
 
         ["pointerup", "pointercancel"].forEach(type => {
             canvas.addEventListener(type, event => {
                 if (drag?.pointerId !== event.pointerId) return;
+
+                if (dragMoveFrameId) {
+                    cancelAnimationFrame(dragMoveFrameId);
+                    dragMoveFrameId = 0;
+                }
+                if (drag.latest) moveSelected(drag.latest);
+
                 const item = layers.get(selectedId);
                 if (item?.pendingPoint && item?.pendingNormal) {
                     item.target = item.pendingTarget || item.target;
