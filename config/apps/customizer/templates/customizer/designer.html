@@ -15,8 +15,8 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260919-7">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260919-6">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260919-8">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260919-7">
 {% endblock %}
 
 {% block content %}
@@ -191,20 +191,29 @@
             </button>
         </nav>
 
-        <nav class="mobile-selection-toolbar" id="mobile-selection-toolbar" aria-label="ویرایش طرح انتخاب‌شده" hidden>
-            <div class="mobile-selection-toolbar__main">
-                <button type="button" class="mobile-selection-action mobile-selection-action--layout" data-mobile-selection="layout"><span>☷</span><strong>چیدمان</strong></button>
-                <button type="button" class="mobile-selection-action mobile-selection-action--delete" data-action="delete"><span>⌫</span><strong>حذف</strong></button>
-                <button type="button" class="mobile-selection-action mobile-selection-action--done" data-mobile-selection="done"><span>✓</span><strong>انجام شد</strong></button>
+        <section class="mobile-selection-toolbar" id="mobile-selection-toolbar" aria-label="ویرایش دقیق طرح" hidden>
+            <div class="mobile-selection-toolbar__head">
+                <div>
+                    <small>ویرایش طرح</small>
+                    <strong>موقعیت و اندازه</strong>
+                </div>
+                <button type="button" class="mobile-selection-close" data-mobile-selection="done" aria-label="بستن ویرایش">×</button>
             </div>
-            <div class="mobile-selection-toolbar__controls">
+            <div class="mobile-selection-toolbar__position" aria-label="جابجایی طرح">
+                <button type="button" data-action="move-left"><span>←</span><small>چپ</small></button>
+                <button type="button" data-action="move-right"><span>→</span><small>راست</small></button>
+                <button type="button" data-action="move-up"><span>↑</span><small>بالا</small></button>
+                <button type="button" data-action="move-down"><span>↓</span><small>پایین</small></button>
+            </div>
+            <div class="mobile-selection-toolbar__secondary">
                 <button type="button" data-action="scale-down"><span>−</span><small>کوچک</small></button>
                 <button type="button" data-action="scale-up"><span>＋</span><small>بزرگ</small></button>
-                <button type="button" data-action="rotate-left"><span>↶</span><small>چرخش چپ</small></button>
-                <button type="button" data-action="rotate-right"><span>↷</span><small>چرخش راست</small></button>
+                <button type="button" data-action="rotate-left"><span>↶</span><small>چرخش</small></button>
+                <button type="button" data-action="rotate-right"><span>↷</span><small>چرخش</small></button>
                 <button type="button" data-action="center-label"><span>⊙</span><small>مرکز</small></button>
+                <button type="button" class="mobile-selection-delete" data-action="delete"><span>⌫</span><small>حذف</small></button>
             </div>
-        </nav>
+        </section>
 
         <div class="mobile-color-sheet" id="mobile-color-sheet" hidden>
             <div class="mobile-color-sheet__head">
@@ -226,6 +235,10 @@
                     <button type="button" data-layer-color="#3b82f6" style="--swatch:#3b82f6" aria-label="آبی"></button>
                     <button type="button" data-layer-color="#8b5cf6" style="--swatch:#8b5cf6" aria-label="بنفش"></button>
                 </div>
+                <label class="mobile-color-custom">
+                    <span>رنگ دلخواه</span>
+                    <input id="mobile-layer-color-custom" type="color" value="#ffffff" aria-label="انتخاب رنگ دلخواه">
+                </label>
             </div>
             <div class="mobile-color-sheet__section mobile-color-sheet__section--range">
                 <div><span>شدت / شفافیت</span><output id="mobile-layer-opacity-value">100%</output></div>
@@ -243,21 +256,7 @@
             <button type="button" id="mobile-text-add" class="mobile-text-sheet__add">افزودن متن به تیشرت</button>
         </div>
     </main>
-    <nav class="mobile-studio-nav" aria-label="ابزار طراحی موبایل">
-        <button type="button" class="mobile-studio-nav__item" data-mobile-action="product">
-            <span class="mobile-studio-nav__icon">◉</span>
-            <span>محصول</span>
-        </button>
-        <button type="button" class="mobile-studio-nav__item mobile-studio-nav__item--primary" data-mobile-action="design">
-            <span class="mobile-studio-nav__icon">✦</span>
-            <span>طراحی</span>
-        </button>
-        <button type="button" class="mobile-studio-nav__item" data-mobile-action="save">
-            <span class="mobile-studio-nav__icon">▣</span>
-            <span>ذخیره</span>
-        </button>
-    </nav>
-    {% endif %}
+{% endif %}
 </div>
 
 <script id="designer-data" type="application/json">{{ designer_data }}</script>
@@ -267,7 +266,7 @@
 <script src="{% static 'js/pages/customizer.js' %}?v=20260919-4" defer></script>
 {% if designer_has_3d %}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
-<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260919-7"></script>
+<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260919-8"></script>
 <script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260919-5" defer></script>
 {% endif %}
 {% endblock %}
