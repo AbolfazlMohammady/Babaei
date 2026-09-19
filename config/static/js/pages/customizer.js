@@ -203,6 +203,7 @@
                     <span class="artwork-card__visual"><img src="${escapeHtml(artwork.image)}" alt="" loading="lazy"></span>
                     <span class="artwork-card__info">
                         <strong>${escapeHtml(artwork.name)}</strong>
+                        <small class="artwork-card__code">${escapeHtml(artwork.code || "LBL")}</small>
                         <small>${formatPrice(areaPrice)} تومان</small>
                     </span>
                 </button>`;
