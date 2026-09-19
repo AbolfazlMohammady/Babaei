@@ -4321,3 +4321,52 @@ body.customizer-page .customizer-shell--premium {
         gap: 6px;
     }
 }
+
+
+/* Desktop selected-artwork color controls */
+.selected-label-tools__colors {
+    margin-top: 14px;
+    padding-top: 13px;
+    border-top: 1px solid rgba(255,255,255,.08);
+}
+.selected-label-tools__colors-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 9px;
+}
+.selected-label-tools__colors-head span {
+    color: #eee9df;
+    font-size: 10px;
+    font-weight: 850;
+}
+.selected-label-tools__colors-head small {
+    color: #77736d;
+    font-size: 7px;
+}
+.selected-label-tools__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+.selected-label-tools__swatches button {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 2px solid rgba(255,255,255,.14);
+    border-radius: 50%;
+    background: var(--swatch);
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
+    cursor: pointer;
+}
+.selected-label-tools__swatches button:hover,
+.selected-label-tools__swatches button:focus-visible {
+    outline: 2px solid #e4c475;
+    outline-offset: 2px;
+}
+@media (max-width: 820px) {
+    .selected-label-tools__colors {
+        margin-top: 10px;
+    }
+}
