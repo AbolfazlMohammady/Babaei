@@ -14,9 +14,17 @@ def _back(request, fallback="users:saved"):
     return redirect(request.POST.get("next") or request.META.get("HTTP_REFERER") or fallback)
 
 
-@login_required
 @require_POST
 def toggle_favorite(request, product_id):
+    if not request.user.is_authenticated:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({
+                "ok": False,
+                "login_required": True,
+                "login_url": reverse("login") if "login" in [name for name in []] else "/account/login/",
+            }, status=401)
+        return redirect("/account/login/")
+
     product = get_object_or_404(Product, pk=product_id, is_active=True)
     favorite, created = FavoriteProduct.objects.get_or_create(user=request.user, product=product)
     if not created:
