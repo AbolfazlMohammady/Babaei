@@ -155,12 +155,8 @@
         setDrawer("right", true);
     });
 
-    // When a label is added, switch the user directly to its transform controls.
-    document.addEventListener("babaei:label-added", () => {
-        setDrawer("right", false);
-        setDrawer("left", true);
-    });
-
+    // Adding a label must not change the mobile action bar or open a drawer.
+    // The label is selected, but the editor remains visually stable.
     const mobileToolbar = document.getElementById("mobile-customizer-toolbar");
     const mobileSelectionToolbar = document.getElementById("mobile-selection-toolbar");
     const mobileContextToolbar = document.getElementById("mobile-context-toolbar");
@@ -259,7 +255,10 @@
                 setDrawer("right", true);
                 document.getElementById("label-library-trigger")?.click();
             }
-            if (action === "tools") setDrawer("left", true);
+            if (action === "tools") {
+                if (selectedMobile) openMobileEdit();
+                else setDrawer("left", true);
+            }
             if (action === "text") {
                 closeMobileText();
                 if (mobileTextSheet) mobileTextSheet.hidden = false;
