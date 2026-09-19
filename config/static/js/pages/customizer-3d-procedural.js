@@ -274,7 +274,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // creating a large empty band above or below it.
         const height = stageHeight;
 
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        const pixelRatioCap = compactMedia.matches ? 1.5 : 2;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pixelRatioCap));
         renderer.setSize(width, height, false);
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
