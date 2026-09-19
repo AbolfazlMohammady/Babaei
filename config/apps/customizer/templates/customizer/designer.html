@@ -201,6 +201,15 @@
                 <strong>ویرایش</strong>
             </button>
         </nav>
+        <div class="selection-floating-toolbar" id="selection-floating-toolbar" hidden aria-label="ابزارهای لیبل انتخاب‌شده">
+            <button type="button" data-action="move-left" title="چپ">←</button>
+            <button type="button" data-action="move-right" title="راست">→</button>
+            <button type="button" data-action="scale-down" title="کوچک">−</button>
+            <button type="button" data-action="scale-up" title="بزرگ">＋</button>
+            <button type="button" data-action="rotate-left" title="چرخش">↶</button>
+            <button type="button" data-action="center-label" title="مرکز">⊙</button>
+            <button type="button" class="selection-floating-toolbar__delete" data-action="delete" title="حذف">×</button>
+        </div>
         <nav class="mobile-context-toolbar" id="mobile-context-toolbar" aria-label="ابزارهای سریع طرح انتخاب‌شده" hidden>
             <button type="button" class="mobile-context-action" data-mobile-context="color">
                 <span class="mobile-context-action__icon">●</span><strong>رنگ</strong><small>رنگ طرح</small>
@@ -280,6 +289,21 @@
             <textarea id="mobile-text-input" maxlength="60" placeholder="مثلاً: BABAEI"></textarea>
             <button type="button" id="mobile-text-add" class="mobile-text-sheet__add">افزودن متن به تیشرت</button>
         </div>
+
+        <div class="mobile-text-style-sheet" id="mobile-text-style-sheet" hidden>
+            <div class="mobile-text-style-sheet__head">
+                <div><small>ویرایش تایپوگرافی</small><strong>تنظیمات متن</strong></div>
+                <button type="button" id="mobile-text-style-close" aria-label="بستن">×</button>
+            </div>
+            <label>اندازه <output id="mobile-text-size-value">100</output><input id="mobile-text-size" type="range" min="60" max="180" value="100"></label>
+            <label>خمیدگی <output id="mobile-text-curve-value">0</output><input id="mobile-text-curve" type="range" min="-100" max="100" value="0"></label>
+            <label>فاصله حروف <output id="mobile-text-spacing-value">0</output><input id="mobile-text-spacing" type="range" min="-10" max="30" value="0"></label>
+            <div class="mobile-text-style-sheet__toggles">
+                <button type="button" id="mobile-text-bold">B پررنگ</button>
+                <button type="button" id="mobile-text-italic">I کج</button>
+            </div>
+            <button type="button" class="mobile-text-style-sheet__done" id="mobile-text-style-done">انجام شد</button>
+        </div>
     </main>
 {% endif %}
 </div>
@@ -291,7 +315,7 @@
 <script src="{% static 'js/pages/customizer.js' %}?v=20260919-4" defer></script>
 {% if designer_has_3d %}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
-<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260919-11"></script>
-<script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260919-7" defer></script>
+<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260919-12"></script>
+<script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260919-9" defer></script>
 {% endif %}
 {% endblock %}
