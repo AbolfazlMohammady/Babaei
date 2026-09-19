@@ -793,7 +793,14 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function sync() {
         const selected = layers.get(selectedId);
-        document.dispatchEvent(new CustomEvent("babaei:selection-changed", { detail: { selected: Boolean(selected), id: selectedId } }));
+        document.dispatchEvent(new CustomEvent("babaei:selection-changed", {
+            detail: {
+                selected: Boolean(selected),
+                id: selectedId,
+                isText: Boolean(selected?.artwork?.is_text || selected?.artwork?.code === "TEXT"),
+                textStyle: selected?.layer?.text_style || null,
+            },
+        }));
         const card = document.getElementById("selected-card");
         const controls = document.getElementById("selected-controls");
         const chosen = document.getElementById("premium-selected-artwork");
