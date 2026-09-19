@@ -371,6 +371,7 @@
     function renderAll() {
         renderViews();
         renderAreas();
+        renderArtworks();
         renderSelection();
         renderPrices();
         zoomLabel.textContent = `${Math.round(stageZoom * 100)}%`;
@@ -380,11 +381,6 @@
     function addLayer(artworkId) {
         const view = activeView(), area = areaById(activeAreaId, view) || view?.areas?.[0], artwork = artworkById(artworkId);
         if (!area || !artwork) return;
-        const count = layers.filter((layer) => Number(layer.area_id) === Number(area.id)).length;
-        if (count >= Number(area.max_layers)) {
-            saveStatus.textContent = `در «${area.name}» بیشتر از ${area.max_layers} لیبل مجاز نیست.`;
-            return;
-        }
         loadImage(artwork.image).then((image) => {
             const bounds = areaBounds(area), aspect = image.naturalWidth / Math.max(1, image.naturalHeight);
             const width = .45;
