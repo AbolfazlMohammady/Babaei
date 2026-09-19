@@ -5783,10 +5783,8 @@ body.customizer-page.customizer-mobile-sheet-open .selection-floating-toolbar,
 }
 
 @media (max-width: 1023px) {
-    /* Selection never replaces the primary action bar. */
-    .mobile-customizer-toolbar.is-hidden {
-        display: grid !important;
-    }
+    /* Selection never replaces the primary action bar. The JS only adds
+       .is-hidden while a drawer/edit sheet is intentionally open. */
 
     /* The old contextual rail is retired; the bottom bar is the single
        mobile navigation surface. */
