@@ -93,7 +93,7 @@ class ArtworkAdmin(CustomizerAdminMixin, admin.ModelAdmin):
 
     @admin.display(description="قیمت")
     def price_display(self, obj):
-        return format_html('{:,} <small>تومان</small>', obj.base_price)
+        return format_html("{} <small>تومان</small>", f"{obj.base_price:,}")
 
     @admin.display(description="وضعیت")
     def status_badge(self, obj):
@@ -241,7 +241,7 @@ class ArtworkAreaPriceAdmin(CustomizerAdminMixin, admin.ModelAdmin):
 
     @admin.display(description="قیمت")
     def price_display(self, obj):
-        return format_html('{:,} <small>تومان</small>', obj.price)
+        return format_html("{} <small>تومان</small>", f"{obj.price:,}")
 
 
 @admin.register(DesignLayer)
