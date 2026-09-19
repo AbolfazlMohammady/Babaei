@@ -380,12 +380,34 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function setColor(hex) {
-        const base = new THREE.Color(hex || "#ffffff");
+        const value = /^#[0-9a-f]{6}$/i.test(String(hex || ""))
+            ? String(hex)
+            : "#ffffff";
+        const base = new THREE.Color(value);
+        const isWhite = value.toLowerCase() === "#ffffff";
+
         garmentMaterials.forEach(material => {
             if (!material?.color) return;
+
+            // The GLB contains a dark fabric/albedo map. Multiplying a color
+            // into that map cannot produce light garment colors, so the map
+            // was effectively making every variant look the same. Keep the
+            // original map available, but use a clean lit material when a
+            // variant color is selected. The model's normal/roughness data and
+            // scene lighting still provide the cloth shading.
+            if (isWhite) {
+                if (material.__babaeiOriginalMap && !material.map) {
+                    material.map = material.__babaeiOriginalMap;
+                }
+            } else if (material.map && !material.__babaeiOriginalMap) {
+                material.__babaeiOriginalMap = material.map;
+                material.map = null;
+            }
+
             material.color.copy(base);
             material.needsUpdate = true;
         });
+
         render();
     }
 
