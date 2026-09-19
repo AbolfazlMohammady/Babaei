@@ -3152,3 +3152,89 @@ body.customizer-page .customizer-shell--premium {
         font-size: 8px !important;
     }
 }
+
+
+/* Studio v4 — explicit drawer close affordance */
+.studio-panel-heading-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.studio-drawer-close {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 10px;
+    background: rgba(255,255,255,.055);
+    color: rgba(255,255,255,.82);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    transition: .18s ease;
+}
+.studio-drawer-close:hover,
+.studio-drawer-close:focus-visible {
+    border-color: rgba(216,182,107,.55);
+    background: rgba(216,182,107,.12);
+    color: #f2dfad;
+}
+.studio-drawer-backdrop {
+    display: none;
+}
+
+@media (max-width: 820px) {
+    .studio-drawer-backdrop {
+        position: absolute;
+        inset: 0;
+        z-index: 24;
+        display: block;
+        border: 0;
+        padding: 0;
+        background: rgba(0,0,0,.46);
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity .25s ease, visibility .25s ease;
+    }
+    .customizer-workspace--premium.mobile-drawer-open .studio-drawer-backdrop {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    .customizer-panel--premium-left,
+    .customizer-panel--premium-right {
+        z-index: 30 !important;
+    }
+
+    .studio-panel-heading-actions {
+        gap: 6px;
+    }
+    .studio-drawer-close {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+        border-radius: 10px;
+        font-size: 21px;
+    }
+
+    .studio-tools-panel__heading {
+        align-items: center;
+    }
+
+    .customizer-panel--premium-right .panel-heading {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .customizer-panel--premium-right .panel-heading > div {
+        min-width: 0;
+    }
+}
