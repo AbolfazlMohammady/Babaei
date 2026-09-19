@@ -121,6 +121,8 @@
             : (side === "left" ? "باز کردن ابزار طراحی" : "باز کردن تنظیمات محصول"));
     }
 
+    let selectedMobile = false;
+
     // Start with the model unobstructed. The template also carries the closed
     // classes so there is never a flash of two full panels over the 3D model.
     setDrawer("left", false);
@@ -194,11 +196,15 @@
         if (mobileColorSheetMode) mobileColorSheetMode.textContent = mode === "paint" ? "ویرایش رنگ طرح" : "ویرایش طرح";
         if (mobileColorSheetTitle) mobileColorSheetTitle.textContent = mode === "paint" ? "رنگ‌آمیزی طرح" : "رنگ طرح";
         mobileColorSheet.hidden = false;
+        document.body.classList.add("customizer-mobile-sheet-open");
         document.dispatchEvent(new CustomEvent("babaei:mobile-color-sheet", { detail: { open: true, mode } }));
     }
 
     function closeMobileColorSheet() {
         if (mobileColorSheet) mobileColorSheet.hidden = true;
+        const drawerOpen = !leftDrawer?.classList.contains("is-drawer-closed") ||
+            !rightDrawer?.classList.contains("is-drawer-closed");
+        if (!drawerOpen) document.body.classList.remove("customizer-mobile-sheet-open");
         document.dispatchEvent(new CustomEvent("babaei:mobile-color-sheet", { detail: { open: false } }));
     }
 
@@ -236,8 +242,6 @@
         document.body.classList.toggle("customizer-mobile-sheet-open", open);
         setMobileEditorUi({ selected: Boolean(selectedMobile), drawerOpen: open });
     });
-
-    let selectedMobile = false;
 
     document.addEventListener("babaei:selection-changed", event => {
         selectedMobile = Boolean(event.detail?.selected);
