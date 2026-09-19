@@ -122,7 +122,7 @@
 
         <section class="customizer-stage-wrap customizer-stage-wrap--premium" aria-label="محیط سه‌بعدی طراحی">
             <div class="customizer-stage customizer-stage--premium" id="stage-shell">
-                <div class="designer-3d-stage" id="designer-3d-stage" data-model-url="{% static 'Glb/whit_t_shirt.glb' %}" aria-label="پیش‌نمایش سه‌بعدی تیشرت">
+                <div class="designer-3d-stage" id="designer-3d-stage" data-model-url="{% static 'Glb/whit_t_shirt.glb' %}?v=20260919-1" aria-label="پیش‌نمایش سه‌بعدی تیشرت">
                     <div class="designer-3d-topbar"><span class="designer-3d-badge"><i></i> تیشرت سه‌بعدی</span></div>
                     <canvas id="designer-3d-canvas"></canvas>
                     <div class="designer-3d-loading" id="designer-3d-loading">در حال بارگذاری مدل سه‌بعدی…</div>
@@ -317,7 +317,7 @@
 <script src="{% static 'js/pages/customizer.js' %}?v=20260919-4" defer></script>
 {% if designer_has_3d %}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
-<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260919-14"></script>
+<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260919-16"></script>
 <script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260919-11" defer></script>
 {% endif %}
 {% endblock %}
