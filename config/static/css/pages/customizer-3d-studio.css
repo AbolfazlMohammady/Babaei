@@ -2156,3 +2156,7 @@ body.customizer-page .customizer-price-card {
         right: min(90vw, 320px);
     }
 }
+
+.customizer-panel--premium-right > .variant-card {
+    display: none !important;
+}
