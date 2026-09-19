@@ -389,28 +389,38 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         garmentMaterials.forEach(material => {
             if (!material?.color) return;
 
-            // The GLB contains a dark fabric/albedo map. Multiplying a color
-            // into that map cannot produce light garment colors, so the map
-            // was effectively making every variant look the same. Keep the
-            // original map available, but use a clean lit material when a
-            // variant color is selected. The model's normal/roughness data and
-            // scene lighting still provide the cloth shading.
+            // The source GLB has an albedo texture. That texture is useful for
+            // the white/default fabric, but it prevents dark variants from
+            // reading as their selected color. Keep the original map cached
+            // and remove it for explicit color variants.
             if (isWhite) {
-                if (material.__babaeiOriginalMap && !material.map) {
+                if (material.__babaeiOriginalMap) {
                     material.map = material.__babaeiOriginalMap;
                 }
-            } else if (material.map && !material.__babaeiOriginalMap) {
-                material.__babaeiOriginalMap = material.map;
+            } else {
+                if (material.map && !material.__babaeiOriginalMap) {
+                    material.__babaeiOriginalMap = material.map;
+                }
                 material.map = null;
             }
 
-            material.color.copy(base);
+            material.color.set(value);
+
+            // Some GLB materials can contain emissive data. A bright emissive
+            // channel can wash out a black/dark variant, so color variants
+            // must use the garment color as the only direct light contribution.
+            if ("emissive" in material && material.emissive) {
+                material.emissive.set("#000000");
+                material.emissiveIntensity = 0;
+            }
+            if ("metalness" in material) material.metalness = 0;
+            if ("roughness" in material) material.roughness = 0.82;
+
             material.needsUpdate = true;
         });
 
         render();
     }
-
     function loadTexture(url) {
         if (textures.has(url)) return textures.get(url);
         const promise = new THREE.TextureLoader().loadAsync(url).then(texture => {
