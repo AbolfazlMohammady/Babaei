@@ -1612,11 +1612,10 @@ body:not(.customizer-page) .cart-shell {
 /* Use the existing /back assets as subtle texture, never as a loud foreground. */
 body:not(.customizer-page) {
     background-color: var(--ba-bg) !important;
-    background-image: url("/static/images/back/dddepth-200.jpg") !important;
+    background-image: linear-gradient(rgba(16,27,33,.94), rgba(16,27,33,.94)), url("/static/images/back/dddepth-200.jpg") !important;
     background-size: cover !important;
     background-position: center !important;
     background-attachment: fixed !important;
-    background-blend-mode: soft-light !important;
 }
 
 /* Header: smaller, quieter, less saturated. */
@@ -1680,7 +1679,7 @@ body:not(.customizer-page) .cart-checkout {
    -------------------------------------------------------------------------- */
 body.home-page {
     background-color: #e9e6df !important;
-    background-image: url("/static/images/back/dddepth-201.jpg") !important;
+    background-image: linear-gradient(rgba(233,230,223,.95), rgba(233,230,223,.95)), url("/static/images/back/dddepth-201.jpg") !important;
     color: #1a1d1f !important;
 }
 body.home-page main {
@@ -1778,7 +1777,7 @@ body.home-page .story__content p {
    -------------------------------------------------------------------------- */
 body.shop-page {
     background-color: #101b21 !important;
-    background-image: url("/static/images/back/dddepth-202.jpg") !important;
+    background-image: linear-gradient(rgba(16,27,33,.95), rgba(16,27,33,.95)), url("/static/images/back/dddepth-202.jpg") !important;
 }
 body.shop-page .shop-shell,
 body.shop-page .category-shell,
