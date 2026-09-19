@@ -15,7 +15,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260919-1">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260919-2">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260918-2">
 {% endblock %}
 
@@ -41,26 +41,36 @@
     {% else %}
     <main class="customizer-workspace customizer-workspace--premium" aria-label="محیط طراحی تیشرت">
         <aside class="customizer-panel customizer-panel--settings customizer-panel--premium-left">
-            <div class="premium-panel-section premium-placement-panel">
-                <div class="panel-kicker">PLACEMENT</div>
-                <div id="area-list" class="area-list"></div>
+            <div class="studio-tools-panel">
+                <div class="studio-tools-panel__heading">
+                    <div>
+                        <span class="panel-kicker">DESIGN TOOLS</span>
+                        <h2>ابزار طراحی</h2>
+                    </div>
+                    <span class="studio-tools-panel__status"><i></i> آماده</span>
+                </div>
+
                 <div class="selected-label-tools selected-label-tools--left">
                     <div class="selected-label-tools__head">
                         <span>لیبل انتخاب‌شده</span>
-                        <small>کنترل اندازه و زاویه</small>
-                    </div>
-                    <div class="selected-label-tools__controls" id="selected-controls" hidden>
-                        <button type="button" data-action="scale-down" title="کوچک‌تر">−</button>
-                        <button type="button" data-action="scale-up" title="بزرگ‌تر">+</button>
-                        <button type="button" data-action="rotate-left" title="چرخش چپ">↶</button>
-                        <button type="button" data-action="rotate-right" title="چرخش راست">↷</button>
-                        <button type="button" data-action="center-label" title="مرکز کردن">⊙</button>
-                        <button type="button" data-action="delete" title="حذف لیبل">×</button>
+                        <small>برای تغییر جای لیبل، خود لیبل را روی لباس بکش.</small>
                     </div>
                     <div class="premium-selected-artwork" id="premium-selected-artwork"></div>
-                    <div class="selected-label-tools__hint">برای جابه‌جایی، لیبل را مستقیم روی تیشرت بکش.</div>
+                    <div class="selected-label-tools__controls" id="selected-controls" hidden>
+                        <button type="button" data-action="scale-down" title="کوچک‌تر"><b>−</b><span>کوچک</span></button>
+                        <button type="button" data-action="scale-up" title="بزرگ‌تر"><b>＋</b><span>بزرگ</span></button>
+                        <button type="button" data-action="rotate-left" title="چرخش چپ"><b>↶</b><span>چرخش</span></button>
+                        <button type="button" data-action="rotate-right" title="چرخش راست"><b>↷</b><span>چرخش</span></button>
+                        <button type="button" data-action="center-label" title="مرکز کردن"><b>⊙</b><span>مرکز</span></button>
+                        <button type="button" data-action="delete" title="حذف لیبل"><b>×</b><span>حذف</span></button>
+                    </div>
+                    <div class="selected-label-tools__hint">اندازه، زاویه و موقعیت را از همین بخش کنترل کن.</div>
                 </div>
-                <button type="button" class="save-design-button premium-save-button premium-save-button--left" id="save-design">ذخیره طراحی</button>
+
+                <button type="button" class="save-design-button premium-save-button premium-save-button--left" id="save-design">
+                    <span>ذخیره طراحی</span>
+                    <small>ثبت طرح فعلی</small>
+                </button>
                 <div id="save-status" class="save-status" aria-live="polite"></div>
             </div>
         </aside>
