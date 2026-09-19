@@ -521,6 +521,23 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         }).catch(() => status("تصویر لیبل برای پیش‌نمایش بارگذاری نشد."));
     }
 
+    document.addEventListener("babaei:add-text", event => {
+        const text = String(event.detail?.text || "").trim().slice(0, 60);
+        if (!text) return;
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">' +
+            '<rect width="900" height="420" fill="none"/>' +
+            '<text x="450" y="225" text-anchor="middle" dominant-baseline="middle" ' +
+            'font-family="Arial, sans-serif" font-size="118" font-weight="700" fill="#ffffff">' +
+            esc(text) + '</text></svg>';
+        addLayer({
+            id: `text-${Date.now()}`,
+            name: text,
+            code: "TEXT",
+            image: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
+            base_price: 0,
+        });
+    });
+
     function addLayer(artworkOrId) {
         // Uploaded artworks are added to the legacy customizer state after
         // designer-data has already been parsed by this module. Accept the
