@@ -210,7 +210,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         baseCameraDistance = distance;
         camera.position.set(0, garmentMaxSize * 0.015, distance);
         const mobile = window.matchMedia("(max-width: 820px)").matches;
-        const targetY = mobile ? garmentMaxSize * 0.02 : garmentMaxSize * 0.025;
+        const targetY = mobile ? garmentMaxSize * 0.06 : garmentMaxSize * 0.025;
         controls.target.set(0, targetY, 0);
         if (initial) controls.update();
         camera.updateProjectionMatrix();
@@ -219,7 +219,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function mobileFrameScale() {
-        return window.matchMedia("(max-width: 820px)").matches ? 0.72 : 1;
+        return window.matchMedia("(max-width: 820px)").matches ? 0.80 : 1;
     }
 
     function updateCameraZoomLabel() {
@@ -268,7 +268,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             canvas.style.position = "absolute";
             canvas.style.left = "0";
             canvas.style.right = "0";
-            canvas.style.top = `${Math.max(0, (stageHeight - height) / 2 + stageHeight * 0.10)}px`;
+            canvas.style.top = "0px";
             canvas.style.width = "100%";
             canvas.style.height = `${height}px`;
         } else {
