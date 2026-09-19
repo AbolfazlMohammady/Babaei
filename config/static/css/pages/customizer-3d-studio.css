@@ -5265,3 +5265,172 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
         transition: none !important;
     }
 }
+
+
+/* =========================================================
+   Studio UI v7 — final interaction polish
+   ========================================================= */
+
+/* A drawer does not need a second floating button sitting on top of it. */
+@media (min-width: 1024px) {
+    .customizer-workspace--premium:not(.left-drawer-closed) .studio-drawer-toggle--left,
+    .customizer-workspace--premium:not(.right-drawer-closed) .studio-drawer-toggle--right {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transform: translateY(-50%) scale(.92) !important;
+    }
+
+    .customizer-workspace--premium.left-drawer-closed .studio-drawer-toggle--left,
+    .customizer-workspace--premium.right-drawer-closed .studio-drawer-toggle--right {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+}
+
+/* Phone: one compact, legible action bar. No tiny secondary captions. */
+@media (max-width: 600px) {
+    .mobile-customizer-toolbar {
+        min-height: 76px !important;
+        height: 76px !important;
+        padding: 7px !important;
+        gap: 6px !important;
+        border-radius: 20px !important;
+    }
+
+    .mobile-customizer-action {
+        min-height: 60px !important;
+        height: 60px !important;
+        padding: 5px 2px !important;
+        gap: 5px !important;
+        border: 1px solid rgba(255,255,255,.06) !important;
+        background: rgba(255,255,255,.035) !important;
+    }
+
+    .mobile-customizer-action__icon {
+        width: 30px !important;
+        height: 30px !important;
+        border-radius: 10px !important;
+        background: rgba(216,182,107,.11) !important;
+        color: #e4c475 !important;
+    }
+
+    .mobile-customizer-action__icon svg {
+        width: 19px !important;
+        height: 19px !important;
+        display: block;
+    }
+
+    .mobile-customizer-action strong {
+        font-size: 11px !important;
+        line-height: 1 !important;
+        font-weight: 850 !important;
+    }
+
+    .mobile-customizer-action small {
+        display: none !important;
+    }
+
+    .mobile-customizer-action[data-mobile-action="artwork"] {
+        background: rgba(216,182,107,.08) !important;
+        border-color: rgba(216,182,107,.18) !important;
+    }
+
+    .mobile-customizer-action[data-mobile-action="artwork"] .mobile-customizer-action__icon {
+        background: rgba(216,182,107,.17) !important;
+    }
+
+    /* Keep the model visually centered in the usable phone area. */
+    .designer-3d-stage {
+        padding-bottom: 0 !important;
+    }
+
+    .mobile-context-toolbar {
+        min-height: 76px !important;
+        height: 76px !important;
+        padding: 7px !important;
+        gap: 6px !important;
+        border-radius: 20px !important;
+    }
+
+    .mobile-context-action {
+        min-height: 60px !important;
+        border-radius: 14px !important;
+    }
+
+    .mobile-context-action__icon {
+        width: 29px !important;
+        height: 29px !important;
+    }
+
+    .mobile-context-action strong {
+        font-size: 10px !important;
+    }
+
+    .mobile-context-action small {
+        display: none !important;
+    }
+}
+
+@media (max-width: 430px) {
+    .mobile-customizer-toolbar,
+    .mobile-context-toolbar {
+        left: max(8px, env(safe-area-inset-left)) !important;
+        right: max(8px, env(safe-area-inset-right)) !important;
+        bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .mobile-customizer-toolbar,
+    .mobile-context-toolbar {
+        min-height: 72px !important;
+        height: 72px !important;
+        padding: 6px !important;
+        gap: 4px !important;
+    }
+
+    .mobile-customizer-action {
+        min-height: 58px !important;
+        height: 58px !important;
+        border-radius: 12px !important;
+    }
+
+    .mobile-customizer-action__icon {
+        width: 28px !important;
+        height: 28px !important;
+    }
+
+    .mobile-customizer-action strong {
+        font-size: 10px !important;
+    }
+
+    .mobile-context-action {
+        min-height: 58px !important;
+        border-radius: 12px !important;
+    }
+}
+
+/* The open drawer owns the lower viewport; keep its heading and close action stable. */
+@media (max-width: 1023px) {
+    .customizer-panel--premium-left .studio-tools-panel__heading,
+    .customizer-panel--premium-right .panel-heading {
+        position: sticky !important;
+        top: -14px !important;
+        z-index: 20 !important;
+        min-height: 48px !important;
+        padding-top: 2px !important;
+        background: rgba(15,15,18,.985) !important;
+        box-shadow: 0 10px 24px rgba(0,0,0,.16) !important;
+    }
+
+    .customizer-panel--premium-left .studio-drawer-close,
+    .customizer-panel--premium-right .studio-drawer-close {
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px !important;
+        min-height: 42px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+}
