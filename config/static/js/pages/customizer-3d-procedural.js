@@ -60,6 +60,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     const textures = new Map();
     const frontAxis = new THREE.Vector3(0, 0, 1);
     const modelUrl = stage.dataset.modelUrl;
+    const compactMedia = window.matchMedia("(max-width: 1023px)");
+    const mobileMedia = window.matchMedia("(max-width: 600px)");
+    let renderFrameId = 0;
 
     function status(text) {
         const el = document.getElementById("save-status");
@@ -110,7 +113,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         controls.minPolarAngle = 0.82;
         controls.maxPolarAngle = 2.32;
         controls.target.set(0, 0, 0);
-        controls.addEventListener("change", render);
+        controls.addEventListener("start", scheduleRenderLoop);
+        controls.addEventListener("end", scheduleRenderLoop);
 
         scene.add(new THREE.HemisphereLight(0xffffff, 0x141414, 1.25));
 
@@ -219,7 +223,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const horizontalDistance = garmentMaxSize / (2 * Math.tan(horizontalFov / 2));
         const framingScale = mobileFrameScale();
         const distance = Math.max(4.7, verticalDistance, horizontalDistance) * 1.06 * framingScale;
-        const mobile = window.matchMedia("(max-width: 820px)").matches;
+        const mobile = compactMedia.matches;
         baseCameraDistance = distance;
         camera.position.set(0, mobile ? garmentMaxSize * 0.46 : garmentMaxSize * 0.015, distance);
         const targetY = mobile ? 0 : garmentMaxSize * 0.025;
@@ -231,7 +235,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function mobileFrameScale() {
-        return window.matchMedia("(max-width: 820px)").matches ? 0.80 : 1;
+        return compactMedia.matches ? 0.80 : 1;
     }
 
     function updateCameraZoomLabel() {
@@ -264,7 +268,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         if (!renderer || !camera) return;
         const width = Math.max(1, stage.clientWidth);
         const stageHeight = Math.max(1, stage.clientHeight);
-        const mobile = window.matchMedia("(max-width: 820px)").matches;
+        const mobile = compactMedia.matches;
 
         // On mobile the 3D canvas uses the full viewport. The camera framing
         // is adjusted separately so the garment stays centered instead of
@@ -298,6 +302,20 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function render() {
         if (renderer && scene && camera) renderer.render(scene, camera);
+    }
+
+    function scheduleRenderLoop() {
+        if (renderFrameId || !renderer || !scene || !camera) return;
+        renderFrameId = requestAnimationFrame(() => {
+            renderFrameId = 0;
+            if (!controls) {
+                render();
+                return;
+            }
+            const changed = controls.update();
+            render();
+            if (changed) scheduleRenderLoop();
+        });
     }
 
     function setColor(hex) {
@@ -618,6 +636,31 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         project(item, hit.point, hitNormal(hit));
     }
 
+    function moveSelectedBy(dx, dy) {
+        const item = layers.get(selectedId);
+        if (!item?.target || !item.surfacePoint || !item.surfaceNormal) return;
+
+        const normal = item.surfaceNormal.clone().normalize();
+        const up = new THREE.Vector3(0, 1, 0).projectOnPlane(normal);
+        if (up.lengthSq() < 0.0001) up.set(0, 0, 1);
+        up.normalize();
+
+        const right = new THREE.Vector3().crossVectors(up, normal).normalize();
+        const step = Math.max(0.012, (item.size?.x || 0.35) * 0.08);
+        const candidate = item.surfacePoint.clone()
+            .addScaledVector(right, dx * step)
+            .addScaledVector(up, dy * step);
+
+        const origin = candidate.clone().addScaledVector(normal, 0.45);
+        const direction = normal.clone().multiplyScalar(-1);
+        const probe = new THREE.Raycaster(origin, direction, 0, 0.9);
+        const hit = probe.intersectObject(item.target, false)[0];
+        if (!hit) return;
+
+        item.target = hit.object;
+        project(item, hit.point, hitNormal(hit));
+    }
+
     function renderAreas() {
         const host = document.getElementById("area-list");
         if (!host) return;
@@ -755,7 +798,15 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
                 const action = button.dataset.action;
 
-                if (action === "scale-up" || action === "scale-down") {
+                if (action === "move-left") {
+                    moveSelectedBy(-1, 0);
+                } else if (action === "move-right") {
+                    moveSelectedBy(1, 0);
+                } else if (action === "move-up") {
+                    moveSelectedBy(0, 1);
+                } else if (action === "move-down") {
+                    moveSelectedBy(0, -1);
+                } else if (action === "scale-up" || action === "scale-down") {
                     const factor = action === "scale-up" ? 1.06 : 0.94;
                     item.layer.width = Math.min(0.98, Math.max(0.06, item.layer.width * factor));
                     item.layer.height = Math.min(0.98, Math.max(0.04, item.layer.height * factor));
@@ -937,14 +988,17 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     init();
 
-    function animate() {
-        requestAnimationFrame(animate);
-        controls?.update();
-        renderer?.render(scene, camera);
-    }
+    const resizeObserver = new ResizeObserver(() => resize());
+    resizeObserver.observe(stage);
+    window.addEventListener("orientationchange", resize, { passive: true });
+    compactMedia.addEventListener?.("change", resize);
 
-    animate();
-    window.addEventListener("resize", resize);
+    window.addEventListener("pagehide", () => {
+        if (renderFrameId) cancelAnimationFrame(renderFrameId);
+        resizeObserver.disconnect();
+        controls?.dispose();
+        renderer?.dispose();
+    }, { once: true });
 
     window.BabaeiCustomizer3D = {
         getPayload: saveLayers,
