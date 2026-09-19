@@ -185,21 +185,59 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         setLoading("در حال بارگذاری مدل سه‌بعدی…", true);
         const loader = new GLTFLoader();
 
-        const gltf = await new Promise((resolve, reject) => {
-            loader.load(
-                modelUrl,
-                resolve,
-                event => {
-                    if (!event.total) {
-                        setLoading("در حال بارگذاری مدل سه‌بعدی…", true);
-                        return;
-                    }
-                    const percent = Math.round((event.loaded / event.total) * 100);
-                    setLoading(`در حال بارگذاری مدل سه‌بعدی… ${percent}%`, true);
-                },
-                reject
-            );
+        const parseModelBuffer = buffer => new Promise((resolve, reject) => {
+            const basePath = new URL(modelUrl, window.location.href).href;
+            loader.parse(buffer, basePath, resolve, reject);
         });
+
+        let gltf = null;
+        const cacheName = "babaei-3d-model-v1";
+        const modelCacheKey = new URL(modelUrl, window.location.href).href;
+
+        try {
+            if ("caches" in window) {
+                const cache = await caches.open(cacheName);
+                const cached = await cache.match(modelCacheKey);
+
+                if (cached) {
+                    setLoading("در حال آماده‌سازی مدل سه‌بعدی…", true);
+                    gltf = await parseModelBuffer(await cached.arrayBuffer());
+                } else {
+                    const response = await fetch(modelCacheKey, { cache: "force-cache" });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const clone = response.clone();
+                    const buffer = await response.arrayBuffer();
+
+                    // Store the exact versioned model URL. When the model changes,
+                    // bump the version in designer.html so an old model can never
+                    // silently survive a refresh.
+                    cache.put(modelCacheKey, clone).catch(() => {});
+                    gltf = await parseModelBuffer(buffer);
+                }
+            } else {
+                gltf = await new Promise((resolve, reject) => {
+                    loader.load(
+                        modelUrl,
+                        resolve,
+                        event => {
+                            if (!event.total) {
+                                setLoading("در حال بارگذاری مدل سه‌بعدی…", true);
+                                return;
+                            }
+                            const percent = Math.round((event.loaded / event.total) * 100);
+                            setLoading(`در حال بارگذاری مدل سه‌بعدی… ${percent}%`, true);
+                        },
+                        reject
+                    );
+                });
+            }
+        } catch (error) {
+            // Cache failure must never break the editor; fall back to the normal
+            // GLTFLoader request.
+            gltf = await new Promise((resolve, reject) => {
+                loader.load(modelUrl, resolve, undefined, reject);
+            });
+        }
 
         garment = gltf.scene;
         garment.name = "BabaeiTshirtGLB";
@@ -244,16 +282,45 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const distance = fitDistance * 1.06 * framingScale;
         baseCameraDistance = distance;
 
-        // Phone screens are much taller than they are wide. The old framing
-        // placed the shirt's visual center too high, leaving a large empty
-        // black area underneath the garment. Translate the camera and target
-        // together so the shirt sits in the usable area above the bottom bar.
-        // Keep the shirt centered in the actual mobile work area. The bottom
-        // toolbar occupies the lower part of the viewport, so the visual center
-        // must sit slightly above the viewport center — not near the top.
-        const mobileCameraY = mobile ? garmentMaxSize * 0.12 : garmentMaxSize * 0.015;
-        const targetY = mobile ? garmentMaxSize * 0.12 : garmentMaxSize * 0.025;
-        camera.position.set(0, mobileCameraY, distance);
+        // Mobile: center the garment in the *usable* viewport, not the raw
+        // canvas. The header occupies the top and the persistent action bar
+        // occupies the bottom. Both are measured from the real DOM so this
+        // stays correct across phones/tablets instead of relying on a guessed
+        // magic Y offset.
+        const garmentBox = garment
+            ? new THREE.Box3().setFromObject(garment)
+            : null;
+        const garmentCenterY = garmentBox?.getCenter(new THREE.Vector3()).y || 0;
+        let targetY = garmentCenterY + garmentMaxSize * 0.025;
+
+        if (mobile) {
+            const stageRect = stage.getBoundingClientRect();
+            const stageHeight = Math.max(1, stageRect.height);
+            const header = document.querySelector(".customizer-header");
+            const toolbar = document.getElementById("mobile-customizer-toolbar");
+
+            const headerRect = header?.getBoundingClientRect();
+            const toolbarRect = toolbar?.getBoundingClientRect();
+
+            const topInset = headerRect
+                ? Math.max(0, Math.min(stageHeight, headerRect.bottom - stageRect.top + 10))
+                : 10;
+            const bottomInset = toolbarRect
+                ? Math.max(0, Math.min(stageHeight, stageRect.bottom - toolbarRect.top + 10))
+                : 10;
+
+            const usableTop = topInset;
+            const usableBottom = Math.max(usableTop + 1, stageHeight - bottomInset);
+            const desiredScreenY = (usableTop + usableBottom) * 0.5;
+            const currentScreenY = stageHeight * 0.5;
+            const pixelShiftDown = desiredScreenY - currentScreenY;
+            const visibleWorldHeight = 2 * distance * Math.tan(verticalFov / 2);
+
+            targetY = garmentCenterY
+                + (pixelShiftDown / stageHeight) * visibleWorldHeight;
+        }
+
+        camera.position.set(0, targetY, distance);
         controls.target.set(0, targetY, 0);
         if (initial) controls.update();
         camera.updateProjectionMatrix();
@@ -582,6 +649,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             item.handles = null;
             item.previewAnchorLocal = localAnchor.clone();
             item.previewTarget = target;
+            item.previewDetached = false;
+            item.previewStartWorld = surfacePoint.clone();
 
             if (previousMesh) {
                 previousMesh.geometry?.dispose();
@@ -693,16 +762,47 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         item.pendingPoint = hit.point.clone();
         item.pendingNormal = normal.clone();
 
-        // During drag, translate the already-generated decal by a delta from
-        // its baked local anchor. The previous implementation copied the full
-        // local point into mesh.position even though DecalGeometry had already
-        // baked that point into the geometry, which caused visible jumps.
-        // The exact surface projection is rebuilt once on pointerup.
-        if (!commit && item.mesh && hit.object === item.previewTarget && item.previewAnchorLocal) {
-            const localPoint = hit.object.worldToLocal(hit.point.clone());
-            const delta = localPoint.clone().sub(item.previewAnchorLocal);
-            item.mesh.position.copy(delta);
-            if (item.frame) item.frame.position.copy(localPoint);
+        // During drag, never rebuild DecalGeometry on pointermove. It is a
+        // generated projection geometry; rebuilding it over thin/sleeve faces can
+        // legitimately produce an empty decal. Keep a lightweight preview alive
+        // until pointerup, then make one exact projection on the final hit.
+        if (!commit && item.mesh) {
+            if (hit.object === item.previewTarget && !item.previewDetached && item.previewAnchorLocal) {
+                const localPoint = hit.object.worldToLocal(hit.point.clone());
+                const delta = localPoint.clone().sub(item.previewAnchorLocal);
+                item.mesh.position.copy(delta);
+                if (item.frame) item.frame.position.copy(localPoint);
+            } else {
+                if (!item.previewDetached) {
+                    // Preserve the current world transform while moving the preview
+                    // across separate garment meshes (body/sleeve/etc.).
+                    scene.attach(item.mesh);
+                    if (item.frame) scene.attach(item.frame);
+                    item.previewDetached = true;
+                    item.previewStartWorld = item.surfacePoint?.clone() || hit.point.clone();
+                    item.mesh.position.set(0, 0, 0);
+                    if (item.frame) {
+                        item.frame.position.copy(item.previewStartWorld);
+                        item.frame.quaternion.copy(
+                            new THREE.Quaternion().setFromEuler(
+                                orientation(normal, item.layer.rotation)
+                            )
+                        );
+                    }
+                }
+
+                const worldDelta = hit.point.clone().sub(item.previewStartWorld);
+                item.mesh.position.copy(worldDelta);
+                if (item.frame) {
+                    item.frame.position.copy(hit.point);
+                    item.frame.quaternion.copy(
+                        new THREE.Quaternion().setFromEuler(
+                            orientation(normal, item.layer.rotation)
+                        )
+                    );
+                }
+            }
+
             render();
             return;
         }
