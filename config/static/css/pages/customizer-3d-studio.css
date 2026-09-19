@@ -3319,3 +3319,87 @@ body.customizer-page .customizer-shell--premium {
         font-size: 24px !important;
     }
 }
+
+
+/* Studio v4 — obvious mobile sheet dismissal */
+.studio-panel-heading-actions {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+}
+.studio-drawer-close {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 1px solid rgba(255,255,255,.13) !important;
+    border-radius: 10px !important;
+    background: rgba(255,255,255,.055) !important;
+    color: #eee9df !important;
+    font: 400 20px/1 Arial, sans-serif !important;
+    cursor: pointer !important;
+}
+.studio-drawer-close:hover,
+.studio-drawer-close:focus-visible {
+    border-color: rgba(216,182,107,.65) !important;
+    background: rgba(216,182,107,.12) !important;
+    color: #fff !important;
+    outline: none !important;
+}
+
+/* Backdrop only belongs to an open mobile sheet. */
+.studio-drawer-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 24 !important;
+    display: none !important;
+    border: 0 !important;
+    padding: 0 !important;
+    background: rgba(0,0,0,.48) !important;
+    backdrop-filter: blur(2px) !important;
+    -webkit-backdrop-filter: blur(2px) !important;
+}
+@media (max-width: 820px) {
+    .customizer-workspace--premium.mobile-drawer-open .studio-drawer-backdrop {
+        display: block !important;
+    }
+
+    .customizer-panel--premium-left,
+    .customizer-panel--premium-right {
+        z-index: 40 !important;
+    }
+
+    .customizer-panel--premium-left .studio-tools-panel__heading,
+    .customizer-panel--premium-right .panel-heading {
+        position: relative !important;
+        min-height: 38px !important;
+        padding: 0 0 10px !important;
+    }
+
+    .customizer-panel--premium-left .studio-panel-heading-actions,
+    .customizer-panel--premium-right .panel-heading .studio-drawer-close {
+        flex-shrink: 0 !important;
+    }
+
+    .customizer-panel--premium-left .studio-drawer-close,
+    .customizer-panel--premium-right .studio-drawer-close {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        border-radius: 10px !important;
+        font-size: 21px !important;
+    }
+}
+
+/* When a sheet is open, its edge trigger stays usable as a secondary close. */
+@media (max-width: 820px) {
+    .customizer-workspace--premium.mobile-drawer-open .studio-drawer-toggle {
+        z-index: 46 !important;
+    }
+}
