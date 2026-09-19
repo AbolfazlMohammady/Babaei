@@ -159,6 +159,17 @@
                 </article>
             {% empty %}<div class="empty-state">هنوز محصولی برای نمایش وجود ندارد.</div>{% endfor %}
         </div>
+        {% if is_paginated %}
+        <nav class="pager shop-pager" aria-label="صفحات محصولات">
+            {% if page_obj.has_previous %}
+                <a href="?{% if filter_category %}category={{ filter_category }}&{% endif %}{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_min_price %}min_price={{ filter_min_price }}&{% endif %}{% if filter_max_price %}max_price={{ filter_max_price }}&{% endif %}{% if filter_discount %}discount=1&{% endif %}{% if filter_available %}available=1&{% endif %}page={{ page_obj.previous_page_number }}">قبلی</a>
+            {% endif %}
+            <span>صفحه {{ page_obj.number }} از {{ paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?{% if filter_category %}category={{ filter_category }}&{% endif %}{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_min_price %}min_price={{ filter_min_price }}&{% endif %}{% if filter_max_price %}max_price={{ filter_max_price }}&{% endif %}{% if filter_discount %}discount=1&{% endif %}{% if filter_available %}available=1&{% endif %}page={{ page_obj.next_page_number }}">بعدی</a>
+            {% endif %}
+        </nav>
+
     </section>
 </div>
 {% endblock %}
