@@ -113,7 +113,11 @@
         workspace.classList.toggle(side === "left" ? "left-drawer-closed" : "right-drawer-closed", !open);
         toggle.setAttribute("aria-expanded", String(open));
         const anyOpen = !leftDrawer?.classList.contains("is-drawer-closed") || !rightDrawer?.classList.contains("is-drawer-closed");
-        workspace.classList.toggle("mobile-drawer-open", anyOpen && window.matchMedia("(max-width: 820px)").matches);
+        const mobileOpen = anyOpen && window.matchMedia("(max-width: 820px)").matches;
+        workspace.classList.toggle("mobile-drawer-open", mobileOpen);
+        document.dispatchEvent(new CustomEvent("babaei:drawer-state", {
+            detail: { open: mobileOpen, side, drawerOpen: open }
+        }));
         toggle.setAttribute("aria-label", open
             ? (side === "left" ? "بستن ابزار طراحی" : "بستن تنظیمات محصول")
             : (side === "left" ? "باز کردن ابزار طراحی" : "باز کردن تنظیمات محصول"));
