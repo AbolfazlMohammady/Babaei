@@ -192,22 +192,39 @@
     }
 
     function renderArtworks() {
+        const activeArea = areaById(activeAreaId);
         artworkGrid.innerHTML = artworks.length
-            ? artworks.map((artwork) => `<button type="button" class="artwork-card" data-artwork-id="${artwork.id}"><img src="${escapeHtml(artwork.image)}" alt=""><strong>${escapeHtml(artwork.name)}</strong><small>${formatPrice(artwork.base_price)} تومان</small></button>`).join("")
+            ? artworks.map((artwork) => {
+                const key = activeArea ? `${artwork.id}:${activeArea.id}` : "";
+                const areaPrice = key && Object.prototype.hasOwnProperty.call(prices, key)
+                    ? Number(prices[key])
+                    : Number(artwork.base_price || 0);
+                return `<button type="button" class="artwork-card" data-artwork-id="${artwork.id}">
+                    <span class="artwork-card__visual"><img src="${escapeHtml(artwork.image)}" alt="" loading="lazy"></span>
+                    <span class="artwork-card__info">
+                        <strong>${escapeHtml(artwork.name)}</strong>
+                        <small>${formatPrice(areaPrice)} تومان</small>
+                    </span>
+                </button>`;
+            }).join("")
             : `<div class="selected-card__empty">هنوز لیبلی در کتابخانه وجود ندارد.</div>`;
+
         artworkGrid.querySelectorAll(".artwork-card").forEach((button) => button.addEventListener("click", () => {
             const artworkId = Number(button.dataset.artworkId);
-            // The 3D studio owns placement when the real GLB editor is active.
-            // Keep the legacy 2D renderer as the fallback for non-3D products.
             if (window.BabaeiCustomizer3D?.isReady?.()) {
-                // The uploaded artwork is created after the 3D module parsed
-                // designer-data, so pass the fresh artwork object itself.
-                // Passing only the ID leaves the 3D module with a stale artwork list.
                 const artwork = artworkById(artworkId);
                 if (artwork) window.BabaeiCustomizer3D.addArtwork(artwork);
-                return;
+            } else {
+                addLayer(artworkId);
             }
-            addLayer(artworkId);
+
+            const library = document.getElementById("label-library-panel");
+            const trigger = document.getElementById("label-library-trigger");
+            if (library && trigger) {
+                library.hidden = true;
+                trigger.setAttribute("aria-expanded", "false");
+            }
+            document.body.classList.remove("label-library-open");
         }));
     }
 
@@ -215,8 +232,7 @@
         const visibleAreas = activeView()?.areas || [];
         if (!activeAreaId && visibleAreas.length) activeAreaId = visibleAreas[0].id;
         areaList.innerHTML = visibleAreas.map((area) => {
-            const count = layers.filter((layer) => Number(layer.area_id) === Number(area.id)).length;
-            return `<button type="button" class="area-option ${Number(area.id) === Number(activeAreaId) ? "is-active" : ""}" data-area-id="${area.id}"><span>${escapeHtml(area.name)}</span><small>${count}/${area.max_layers}</small></button>`;
+            return `<button type="button" class="area-option ${Number(area.id) === Number(activeAreaId) ? "is-active" : ""}" data-area-id="${area.id}"><span>${escapeHtml(area.name)}</span></button>`;
         }).join("");
         areaList.querySelectorAll(".area-option").forEach((button) => button.addEventListener("click", () => {
             activeAreaId = Number(button.dataset.areaId);
@@ -536,6 +552,26 @@
 
     renderArtworks();
     renderVariants();
+
+    const labelLibraryTrigger = document.getElementById("label-library-trigger");
+    const labelLibraryPanel = document.getElementById("label-library-panel");
+    const labelLibraryClose = document.getElementById("label-library-close");
+
+    const setLabelLibraryOpen = (open) => {
+        if (!labelLibraryTrigger || !labelLibraryPanel) return;
+        labelLibraryPanel.hidden = !open;
+        labelLibraryTrigger.setAttribute("aria-expanded", String(open));
+        document.body.classList.toggle("label-library-open", open);
+    };
+
+    labelLibraryTrigger?.addEventListener("click", () => {
+        setLabelLibraryOpen(labelLibraryPanel?.hidden !== false);
+    });
+    labelLibraryClose?.addEventListener("click", () => setLabelLibraryOpen(false));
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") setLabelLibraryOpen(false);
+    });
+
     activeAreaId = views[0]?.areas?.[0]?.id || null;
     renderAll();
 })();
