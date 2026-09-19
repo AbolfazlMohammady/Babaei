@@ -98,6 +98,16 @@
                             <input id="desktop-text-input" type="text" maxlength="60" autocomplete="off" placeholder="مثلاً BABAEI">
                             <button type="button" id="desktop-text-add" aria-label="افزودن متن">افزودن</button>
                         </div>
+                        <div class="desktop-text-style" id="desktop-text-style" hidden>
+                            <div class="desktop-text-style__title">ظاهر متن</div>
+                            <label><span>اندازه <output id="desktop-text-size-value">118</output></span><input id="desktop-text-size" type="range" min="60" max="220" value="118"></label>
+                            <label><span>خمیدگی <output id="desktop-text-curve-value">0</output></span><input id="desktop-text-curve" type="range" min="-100" max="100" value="0"></label>
+                            <label><span>فاصله حروف <output id="desktop-text-spacing-value">0</output></span><input id="desktop-text-spacing" type="range" min="-10" max="30" value="0"></label>
+                            <div class="desktop-text-style__toggles">
+                                <button type="button" id="desktop-text-bold">B پررنگ</button>
+                                <button type="button" id="desktop-text-italic">I کج</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="selected-label-tools__hint">اندازه، زاویه و موقعیت را از همین بخش کنترل کن.</div>
                 </div>
