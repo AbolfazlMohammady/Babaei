@@ -829,3 +829,214 @@ textarea {
 @media (max-width: 900px) {
     .babaei-admin-pipeline__track { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
+
+/* ---------------------------------------------------------
+   BABAEI ADMIN — form hierarchy / customizer surfaces
+--------------------------------------------------------- */
+#content-main > .module,
+#content-main > form > .module,
+#content-main > form > .inline-group {
+    margin-bottom: 18px !important;
+    overflow: hidden;
+    background: #101010 !important;
+    border: 1px solid var(--ba-admin-border) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+}
+
+#content-main > form > .module > h2,
+#content-main > form > .inline-group > h2,
+.module.ba-admin-section > h2 {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    padding: 0 17px !important;
+    margin: 0 !important;
+    border-bottom: 1px solid var(--ba-admin-border) !important;
+    background: linear-gradient(180deg,#181818,#131313) !important;
+    color: #eee9e1 !important;
+    font-size: 12px !important;
+    font-weight: 800;
+}
+
+.module.ba-admin-section > h2::before {
+    content: "";
+    width: 3px;
+    height: 17px;
+    margin-inline-end: 9px;
+    border-radius: 999px;
+    background: var(--ba-admin-gold);
+}
+
+.module.ba-admin-section--media > h2::after {
+    content: "تصویر و فایل";
+    margin-inline-start: auto;
+    color: #77736d;
+    font-size: 8px;
+    font-weight: 500;
+}
+
+.module.ba-admin-section--processing > h2::after {
+    content: "پردازش";
+    margin-inline-start: auto;
+    color: #77736d;
+    font-size: 8px;
+    font-weight: 500;
+}
+
+.module.ba-admin-section--commercial > h2::after {
+    content: "قیمت و مالکیت";
+    margin-inline-start: auto;
+    color: #77736d;
+    font-size: 8px;
+    font-weight: 500;
+}
+
+.module.ba-admin-section--publish > h2::after {
+    content: "انتشار";
+    margin-inline-start: auto;
+    color: #77736d;
+    font-size: 8px;
+    font-weight: 500;
+}
+
+.form-row {
+    min-height: 54px;
+    padding: 10px 16px !important;
+}
+
+.form-row > div {
+    max-width: 100%;
+}
+
+.aligned .form-row > div {
+    padding: 0 !important;
+}
+
+.aligned label {
+    width: 170px !important;
+    padding: 7px 12px 0 0 !important;
+    font-size: 10px !important;
+    font-weight: 700;
+    color: #bdb7ae !important;
+}
+
+.aligned .form-row .vTextField,
+.aligned .form-row input[type="text"],
+.aligned .form-row input[type="number"],
+.aligned .form-row input[type="url"],
+.aligned .form-row input[type="file"],
+.aligned .form-row select,
+.aligned .form-row textarea {
+    width: min(100%, 620px) !important;
+}
+
+.aligned .form-row textarea {
+    min-height: 112px;
+    resize: vertical;
+}
+
+.ba-artwork-preview {
+    width: 220px !important;
+    height: 220px !important;
+    max-height: none !important;
+    margin: 4px 0 !important;
+    padding: 12px !important;
+    object-fit: contain !important;
+}
+
+.ba-artwork-preview--model {
+    width: 260px !important;
+    height: 190px !important;
+}
+
+.ba-thumb--artwork {
+    width: 44px !important;
+    height: 44px !important;
+}
+
+.inline-group {
+    margin-top: 20px !important;
+}
+
+.inline-group .tabular.inline-related {
+    overflow-x: auto;
+}
+
+.inline-group .tabular thead th {
+    padding: 10px 9px !important;
+    background: #151515 !important;
+    color: #918b82 !important;
+    font-size: 9px !important;
+    white-space: nowrap;
+}
+
+.inline-group .tabular td {
+    padding: 9px !important;
+    vertical-align: middle;
+    border-color: rgba(255,255,255,.055) !important;
+}
+
+.inline-group .tabular tr.form-row {
+    min-height: 46px;
+}
+
+.inline-group .tabular input,
+.inline-group .tabular select {
+    min-width: 100px;
+    max-width: 180px;
+}
+
+.inline-group .add-row {
+    padding: 12px !important;
+    background: #0d0d0d;
+}
+
+.inline-group .add-row a {
+    color: var(--ba-admin-gold) !important;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+#content-main > form > .submit-row {
+    position: sticky;
+    bottom: 12px;
+    z-index: 20;
+    margin-top: 20px;
+    border: 1px solid rgba(210,173,95,.18) !important;
+    border-radius: 12px !important;
+    background: rgba(15,15,15,.94) !important;
+    backdrop-filter: blur(12px);
+}
+
+#content-main > form > .submit-row input {
+    min-width: 110px;
+    min-height: 40px;
+}
+
+@media (max-width: 900px) {
+    .aligned label {
+        width: 100% !important;
+        padding: 0 0 6px !important;
+    }
+
+    .aligned .form-row .vTextField,
+    .aligned .form-row input[type="text"],
+    .aligned .form-row input[type="number"],
+    .aligned .form-row input[type="url"],
+    .aligned .form-row input[type="file"],
+    .aligned .form-row select,
+    .aligned .form-row textarea {
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    .ba-artwork-preview {
+        width: 180px !important;
+        height: 180px !important;
+    }
+
+    #content-main > form > .submit-row {
+        position: static;
+    }
+}
