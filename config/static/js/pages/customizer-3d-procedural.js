@@ -271,7 +271,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             canvas.style.position = "absolute";
             canvas.style.left = "0";
             canvas.style.right = "0";
-            canvas.style.top = `${Math.max(0, (stageHeight - height) / 2)}px`;
+            canvas.style.top = `${Math.max(0, (stageHeight - height) / 2 + stageHeight * 0.10)}px`;
             canvas.style.width = "100%";
             canvas.style.height = `${height}px`;
         } else {
