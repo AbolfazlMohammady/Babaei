@@ -186,7 +186,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const loader = new GLTFLoader();
 
         const parseModelBuffer = buffer => new Promise((resolve, reject) => {
-            const basePath = new URL(modelUrl, window.location.href).href;
+            const basePath = new URL(".", new URL(modelUrl, window.location.href)).href;
             loader.parse(buffer, basePath, resolve, reject);
         });
 
