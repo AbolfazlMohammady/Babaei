@@ -157,6 +157,7 @@
     });
 
     const mobileToolbar = document.getElementById("mobile-customizer-toolbar");
+    const mobileSelectionToolbar = document.getElementById("mobile-selection-toolbar");
     const mobileTextSheet = document.getElementById("mobile-text-sheet");
     const mobileTextInput = document.getElementById("mobile-text-input");
 
@@ -194,7 +195,24 @@
     });
 
     document.addEventListener("babaei:drawer-state", event => {
-        mobileToolbar?.classList.toggle("is-hidden", Boolean(event.detail?.open));
+        const open = Boolean(event.detail?.open);
+        mobileToolbar?.classList.toggle("is-hidden", open);
+        if (open) mobileSelectionToolbar?.setAttribute("hidden", "");
+    });
+
+    document.addEventListener("babaei:selection-changed", event => {
+        const selected = Boolean(event.detail?.selected);
+        mobileToolbar?.classList.toggle("is-hidden", selected);
+        if (selected) mobileSelectionToolbar?.removeAttribute("hidden");
+        else mobileSelectionToolbar?.setAttribute("hidden", "");
+    });
+
+    document.querySelectorAll("[data-mobile-selection]").forEach(button => {
+        button.addEventListener("click", () => {
+            const action = button.dataset.mobileSelection;
+            if (action === "layout") setDrawer("left", true);
+            if (action === "done") document.dispatchEvent(new CustomEvent("babaei:deselect-label"));
+        });
     });
 
     window.BabaeiStudioDrawers = {
