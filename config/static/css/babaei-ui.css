@@ -6,7 +6,7 @@
 
 @import url("https://cdn.jsdelivr.net/gh/AmirAbbasVafaee/persian-fonts-cdn@main/css/peyda.css");
 
-:root {
+body:not(.customizer-page) {
     --ba-50: #6ca2c1;
     --ba-100: #4f86a4;
     --ba-200: #316b88;
