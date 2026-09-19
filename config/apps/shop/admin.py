@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.db.models import Count, Min, Prefetch, Sum
 from django.utils.html import format_html
 
+from .forms import ProductAdminForm, ProductVariantAdminForm
 from .models import Category, Product, ProductColor, ProductImage, ProductSize, ProductVariant
 
 
@@ -60,8 +61,9 @@ class ProductImageInline(admin.TabularInline):
 
 class ProductVariantInline(admin.TabularInline):
     model = ProductVariant
+    form = ProductVariantAdminForm
     extra = 0
-    fields = ("color", "size", "sku", "price", "compare_at_price", "stock_quantity", "is_active")
+    fields = ("color", "size", "sku", "price", "discount_percent", "stock_quantity", "is_active")
     autocomplete_fields = ("color", "size")
     ordering = ("color", "size")
 
@@ -88,6 +90,7 @@ def unfeature_products(modeladmin, request, queryset):
 
 @admin.register(Product)
 class ProductAdmin(ShopAdminMixin, admin.ModelAdmin):
+    form = ProductAdminForm
     list_display = ("admin_preview", "name", "category", "price_display", "stock_display", "featured_badge", "status_badge", "created_at")
     list_filter = ("is_active", "is_featured", "category", "created_at")
     search_fields = ("name", "slug", "short_description", "description", "variants__sku")
@@ -100,7 +103,7 @@ class ProductAdmin(ShopAdminMixin, admin.ModelAdmin):
     actions = (activate_products, deactivate_products, feature_products, unfeature_products)
     fieldsets = (
         ("محصول", {"fields": ("name", "category", "slug", "short_description", "description")}),
-        ("قیمت‌گذاری", {"fields": ("base_price", "compare_at_price")}),
+        ("قیمت‌گذاری", {"fields": ("base_price", "discount_percent")}),
         ("انتشار", {"fields": ("is_active", "is_featured")}),
         ("سئو", {"fields": ("seo_title", "seo_description"), "classes": ("collapse",)}),
         ("سیستم", {"fields": ("public_link", "uuid", "created_at", "updated_at"), "classes": ("collapse",)}),
