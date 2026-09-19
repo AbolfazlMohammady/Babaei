@@ -4,7 +4,7 @@ import json
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Case, CharField, Exists, IntegerField, OuterRef, Prefetch, Subquery, Value, When
+from django.db.models import Case, CharField, Exists, F, IntegerField, OuterRef, Prefetch, Subquery, Value, When
 from django.db.models.functions import Concat
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404
@@ -78,6 +78,7 @@ def card_annotations(request):
 class ShopIndexView(ListView):
     template_name = "shop/index.html"
     context_object_name = "products"
+    paginate_by = 24
 
     def get_queryset(self):
         variant_price, variant_compare_price = price_annotations()
@@ -89,7 +90,50 @@ class ShopIndexView(ListView):
                 output_field=IntegerField(),
             )
         ).order_by("type_priority", "sort_order", "id")
-        return Product.objects.filter(is_active=True, category__is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, **annotations).prefetch_related(Prefetch("images", queryset=card_images, to_attr="card_images")).order_by("-is_featured", "-created_at")[:24]
+
+        queryset = Product.objects.filter(
+            is_active=True,
+            category__is_active=True,
+        ).select_related("category").annotate(
+            listed_price=variant_price,
+            listed_compare_price=variant_compare_price,
+            **annotations,
+        ).prefetch_related(
+            Prefetch("images", queryset=card_images, to_attr="card_images")
+        )
+
+        category = self.request.GET.get("category")
+        if category:
+            queryset = queryset.filter(category__slug=category)
+
+        for key, lookup in (("min_price", "listed_price__gte"), ("max_price", "listed_price__lte")):
+            value = self.request.GET.get(key)
+            if value:
+                try:
+                    queryset = queryset.filter(**{lookup: int(value)})
+                except (TypeError, ValueError):
+                    pass
+
+        if self.request.GET.get("discount") == "1":
+            queryset = queryset.filter(listed_compare_price__gt=F("listed_price"))
+
+        if self.request.GET.get("available") == "1":
+            queryset = queryset.filter(
+                Exists(ProductVariant.objects.filter(
+                    product_id=OuterRef("pk"),
+                    is_active=True,
+                    stock_quantity__gt=0,
+                ))
+            )
+
+        sort = self.request.GET.get("sort", "featured")
+        sort_map = {
+            "featured": ("-is_featured", "-created_at"),
+            "newest": ("-created_at",),
+            "price_asc": ("listed_price", "id"),
+            "price_desc": ("-listed_price", "id"),
+        }
+        return queryset.order_by(*sort_map.get(sort, sort_map["featured"]))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -97,6 +141,12 @@ class ShopIndexView(ListView):
         context["products"] = products
         context["hero_product"] = products[0] if products else None
         context["categories"] = get_active_categories()
+        context["filter_category"] = self.request.GET.get("category", "")
+        context["filter_sort"] = self.request.GET.get("sort", "featured")
+        context["filter_min_price"] = self.request.GET.get("min_price", "")
+        context["filter_max_price"] = self.request.GET.get("max_price", "")
+        context["filter_discount"] = self.request.GET.get("discount") == "1"
+        context["filter_available"] = self.request.GET.get("available") == "1"
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
         context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."

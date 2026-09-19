@@ -49,10 +49,61 @@
     {% endif %}
 
     <section id="products" aria-labelledby="products-title">
-        <div class="section-head">
-            <h2 id="products-title">محصولات</h2>
-            <span class="section-count">{{ products|length|price }} محصول</span>
+        <div class="section-head section-head--products">
+            <div>
+                <h2 id="products-title">محصولات</h2>
+                <span class="section-count">{{ paginator.count }} محصول</span>
+            </div>
+            <button type="button" class="shop-filter-trigger" id="shop-filter-trigger" aria-expanded="false" aria-controls="shop-filter-panel">
+                <span class="shop-filter-trigger__icon">☷</span>
+                <span>فیلتر و مرتب‌سازی</span>
+                <span class="shop-filter-trigger__count" id="shop-filter-count"></span>
+            </button>
         </div>
+
+        <form class="shop-filter-panel" id="shop-filter-panel" method="get" hidden>
+            <div class="shop-filter-panel__top">
+                <div>
+                    <strong>فیلتر محصولات</strong>
+                    <span>محصولات را دقیق‌تر بر اساس سلیقه‌ات پیدا کن.</span>
+                </div>
+                <a href="{{ request.path }}" class="shop-filter-clear">پاک کردن همه</a>
+            </div>
+            <div class="shop-filter-grid">
+                <label class="shop-filter-field">
+                    <span>دسته‌بندی</span>
+                    <select name="category">
+                        <option value="">همه دسته‌بندی‌ها</option>
+                        {% for category in categories %}
+                            <option value="{{ category.slug }}" {% if filter_category == category.slug %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="shop-filter-field">
+                    <span>مرتب‌سازی</span>
+                    <select name="sort">
+                        <option value="featured" {% if filter_sort == "featured" %}selected{% endif %}>پیشنهاد شده</option>
+                        <option value="newest" {% if filter_sort == "newest" %}selected{% endif %}>جدیدترین</option>
+                        <option value="price_asc" {% if filter_sort == "price_asc" %}selected{% endif %}>ارزان‌ترین</option>
+                        <option value="price_desc" {% if filter_sort == "price_desc" %}selected{% endif %}>گران‌ترین</option>
+                    </select>
+                </label>
+                <label class="shop-filter-field">
+                    <span>حداقل قیمت (تومان)</span>
+                    <input type="number" name="min_price" min="0" step="1000" value="{{ filter_min_price }}" placeholder="مثلاً ۵۰۰,۰۰۰">
+                </label>
+                <label class="shop-filter-field">
+                    <span>حداکثر قیمت (تومان)</span>
+                    <input type="number" name="max_price" min="0" step="1000" value="{{ filter_max_price }}" placeholder="مثلاً ۳,۰۰۰,۰۰۰">
+                </label>
+            </div>
+            <div class="shop-filter-checks">
+                <label><input type="checkbox" name="available" value="1" {% if filter_available %}checked{% endif %}><span>فقط محصولات موجود</span></label>
+                <label><input type="checkbox" name="discount" value="1" {% if filter_discount %}checked{% endif %}><span>فقط تخفیف‌دارها</span></label>
+            </div>
+            <button type="submit" class="shop-filter-submit">نمایش محصولات</button>
+        </form>
+
         <div class="products">
             {% for product in products %}
                 <article class="product-card" data-product-card>
@@ -108,6 +159,17 @@
                 </article>
             {% empty %}<div class="empty-state">هنوز محصولی برای نمایش وجود ندارد.</div>{% endfor %}
         </div>
+        {% if is_paginated %}
+        <nav class="pager shop-pager" aria-label="صفحات محصولات">
+            {% if page_obj.has_previous %}
+                <a href="?{% if filter_category %}category={{ filter_category }}&{% endif %}{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_min_price %}min_price={{ filter_min_price }}&{% endif %}{% if filter_max_price %}max_price={{ filter_max_price }}&{% endif %}{% if filter_discount %}discount=1&{% endif %}{% if filter_available %}available=1&{% endif %}page={{ page_obj.previous_page_number }}">قبلی</a>
+            {% endif %}
+            <span>صفحه {{ page_obj.number }} از {{ paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?{% if filter_category %}category={{ filter_category }}&{% endif %}{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_min_price %}min_price={{ filter_min_price }}&{% endif %}{% if filter_max_price %}max_price={{ filter_max_price }}&{% endif %}{% if filter_discount %}discount=1&{% endif %}{% if filter_available %}available=1&{% endif %}page={{ page_obj.next_page_number }}">بعدی</a>
+            {% endif %}
+        </nav>
+        {% endif %}
     </section>
 </div>
 {% endblock %}
