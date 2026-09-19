@@ -1,5 +1,26 @@
 (() => {
     const cards = document.querySelectorAll('[data-product-card]');
+
+    const filterTrigger = document.getElementById('shop-filter-trigger');
+    const filterPanel = document.getElementById('shop-filter-panel');
+    const filterCount = document.getElementById('shop-filter-count');
+
+    if (filterTrigger && filterPanel) {
+        filterTrigger.addEventListener('click', () => {
+            const open = filterPanel.hidden;
+            filterPanel.hidden = !open;
+            filterTrigger.setAttribute('aria-expanded', String(open));
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        const activeFilters = ['category', 'min_price', 'max_price', 'discount', 'available']
+            .filter((key) => params.get(key));
+        if (filterCount && activeFilters.length) {
+            filterCount.textContent = String(activeFilters.length);
+            filterCount.classList.add('is-visible');
+        }
+    }
+
     if (!cards.length) return;
 
     cards.forEach((card) => {
