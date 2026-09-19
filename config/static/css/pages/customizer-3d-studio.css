@@ -1358,3 +1358,11 @@ body.customizer-page > footer {
 .selected-label-tools--left .premium-selected-artwork__hint {
     display: none;
 }
+
+.selected-label-tools--left .premium-selected-artwork__code {
+    margin-top: 2px;
+    color: #77746f;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 7px;
+    letter-spacing: .04em;
+}
