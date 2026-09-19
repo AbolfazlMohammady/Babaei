@@ -189,59 +189,21 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         setLoading("در حال بارگذاری مدل سه‌بعدی…", true);
         const loader = new GLTFLoader();
 
-        const parseModelBuffer = buffer => new Promise((resolve, reject) => {
-            const basePath = new URL(".", new URL(modelUrl, window.location.href)).href;
-            loader.parse(buffer, basePath, resolve, reject);
+        const gltf = await new Promise((resolve, reject) => {
+            loader.load(
+                modelUrl,
+                resolve,
+                event => {
+                    if (!event.total) {
+                        setLoading("در حال بارگذاری مدل سه‌بعدی…", true);
+                        return;
+                    }
+                    const percent = Math.round((event.loaded / event.total) * 100);
+                    setLoading(`در حال بارگذاری مدل سه‌بعدی… ${percent}%`, true);
+                },
+                reject
+            );
         });
-
-        let gltf = null;
-        const cacheName = "babaei-3d-model-v1";
-        const modelCacheKey = new URL(modelUrl, window.location.href).href;
-
-        try {
-            if ("caches" in window) {
-                const cache = await caches.open(cacheName);
-                const cached = await cache.match(modelCacheKey);
-
-                if (cached) {
-                    setLoading("در حال آماده‌سازی مدل سه‌بعدی…", true);
-                    gltf = await parseModelBuffer(await cached.arrayBuffer());
-                } else {
-                    const response = await fetch(modelCacheKey, { cache: "force-cache" });
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    const clone = response.clone();
-                    const buffer = await response.arrayBuffer();
-
-                    // Store the exact versioned model URL. When the model changes,
-                    // bump the version in designer.html so an old model can never
-                    // silently survive a refresh.
-                    cache.put(modelCacheKey, clone).catch(() => {});
-                    gltf = await parseModelBuffer(buffer);
-                }
-            } else {
-                gltf = await new Promise((resolve, reject) => {
-                    loader.load(
-                        modelUrl,
-                        resolve,
-                        event => {
-                            if (!event.total) {
-                                setLoading("در حال بارگذاری مدل سه‌بعدی…", true);
-                                return;
-                            }
-                            const percent = Math.round((event.loaded / event.total) * 100);
-                            setLoading(`در حال بارگذاری مدل سه‌بعدی… ${percent}%`, true);
-                        },
-                        reject
-                    );
-                });
-            }
-        } catch (error) {
-            // Cache failure must never break the editor; fall back to the normal
-            // GLTFLoader request.
-            gltf = await new Promise((resolve, reject) => {
-                loader.load(modelUrl, resolve, undefined, reject);
-            });
-        }
 
         garment = gltf.scene;
         garment.name = "BabaeiTshirtGLB";
@@ -265,7 +227,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         setLoading("", false);
         render();
     }
-
 
     function fitCamera(initial = false) {
         if (!camera || !controls) return;
