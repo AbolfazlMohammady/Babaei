@@ -148,15 +148,87 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         scene.add(rim);
     }
 
-    function prepareMaterial(material) {
-        if (!material) return;
-        if (material.isMaterial) {
-            material.needsUpdate = true;
-            if ("roughness" in material && material.roughness == null) material.roughness = 0.82;
-            if ("metalness" in material && material.metalness == null) material.metalness = 0;
-            garmentMaterials.push(material);
+    const materialCache = new Map();
+
+    function snapshotMaterial(material) {
+        return {
+            color: material.color?.clone?.() || null,
+            map: material.map || null,
+            normalMap: material.normalMap || null,
+            roughnessMap: material.roughnessMap || null,
+            aoMap: material.aoMap || null,
+            roughness: material.roughness,
+            metalness: material.metalness,
+            emissive: material.emissive?.clone?.() || null,
+            emissiveIntensity: material.emissiveIntensity,
+            envMapIntensity: material.envMapIntensity,
+            vertexColors: material.vertexColors,
+        };
+    }
+
+    function averageTextureLuminance(texture) {
+        try {
+            const image = texture?.image;
+            if (!image || typeof document === "undefined") return null;
+            const sample = document.createElement("canvas");
+            sample.width = 32;
+            sample.height = 32;
+            const context = sample.getContext("2d", { willReadFrequently: true });
+            if (!context) return null;
+            context.clearRect(0, 0, 32, 32);
+            context.drawImage(image, 0, 0, 32, 32);
+            const pixels = context.getImageData(0, 0, 32, 32).data;
+            let weightedLuminance = 0;
+            let alphaWeight = 0;
+            for (let i = 0; i < pixels.length; i += 4) {
+                const alpha = pixels[i + 3] / 255;
+                if (alpha <= 0) continue;
+                const channel = value => value <= 0.04045
+                    ? value / 12.92
+                    : ((value + 0.055) / 1.055) ** 2.4;
+                const r = channel(pixels[i] / 255);
+                const g = channel(pixels[i + 1] / 255);
+                const b = channel(pixels[i + 2] / 255);
+                weightedLuminance += (0.2126 * r + 0.7152 * g + 0.0722 * b) * alpha;
+                alphaWeight += alpha;
+            }
+            return alphaWeight > 0 ? weightedLuminance / alphaWeight : null;
+        } catch (error) {
+            console.warn("[3D][texture-luminance] اثبات نشده", error);
+            return null;
         }
     }
+
+    function inspectMaterialTexture(material) {
+        if (!material?.map) return;
+        console.info("[3D][material-map]", {
+            colorSpace: material.map.colorSpace || "unknown",
+            expectedColorSpace: THREE.SRGBColorSpace,
+            averageLuminance: averageTextureLuminance(material.map),
+        });
+    }
+
+    function prepareMaterial(material) {
+        if (!material?.isMaterial) return;
+
+        const cached = materialCache.get(material);
+        if (cached) {
+            garmentMaterials.push(cached);
+            return;
+        }
+
+        const prepared = material.clone();
+        prepared.userData = {
+            ...(prepared.userData || {}),
+            __babaeiInitial: snapshotMaterial(material),
+        };
+        prepared.needsUpdate = true;
+        inspectMaterialTexture(prepared);
+
+        materialCache.set(material, prepared);
+        garmentMaterials.push(prepared);
+    }
+
 
     function normalizeGarment(rootObject) {
         // Keep the loaded GLTF scene as the actual garment root. The previous
@@ -379,48 +451,49 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         });
     }
 
-    function setColor(hex) {
-        const value = /^#[0-9a-f]{6}$/i.test(String(hex || ""))
-            ? String(hex)
-            : "#ffffff";
-        const base = new THREE.Color(value);
-        const isWhite = value.toLowerCase() === "#ffffff";
+    function applyGarmentColor(hex) {
+        if (!/^#[0-9a-f]{6}$/i.test(String(hex || ""))) return;
+
+        const requested = String(hex).toLowerCase();
+        const renderValue = requested === "#000000" ? "#151515" : requested;
+        let preservedMaps = true;
 
         garmentMaterials.forEach(material => {
             if (!material?.color) return;
+            const initial = material.userData?.__babaeiInitial;
+            if (!initial) return;
 
-            // The source GLB has an albedo texture. That texture is useful for
-            // the white/default fabric, but it prevents dark variants from
-            // reading as their selected color. Keep the original map cached
-            // and remove it for explicit color variants.
-            if (isWhite) {
-                if (material.__babaeiOriginalMap) {
-                    material.map = material.__babaeiOriginalMap;
-                }
-            } else {
-                if (material.map && !material.__babaeiOriginalMap) {
-                    material.__babaeiOriginalMap = material.map;
-                }
-                material.map = null;
-            }
+            material.color.set(renderValue);
 
-            material.color.set(value);
+            preservedMaps = preservedMaps
+                && material.map === initial.map
+                && material.normalMap === initial.normalMap
+                && material.roughnessMap === initial.roughnessMap
+                && material.aoMap === initial.aoMap;
 
-            // Some GLB materials can contain emissive data. A bright emissive
-            // channel can wash out a black/dark variant, so color variants
-            // must use the garment color as the only direct light contribution.
             if ("emissive" in material && material.emissive) {
-                material.emissive.set("#000000");
-                material.emissiveIntensity = 0;
+                if (initial.emissive && !initial.emissiveMap) {
+                    material.emissive.copy(initial.emissive);
+                    material.emissiveIntensity = initial.emissiveIntensity ?? 1;
+                } else if (!material.emissiveMap) {
+                    material.emissive.set("#000000");
+                    material.emissiveIntensity = 0;
+                }
             }
-            if ("metalness" in material) material.metalness = 0;
-            if ("roughness" in material) material.roughness = 0.82;
-
+            if ("roughness" in material && initial.roughness != null) material.roughness = initial.roughness;
+            if ("metalness" in material && initial.metalness != null) material.metalness = initial.metalness;
             material.needsUpdate = true;
         });
 
+        console.info("[3D][color] applyGarmentColor", {
+            requestedHex: requested,
+            renderHex: renderValue,
+            materialCount: garmentMaterials.length,
+            mapsPreserved: preservedMaps,
+        });
         render();
     }
+
     function loadTexture(url) {
         if (textures.has(url)) return textures.get(url);
         const promise = new THREE.TextureLoader().loadAsync(url).then(texture => {
@@ -1208,14 +1281,19 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         try {
             await loadGarment();
-            setColor(currentVariant?.hex || "#ffffff");
-            sync();
         } catch (error) {
-            console.error("GLB customizer model failed to load", error);
-            // Do not leave the loading overlay sitting over the editor after a
-            // failed request. The status area is the persistent error channel.
+            console.error("[3D][loadGarment]", error);
+            setLoading("مدل سه‌بعدی تیشرت بارگذاری نشد", true);
+            return;
+        }
+
+        try {
+            if (selectedColor?.hex) applyGarmentColor(selectedColor.hex);
+            sync();
             setLoading("", false);
-            status("مدل سه‌بعدی تیشرت بارگذاری نشد. مسیر GLB یا دسترسی فایل را بررسی کنید.");
+        } catch (error) {
+            console.error("[3D][post-load-init]", error);
+            setLoading("مدل سه‌بعدی بارگذاری شد اما آماده‌سازی رنگ/قیمت با خطا مواجه شد.", true);
         }
     }
 
