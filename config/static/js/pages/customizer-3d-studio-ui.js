@@ -197,21 +197,26 @@
     }
 
     function setMobileEditorUi({ selected = selectedMobile, drawerOpen = false } = {}) {
-        if (drawerOpen || !mobileMedia.matches) {
-            mobileToolbar?.classList.toggle("is-hidden", drawerOpen);
+        if (!mobileMedia.matches) {
+            mobileToolbar?.classList.add("is-hidden");
             mobileSelectionToolbar?.setAttribute("hidden", "");
             mobileContextToolbar?.setAttribute("hidden", "");
             return;
         }
 
-        mobileToolbar?.classList.toggle("is-hidden", selected);
-        if (selected) {
-            mobileContextToolbar?.removeAttribute("hidden");
-            if (editingMobile) mobileSelectionToolbar?.removeAttribute("hidden");
-            else mobileSelectionToolbar?.setAttribute("hidden", "");
+        // The four primary actions are persistent. Selecting a label must never
+        // replace them with a floating rail or move them around the viewport.
+        mobileToolbar?.classList.toggle("is-hidden", drawerOpen);
+        mobileContextToolbar?.setAttribute("hidden", "");
+
+        if (drawerOpen) {
+            mobileSelectionToolbar?.setAttribute("hidden", "");
+            return;
+        }
+
+        if (selected && editingMobile) {
+            mobileSelectionToolbar?.removeAttribute("hidden");
         } else {
-            editingMobile = false;
-            mobileContextToolbar?.setAttribute("hidden", "");
             mobileSelectionToolbar?.setAttribute("hidden", "");
         }
     }
