@@ -134,7 +134,7 @@ class ProductAdmin(ShopAdminMixin, admin.ModelAdmin):
     @admin.display(description="قیمت", ordering="_min_price")
     def price_display(self, obj):
         price = obj._min_price or obj.base_price
-        return format_html('<strong class="ba-price">{:,}</strong> <small>تومان</small>', price)
+        return format_html('<strong class="ba-price">{}</strong> <small>تومان</small>', f"{price:,}")
 
     @admin.display(description="موجودی", ordering="_stock")
     def stock_display(self, obj):
@@ -203,7 +203,7 @@ class ProductVariantAdmin(ShopAdminMixin, admin.ModelAdmin):
 
     @admin.display(description="قیمت")
     def price_display(self, obj):
-        return format_html('{:,} <small>تومان</small>', obj.price)
+        return format_html('{} <small>تومان</small>', f"{obj.price:,}")
 
     @admin.display(description="موجودی")
     def stock_badge(self, obj):
