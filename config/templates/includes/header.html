@@ -20,7 +20,7 @@
             </a>
             <a href="{% url 'orders:cart' %}" class="header-icon header-cart" aria-label="سبد خرید">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l1.6 10.2a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>
-                <span class="header-cart__badge">{{ cart_item_count|default:0 }}</span>
+                {% if cart_item_count %}<span class="header-cart__badge">{{ cart_item_count }}</span>{% endif %}
             </a>
         </div>
     </div>
