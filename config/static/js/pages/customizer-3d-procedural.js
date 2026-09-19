@@ -324,9 +324,34 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function orientation(normal, rotation) {
         const n = normal.clone().normalize();
-        const align = new THREE.Quaternion().setFromUnitVectors(frontAxis, n);
-        const spin = new THREE.Quaternion().setFromAxisAngle(n, THREE.MathUtils.degToRad(rotation));
-        return new THREE.Euler().setFromQuaternion(spin.multiply(align));
+
+        // Build a stable surface frame instead of using setFromUnitVectors().
+        // The old approach has an unavoidable roll ambiguity when the normal is
+        // on the back of the shirt, so tiny normal changes while dragging could
+        // make the decal visibly spin. World-up gives the front and back a stable
+        // "top" direction and we only rotate around the surface normal when the
+        // user explicitly changes the label rotation.
+        let up = new THREE.Vector3(0, 1, 0);
+        up.addScaledVector(n, -up.dot(n));
+
+        // Near a perfectly vertical normal, world-up has no usable projection.
+        // Fall back to world-Z in that rare case.
+        if (up.lengthSq() < 1e-6) {
+            up.set(0, 0, 1);
+            up.addScaledVector(n, -up.dot(n));
+        }
+
+        up.normalize();
+        const right = new THREE.Vector3().crossVectors(up, n).normalize();
+
+        const basis = new THREE.Matrix4().makeBasis(right, up, n);
+        const frame = new THREE.Quaternion().setFromRotationMatrix(basis);
+        const spin = new THREE.Quaternion().setFromAxisAngle(
+            n,
+            THREE.MathUtils.degToRad(Number(rotation) || 0)
+        );
+
+        return new THREE.Euler().setFromQuaternion(spin.multiply(frame));
     }
 
     function disposeLayer(item) {
