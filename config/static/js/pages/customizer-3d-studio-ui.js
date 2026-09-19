@@ -113,7 +113,9 @@
         workspace.classList.toggle(side === "left" ? "left-drawer-closed" : "right-drawer-closed", !open);
         toggle.setAttribute("aria-expanded", String(open));
         const anyOpen = !leftDrawer?.classList.contains("is-drawer-closed") || !rightDrawer?.classList.contains("is-drawer-closed");
-        workspace.classList.toggle("mobile-drawer-open", anyOpen && window.matchMedia("(max-width: 820px)").matches);
+        const mobileOpen = anyOpen && window.matchMedia("(max-width: 820px)").matches;
+        workspace.classList.toggle("mobile-drawer-open", mobileOpen);
+        document.dispatchEvent(new CustomEvent("babaei:drawer-state", { detail: { open: mobileOpen, side, drawerOpen: open } }));
         toggle.setAttribute("aria-label", open
             ? (side === "left" ? "بستن ابزار طراحی" : "بستن تنظیمات محصول")
             : (side === "left" ? "باز کردن ابزار طراحی" : "باز کردن تنظیمات محصول"));
@@ -152,6 +154,47 @@
     document.addEventListener("babaei:label-added", () => {
         setDrawer("right", false);
         setDrawer("left", true);
+    });
+
+    const mobileToolbar = document.getElementById("mobile-customizer-toolbar");
+    const mobileTextSheet = document.getElementById("mobile-text-sheet");
+    const mobileTextInput = document.getElementById("mobile-text-input");
+
+    function closeMobileText() {
+        if (mobileTextSheet) mobileTextSheet.hidden = true;
+    }
+
+    document.querySelectorAll("[data-mobile-action]").forEach(button => {
+        button.addEventListener("click", () => {
+            const action = button.dataset.mobileAction;
+            if (action === "product") setDrawer("right", true);
+            if (action === "artwork") {
+                setDrawer("right", true);
+                setTimeout(() => document.getElementById("label-library-trigger")?.click(), 20);
+            }
+            if (action === "tools") setDrawer("left", true);
+            if (action === "text") {
+                closeMobileText();
+                if (mobileTextSheet) mobileTextSheet.hidden = false;
+                mobileTextInput?.focus();
+            }
+        });
+    });
+
+    document.getElementById("mobile-text-close")?.addEventListener("click", closeMobileText);
+    document.getElementById("mobile-text-add")?.addEventListener("click", () => {
+        const value = mobileTextInput?.value?.trim();
+        if (!value) {
+            mobileTextInput?.focus();
+            return;
+        }
+        document.dispatchEvent(new CustomEvent("babaei:add-text", { detail: { text: value } }));
+        if (mobileTextInput) mobileTextInput.value = "";
+        closeMobileText();
+    });
+
+    document.addEventListener("babaei:drawer-state", event => {
+        mobileToolbar?.classList.toggle("is-hidden", Boolean(event.detail?.open));
     });
 
     window.BabaeiStudioDrawers = {
