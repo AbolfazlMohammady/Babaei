@@ -2610,3 +2610,59 @@ body.product-detail-page .next-step-card {
         font-size: 27px !important;
     }
 }
+
+
+/* --------------------------------------------------------------------------
+   BACKGROUND ART — use the supplied /static/images/back artwork across pages.
+   Keep the imagery visible; avoid the washed-out white canvas introduced by
+   the temporary reference layer.
+   -------------------------------------------------------------------------- */
+body:not(.customizer-page) {
+    background:
+        linear-gradient(180deg, rgba(7,17,23,.76), rgba(10,20,26,.92)),
+        url("/static/images/back/dddepth-200.jpg") center / cover fixed !important;
+}
+
+body:not(.customizer-page) main {
+    background: transparent !important;
+}
+
+body.home-page {
+    background:
+        linear-gradient(180deg, rgba(4,20,30,.78), rgba(8,19,25,.90)),
+        url("/static/images/back/dddepth-201.jpg") center / cover fixed !important;
+}
+
+body.shop-page,
+body.product-detail-page,
+body.cart-page,
+body.account-body,
+body.auth-body {
+    background:
+        linear-gradient(180deg, rgba(7,19,26,.78), rgba(10,22,28,.92)),
+        url("/static/images/back/dddepth-202.jpg") center / cover fixed !important;
+}
+
+body.shop-page main,
+body.product-detail-page main,
+body.cart-page main,
+body.account-body main,
+body.auth-body main {
+    background: transparent !important;
+}
+
+body:not(.customizer-page) .site-footer {
+    background: rgba(8,20,26,.94) !important;
+}
+
+@media (max-width: 900px) {
+    body:not(.customizer-page),
+    body.home-page,
+    body.shop-page,
+    body.product-detail-page,
+    body.cart-page,
+    body.account-body,
+    body.auth-body {
+        background-attachment: scroll !important;
+    }
+}
