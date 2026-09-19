@@ -1179,7 +1179,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             sync();
         } catch (error) {
             console.error("GLB customizer model failed to load", error);
-            setLoading("بارگذاری مدل سه‌بعدی انجام نشد.", true);
+            // Do not leave the loading overlay sitting over the editor after a
+            // failed request. The status area is the persistent error channel.
+            setLoading("", false);
             status("مدل سه‌بعدی تیشرت بارگذاری نشد. مسیر GLB یا دسترسی فایل را بررسی کنید.");
         }
     }
