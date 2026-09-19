@@ -408,6 +408,7 @@
         button.addEventListener("click", () => {
             const action = button.dataset.mobileSelection;
             if (action === "layout") setDrawer("left", true);
+            if (action === "text-style") openMobileTextStyle();
             if (action === "done") closeMobileEdit();
         });
     });
