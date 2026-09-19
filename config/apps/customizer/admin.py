@@ -63,11 +63,11 @@ class ArtworkAdmin(CustomizerAdminMixin, admin.ModelAdmin):
     date_hierarchy = "created_at"
     actions = (activate_artworks, deactivate_artworks)
     fieldsets = (
-        ("لیبل", {"fields": ("preview_large", "name", "code", "slug", "image", "original_image")}),
-        ("پردازش", {"fields": ("source", "processing_status", "background_removed", "min_width_px")}),
-        ("قیمت و مالکیت", {"fields": ("base_price", "owner", "session_key")}),
-        ("انتشار", {"fields": ("is_active",)}),
-        ("سیستم", {"fields": ("uuid", "created_at", "updated_at"), "classes": ("collapse",)}),
+        ("لیبل", {"fields": ("preview_large", "name", "code", "slug", "image", "original_image"), "classes": ("ba-admin-section", "ba-admin-section--media")}),
+        ("پردازش", {"fields": ("source", "processing_status", "background_removed", "min_width_px"), "classes": ("ba-admin-section", "ba-admin-section--processing")}),
+        ("قیمت و مالکیت", {"fields": ("base_price", "owner", "session_key"), "classes": ("ba-admin-section", "ba-admin-section--commercial")}),
+        ("انتشار", {"fields": ("is_active",), "classes": ("ba-admin-section", "ba-admin-section--publish")}),
+        ("سیستم", {"fields": ("uuid", "created_at", "updated_at"), "classes": ("collapse", "ba-admin-section", "ba-admin-section--system")}),
     )
 
     @admin.display(description="تصویر")
