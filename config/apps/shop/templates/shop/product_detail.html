@@ -10,7 +10,7 @@
 {% block og_description %}{{ product.seo_description|default:product.short_description|default:product.name }}{% endblock %}
 {% block og_image %}{% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}">{% endif %}{% endblock %}
 {% block extra_head %}<script type="application/ld+json">{{ product_schema }}</script><script type="application/ld+json">{{ breadcrumb_schema }}</script>{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}"><link rel="stylesheet" href="{% static 'css/pages/product-quantity.css' %}?v=2"><link rel="stylesheet" href="{% static 'css/pages/shop-designer-cta.css' %}"><link rel="stylesheet" href="{% static 'css/pages/product-saved.css' %}?v=1">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}?v=20260919-3"><link rel="stylesheet" href="{% static 'css/pages/product-quantity.css' %}?v=2"><link rel="stylesheet" href="{% static 'css/pages/shop-designer-cta.css' %}"><link rel="stylesheet" href="{% static 'css/pages/product-saved.css' %}?v=1">{% endblock %}
 {% block content %}
 <div class="product-shell">
 <nav class="breadcrumbs" aria-label="مسیر صفحه">{% for item in breadcrumbs %}{% if not forloop.last %}<a href="{{ item.url }}">{{ item.name }}</a><span aria-hidden="true">/</span>{% else %}<span aria-current="page">{{ item.name }}</span>{% endif %}{% endfor %}</nav>
