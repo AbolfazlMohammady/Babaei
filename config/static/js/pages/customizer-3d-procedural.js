@@ -7,6 +7,10 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 (() => {
     "use strict";
 
+    // Let Three.js reuse resources loaded through FileLoader in this page.
+    // The persistent browser Cache Storage below still handles full refreshes.
+    THREE.Cache.enabled = true;
+
     const root = document.getElementById("customizer");
     const stage = document.getElementById("designer-3d-stage");
     const canvas = document.getElementById("designer-3d-canvas");
