@@ -505,15 +505,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             return;
         }
 
-        const count = Array.from(layers.values())
-            .filter(item => Number(item.layer.area_id) === Number(area.id)).length;
-        const max = Number(area.max_layers || 3);
-
-        if (count >= max) {
-            status(`در «${area.name}» بیشتر از ${max} لیبل مجاز نیست.`);
-            return;
-        }
-
         const layer = {
             id: nextId++,
             artwork_id: artwork.id,
@@ -570,11 +561,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         if (!activeAreaId) activeAreaId = areas[0]?.id || null;
 
         host.innerHTML = areas.map(area => {
-            const count = Array.from(layers.values())
-                .filter(item => Number(item.layer.area_id) === Number(area.id)).length;
-
             return `<button type="button" class="area-option ${Number(area.id) === Number(activeAreaId) ? "is-active" : ""}" data-area-id="${area.id}">
-                <span>${esc(area.name)}</span><small>${count}/${Number(area.max_layers || 3)}</small>
+                <span>${esc(area.name)}</span>
             </button>`;
         }).join("");
 
