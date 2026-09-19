@@ -224,8 +224,14 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const distance = Math.max(4.7, verticalDistance, horizontalDistance) * 1.06 * framingScale;
         const mobile = compactMedia.matches;
         baseCameraDistance = distance;
-        camera.position.set(0, mobile ? garmentMaxSize * 0.46 : garmentMaxSize * 0.015, distance);
-        const targetY = mobile ? 0 : garmentMaxSize * 0.025;
+
+        // Phone screens are much taller than they are wide. The old framing
+        // placed the shirt's visual center too high, leaving a large empty
+        // black area underneath the garment. Translate the camera and target
+        // together so the shirt sits in the usable area above the bottom bar.
+        const mobileCameraY = mobile ? garmentMaxSize * 0.70 : garmentMaxSize * 0.015;
+        const targetY = mobile ? garmentMaxSize * 0.25 : garmentMaxSize * 0.025;
+        camera.position.set(0, mobileCameraY, distance);
         controls.target.set(0, targetY, 0);
         if (initial) controls.update();
         camera.updateProjectionMatrix();
@@ -234,7 +240,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function mobileFrameScale() {
-        return compactMedia.matches ? 0.80 : 1;
+        // A little more breathing room on narrow phones prevents the garment
+        // from touching the top edge while keeping it large enough for editing.
+        return compactMedia.matches ? 1.08 : 1;
     }
 
     function updateCameraZoomLabel() {
@@ -535,7 +543,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 orientation(item.normal, item.layer.rotation)
             );
             const targetWorldQuaternion = target.getWorldQuaternion(new THREE.Quaternion());
-            frame.quaternion.copy(targetWorldQuaternion.invert().multiply(worldQuaternion));
+            frame.quaternion.copy(targetWorldQuaternion.clone().invert().multiply(worldQuaternion));
             frame.userData.customizerLayerId = item.id;
             frame.renderOrder = 80;
             target.add(frame);
@@ -544,7 +552,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             // mobile design editor without adding another DOM overlay.
             const handleGroup = new THREE.Group();
             handleGroup.position.copy(targetWorldPosition);
-            handleGroup.quaternion.copy(targetWorldQuaternion.invert().multiply(worldQuaternion));
+            handleGroup.quaternion.copy(targetWorldQuaternion.clone().invert().multiply(worldQuaternion));
             handleGroup.userData.customizerLayerId = item.id;
             handleGroup.renderOrder = 81;
 
