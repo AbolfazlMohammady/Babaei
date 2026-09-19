@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from apps.shop.models import Product, ProductImage
@@ -19,9 +21,19 @@ def toggle_favorite(request, product_id):
     favorite, created = FavoriteProduct.objects.get_or_create(user=request.user, product=product)
     if not created:
         favorite.delete()
+        is_favorite = False
         messages.success(request, "محصول از علاقه‌مندی‌ها حذف شد.")
     else:
+        is_favorite = True
         messages.success(request, "محصول به علاقه‌مندی‌ها اضافه شد.")
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({
+            "ok": True,
+            "is_favorite": is_favorite,
+            "product_id": product.id,
+        })
+
     return _back(request)
 
 
