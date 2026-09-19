@@ -66,10 +66,51 @@
             start();
         }
 
-        favorite?.addEventListener('click', () => {
+        favorite?.addEventListener('click', async (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (favorite.dataset.loading === '1') return;
+            const form = favorite.closest('form');
+            if (!form) return;
+
+            favorite.dataset.loading = '1';
+            favorite.disabled = true;
             favorite.classList.remove('is-popping');
             void favorite.offsetWidth;
             favorite.classList.add('is-popping');
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': form.querySelector('[name="csrfmiddlewaretoken"]')?.value || '',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                    body: new FormData(form),
+                });
+
+                const result = await response.json();
+                if (response.status === 401 || result.login_required) {
+                    window.location.href = result.login_url || '/account/login/';
+                    return;
+                }
+                if (!response.ok || !result.ok) throw new Error(result.error || 'عملیات انجام نشد.');
+
+                favorite.classList.toggle('is-active', !!result.is_favorite);
+                favorite.setAttribute(
+                    'aria-label',
+                    result.is_favorite ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'
+                );
+            } catch (error) {
+                // The card stays unchanged if the request fails.
+                console.error('Favorite toggle failed:', error);
+            } finally {
+                favorite.disabled = false;
+                favorite.dataset.loading = '0';
+            }
         });
 
         card.querySelectorAll('.product-card__cart').forEach((button) => {
