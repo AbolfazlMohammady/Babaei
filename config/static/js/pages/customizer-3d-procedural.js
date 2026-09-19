@@ -780,7 +780,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                     scene.attach(item.mesh);
                     if (item.frame) scene.attach(item.frame);
                     item.previewDetached = true;
-                    item.previewStartWorld = item.surfacePoint?.clone() || hit.point.clone();
+                    item.previewStartWorld = hit.point.clone();
                     item.previewBaseMeshPosition = item.mesh.position.clone();
                     if (item.frame) {
                         item.frame.position.copy(item.previewStartWorld);
