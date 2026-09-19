@@ -15,7 +15,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260918-4">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260919-1">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260918-2">
 {% endblock %}
 
@@ -44,7 +44,22 @@
             <div class="premium-panel-section premium-placement-panel">
                 <div class="panel-kicker">PLACEMENT</div>
                 <div id="area-list" class="area-list"></div>
-                <button type="button" class="save-design-button premium-save-button premium-save-button--left" id="save-design">طراحی لیبل +</button>
+                <div class="selected-label-tools selected-label-tools--left">
+                    <div class="selected-label-tools__head">
+                        <span>لیبل انتخاب‌شده</span>
+                        <small>کنترل اندازه و زاویه</small>
+                    </div>
+                    <div class="selected-label-tools__controls" id="selected-controls" hidden>
+                        <button type="button" data-action="scale-down" title="کوچک‌تر">−</button>
+                        <button type="button" data-action="scale-up" title="بزرگ‌تر">+</button>
+                        <button type="button" data-action="rotate-left" title="چرخش چپ">↶</button>
+                        <button type="button" data-action="rotate-right" title="چرخش راست">↷</button>
+                        <button type="button" data-action="center-label" title="مرکز کردن">⊙</button>
+                        <button type="button" data-action="delete" title="حذف لیبل">×</button>
+                    </div>
+                    <div class="selected-label-tools__hint">برای جابه‌جایی، لیبل را مستقیم روی تیشرت بکش.</div>
+                </div>
+                <button type="button" class="save-design-button premium-save-button premium-save-button--left" id="save-design">ذخیره طراحی</button>
                 <div id="save-status" class="save-status" aria-live="polite"></div>
             </div>
         </aside>
@@ -70,15 +85,6 @@
             </div>
             <div class="stage-controls stage-controls--premium">
                 <div class="stage-control-group"><button type="button" data-action="zoom-out">−</button><span id="zoom-label">100%</span><button type="button" data-action="zoom-in">+</button></div>
-                <div class="stage-control-group stage-control-group--selected" id="selected-controls" hidden>
-                    <span class="selected-tool-label">لیبل انتخاب‌شده</span>
-                    <button type="button" data-action="rotate-left" title="چرخش چپ">↶</button>
-                    <button type="button" data-action="rotate-right" title="چرخش راست">↷</button>
-                    <button type="button" data-action="scale-down" title="کوچک‌تر">−</button>
-                    <button type="button" data-action="scale-up" title="بزرگ‌تر">+</button>
-                    <button type="button" data-action="center-label" title="مرکز کردن لیبل">⊙</button>
-                    <button type="button" data-action="delete" title="حذف لیبل">×</button>
-                </div>
             </div>
         </section>
 
@@ -86,25 +92,35 @@
             <div class="panel-heading"><div><span class="panel-kicker">PRODUCT SETTINGS</span><h2>تنظیمات محصول</h2></div></div>
             <div class="premium-setting-group"><h3>رنگ تیشرت</h3><div class="premium-color-list" id="variant-color-list-right"></div></div>
             <div class="premium-setting-group"><h3>انتخاب سایز</h3><div class="premium-size-list" id="premium-size-list"></div></div>
-            <div class="premium-setting-group"><h3>لیبل / طرح</h3><div class="artwork-grid artwork-grid--premium" id="artwork-grid"></div></div>
-            <label class="upload-dropzone upload-dropzone--premium" for="artwork-upload"><span>＋ تصویر خودت را اضافه کن</span><small>PNG / JPG / WEBP · حداکثر ۸MB</small></label>
-            <input id="artwork-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden>
-            <div id="upload-status" class="upload-status" aria-live="polite"></div>
+            <div class="label-library-card">
+                <button type="button" class="label-library-trigger" id="label-library-trigger" aria-expanded="false" aria-controls="label-library-panel">
+                    <span class="label-library-trigger__icon">▦</span>
+                    <span class="label-library-trigger__copy">
+                        <strong>انتخاب لیبل</strong>
+                        <small>کتابخانه لیبل‌ها را باز کن</small>
+                    </span>
+                    <span class="label-library-trigger__arrow">⌄</span>
+                </button>
+                <div class="label-library-panel" id="label-library-panel" hidden>
+                    <div class="label-library-panel__head">
+                        <div>
+                            <strong>کتابخانه لیبل‌ها</strong>
+                            <small>یک لیبل انتخاب کن تا روی لباس قرار بگیرد.</small>
+                        </div>
+                        <button type="button" class="label-library-close" id="label-library-close" aria-label="بستن">×</button>
+                    </div>
+                    <div class="artwork-grid artwork-grid--premium label-library-grid" id="artwork-grid"></div>
+                    <label class="upload-dropzone upload-dropzone--premium" for="artwork-upload">
+                        <span>＋ افزودن لیبل جدید</span>
+                        <small>PNG / JPG / WEBP · حداکثر ۸MB</small>
+                    </label>
+                    <input id="artwork-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                    <div id="upload-status" class="upload-status" aria-live="polite"></div>
+                </div>
+            </div>
             <div class="premium-selected-artwork" id="premium-selected-artwork"></div>
             <div class="variant-card" id="variant-card"><select id="variant-select" aria-label="انتخاب رنگ و سایز"><option value="">انتخاب رنگ و سایز</option></select></div>
-            <div class="premium-setting-group premium-label-tools"><h3>کنترل لیبل</h3>
-                <div class="label-tool-row">
-                    <button type="button" data-action="scale-down">−</button>
-                    <input id="label-scale" type="range" min="6" max="98" value="35" step="1" aria-label="اندازه لیبل">
-                    <button type="button" data-action="scale-up">+</button>
-                </div>
-                <div class="label-tool-row">
-                    <button type="button" data-action="rotate-left">↶</button>
-                    <input id="label-rotation" type="range" min="-180" max="180" value="0" step="1" aria-label="چرخش لیبل">
-                    <button type="button" data-action="rotate-right">↷</button>
-                </div>
-                <div class="premium-placement-hint">لیبل را روی تیشرت بکش یا با ابزارهای بالا اندازه و زاویه‌اش را دقیق تنظیم کن.</div>
-            </div>
+            <div class="premium-label-summary" id="premium-label-summary"></div>
             <div class="price-breakdown" id="price-breakdown"></div>
         </aside>
     </main>
@@ -115,10 +131,10 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/customizer.js' %}?v=20260919-2" defer></script>
+<script src="{% static 'js/pages/customizer.js' %}?v=20260919-3" defer></script>
 {% if designer_has_3d %}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
 <script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260919-3"></script>
-<script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260918-2" defer></script>
+<script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260919-1" defer></script>
 {% endif %}
 {% endblock %}
