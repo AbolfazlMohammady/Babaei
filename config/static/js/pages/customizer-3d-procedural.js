@@ -61,7 +61,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     const frontAxis = new THREE.Vector3(0, 0, 1);
     const modelUrl = stage.dataset.modelUrl;
     const compactMedia = window.matchMedia("(max-width: 1023px)");
-    const mobileMedia = window.matchMedia("(max-width: 600px)");
     let renderFrameId = 0;
 
     function status(text) {
