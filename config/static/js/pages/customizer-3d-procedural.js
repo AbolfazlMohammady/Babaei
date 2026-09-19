@@ -96,14 +96,15 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         renderer = new THREE.WebGLRenderer({
             canvas,
-            antialias: true,
+            // Mobile editing prioritizes input latency over one extra AA pass.
+            antialias: !compactMedia.matches,
             alpha: true,
             powerPreference: "high-performance",
         });
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.05;
-        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.enabled = !compactMedia.matches;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         const pmrem = new THREE.PMREMGenerator(renderer);
@@ -129,8 +130,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         const key = new THREE.DirectionalLight(0xffffff, 3.2);
         key.position.set(3.5, 4.5, 5.5);
-        key.castShadow = true;
-        key.shadow.mapSize.set(1024, 1024);
+        key.castShadow = !compactMedia.matches;
+        key.shadow.mapSize.set(compactMedia.matches ? 512 : 1024, compactMedia.matches ? 512 : 1024);
         scene.add(key);
 
         const fill = new THREE.DirectionalLight(0xdfe8ff, 1.25);
@@ -302,7 +303,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // creating a large empty band above or below it.
         const height = stageHeight;
 
-        const pixelRatioCap = compactMedia.matches ? 1.5 : 2;
+        const pixelRatioCap = compactMedia.matches ? 1.15 : 2;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pixelRatioCap));
         renderer.setSize(width, height, false);
         camera.aspect = width / height;
