@@ -14,18 +14,45 @@
     const viewHost = document.getElementById("view-switcher-mobile");
     const esc = value => String(value ?? "").replace(/[&<>\"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
-    function chooseVariant(variant) {
+    function emitVariantColor(color, hex) {
+        document.dispatchEvent(new CustomEvent("babaei:variant-color-selected", {
+            detail: { color, hex },
+        }));
+    }
+
+    function emitVariantSize(size) {
+        document.dispatchEvent(new CustomEvent("babaei:variant-size-selected", {
+            detail: { size },
+        }));
+    }
+
+    function buildVariantOptions() {
+        if (!select) return;
+        select.innerHTML = '<option value="">انتخاب رنگ و سایز</option>';
+        variants.forEach(item => {
+            const option = document.createElement("option");
+            option.value = String(item.id);
+            option.textContent = item.color + " / " + item.size;
+            select.appendChild(option);
+        });
+    }
+
+    function syncActiveControls(variant) {
         if (!variant) return;
-        if (select) {
-            select.value = String(variant.id);
-            select.dispatchEvent(new Event("change", { bubbles: true }));
-        }
         colorHosts.forEach(host => host.querySelectorAll("button").forEach(button => {
             button.classList.toggle("is-active", button.dataset.color === variant.color);
         }));
-        if (sizeHost) sizeHost.querySelectorAll("button").forEach(button => {
+        sizeHost?.querySelectorAll("button").forEach(button => {
             button.classList.toggle("is-active", button.dataset.size === variant.size);
         });
+    }
+
+    function chooseVariant(variant) {
+        if (!variant) return;
+        if (select) select.value = String(variant.id);
+        syncActiveControls(variant);
+        emitVariantColor(variant.color, variant.hex);
+        emitVariantSize(variant.size);
     }
 
     function renderColors() {
@@ -36,10 +63,14 @@
             return true;
         });
         colorHosts.forEach(host => {
-            host.innerHTML = colors.map(item => `<button type="button" class="premium-color-button" style="--swatch:${item.hex || "#fff"}" data-color="${esc(item.color)}" title="${esc(item.color)}" aria-label="${esc(item.color)}"></button>`).join("");
+            host.innerHTML = colors.map(item => '<button type="button" class="premium-color-button" style="--swatch:' + (item.hex || "#fff") + '" data-color="' + esc(item.color) + '" data-hex="' + (item.hex || "") + '" title="' + esc(item.color) + '" aria-label="' + esc(item.color) + '"></button>').join("");
             host.querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
-                const variant = variants.find(item => item.color === button.dataset.color && Number(item.stock) > 0) || variants.find(item => item.color === button.dataset.color);
-                chooseVariant(variant);
+                const variant = variants.find(item => item.color === button.dataset.color && Number(item.stock) > 0)
+                    || variants.find(item => item.color === button.dataset.color);
+                if (!variant) return;
+                if (select) select.value = String(variant.id);
+                syncActiveControls(variant);
+                emitVariantColor(button.dataset.color, button.dataset.hex);
             }));
         });
     }
@@ -52,14 +83,29 @@
             seen.add(item.size);
             return true;
         });
-        sizeHost.innerHTML = sizes.map(item => `<button type="button" class="premium-size-button ${Number(item.stock) <= 0 ? "is-disabled" : ""}" data-size="${esc(item.size)}">${esc(item.size)}</button>`).join("");
+        sizeHost.innerHTML = sizes.map(item => '<button type="button" class="premium-size-button ' + (Number(item.stock) <= 0 ? "is-disabled" : "") + '" data-size="' + esc(item.size) + '">' + esc(item.size) + '</button>').join("");
         sizeHost.querySelectorAll("button:not(.is-disabled)").forEach(button => button.addEventListener("click", () => {
-            const color = select ? variants.find(item => String(item.id) === String(select.value))?.color : null;
-            const variant = variants.find(item => item.size === button.dataset.size && item.color === color && Number(item.stock) > 0)
-                || variants.find(item => item.size === button.dataset.size && Number(item.stock) > 0);
-            chooseVariant(variant);
+            const currentVariant = variants.find(item => select && String(item.id) === String(select.value));
+            const sameColor = currentVariant?.color
+                ? variants.find(item => item.size === button.dataset.size && item.color === currentVariant.color)
+                : null;
+
+            if (sameColor) {
+                if (select) select.value = String(sameColor.id);
+                syncActiveControls(sameColor);
+            } else {
+                sizeHost.querySelectorAll("button").forEach(item => {
+                    item.classList.toggle("is-active", item === button);
+                });
+            }
+
+            emitVariantSize(button.dataset.size);
         }));
     }
+
+    buildVariantOptions();
+    renderColors();
+    renderSizes();
 
     function renderViews() {
         if (!viewHost) return;

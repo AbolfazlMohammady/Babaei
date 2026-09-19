@@ -1,2 +1,0 @@
-# BaBaEi Ecommerce
-# Babaei
