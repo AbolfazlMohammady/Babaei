@@ -97,6 +97,18 @@
         const drawer = side === "left" ? leftDrawer : rightDrawer;
         const toggle = side === "left" ? leftToggle : rightToggle;
         if (!workspace || !drawer || !toggle) return;
+
+        // On phones the controls behave like bottom sheets: only one sheet is
+        // allowed to occupy the lower part of the viewport at a time.
+        if (open && window.matchMedia("(max-width: 820px)").matches) {
+            const other = side === "left" ? "right" : "left";
+            const otherDrawer = other === "left" ? leftDrawer : rightDrawer;
+            const otherToggle = other === "left" ? leftToggle : rightToggle;
+            otherDrawer?.classList.add("is-drawer-closed");
+            workspace.classList.add(other === "left" ? "left-drawer-closed" : "right-drawer-closed");
+            otherToggle?.setAttribute("aria-expanded", "false");
+        }
+
         drawer.classList.toggle("is-drawer-closed", !open);
         workspace.classList.toggle(side === "left" ? "left-drawer-closed" : "right-drawer-closed", !open);
         toggle.setAttribute("aria-expanded", String(open));
@@ -105,7 +117,8 @@
             : (side === "left" ? "باز کردن ابزار طراحی" : "باز کردن تنظیمات محصول"));
     }
 
-    // Start with the model unobstructed. Edge handles reopen each drawer instantly.
+    // Start with the model unobstructed. The template also carries the closed
+    // classes so there is never a flash of two full panels over the 3D model.
     setDrawer("left", false);
     setDrawer("right", false);
 
