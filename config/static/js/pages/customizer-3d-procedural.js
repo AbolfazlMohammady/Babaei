@@ -189,10 +189,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         setLoading("در حال بارگذاری مدل سه‌بعدی…", true);
         const loader = new GLTFLoader();
 
-        const gltf = await new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
             loader.load(
                 modelUrl,
-                resolve,
+                gltf => {
+                    window.__babaei3dModelLoaded = true;
+                    resolve(gltf);
+                },
                 event => {
                     if (!event.total) {
                         setLoading("در حال بارگذاری مدل سه‌بعدی…", true);
@@ -203,31 +206,10 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 },
                 reject
             );
+        }).then(gltf => {
+            normalizeGarment(gltf.scene);
         });
-
-        garment = gltf.scene;
-        garment.name = "BabaeiTshirtGLB";
-        garment.traverse(object => {
-            if (!object.isMesh) return;
-
-            object.castShadow = true;
-            object.receiveShadow = true;
-            object.frustumCulled = true;
-            garmentMeshes.push(object);
-
-            if (Array.isArray(object.material)) object.material.forEach(prepareMaterial);
-            else prepareMaterial(object.material);
-        });
-
-        if (!garmentMeshes.length) throw new Error("GLB فاقد Mesh قابل نمایش است.");
-
-        // Keep the original PBR materials/textures from the supplied GLB.
-        scene.add(garment);
-        normalizeGarment(garment);
-        setLoading("", false);
-        render();
     }
-
     function fitCamera(initial = false) {
         if (!camera || !controls) return;
         const aspect = Math.max(0.45, camera.aspect || 1);
@@ -247,11 +229,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const distance = fitDistance * 1.06 * framingScale;
         baseCameraDistance = distance;
 
-        // Mobile: center the garment in the *usable* viewport, not the raw
-        // canvas. The header occupies the top and the persistent action bar
-        // occupies the bottom. Both are measured from the real DOM so this
-        // stays correct across phones/tablets instead of relying on a guessed
-        // magic Y offset.
+        // Mobile framing is calculated from the actual 3D stage.
+        // The page header sits OUTSIDE this stage, so treating it as an inset
+        // pushes the garment upward. Keep the garment centered in the phone's
+        // editor area and apply a small, stable lower bias for the bottom action
+        // bar. This avoids per-device magic pixel offsets.
         const garmentBox = garment
             ? new THREE.Box3().setFromObject(garment)
             : null;
@@ -259,30 +241,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         let targetY = garmentCenterY + garmentMaxSize * 0.025;
 
         if (mobile) {
-            const stageRect = stage.getBoundingClientRect();
-            const stageHeight = Math.max(1, stageRect.height);
-            const header = document.querySelector(".customizer-header");
-            const toolbar = document.getElementById("mobile-customizer-toolbar");
-
-            const headerRect = header?.getBoundingClientRect();
-            const toolbarRect = toolbar?.getBoundingClientRect();
-
-            const topInset = headerRect
-                ? Math.max(0, Math.min(stageHeight, headerRect.bottom - stageRect.top + 10))
-                : 10;
-            const bottomInset = toolbarRect
-                ? Math.max(0, Math.min(stageHeight, stageRect.bottom - toolbarRect.top + 10))
-                : 10;
-
-            const usableTop = topInset;
-            const usableBottom = Math.max(usableTop + 1, stageHeight - bottomInset);
-            const desiredScreenY = (usableTop + usableBottom) * 0.5;
-            const currentScreenY = stageHeight * 0.5;
-            const pixelShiftDown = desiredScreenY - currentScreenY;
+            const stageHeight = Math.max(1, stage.clientHeight);
             const visibleWorldHeight = 2 * distance * Math.tan(verticalFov / 2);
+            const lowerBiasPx = stageHeight * 0.17;
 
             targetY = garmentCenterY
-                + (pixelShiftDown / stageHeight) * visibleWorldHeight;
+                + (lowerBiasPx / stageHeight) * visibleWorldHeight;
         }
 
         camera.position.set(0, targetY, distance);
@@ -740,21 +704,25 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 if (item.frame) item.frame.position.copy(localPoint);
             } else {
                 if (!item.previewDetached) {
-                    // Preserve the current world transform while moving the preview
-                    // across separate garment meshes (body/sleeve/etc.).
-                    scene.attach(item.mesh);
-                    if (item.frame) scene.attach(item.frame);
+                    // The decal geometry was generated in the current garment
+                    // mesh's local space. Before changing parents, bake the
+                    // preview vertices into world space; attach() alone preserves
+                    // the Object3D transform, not the geometry's coordinate space.
+                    item.mesh.updateWorldMatrix(true, false);
+                    item.mesh.geometry.applyMatrix4(item.mesh.matrixWorld);
+                    scene.add(item.mesh);
+                    item.mesh.position.set(0, 0, 0);
+                    item.mesh.quaternion.identity();
+                    item.mesh.scale.set(1, 1, 1);
+
+                    // The selection frame is only a helper. Hide it while the
+                    // preview is free in world space and let the final projection
+                    // rebuild it on release.
+                    if (item.frame) item.frame.visible = false;
+
                     item.previewDetached = true;
                     item.previewStartWorld = hit.point.clone();
                     item.previewBaseMeshPosition = item.mesh.position.clone();
-                    if (item.frame) {
-                        item.frame.position.copy(item.previewStartWorld);
-                        item.frame.quaternion.copy(
-                            new THREE.Quaternion().setFromEuler(
-                                orientation(normal, item.layer.rotation)
-                            )
-                        );
-                    }
                 }
 
                 const worldDelta = hit.point.clone().sub(item.previewStartWorld);
