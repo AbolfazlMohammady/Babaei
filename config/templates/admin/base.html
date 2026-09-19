@@ -5,7 +5,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="NONE,NOARCHIVE">
 <title>{% block title %}{{ title|default:'مدیریت' }} | BABAEI{% endblock %}</title>
-{% block stylesheet %}{% endblock %}{% block dark-mode-vars %}{% endblock %}{% block extrastyle %}{% endblock %}{% block extrahead %}{% endblock %}{% block responsive %}{% endblock %}
+{% block stylesheet %}{% endblock %}{% block dark-mode-vars %}{% endblock %}{% block extrastyle %}{% if media %}{{ media.css }}{% endif %}{% endblock %}{% block extrahead %}{% endblock %}{% block responsive %}{% endblock %}
 </head>
 <body class="{% block bodyclass %}{% endblock %}" data-admin-utc-offset="{% now 'Z' %}">
 <a class="ba-skip" href="#content-start">پرش به محتوای اصلی</a>
@@ -46,5 +46,5 @@
 {% else %}
 </main>
 {% endif %}
-{% block extrabody %}<script src="{% static 'js/admin/admin.js' %}?v=1"></script>{% endblock %}
+{% block extrabody %}{% if media %}{{ media.js }}{% endif %}<script src="{% static 'js/admin/admin.js' %}?v=2"></script>{% endblock %}
 </body></html>
