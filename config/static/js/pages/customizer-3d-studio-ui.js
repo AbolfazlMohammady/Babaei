@@ -92,6 +92,8 @@
     const rightDrawer = document.querySelector(".customizer-panel--premium-right");
     const leftToggle = document.getElementById("studio-drawer-left-toggle");
     const rightToggle = document.getElementById("studio-drawer-right-toggle");
+    const compactMedia = window.matchMedia("(max-width: 1023px)");
+    const mobileMedia = window.matchMedia("(max-width: 600px)");
 
     function setDrawer(side, open) {
         const drawer = side === "left" ? leftDrawer : rightDrawer;
@@ -100,7 +102,7 @@
 
         // On phones the controls behave like bottom sheets: only one sheet is
         // allowed to occupy the lower part of the viewport at a time.
-        if (open && window.matchMedia("(max-width: 820px)").matches) {
+        if (open && compactMedia.matches) {
             const other = side === "left" ? "right" : "left";
             const otherDrawer = other === "left" ? leftDrawer : rightDrawer;
             const otherToggle = other === "left" ? leftToggle : rightToggle;
@@ -113,7 +115,7 @@
         workspace.classList.toggle(side === "left" ? "left-drawer-closed" : "right-drawer-closed", !open);
         toggle.setAttribute("aria-expanded", String(open));
         const anyOpen = !leftDrawer?.classList.contains("is-drawer-closed") || !rightDrawer?.classList.contains("is-drawer-closed");
-        const mobileOpen = anyOpen && window.matchMedia("(max-width: 820px)").matches;
+        const mobileOpen = anyOpen && compactMedia.matches;
         workspace.classList.toggle("mobile-drawer-open", mobileOpen);
         document.dispatchEvent(new CustomEvent("babaei:drawer-state", { detail: { open: mobileOpen, side, drawerOpen: open } }));
         toggle.setAttribute("aria-label", open
@@ -122,6 +124,7 @@
     }
 
     let selectedMobile = false;
+    let editingMobile = false;
 
     // Start with the model unobstructed. The template also carries the closed
     // classes so there is never a flash of two full panels over the 3D model.
@@ -168,14 +171,19 @@
     const mobileColorSheetTitle = document.getElementById("mobile-color-sheet-title");
     const mobileLayerOpacity = document.getElementById("mobile-layer-opacity");
     const mobileLayerOpacityValue = document.getElementById("mobile-layer-opacity-value");
+    const mobileLayerColorCustom = document.getElementById("mobile-layer-color-custom");
 
     function closeMobileText() {
         if (mobileTextSheet) mobileTextSheet.hidden = true;
+        const drawerOpen = !leftDrawer?.classList.contains("is-drawer-closed") ||
+            !rightDrawer?.classList.contains("is-drawer-closed");
+        if (!drawerOpen) document.body.classList.remove("customizer-mobile-sheet-open");
+        setMobileEditorUi({ selected: selectedMobile, drawerOpen });
     }
 
-    function setMobileEditorUi({ selected = false, drawerOpen = false } = {}) {
-        if (drawerOpen) {
-            mobileToolbar?.classList.add("is-hidden");
+    function setMobileEditorUi({ selected = selectedMobile, drawerOpen = false } = {}) {
+        if (drawerOpen || !mobileMedia.matches) {
+            mobileToolbar?.classList.toggle("is-hidden", drawerOpen);
             mobileSelectionToolbar?.setAttribute("hidden", "");
             mobileContextToolbar?.setAttribute("hidden", "");
             return;
@@ -183,12 +191,27 @@
 
         mobileToolbar?.classList.toggle("is-hidden", selected);
         if (selected) {
-            mobileSelectionToolbar?.removeAttribute("hidden");
             mobileContextToolbar?.removeAttribute("hidden");
+            if (editingMobile) mobileSelectionToolbar?.removeAttribute("hidden");
+            else mobileSelectionToolbar?.setAttribute("hidden", "");
         } else {
-            mobileSelectionToolbar?.setAttribute("hidden", "");
+            editingMobile = false;
             mobileContextToolbar?.setAttribute("hidden", "");
+            mobileSelectionToolbar?.setAttribute("hidden", "");
         }
+    }
+
+    function openMobileEdit() {
+        if (!selectedMobile) return;
+        editingMobile = true;
+        mobileToolbar?.classList.add("is-hidden");
+        mobileContextToolbar?.setAttribute("hidden", "");
+        mobileSelectionToolbar?.removeAttribute("hidden");
+    }
+
+    function closeMobileEdit() {
+        editingMobile = false;
+        setMobileEditorUi({ selected: selectedMobile, drawerOpen: false });
     }
 
     function openMobileColorSheet(mode = "color") {
@@ -204,7 +227,8 @@
         if (mobileColorSheet) mobileColorSheet.hidden = true;
         const drawerOpen = !leftDrawer?.classList.contains("is-drawer-closed") ||
             !rightDrawer?.classList.contains("is-drawer-closed");
-        if (!drawerOpen) document.body.classList.remove("customizer-mobile-sheet-open");
+        if (!drawerOpen && mobileTextSheet?.hidden !== false) document.body.classList.remove("customizer-mobile-sheet-open");
+        setMobileEditorUi({ selected: selectedMobile, drawerOpen });
         document.dispatchEvent(new CustomEvent("babaei:mobile-color-sheet", { detail: { open: false } }));
     }
 
@@ -214,7 +238,7 @@
             if (action === "product") setDrawer("right", true);
             if (action === "artwork") {
                 setDrawer("right", true);
-                setTimeout(() => document.getElementById("label-library-trigger")?.click(), 20);
+                document.getElementById("label-library-trigger")?.click();
             }
             if (action === "tools") setDrawer("left", true);
             if (action === "text") {
@@ -245,6 +269,7 @@
 
     document.addEventListener("babaei:selection-changed", event => {
         selectedMobile = Boolean(event.detail?.selected);
+        if (!selectedMobile) editingMobile = false;
         const drawerOpen = Boolean(
             !leftDrawer?.classList.contains("is-drawer-closed") ||
             !rightDrawer?.classList.contains("is-drawer-closed")
@@ -256,7 +281,7 @@
         button.addEventListener("click", () => {
             const action = button.dataset.mobileSelection;
             if (action === "layout") setDrawer("left", true);
-            if (action === "done") document.dispatchEvent(new CustomEvent("babaei:deselect-label"));
+            if (action === "done") closeMobileEdit();
         });
     });
 
@@ -267,7 +292,7 @@
             if (action === "color") openMobileColorSheet("color");
             if (action === "paint") openMobileColorSheet("paint");
             if (action === "background") setDrawer("right", true);
-            if (action === "edit") setDrawer("left", true);
+            if (action === "edit") openMobileEdit();
         });
     });
 
@@ -280,7 +305,13 @@
                 detail: { color: button.dataset.layerColor }
             }));
             document.querySelectorAll("[data-layer-color]").forEach(item => item.classList.toggle("is-active", item === button));
+            if (mobileLayerColorCustom) mobileLayerColorCustom.value = button.dataset.layerColor;
         });
+    });
+
+    mobileLayerColorCustom?.addEventListener("input", () => {
+        const color = mobileLayerColorCustom.value;
+        document.dispatchEvent(new CustomEvent("babaei:set-layer-color", { detail: { color } }));
     });
 
     mobileLayerOpacity?.addEventListener("input", () => {
@@ -294,6 +325,7 @@
     document.addEventListener("babaei:mobile-color-sheet", event => {
         const open = Boolean(event.detail?.open);
         if (open) {
+            editingMobile = false;
             mobileToolbar?.classList.add("is-hidden");
             mobileSelectionToolbar?.setAttribute("hidden", "");
             mobileContextToolbar?.setAttribute("hidden", "");
@@ -310,6 +342,10 @@
         }
         if (mobileTextSheet && !mobileTextSheet.hidden) {
             closeMobileText();
+            return;
+        }
+        if (editingMobile) {
+            closeMobileEdit();
             return;
         }
         const drawerOpen = !leftDrawer?.classList.contains("is-drawer-closed") ||
