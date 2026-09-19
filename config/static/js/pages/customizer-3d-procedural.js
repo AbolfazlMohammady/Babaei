@@ -629,6 +629,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function sync() {
         const selected = layers.get(selectedId);
+        document.dispatchEvent(new CustomEvent("babaei:selection-changed", { detail: { selected: Boolean(selected), id: selectedId } }));
         const card = document.getElementById("selected-card");
         const controls = document.getElementById("selected-controls");
         const chosen = document.getElementById("premium-selected-artwork");
@@ -829,6 +830,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             if (garment) garment.rotation.y = 0;
             controls?.reset();
             fitCamera();
+            render();
+        });
+
+        document.addEventListener("babaei:deselect-label", () => {
+            selectedId = null;
+            sync();
             render();
         });
 
