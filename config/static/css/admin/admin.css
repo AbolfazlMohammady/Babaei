@@ -167,7 +167,7 @@ body {
 
 .babaei-admin-kpis {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0,1fr));
+    grid-template-columns: repeat(3, minmax(0,1fr));
     gap: 12px;
     margin-bottom: 14px;
 }
@@ -789,3 +789,6 @@ textarea {
         overflow-x: auto;
     }
 }
+
+.babaei-admin-kpi--static { cursor: default; }
+.babaei-admin-kpi--static:hover { transform: none; border-color: var(--ba-admin-border); }
