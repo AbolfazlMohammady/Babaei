@@ -651,6 +651,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             item.previewTarget = target;
             item.previewDetached = false;
             item.previewStartWorld = surfacePoint.clone();
+            item.previewBaseMeshPosition = null;
 
             if (previousMesh) {
                 previousMesh.geometry?.dispose();
@@ -780,7 +781,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                     if (item.frame) scene.attach(item.frame);
                     item.previewDetached = true;
                     item.previewStartWorld = item.surfacePoint?.clone() || hit.point.clone();
-                    item.mesh.position.set(0, 0, 0);
+                    item.previewBaseMeshPosition = item.mesh.position.clone();
                     if (item.frame) {
                         item.frame.position.copy(item.previewStartWorld);
                         item.frame.quaternion.copy(
@@ -792,7 +793,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 }
 
                 const worldDelta = hit.point.clone().sub(item.previewStartWorld);
-                item.mesh.position.copy(worldDelta);
+                item.mesh.position.copy(item.previewBaseMeshPosition.clone().add(worldDelta));
                 if (item.frame) {
                     item.frame.position.copy(hit.point);
                     item.frame.quaternion.copy(
