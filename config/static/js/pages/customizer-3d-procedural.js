@@ -465,8 +465,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         }).catch(() => status("تصویر لیبل برای پیش‌نمایش بارگذاری نشد."));
     }
 
-    function addLayer(artworkId) {
-        const artwork = artworkById(artworkId);
+    function addLayer(artworkOrId) {
+        // Uploaded artworks are added to the legacy customizer state after
+        // designer-data has already been parsed by this module. Accept the
+        // fresh artwork object so newly uploaded images can be placed in 3D.
+        const artwork = typeof artworkOrId === "object" && artworkOrId
+            ? artworkOrId
+            : artworkById(artworkOrId);
         const area = areaById(activeAreaId);
         const hit = placementHit();
 

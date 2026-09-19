@@ -200,7 +200,11 @@
             // The 3D studio owns placement when the real GLB editor is active.
             // Keep the legacy 2D renderer as the fallback for non-3D products.
             if (window.BabaeiCustomizer3D?.isReady?.()) {
-                window.BabaeiCustomizer3D.addArtwork(artworkId);
+                // The uploaded artwork is created after the 3D module parsed
+                // designer-data, so pass the fresh artwork object itself.
+                // Passing only the ID leaves the 3D module with a stale artwork list.
+                const artwork = artworkById(artworkId);
+                if (artwork) window.BabaeiCustomizer3D.addArtwork(artwork);
                 return;
             }
             addLayer(artworkId);
