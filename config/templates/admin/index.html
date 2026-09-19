@@ -19,10 +19,13 @@
 
     <section class="babaei-admin-kpis">
         <a href="{% url 'admin:shop_product_changelist' %}" class="babaei-admin-kpi">
-            <span>محصولات فعال</span><strong>{{ dashboard.products|default:0 }}</strong><small>مدیریت محصولات و تنوع‌ها</small>
+            <span>محصولات فعال</span><strong>{{ dashboard.products|default:0 }}</strong><small>محصولات و تنوع‌ها</small>
         </a>
         <a href="{% url 'admin:orders_order_changelist' %}" class="babaei-admin-kpi">
             <span>کل سفارش‌ها</span><strong>{{ dashboard.orders|default:0 }}</strong><small>{{ dashboard.pending_orders|default:0 }} در انتظار پرداخت</small>
+        </a>
+        <a href="{% url 'admin:orders_order_changelist' %}?status__exact=pending" class="babaei-admin-kpi">
+            <span>سفارش امروز</span><strong>{{ dashboard.today_orders|default:0 }}</strong><small>ثبت‌شده در ۲۴ ساعت اخیر</small>
         </a>
         <a href="{% url 'admin:users_user_changelist' %}" class="babaei-admin-kpi">
             <span>کاربران فعال</span><strong>{{ dashboard.users|default:0 }}</strong><small>حساب‌های فعال فروشگاه</small>
@@ -30,6 +33,9 @@
         <a href="{% url 'admin:customizer_designdraft_changelist' %}" class="babaei-admin-kpi">
             <span>طرح‌های ذخیره‌شده</span><strong>{{ dashboard.drafts|default:0 }}</strong><small>Design Studio</small>
         </a>
+        <div class="babaei-admin-kpi babaei-admin-kpi--static">
+            <span>پرداخت‌های موفق</span><strong>{{ dashboard.sales|floatformat:0|default:0 }}</strong><small>تومان</small>
+        </div>
     </section>
 
     <div class="babaei-admin-grid">
