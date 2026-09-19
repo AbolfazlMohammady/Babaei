@@ -21,7 +21,7 @@ def toggle_favorite(request, product_id):
             return JsonResponse({
                 "ok": False,
                 "login_required": True,
-                "login_url": reverse("login") if "login" in [name for name in []] else "/account/login/",
+                "login_url": "/account/login/",
             }, status=401)
         return redirect("/account/login/")
 
