@@ -32,6 +32,18 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }[char]));
     const money = value => Number(value || 0).toLocaleString("fa-IR");
 
+    const textArtworkSvg = (text, color) => {
+        const safeText = esc(text);
+        const safeColor = /^#[0-9a-f]{6}$/i.test(String(color || "")) ? color : "#ffffff";
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+            <rect width="900" height="420" fill="none"/>
+            <text x="450" y="225" text-anchor="middle" dominant-baseline="middle"
+                  font-family="Arial, sans-serif" font-size="118" font-weight="700"
+                  fill="${safeColor}">${safeText}</text>
+        </svg>`;
+        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+    };
+
     let scene, camera, renderer, controls, garment;
     let garmentMeshes = [];
     let garmentMaterials = [];
@@ -452,7 +464,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
             const material = new THREE.MeshPhysicalMaterial({
                 map: texture,
+                color: new THREE.Color(item.layer.color || "#ffffff"),
                 transparent: true,
+                opacity: Math.max(0.2, Math.min(1, Number(item.layer.opacity ?? 1))),
                 alphaTest: 0.02,
                 roughness: 0.72,
                 metalness: 0,
@@ -525,19 +539,14 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const text = String(event.detail?.text || "").trim().slice(0, 60);
         if (!text) return;
 
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
-            <rect width="900" height="420" fill="none"/>
-            <text x="450" y="225" text-anchor="middle" dominant-baseline="middle"
-                  font-family="Arial, sans-serif" font-size="118" font-weight="700"
-                  fill="#ffffff">${esc(text)}</text>
-        </svg>`;
-        const image = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+        const image = textArtworkSvg(text, "#ffffff");
         const artwork = {
             id: `text-${Date.now()}`,
             name: text,
             code: "TEXT",
             image,
             base_price: 0,
+            is_text: true,
         };
         addLayer(artwork);
     });
@@ -566,6 +575,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             width: 0.35,
             height: 0.25,
             rotation: 0,
+            color: "#ffffff",
+            opacity: 1,
             z_index: layers.size,
         };
 
@@ -685,6 +696,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     function saveLayers() {
         return Array.from(layers.values()).map(item => ({
             ...item.layer,
+            color: item.layer.color || "#ffffff",
+            opacity: Number(item.layer.opacity ?? 1),
             three_d: {
                 position: item.position?.toArray().map(value => Number(value.toFixed(6))) || null,
                 normal: item.normal?.toArray().map(value => Number(value.toFixed(6))) || null,
@@ -830,6 +843,35 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             if (garment) garment.rotation.y = 0;
             controls?.reset();
             fitCamera();
+            render();
+        });
+
+        document.addEventListener("babaei:set-layer-color", event => {
+            const item = layers.get(selectedId);
+            const color = String(event.detail?.color || "").trim();
+            if (!item || !/^#[0-9a-f]{6}$/i.test(color)) return;
+
+            item.layer.color = color;
+            if (item.artwork?.is_text || item.artwork?.code === "TEXT") {
+                item.artwork.image = textArtworkSvg(item.artwork.name || "TEXT", color);
+                project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);
+            } else if (item.mesh?.material?.color) {
+                item.mesh.material.color.set(color);
+                item.mesh.material.needsUpdate = true;
+            }
+            render();
+        });
+
+        document.addEventListener("babaei:set-layer-opacity", event => {
+            const item = layers.get(selectedId);
+            if (!item) return;
+
+            const opacity = Math.max(0.2, Math.min(1, Number(event.detail?.opacity ?? 1)));
+            item.layer.opacity = opacity;
+            if (item.mesh?.material) {
+                item.mesh.material.opacity = opacity;
+                item.mesh.material.needsUpdate = true;
+            }
             render();
         });
 
