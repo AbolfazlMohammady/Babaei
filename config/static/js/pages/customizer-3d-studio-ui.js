@@ -112,6 +112,8 @@
         drawer.classList.toggle("is-drawer-closed", !open);
         workspace.classList.toggle(side === "left" ? "left-drawer-closed" : "right-drawer-closed", !open);
         toggle.setAttribute("aria-expanded", String(open));
+        const anyOpen = !leftDrawer?.classList.contains("is-drawer-closed") || !rightDrawer?.classList.contains("is-drawer-closed");
+        workspace.classList.toggle("mobile-drawer-open", anyOpen && window.matchMedia("(max-width: 820px)").matches);
         toggle.setAttribute("aria-label", open
             ? (side === "left" ? "بستن ابزار طراحی" : "بستن تنظیمات محصول")
             : (side === "left" ? "باز کردن ابزار طراحی" : "باز کردن تنظیمات محصول"));
@@ -129,6 +131,17 @@
     rightToggle?.addEventListener("click", () => {
         const open = rightDrawer?.classList.contains("is-drawer-closed");
         setDrawer("right", open);
+    });
+
+    document.querySelectorAll("[data-drawer-close]").forEach(button => {
+        button.addEventListener("click", () => {
+            setDrawer(button.dataset.drawerClose, false);
+        });
+    });
+
+    document.getElementById("studio-drawer-backdrop")?.addEventListener("click", () => {
+        setDrawer("left", false);
+        setDrawer("right", false);
     });
 
     document.getElementById("label-library-trigger")?.addEventListener("click", () => {
