@@ -48,30 +48,14 @@ def _model_url(request, view, generated_asset=None):
     return view.model_3d_url or None
 
 
-def _generation_payload(product):
-    images = product_images(product)
-    signature = source_signature(images) if images else ""
-    asset = Product3DAsset.objects.filter(product=product).first()
-    if asset and asset.source_signature != signature and asset.status not in {
-        Product3DAsset.Status.QUEUED,
-        Product3DAsset.Status.REMOVING_BACKGROUND,
-        Product3DAsset.Status.GENERATING,
-    }:
-        asset.status = Product3DAsset.Status.QUEUED
-        asset.task_id = ""
-        asset.progress = 0
-        asset.model_url = ""
-        asset.model_3d = None
-        asset.preview_image = None
-        asset.error_message = ""
-        asset.save(update_fields=["status", "task_id", "progress", "model_url", "model_3d", "preview_image", "error_message", "updated_at"])
+def _generation_payload(asset):
     return {
         "status": asset.status if asset else "not_started",
         "progress": asset.progress if asset else 0,
         "error": asset.error_message if asset else "",
         "ready": bool(asset and asset.status == Product3DAsset.Status.READY and (asset.model_3d or asset.model_url)),
         "asset_id": asset.id if asset else None,
-        "source_count": len(images),
+        "source_count": int((asset.analysis or {}).get("source_count", 0)) if asset else 0,
     }
 
 
@@ -84,10 +68,10 @@ class DesignerPageView(View):
         views = [view for view in raw_views if _file_url(request, view.background_image)]
         areas = list(PrintArea.objects.filter(product=product, is_active=True).order_by("sort_order", "id"))
         area_maps = list(PrintAreaView.objects.filter(area__in=areas, view__in=views, area__is_active=True, view__is_active=True).select_related("area", "view"))
-        generation = _generation_payload(product)
-        # Re-read after generation state normalization so a freshly completed
-        # Celery job is reflected in designer_data/model URLs on this request.
+        # Fetch the generated asset once. The old implementation queried this
+        # table twice on every designer page request.
         generated_asset = Product3DAsset.objects.filter(product=product).first()
+        generation = _generation_payload(generated_asset)
 
         view_data = []
         for view in views:
@@ -115,8 +99,10 @@ class DesignerPageView(View):
 
         variants = list(ProductVariant.objects.filter(product=product, is_active=True).select_related("color", "size").only("id", "price", "stock_quantity", "color__name", "color__hex_code", "size__name").order_by("price", "id"))
         variant_data = [{"id": v.id, "price": v.price, "stock": v.stock_quantity, "color": v.color.name, "hex": v.color.hex_code, "size": v.size.name} for v in variants]
-        primary_image = ProductImage.objects.filter(product=product, image_type=ProductImage.ImageType.PRIMARY).only("image", "alt_text").first()
-        product_image = _file_url(request, primary_image.image) if primary_image else None
+        product_image = view_data[0]["background"] if view_data else None
+        if not product_image:
+            primary_image = ProductImage.objects.filter(product=product, image_type=ProductImage.ImageType.PRIMARY).only("image", "alt_text").first()
+            product_image = _file_url(request, primary_image.image) if primary_image else None
         first_background = view_data[0]["background"] if view_data else product_image
         designer_ready = bool(view_data and areas and area_maps)
         context = {
