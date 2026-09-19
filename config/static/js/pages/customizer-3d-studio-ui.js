@@ -261,6 +261,30 @@
         closeMobileText();
     });
 
+    const desktopTextInput = document.getElementById("desktop-text-input");
+    const desktopTextAdd = document.getElementById("desktop-text-add");
+
+    function addDesktopText() {
+        const value = desktopTextInput?.value?.trim();
+        if (!value) {
+            desktopTextInput?.focus();
+            return;
+        }
+        document.dispatchEvent(new CustomEvent("babaei:add-text", { detail: { text: value } }));
+        if (desktopTextInput) {
+            desktopTextInput.value = "";
+            desktopTextInput.focus();
+        }
+    }
+
+    desktopTextAdd?.addEventListener("click", addDesktopText);
+    desktopTextInput?.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            addDesktopText();
+        }
+    });
+
     document.addEventListener("babaei:drawer-state", event => {
         const open = Boolean(event.detail?.open);
         document.body.classList.toggle("customizer-mobile-sheet-open", open);
