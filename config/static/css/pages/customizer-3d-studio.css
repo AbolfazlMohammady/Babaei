@@ -1329,3 +1329,10 @@ body.customizer-page > footer {
         max-height: 540px;
     }
 }
+
+.label-library-grid .artwork-card__code {
+    color: #8e8a82 !important;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 7px !important;
+    letter-spacing: .04em;
+}
