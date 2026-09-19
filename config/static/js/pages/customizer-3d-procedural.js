@@ -159,9 +159,37 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function normalizeGarment(rootObject) {
+        // Keep the loaded GLTF scene as the actual garment root. The previous
+        // version normalized its bounds but never attached the GLTF scene to
+        // our Three.js scene, so the camera rendered an empty black stage.
+        garment = rootObject;
+        garmentMeshes = [];
+        garmentMaterials = [];
+
+        rootObject.traverse(object => {
+            if (!object.isMesh) return;
+
+            object.frustumCulled = true;
+            object.castShadow = !compactMedia.matches;
+            object.receiveShadow = !compactMedia.matches;
+            garmentMeshes.push(object);
+
+            if (Array.isArray(object.material)) {
+                object.material.forEach(prepareMaterial);
+            } else {
+                prepareMaterial(object.material);
+            }
+        });
+
+        if (!garmentMeshes.length) {
+            throw new Error("مدل سه‌بعدی بارگذاری شد اما هیچ سطح قابل نمایش ندارد.");
+        }
+
+        scene.add(rootObject);
+        rootObject.updateMatrixWorld(true);
+
         const box = new THREE.Box3().setFromObject(rootObject);
         const size = box.getSize(new THREE.Vector3());
-        const center = box.getCenter(new THREE.Vector3());
         const maxSize = Math.max(size.x, size.y, size.z) || 1;
 
         const targetHeight = 2.72;
@@ -172,6 +200,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         rootObject.position.sub(scaledCenter);
         rootObject.position.y += 0.02;
 
+        rootObject.updateMatrixWorld(true);
+
         const finalBox = new THREE.Box3().setFromObject(rootObject);
         const finalSize = finalBox.getSize(new THREE.Vector3());
         const finalMax = Math.max(finalSize.x, finalSize.y, finalSize.z);
@@ -180,7 +210,10 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         controls.target.set(0, finalSize.y * 0.03, 0);
         controls.minDistance = Math.max(2.6, finalMax * 0.72);
         controls.maxDistance = Math.max(8.5, finalMax * 2.5);
+
+        setLoading("", false);
         fitCamera(true);
+        render();
     }
 
     async function loadGarment() {
