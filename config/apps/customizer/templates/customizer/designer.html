@@ -13,6 +13,10 @@
 {% block extra_head %}
 <script type="application/ld+json">{{ designer_schema }}</script>
 {% if designer_has_3d %}
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+{% endif %}
+{% if designer_has_3d %}
 <link rel="preload" href="{% static 'Glb/whit_t_shirt.glb' %}?v=20260919-1" as="fetch" crossorigin="anonymous" fetchpriority="high">
 {% endif %}
 {% endblock %}
