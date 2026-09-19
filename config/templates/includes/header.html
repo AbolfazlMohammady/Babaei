@@ -1,3 +1,50 @@
-<div class="site-promo" aria-label="مزایای خرید"><div class="site-promo__group"><span class="site-promo__item">🚚 ارسال رایگان برای خریدهای بالای ۱,۵۰۰,۰۰۰ تومان</span></div><div class="site-promo__group"><span class="site-promo__item">تضمین اصالت کالا</span><span class="site-promo__sep"></span><span class="site-promo__item">۷ روز امکان بازگشت</span></div></div>
-<header class="site-header"><div class="site-header__inner"><button type="button" class="header-icon header-menu-button" data-mobile-menu aria-label="باز کردن منو" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button><a href="/" class="site-logo" aria-label="BABAEI">BABAEI</a><nav class="site-nav" aria-label="منوی اصلی"><a href="/">خانه</a><a href="{% url 'shop:index' %}">فروشگاه</a><a href="#">کالکشن‌ها</a><a href="#">وبلاگ</a><a href="#">درباره ما</a></nav><div class="site-actions"><label class="header-search"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg><input type="search" placeholder="جستجوی محصولات، دسته‌ها ..." aria-label="جستجو"></label><a href="{% url 'users:profile' %}" class="header-icon" aria-label="حساب کاربری"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c.8-3.7 3.1-5.5 7-5.5s6.2 1.8 7 5.5"></path></svg></a><a href="{% url 'orders:cart' %}" class="header-icon header-cart" aria-label="سبد خرید"><svg viewBox="0 0 24 24"><path d="M4 5h2l1.6 10.2a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>{% if cart_item_count %}<span class="header-cart__badge">{{ cart_item_count }}</span>{% endif %}</a></div></div></header>
-<nav class="mobile-bottom-nav" aria-label="ناوبری سریع موبایل"><a href="/"><svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg><span>خانه</span></a><a href="{% url 'shop:index' %}"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg><span>فروشگاه</span></a><button type="button"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg><span>جستجو</span></button><a href="{% url 'users:profile' %}"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c.8-3.7 3.1-5.5 7-5.5s6.2 1.8 7 5.5"></path></svg><span>حساب</span></a><a href="{% url 'orders:cart' %}"><svg viewBox="0 0 24 24"><path d="M4 5h2l1.6 10.2a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg><span>سبد</span></a></nav>
+<header class="site-header">
+    <div class="site-header__inner">
+        <button type="button" class="header-icon header-menu-button" data-mobile-menu aria-label="باز کردن منو" aria-expanded="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+        </button>
+        <a href="/" class="site-logo" aria-label="BABAEI">BABAEI</a>
+        <nav class="site-nav" aria-label="منوی اصلی">
+            <a href="/">خانه</a>
+            <a href="{% url 'shop:index' %}">فروشگاه</a>
+            <a href="#">طراحی اختصاصی</a>
+            <a href="#">بلاگ</a>
+            <a href="#">درباره ما</a>
+        </nav>
+        <div class="site-actions">
+            <button type="button" class="header-icon" aria-label="جستجو">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 5 5"></path></svg>
+            </button>
+            <a href="{% url 'users:profile' %}" class="header-icon" aria-label="حساب کاربری">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c.8-3.7 3.1-5.5 7-5.5s6.2 1.8 7 5.5"></path></svg>
+            </a>
+            <a href="{% url 'orders:cart' %}" class="header-icon header-cart" aria-label="سبد خرید">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l1.6 10.2a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>
+                {% if cart_item_count %}<span class="header-cart__badge">{{ cart_item_count }}</span>{% endif %}
+            </a>
+        </div>
+    </div>
+</header>
+
+<nav class="mobile-bottom-nav" aria-label="ناوبری سریع موبایل">
+    <a href="/" class="{% if request.resolver_match.namespace == 'home' %}is-active{% endif %}" aria-label="خانه">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg>
+        <span>خانه</span>
+    </a>
+    <a href="{% url 'shop:index' %}" class="{% if request.resolver_match.namespace == 'shop' %}is-active{% endif %}" aria-label="فروشگاه">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>
+        <span>فروشگاه</span>
+    </a>
+    <button type="button" aria-label="جستجو">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 5 5"></path></svg>
+        <span>جستجو</span>
+    </button>
+    <a href="{% url 'users:profile' %}" class="{% if request.resolver_match.namespace == 'users' %}is-active{% endif %}" aria-label="حساب کاربری">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c.8-3.7 3.1-5.5 7-5.5s6.2 1.8 7 5.5"></path></svg>
+        <span>حساب</span>
+    </a>
+    <a href="{% url 'orders:cart' %}" class="{% if request.resolver_match.namespace == 'orders' %}is-active{% endif %}" aria-label="سبد خرید">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l1.6 10.2a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>
+        <span>سبد{% if cart_item_count %} ({{ cart_item_count }}){% endif %}</span>
+    </a>
+</nav>
