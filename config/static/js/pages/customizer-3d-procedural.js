@@ -272,12 +272,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // On the portrait phone the garment is vertically too high, so move
         // ONLY the look-at target upward. Do not move the camera itself and do
         // not change the fitted distance: width/height framing stays untouched.
-        // Keep the proven mobile framing and center the garment by its
-        // actual bounding-box center. The black circle is the shirt neckline,
-        // not the geometric center of the garment; centering that point would
-        // push the lower half of the shirt outside the viewport.
-        const targetY = center.y + (mobile ? size.y * 0.21 : 0.015 * size.y);
-        const cameraY = center.y + (mobile ? size.y * 0.025 : size.y * 0.015);
+        // Mobile: move the whole 3D viewing environment down inside the
+        // portrait viewport. Keep camera/target at the same vertical offset so
+        // garment scale, width and perspective stay unchanged.
+        const mobileCenterOffset = mobile ? size.y * 0.52 : 0;
+        const targetY = center.y + mobileCenterOffset + (mobile ? size.y * 0.015 : 0);
+        const cameraY = center.y + mobileCenterOffset + (mobile ? size.y * 0.025 : size.y * 0.015);
 
         camera.position.set(0, cameraY, distance);
         controls.target.set(center.x, targetY, center.z);
