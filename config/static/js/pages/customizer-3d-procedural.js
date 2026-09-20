@@ -341,7 +341,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         let cameraY = center.y;
 
         if (isPhone) {
-            const targetWidthRatio = 0.44;
+            const targetWidthRatio = 0.34;
             const mobileWidthDistance =
                 horizontalDistance / targetWidthRatio;
 
