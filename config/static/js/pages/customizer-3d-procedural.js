@@ -39,17 +39,53 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }[char]));
     const money = value => Number(value || 0).toLocaleString("fa-IR");
 
-    const textArtworkSvg = (text, color) => {
+    const TEXT_STYLE_PRESETS = {
+        modern: { fontFamily: "Arial, Tahoma, sans-serif", fontWeight: 700, fontStyle: "normal" },
+        classic: { fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 700, fontStyle: "normal" },
+        impact: { fontFamily: "Impact, Haettenschweiler, sans-serif", fontWeight: 900, fontStyle: "normal" },
+        mono: { fontFamily: "'Courier New', monospace", fontWeight: 700, fontStyle: "normal" },
+        elegant: { fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, fontStyle: "italic" },
+    };
+
+    function normalizeTextStyle(style = {}) {
+        const presetName = String(style.preset || "modern");
+        const preset = TEXT_STYLE_PRESETS[presetName] || TEXT_STYLE_PRESETS.modern;
+        return {
+            preset: TEXT_STYLE_PRESETS[presetName] ? presetName : "modern",
+            fontFamily: String(style.fontFamily || preset.fontFamily),
+            fontWeight: Number(style.fontWeight || preset.fontWeight),
+            fontStyle: style.fontStyle === "italic" ? "italic" : preset.fontStyle,
+            curve: Math.max(-80, Math.min(80, Number(style.curve ?? 0))),
+            letterSpacing: Math.max(-2, Math.min(12, Number(style.letterSpacing ?? 0))),
+        };
+    }
+
+    const textArtworkSvg = (text, color, rawStyle = {}) => {
         const safeText = esc(text);
         const safeColor = /^#[0-9a-f]{6}$/i.test(String(color || "")) ? color : "#ffffff";
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
-            <rect width="900" height="420" fill="none"/>
-            <text x="450" y="225" text-anchor="middle" dominant-baseline="middle"
-                  font-family="Arial, sans-serif" font-size="118" font-weight="700"
-                  fill="${safeColor}">${safeText}</text>
-        </svg>`;
+        const style = normalizeTextStyle(rawStyle);
+        const length = Math.max(1, String(text || "").length);
+        const fontSize = length <= 12 ? 118 : length <= 20 ? 102 : length <= 34 ? 86 : 72;
+        const curve = style.curve;
+        const controlY = 225 - curve * 1.45;
+        const pathId = `babaei-text-path-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+        const svg = curve
+            ? `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+                <defs><path id="${pathId}" d="M 70 235 Q 450 ${controlY} 830 235"/></defs>
+                <rect width="900" height="420" fill="none"/>
+                <text fill="${safeColor}" font-family="${esc(style.fontFamily)}" font-size="${fontSize}px" font-weight="${style.fontWeight}" font-style="${style.fontStyle}" letter-spacing="${style.letterSpacing}px">
+                    <textPath href="#${pathId}" startOffset="50%" text-anchor="middle">${safeText}</textPath>
+                </text>
+            </svg>`
+            : `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+                <rect width="900" height="420" fill="none"/>
+                <text x="450" y="225" text-anchor="middle" dominant-baseline="middle" font-family="${esc(style.fontFamily)}" font-size="${fontSize}px" font-weight="${style.fontWeight}" font-style="${style.fontStyle}" letter-spacing="${style.letterSpacing}px" fill="${safeColor}">${safeText}</text>
+            </svg>`;
+
         return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
     };
+
 
     let scene, camera, renderer, controls, garment;
     let garmentMeshes = [];
