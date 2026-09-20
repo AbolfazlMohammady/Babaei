@@ -239,8 +239,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // Keep the shirt centered in the actual mobile work area. The bottom
         // toolbar occupies the lower part of the viewport, so the visual center
         // must sit slightly above the viewport center — not near the top.
-        const mobileCameraY = mobile ? garmentMaxSize * 0.06 : garmentMaxSize * 0.015;
-        const targetY = mobile ? garmentMaxSize * 0.22 : garmentMaxSize * 0.025;
+        const mobileCameraY = mobile ? garmentMaxSize * 0.10 : garmentMaxSize * 0.015;
+        const targetY = mobile ? garmentMaxSize * 0.38 : garmentMaxSize * 0.025;
         camera.position.set(0, mobileCameraY, distance);
         controls.target.set(0, targetY, 0);
         if (initial) controls.update();
