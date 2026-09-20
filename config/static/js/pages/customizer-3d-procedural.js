@@ -98,6 +98,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     let activeAreaId = areas[0]?.id || null;
     let nextId = 1;
     let drag = null;
+    let dragFrameId = 0;
+    let dragEvent = null;
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const layers = new Map();
@@ -837,7 +839,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const text = String(event.detail?.text || "").trim().slice(0, 60);
         if (!text) return;
 
-        const image = textArtworkSvg(text, "#ffffff");
+        const style = normalizeTextStyle(event.detail?.style || {});
+        const color = /^#[0-9a-f]{6}$/i.test(String(event.detail?.color || ""))
+            ? String(event.detail.color)
+            : "#ffffff";
+
+        const image = textArtworkSvg(text, color, style);
         const artwork = {
             id: `text-${Date.now()}`,
             name: text,
@@ -845,8 +852,72 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             image,
             base_price: 0,
             is_text: true,
+            text_style: style,
         };
+
         addLayer(artwork);
+
+        const item = layers.get(selectedId);
+        if (item?.artwork?.is_text) {
+            item.layer.text = text;
+            item.layer.text_style = style;
+            item.layer.color = color;
+            item.artwork.text_style = style;
+        }
+
+        sync();
+    });
+
+    document.addEventListener("babaei:update-text", event => {
+        const item = layers.get(selectedId);
+        const text = String(event.detail?.text ?? "").trim().slice(0, 60);
+        if (!item?.artwork?.is_text || !text) return;
+
+        const style = normalizeTextStyle(
+            event.detail?.style || item.layer.text_style || item.artwork.text_style || {}
+        );
+
+        item.layer.text = text;
+        item.layer.text_style = style;
+        item.artwork.name = text;
+        item.artwork.text_style = style;
+        item.artwork.image = textArtworkSvg(
+            text,
+            item.layer.color || "#ffffff",
+            style
+        );
+
+        project(
+            item,
+            item.surfacePoint || item.position,
+            item.surfaceNormal || item.normal
+        );
+        sync();
+    });
+
+    document.addEventListener("babaei:update-text-style", event => {
+        const item = layers.get(selectedId);
+        if (!item?.artwork?.is_text) return;
+
+        const style = normalizeTextStyle({
+            ...(item.layer.text_style || item.artwork.text_style || {}),
+            ...(event.detail?.style || {}),
+        });
+
+        item.layer.text_style = style;
+        item.artwork.text_style = style;
+        item.artwork.image = textArtworkSvg(
+            item.layer.text || item.artwork.name || "TEXT",
+            item.layer.color || "#ffffff",
+            style
+        );
+
+        project(
+            item,
+            item.surfacePoint || item.position,
+            item.surfaceNormal || item.normal
+        );
+        sync();
     });
 
     function addLayer(artworkOrId) {
@@ -876,6 +947,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             color: "#ffffff",
             opacity: 1,
             z_index: layers.size,
+            text: artwork.is_text ? String(artwork.name || "TEXT") : null,
+            text_style: artwork.is_text ? normalizeTextStyle(artwork.text_style || {}) : null,
         };
 
         const item = {
@@ -891,6 +964,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             mesh: null,
             frame: null,
             size: null,
+            dragPreview: null,
         };
 
         layers.set(item.id, item);
@@ -963,7 +1037,20 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function sync() {
         const selected = layers.get(selectedId);
-        document.dispatchEvent(new CustomEvent("babaei:selection-changed", { detail: { selected: Boolean(selected), id: selectedId } }));
+        document.dispatchEvent(new CustomEvent("babaei:selection-changed", {
+            detail: {
+                selected: Boolean(selected),
+                id: selectedId,
+                isText: Boolean(selected?.artwork?.is_text),
+                text: selected?.artwork?.is_text
+                    ? String(selected.layer.text || selected.artwork.name || "")
+                    : "",
+                textStyle: selected?.artwork?.is_text
+                    ? normalizeTextStyle(selected.layer.text_style || selected.artwork.text_style || {})
+                    : null,
+                color: selected?.layer?.color || null,
+            }
+        }));
         const card = document.getElementById("selected-card");
         const controls = document.getElementById("selected-controls");
         const chosen = document.getElementById("premium-selected-artwork");
@@ -1023,6 +1110,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             ...item.layer,
             color: item.layer.color || "#ffffff",
             opacity: Number(item.layer.opacity ?? 1),
+            text: item.artwork?.is_text
+                ? String(item.layer.text || item.artwork.name || "")
+                : null,
+            text_style: item.artwork?.is_text
+                ? normalizeTextStyle(item.layer.text_style || item.artwork.text_style || {})
+                : null,
             three_d: {
                 position: item.position?.toArray().map(value => Number(value.toFixed(6))) || null,
                 normal: item.normal?.toArray().map(value => Number(value.toFixed(6))) || null,
@@ -1186,7 +1279,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
             item.layer.color = color;
             if (item.artwork?.is_text || item.artwork?.code === "TEXT") {
-                item.artwork.image = textArtworkSvg(item.artwork.name || "TEXT", color);
+                item.artwork.image = textArtworkSvg(
+                    item.layer.text || item.artwork.name || "TEXT",
+                    color,
+                    item.layer.text_style || item.artwork.text_style || {}
+                );
                 project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);
             } else if (item.mesh?.material?.color) {
                 item.mesh.material.color.set(color);
