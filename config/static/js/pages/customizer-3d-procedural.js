@@ -336,9 +336,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         //   so the model cannot jump to a different frame after refresh.
         const isPhone = window.matchMedia("(max-width: 600px)").matches;
 
-        // Desktop keeps the original two-axis fit; mobile has its own
-        // reference framing below. Do not change the mobile branch.
-        let distance = fitDistance * 1.06;
+        let distance = 0;
         let targetY = center.y;
         let cameraY = center.y;
 
