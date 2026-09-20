@@ -241,4 +241,14 @@ class UploadArtworkView(View):
         image = _file_url(request, artwork.image)
         if not image:
             return JsonResponse({"ok": False, "error": "تصویر پردازش‌شده در دسترس نیست."}, status=500)
-        return JsonResponse({"ok": True, "artwork": {"id": artwork.id, "code": artwork.code, "name": artwork.name, "image": image, "base_price": artwork.base_price, "background_removed": artwork.background_removed}})
+        return JsonResponse({
+            "ok": True,
+            "artwork": {
+                "id": artwork.id,
+                "code": artwork.code,
+                "name": artwork.name,
+                "image": image,
+                "base_price": artwork.base_price,
+                "background_removed": bool(artwork.background_removed),
+            },
+        })
