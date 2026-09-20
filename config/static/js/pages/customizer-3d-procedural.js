@@ -240,7 +240,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // toolbar occupies the lower part of the viewport, so the visual center
         // must sit slightly above the viewport center — not near the top.
         const mobileCameraY = mobile ? garmentMaxSize * 0.06 : garmentMaxSize * 0.015;
-        const targetY = mobile ? garmentMaxSize * 0.22 : garmentMaxSize * 0.025;
+        const targetY = mobile ? garmentMaxSize * 0.34 : garmentMaxSize * 0.025;
         camera.position.set(0, mobileCameraY, distance);
         controls.target.set(0, targetY, 0);
         if (initial) controls.update();
