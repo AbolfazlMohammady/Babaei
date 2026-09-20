@@ -328,52 +328,37 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const horizontalDistance =
             size.x / (2 * Math.tan(horizontalFov / 2));
 
-        // Reserve the fixed phone UI as a safe visual area. The old framing
-        // centered the garment in the full canvas, so an enlarged label could
-        // land underneath the bottom editing controls.
-        const viewportHeight = Math.max(
-            1,
-            stage.clientHeight || renderer?.domElement?.clientHeight || window.innerHeight
-        );
+        // Phone reference frame:
+        // - the garment center must sit at the real center of the phone viewport
+        // - the shirt should occupy roughly 44% of the viewport width, matching
+        //   the desired compact reference composition from the editor
+        // - the same rule is used on first load and on desktop -> mobile resize,
+        //   so the model cannot jump to a different frame after refresh.
         const isPhone = window.matchMedia("(max-width: 600px)").matches;
-        const safeTop = isPhone ? Math.min(72, viewportHeight * 0.09) : 0;
-        const safeBottom = isPhone ? Math.min(92, viewportHeight * 0.12) : 0;
-        const usableHeight = Math.max(
-            viewportHeight * 0.68,
-            viewportHeight - safeTop - safeBottom
-        );
 
-        const verticalDistanceSafe =
-            verticalDistance * (viewportHeight / usableHeight);
+        let distance = fitDistance * 1.06;
+        let targetY = center.y;
+        let cameraY = center.y;
 
-        // Fit both axes, but use the safe vertical area on phones.
-        const fitDistance = Math.max(
-            verticalDistanceSafe,
-            horizontalDistance,
-            size.z * 1.25
-        );
+        if (isPhone) {
+            const targetWidthRatio = 0.44;
+            const mobileWidthDistance =
+                horizontalDistance / targetWidthRatio;
 
-        // Preserve the compact phone scale while giving the selected-label
-        // toolbar enough room below the garment.
-        const distance = fitDistance * (mobile ? 1.52 : 1.06);
-        baseCameraDistance = distance;
+            distance = Math.max(
+                verticalDistance,
+                mobileWidthDistance,
+                size.z * 1.25
+            );
 
-        // The center of the camera view is the OrbitControls target. On phones
-        // place that center in the safe area above the bottom dock.
-        const visualCenterRatio = isPhone
-            ? (safeTop + usableHeight / 2) / viewportHeight
-            : 0.50;
-        const visualCenterShift = isPhone
-            ? (visualCenterRatio - 0.50)
-              * 2
-              * Math.tan(verticalFov / 2)
-              * distance
-            : 0;
+            // Exact screen-center anchor. Do not compensate for the bottom
+            // toolbar here; the toolbar is an overlay and the reference frame
+            // intentionally keeps the garment centered in the full viewport.
+            targetY = center.y;
+            cameraY = center.y;
+        }
 
-        const targetY = center.y + visualCenterShift;
-        const cameraY = center.y + visualCenterShift;
-
-        camera.position.set(0, cameraY, distance);
+        baseCameraDistance = distance;        camera.position.set(0, cameraY, distance);
         controls.target.set(center.x, targetY, center.z);
 
         camera.near = Math.max(0.01, distance / 100);
