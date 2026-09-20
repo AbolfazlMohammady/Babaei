@@ -1900,6 +1900,11 @@ body.customizer-page .customizer-price-card {
     min-height: 0 !important;
 }
 .customizer-stage--premium {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
     background:
         radial-gradient(circle at 50% 42%, rgba(255,255,255,.055), transparent 34%),
         radial-gradient(circle at 50% 80%, rgba(216,182,107,.055), transparent 42%),
