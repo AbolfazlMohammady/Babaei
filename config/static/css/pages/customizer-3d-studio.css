@@ -2776,8 +2776,10 @@ body.customizer-page .customizer-price-card {
     }
 
     /* Keep the actual garment visually centered in the phone viewport. */
+    /* CENTER-LOCK v1.1.0: camera owns vertical positioning.
+       Do not translate the WebGL canvas itself. */
     .designer-3d-stage #designer-3d-canvas {
-        transform: translateY(58px) !important;
+        transform: none !important;
     }
 
     /* Camera toolbar sits below the product instead of across it. */
