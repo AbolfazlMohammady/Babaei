@@ -202,14 +202,21 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         pmrem.dispose();
     }
 
-    async function loadGlbArrayBuffer(loader, url) {
+    async function loadGlb(loader, url) {
         const cacheName = "babaei-3d-models-v1";
+
+        const parseArrayBuffer = arrayBuffer => new Promise((resolve, reject) => {
+            const basePath = url.slice(0, url.lastIndexOf("/") + 1);
+            loader.parse(arrayBuffer, basePath, resolve, reject);
+        });
 
         if ("caches" in window) {
             try {
                 const cache = await caches.open(cacheName);
                 const cached = await cache.match(url);
-                if (cached) return await cached.arrayBuffer();
+                if (cached) {
+                    return await parseArrayBuffer(await cached.arrayBuffer());
+                }
 
                 const response = await fetch(url, {
                     credentials: "same-origin",
@@ -218,7 +225,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                 void cache.put(url, response.clone()).catch(() => {});
-                return await response.arrayBuffer();
+                return await parseArrayBuffer(await response.arrayBuffer());
             } catch {
                 // Cache Storage is best-effort; fall back to GLTFLoader below.
             }
@@ -238,7 +245,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         // Start the model request immediately. Cache Storage makes repeat
         // refreshes reuse the downloaded GLB when supported by the browser.
-        const gltfPromise = loadGlbArrayBuffer(loader, modelUrl);
+        const gltfPromise = loadGlb(loader, modelUrl);
 
         setupEnvironment();
         const gltf = await gltfPromise;
