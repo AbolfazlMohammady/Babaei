@@ -1,12 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}
-    BABAEI | Wear Your Story
-{% endblock %}
+{% block title %}BABAEI | Wear Your Story{% endblock %}
 
 {% block meta_description %}
-    BABAEI — لباس فقط پوشش نیست؛ راهی برای بیان خودت.
+BABAEI — لباس فقط پوشش نیست؛ راهی برای بیان خودت.
 {% endblock %}
 
 {% block body_class %}home-page{% endblock %}
@@ -16,43 +14,99 @@
 {% endblock %}
 
 {% block page_final_css %}
-    <link rel="stylesheet" href="{% static 'css/pages/home-motion.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/pages/home-motion.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
 
 <section class="hero" aria-label="BABAEI" data-home-hero>
+    <div class="hero__grain" aria-hidden="true"></div>
+
     <div class="hero__slider">
         <article class="hero__slide hero__slide--editorial is-active" aria-hidden="false">
-            <img class="hero__art" src="{% static 'images/home/garment-story.svg' %}" alt="لباس مشکی BABAEI" width="800" height="1000" fetchpriority="high">
-            <div class="hero__overlay"></div>
-            <div class="hero__content">
-                <p class="hero__eyebrow">A PIECE OF YOU</p>
-                <h1 class="hero__title">Wear<br>Your<br>Story</h1>
-                <p class="hero__description">هر تکه از استایل تو،<br>با یک انتخاب شروع می‌شود.</p>
-                <div class="hero__actions"><a href="{% url 'shop:index' %}" class="button button--light">کشف مجموعه</a><a href="#label-story" class="hero__link">ساختن یک امضا <span>↓</span></a></div>
+            <div class="hero__copy">
+                <span class="hero__eyebrow">A PIECE OF YOU</span>
+                <h1 class="hero__title">Wear<br>Your<br>Story<span>.</span></h1>
+                <p class="hero__description">بیش از یک لباس، روایت توست.</p>
+                <a href="{% url 'shop:index' %}" class="hero__cta">
+                    <span>مشاهده محصولات</span>
+                    <b>←</b>
+                </a>
+            </div>
+
+            <div class="hero__art-wrap">
+                <img
+                    class="hero__art"
+                    src="{% static 'images/home/garment-story.svg' %}"
+                    alt="تی‌شرت مشکی BABAEI"
+                    width="800"
+                    height="1000"
+                    fetchpriority="high"
+                >
+            </div>
+
+            <div class="hero__utility" aria-hidden="true">
+                <span class="hero__utility-line"></span>
+                <span>01</span>
+                <span>02</span>
+                <span>03</span>
+                <small>کیفیت<br>هویت<br>سبک زندگی</small>
+            </div>
+
+            <div class="hero__memory" aria-hidden="true">
+                CLOTHES<br>CARRY<br>MEMORIES
             </div>
         </article>
-        <div class="hero__counter" aria-label="نمایش اصلی"><span class="hero__current">01</span><span>/</span><span>01</span></div>
+
+        <div class="hero__scroll" aria-hidden="true">
+            <span>SCROLL</span>
+            <i></i>
+        </div>
+
+        <div class="hero__counter" aria-label="نمایش اصلی">
+            <span class="hero__current">01</span><span>/</span><span>01</span>
+        </div>
     </div>
 </section>
 
-<section class="categories section" data-motion-section>
+<section class="categories section" data-motion-section aria-labelledby="categories-title">
     <div class="section-header">
-        <h2>دسته‌بندی‌ها</h2>
-        <a href="{% url 'shop:index' %}" class="section-header__link">مشاهده همه <span>←</span></a>
+        <div>
+            <span class="section-kicker">01 / COLLECTION</span>
+            <h2 id="categories-title">دسته‌بندی‌ها</h2>
+        </div>
+        <a href="{% url 'shop:index' %}" class="section-header__link">
+            مشاهده همه <span>←</span>
+        </a>
     </div>
+
     <div class="categories__grid">
         {% for category in home_categories %}
-            <a href="{{ category.get_absolute_url }}" class="category-card">
+            <a href="{{ category.get_absolute_url }}" class="category-card" data-parallax-card>
                 <div class="category-card__image">
                     {% if category.image %}
-                        <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
+                        <img
+                            src="{{ category.image.url }}"
+                            alt="{{ category.name }}"
+                            loading="lazy"
+                            decoding="async"
+                        >
                     {% else %}
-                        <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ category.name }}" loading="lazy">
+                        <img
+                            src="{% static 'images/home/Tshirt.png' %}"
+                            alt="{{ category.name }}"
+                            loading="lazy"
+                            decoding="async"
+                        >
                     {% endif %}
                 </div>
-                <h3>{{ category.name }}</h3>
+                <div class="category-card__copy">
+                    <h3>{{ category.name }}</h3>
+                    <span>
+                        {% if forloop.counter == 1 %}T-SHIRTS{% elif forloop.counter == 2 %}HOODIES{% elif forloop.counter == 3 %}ACCESSORIES{% else %}NEW ARRIVALS{% endif %}
+                    </span>
+                    <b>←</b>
+                </div>
             </a>
         {% empty %}
             <p>هنوز دسته‌بندی فعالی برای نمایش وجود ندارد.</p>
@@ -60,59 +114,183 @@
     </div>
 </section>
 
-<section id="label-story" class="label-story" data-label-story data-motion-section aria-labelledby="label-story-title">
+<section
+    id="label-story"
+    class="label-story"
+    data-label-story
+    data-motion-section
+    aria-labelledby="label-story-title"
+>
     <div class="label-story__intro" data-reveal>
-        <span class="section-kicker">THE MAKING OF A PIECE</span>
-        <h2 id="label-story-title">ایده‌ات را<br><em>روی لباس</em> بنشان.</h2>
-        <p>هر لباس از یک انتخاب شروع می‌شود. اسکرول کن و ببین چطور هویت BABAEI روی یک تکه پارچه ماندگار می‌شود.</p>
+        <span class="section-kicker">02 / OUR CRAFT</span>
+        <h2 id="label-story-title">
+            ایده‌ات را<br><em>روی لباس</em> ببین.
+        </h2>
+        <p>
+            در BABAEI، هر لباس می‌تواند روایتگر داستان شما باشد.
+            با طراحی اختصاصی، لباسی بساز که مثل خودت منحصر‌به‌فرد باشد.
+        </p>
+        <a href="{% url 'shop:index' %}" class="label-story__cta">
+            <span>شروع طراحی اختصاصی</span>
+            <b>←</b>
+        </a>
     </div>
+
     <div class="label-story__scene">
+        <div class="label-story__scene-index" aria-hidden="true">
+            <span>SCROLL TO CREATE</span>
+            <i></i>
+        </div>
+
         <div class="label-story__halo" aria-hidden="true"></div>
+
         <div class="label-story__garment">
-            <img src="{% static 'images/home/garment-story.svg' %}" alt="تی‌شرت مشکی BABAEI" width="800" height="1000" loading="lazy" decoding="async">
+            <img
+                src="{% static 'images/home/garment-story.svg' %}"
+                alt="تی‌شرت مشکی BABAEI"
+                width="800"
+                height="1000"
+                loading="lazy"
+                decoding="async"
+            >
             <span class="label-story__target" aria-hidden="true"></span>
         </div>
+
+        <div class="label-story__guide label-story__guide--fabric" aria-hidden="true">
+            <i></i>
+            <span>پارچه باکیفیت<br>و با دوام</span>
+        </div>
+
+        <div class="label-story__guide label-story__guide--print" aria-hidden="true">
+            <i></i>
+            <span>طراحی دلخواه<br>دقیق و ماندگار</span>
+        </div>
+
+        <div class="label-story__guide label-story__guide--finish" aria-hidden="true">
+            <i></i>
+            <span>یک داستان منحصر به فرد<br>که فقط برای توست</span>
+        </div>
+
         <div class="label-story__label" data-label-piece>
             <span class="label-story__label-mark">B</span>
-            <span class="label-story__label-copy">BABAEI<br><small>WEAR YOUR STORY</small></span>
+            <span class="label-story__label-copy">
+                BABAEI
+                <small>WEAR YOUR STORY</small>
+            </span>
         </div>
-        <div class="label-story__caption label-story__caption--start">یک ایده</div>
-        <div class="label-story__caption label-story__caption--end">یک امضا</div>
+
+        <div class="label-story__caption label-story__caption--start">YOUR IDEA</div>
+        <div class="label-story__caption label-story__caption--end">YOUR LABEL</div>
     </div>
+
     <div class="label-story__outro" data-reveal>
         <span class="section-kicker">YOUR TURN</span>
-        <p>حالا نوبت توست که چیزی بسازی که فقط برای تو باشد.</p>
-        <a class="text-link" href="{% url 'shop:index' %}">دیدن مجموعه <span>←</span></a>
+        <p>یک لباس ساده را به بخشی از داستان خودت تبدیل کن.</p>
+        <a class="text-link" href="{% url 'shop:index' %}">
+            دیدن مجموعه <span>←</span>
+        </a>
     </div>
 </section>
 
-<section class="feature-banner" data-motion-section>
-    <div class="feature-banner__item"><img src="{% static 'images/home/black_left.png' %}" alt="طراحی اختصاصی BABAEI" loading="lazy"><div class="feature-banner__overlay"></div><div class="feature-banner__content"><h2>چیزی بپوش<br>که شبیه توست</h2><p>از یک محصول ساده شروع کن و<br>امضای خودت را به آن اضافه کن.</p><a href="{% url 'shop:index' %}" class="button button--light">انتخاب لباس</a></div></div>
-    <div class="feature-banner__item"><img src="{% static 'images/home/about_us.png' %}" alt="کیفیت در جزئیات BABAEI" loading="lazy"><div class="feature-banner__overlay"></div><div class="feature-banner__content feature-banner__content--dark"><h2>کمتر،<br>اما بهتر</h2><p>متریال باکیفیت، فرم دقیق<br>و جزئیاتی که دیده می‌شوند.</p><a href="#products">کشف مجموعه <span>←</span></a></div></div>
+<section class="feature-banner" data-motion-section aria-label="BABAEI stories">
+    <article class="feature-banner__item">
+        <img
+            src="{% static 'images/home/black_left.png' %}"
+            alt="طراحی اختصاصی BABAEI"
+            loading="lazy"
+            decoding="async"
+        >
+        <div class="feature-banner__overlay"></div>
+        <div class="feature-banner__content">
+            <span class="feature-banner__eyebrow">03 / MINIMAL</span>
+            <h2>سادگی،<br>همیشه برنده است.</h2>
+            <a href="{% url 'shop:index' %}" class="feature-banner__link">
+                مشاهده مجموعه <span>←</span>
+            </a>
+        </div>
+    </article>
+
+    <article class="feature-banner__item feature-banner__item--light">
+        <img
+            src="{% static 'images/home/about_us.png' %}"
+            alt="جزئیات BABAEI"
+            loading="lazy"
+            decoding="async"
+        >
+        <div class="feature-banner__overlay"></div>
+        <div class="feature-banner__content">
+            <span class="feature-banner__eyebrow">04 / DETAILS</span>
+            <h2>تفاوت<br>در جزئیات است.</h2>
+            <a href="{% url 'shop:index' %}" class="feature-banner__link">
+                درباره ما <span>←</span>
+            </a>
+        </div>
+    </article>
 </section>
 
 <section class="trust section" data-motion-section aria-label="مزایای خرید از BABAEI">
-    <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 8.5V6l-8-4-8 4v2.5M4 8.5l8 4 8-4M12 12.5V22M4 8.5V18l8 4 8-4V8.5"/></svg></div><h3>متریال خوب</h3><p>برای استفاده‌ی طولانی</p></div>
-    <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7zM6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></div><h3>ارسال مطمئن</h3><p>سریع و قابل پیگیری</p></div>
-    <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg></div><h3>خرید امن</h3><p>پرداخت راحت و مطمئن</p></div>
-    <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 5v5h-5"/></svg></div><h3>همراه تو</h3><p>پشتیبانی واقعی</p></div>
+    <div class="trust__item" data-reveal>
+        <div class="trust__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7zM6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+        </div>
+        <h3>ارسال سریع</h3>
+        <p>به سراسر ایران</p>
+    </div>
+    <div class="trust__item" data-reveal>
+        <div class="trust__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M8 8h8M8 16h8"/></svg>
+        </div>
+        <h3>پرداخت امن</h3>
+        <p>با خیال راحت خرید کن</p>
+    </div>
+    <div class="trust__item" data-reveal>
+        <div class="trust__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 4.2-2.3 7.8-7 10-4.7-2.2-7-5.8-7-10V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <h3>ضمانت کیفیت</h3>
+        <p>محصولات باکیفیت</p>
+    </div>
+    <div class="trust__item" data-reveal>
+        <div class="trust__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 5v5h-5"/></svg>
+        </div>
+        <h3>پشتیبانی واقعی</h3>
+        <p>همراه شما هستیم</p>
+    </div>
 </section>
 
-<section id="products" class="products section" data-motion-section>
+<section id="products" class="products section" data-motion-section aria-labelledby="products-title">
     <div class="section-header">
-        <h2>جدیدترین محصولات</h2>
-        <a href="{% url 'shop:index' %}" class="section-header__link">مشاهده همه <span>←</span></a>
+        <div>
+            <span class="section-kicker">05 / BEST SELLERS</span>
+            <h2 id="products-title">محبوب‌ترین محصولات</h2>
+        </div>
+        <a href="{% url 'shop:index' %}" class="section-header__link">
+            مشاهده همه <span>←</span>
+        </a>
     </div>
+
     <div class="products__grid">
         {% for product in home_products %}
-            <article class="product-card{% if forloop.first %} product-card--featured{% endif %}" data-reveal>
+            <article class="product-card" data-reveal>
                 <a href="{{ product.get_absolute_url }}" class="product-card__link" aria-label="مشاهده {{ product.name }}">
                     <div class="product-card__image">
                         {% if product.primary_image_url %}
-                            <img src="{{ product.primary_image_url }}" alt="{{ product.primary_image_alt|default:product.name }}" loading="lazy" decoding="async">
+                            <img
+                                src="{{ product.primary_image_url }}"
+                                alt="{{ product.primary_image_alt|default:product.name }}"
+                                loading="lazy"
+                                decoding="async"
+                            >
                         {% else %}
-                            <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy">
+                            <img
+                                src="{% static 'images/home/Tshirt.png' %}"
+                                alt="{{ product.name }}"
+                                loading="lazy"
+                                decoding="async"
+                            >
                         {% endif %}
+                        <span class="product-card__favorite" aria-hidden="true">♡</span>
                     </div>
                     <div class="product-card__info">
                         <h3>{{ product.name }}</h3>
@@ -126,11 +304,32 @@
     </div>
 </section>
 
-<section class="story" data-motion-story>
-    <div class="story__image"><img src="{% static 'images/home/every.png' %}" alt="Every Detail Matters" loading="lazy" decoding="async"><div class="story__overlay"></div><h2>Every<br>Detail<br>Matters</h2></div>
-    <div class="story__content"><p class="story__eyebrow">BABAEI</p><h2>همیشه یک قدم جلوتر</h2><p>جدیدترین محصولات، تخفیف‌ها<br>و اخبار BABAEI را از دست نده.</p><form class="newsletter" method="post">{% csrf_token %}<input type="email" name="email" placeholder="ایمیل خود را وارد کنید" aria-label="ایمیل" required><button type="submit" aria-label="عضویت">→</button></form><div class="social-links"><a href="#">Instagram</a><a href="#">Telegram</a><a href="#">YouTube</a><a href="#">LinkedIn</a></div></div>
+<section class="story" data-motion-story aria-label="BABAEI newsletter">
+    <div class="story__image">
+        <img
+            src="{% static 'images/home/every.png' %}"
+            alt="Every Detail Matters"
+            loading="lazy"
+            decoding="async"
+        >
+        <div class="story__overlay"></div>
+    </div>
+
+    <div class="story__content">
+        <span class="story__eyebrow">GOOD PEOPLE / GOOD STORIES</span>
+        <h2>داستانت را<br>با ما ادامه بده.</h2>
+        <p>جدیدترین محصولات و خبرهای BABAEI را از دست نده.</p>
+
+        <form class="newsletter" method="post">
+            {% csrf_token %}
+            <input type="email" name="email" placeholder="ایمیل شما" aria-label="ایمیل" required>
+            <button type="submit" aria-label="عضویت">←</button>
+        </form>
+    </div>
 </section>
 
 {% endblock %}
 
-{% block extra_js %}<script src="{% static 'js/pages/home.js' %}" defer></script>{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/pages/home.js' %}" defer></script>
+{% endblock %}
