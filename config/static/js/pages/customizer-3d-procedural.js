@@ -275,12 +275,17 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const distance = fitDistance * (mobile ? 1.04 : 1.06);
         baseCameraDistance = distance;
 
-        // CENTER-LOCK: the garment's real bounding-box center is the
-        // screen center. Do not apply mobile Y offsets here. The old offsets
-        // moved the camera/target away from the model center and made the
-        // garment appear stuck near the top/bottom depending on viewport size.
-        const targetY = center.y;
-        const cameraY = center.y;
+        // Keep the bounding-box center as the reference point, but apply a
+        // small phone-only visual bias. The mobile editor has a tall portrait
+        // viewport with fixed top/bottom UI, so a strict geometric center
+        // makes the shirt read too high. The bias is based on aspect ratio and
+        // is intentionally capped so larger portrait devices remain stable.
+        const isPhone = window.matchMedia("(max-width: 600px)").matches;
+        const visualCenterBias = isPhone
+            ? THREE.MathUtils.clamp((1 - aspect) * 0.34, 0.14, 0.24)
+            : 0;
+        const targetY = center.y + size.y * visualCenterBias;
+        const cameraY = center.y + size.y * visualCenterBias;
 
         camera.position.set(0, cameraY, distance);
         controls.target.set(center.x, targetY, center.z);
