@@ -230,14 +230,15 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const mobile = compactMedia.matches;
         const aspect = Math.max(0.35, camera.aspect || 1);
 
-        // PerspectiveCamera.fov is the VERTICAL FOV. On a portrait phone the
-        // horizontal FOV becomes very narrow, so fitting only by height causes
-        // the shirt's shoulders/sleeves to be cropped. This was the root cause
-        // of the previous mobile framing.
+        // The mobile viewport is portrait, so the horizontal FOV is much
+        // narrower than the vertical FOV. The camera must therefore be fitted
+        // against BOTH the garment width and height. Fitting by height alone
+        // crops the shoulders/sleeves on phones.
         //
-        // Use a wider vertical FOV on phones and fit against BOTH dimensions.
-        // This keeps the whole garment visible while preserving a useful scale.
-        const targetFov = mobile ? 40 : 28;
+        // A wider mobile FOV lets us keep the garment visually large while the
+        // two-axis fit guarantees that the complete shirt remains inside the
+        // canvas.
+        const targetFov = mobile ? 50 : 28;
         if (Math.abs(camera.fov - targetFov) > 0.01) {
             camera.fov = targetFov;
         }
@@ -257,33 +258,24 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const horizontalDistance =
             size.x / (2 * Math.tan(horizontalFov / 2));
 
-        // Desktop can safely fit against both axes because its stage is wide.
-        // On a portrait phone, using horizontalDistance makes the garment look
-        // unnaturally short/wide: the narrow horizontal FOV becomes the limiting
-        // axis. The reference desktop presentation is height-driven, so mobile
-        // must fit by the garment height while keeping its full width comfortably
-        // inside the portrait stage.
-        const fitDistance = mobile
-            ? verticalDistance
-            : Math.max(verticalDistance, horizontalDistance, size.z * 1.25);
+        // Fit the actual bounding box on both axes. The small depth term keeps
+        // the model from touching the camera when it is rotated.
+        const fitDistance = Math.max(
+            verticalDistance,
+            horizontalDistance,
+            size.z * 1.25
+        );
 
-        const distance = fitDistance * (mobile ? 1.08 : 1.06);
+        // Slightly tighter on mobile so the shirt is not unnecessarily small,
+        // while still leaving enough safety margin around the silhouette.
+        const distance = fitDistance * (mobile ? 1.04 : 1.06);
         baseCameraDistance = distance;
 
-        // The model was normalized around its actual bounding-box center.
-        // Aim the camera at that center instead of an arbitrary +52% Y offset.
-        // That arbitrary offset was responsible for the large empty band under
-        // the garment on phones.
-        // Keep the proven model scale/framing unchanged.
-        // On the portrait phone the garment is vertically too high, so move
-        // ONLY the look-at target upward. Do not move the camera itself and do
-        // not change the fitted distance: width/height framing stays untouched.
-        // Mobile: move the whole 3D viewing environment down inside the
-        // portrait viewport. Keep camera/target at the same vertical offset so
-        // garment scale, width and perspective stay unchanged.
-        const mobileCenterOffset = mobile ? size.y * 0.52 : 0;
-        const targetY = center.y + mobileCenterOffset + (mobile ? size.y * 0.015 : 0);
-        const cameraY = center.y + mobileCenterOffset + (mobile ? size.y * 0.025 : size.y * 0.015);
+        // Keep the model centered around its real bounding-box center.
+        // Do not use a large arbitrary Y offset: that was creating the huge
+        // empty black area below the garment on the phone.
+        const targetY = center.y + (mobile ? size.y * 0.035 : 0);
+        const cameraY = center.y + (mobile ? size.y * 0.045 : size.y * 0.015);
 
         camera.position.set(0, cameraY, distance);
         controls.target.set(center.x, targetY, center.z);
