@@ -100,6 +100,41 @@
                             <button type="button" id="desktop-text-add" aria-label="افزودن متن">افزودن</button>
                         </div>
                     </div>
+
+                    <div class="desktop-text-editor" id="desktop-text-editor" hidden>
+                        <div class="desktop-text-editor__head">
+                            <div>
+                                <span>طراحی متن انتخاب‌شده</span>
+                                <small>فونت، خمیدگی و فاصله حروف را تنظیم کن.</small>
+                            </div>
+                        </div>
+                        <input id="desktop-text-edit-input" type="text" maxlength="60" autocomplete="off" placeholder="متن">
+                        <div class="text-style-presets" id="desktop-text-style-presets" aria-label="استایل متن">
+                            <button type="button" data-text-style="modern">مدرن</button>
+                            <button type="button" data-text-style="classic">کلاسیک</button>
+                            <button type="button" data-text-style="impact">بولد</button>
+                            <button type="button" data-text-style="mono">تایپ</button>
+                            <button type="button" data-text-style="elegant">ظریف</button>
+                        </div>
+                        <label class="text-style-range">
+                            <span><b>خمیدگی</b><output id="desktop-text-curve-value">0</output></span>
+                            <input id="desktop-text-curve" type="range" min="-80" max="80" value="0" step="1">
+                        </label>
+                        <label class="text-style-range">
+                            <span><b>فاصله حروف</b><output id="desktop-text-spacing-value">0</output></span>
+                            <input id="desktop-text-spacing" type="range" min="-2" max="12" value="0" step="1">
+                        </label>
+                        <div class="text-style-colors" aria-label="رنگ متن">
+                            <button type="button" data-text-color="#ffffff" style="--swatch:#ffffff" aria-label="سفید"></button>
+                            <button type="button" data-text-color="#111111" style="--swatch:#111111" aria-label="مشکی"></button>
+                            <button type="button" data-text-color="#e53935" style="--swatch:#e53935" aria-label="قرمز"></button>
+                            <button type="button" data-text-color="#f59e0b" style="--swatch:#f59e0b" aria-label="نارنجی"></button>
+                            <button type="button" data-text-color="#22c55e" style="--swatch:#22c55e" aria-label="سبز"></button>
+                            <button type="button" data-text-color="#3b82f6" style="--swatch:#3b82f6" aria-label="آبی"></button>
+                            <button type="button" data-text-color="#8b5cf6" style="--swatch:#8b5cf6" aria-label="بنفش"></button>
+                        </div>
+                        <button type="button" class="desktop-text-editor__apply" id="desktop-text-apply">اعمال تغییرات متن</button>
+                    </div>
                     <div class="selected-label-tools__hint">اندازه، زاویه و موقعیت را از همین بخش کنترل کن.</div>
                 </div>
 
@@ -278,10 +313,42 @@
 
         <div class="mobile-text-sheet" id="mobile-text-sheet" hidden>
             <div class="mobile-text-sheet__head">
-                <div><small>افزودن به لباس</small><strong>متن خودت را بنویس</strong></div>
+                <div>
+                    <small id="mobile-text-sheet-mode">افزودن به لباس</small>
+                    <strong id="mobile-text-sheet-title">متن خودت را بنویس</strong>
+                </div>
                 <button type="button" id="mobile-text-close" aria-label="بستن">×</button>
             </div>
             <textarea id="mobile-text-input" maxlength="60" placeholder="مثلاً: BABAEI"></textarea>
+
+            <div class="mobile-text-style">
+                <div class="mobile-text-style__title">استایل متن</div>
+                <div class="text-style-presets" aria-label="استایل متن">
+                    <button type="button" data-text-style="modern">مدرن</button>
+                    <button type="button" data-text-style="classic">کلاسیک</button>
+                    <button type="button" data-text-style="impact">بولد</button>
+                    <button type="button" data-text-style="mono">تایپ</button>
+                    <button type="button" data-text-style="elegant">ظریف</button>
+                </div>
+                <label class="text-style-range">
+                    <span><b>خمیدگی</b><output id="mobile-text-curve-value">0</output></span>
+                    <input id="mobile-text-curve" type="range" min="-80" max="80" value="0" step="1">
+                </label>
+                <label class="text-style-range">
+                    <span><b>فاصله حروف</b><output id="mobile-text-spacing-value">0</output></span>
+                    <input id="mobile-text-spacing" type="range" min="-2" max="12" value="0" step="1">
+                </label>
+                <div class="text-style-colors" aria-label="رنگ متن">
+                    <button type="button" data-text-color="#ffffff" style="--swatch:#ffffff" aria-label="سفید"></button>
+                    <button type="button" data-text-color="#111111" style="--swatch:#111111" aria-label="مشکی"></button>
+                    <button type="button" data-text-color="#e53935" style="--swatch:#e53935" aria-label="قرمز"></button>
+                    <button type="button" data-text-color="#f59e0b" style="--swatch:#f59e0b" aria-label="نارنجی"></button>
+                    <button type="button" data-text-color="#22c55e" style="--swatch:#22c55e" aria-label="سبز"></button>
+                    <button type="button" data-text-color="#3b82f6" style="--swatch:#3b82f6" aria-label="آبی"></button>
+                    <button type="button" data-text-color="#8b5cf6" style="--swatch:#8b5cf6" aria-label="بنفش"></button>
+                </div>
+            </div>
+
             <button type="button" id="mobile-text-add" class="mobile-text-sheet__add">افزودن متن به تیشرت</button>
         </div>
     </main>
