@@ -734,17 +734,23 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function isValidPrintSurface(hit, area) {
-        if (!hit || !area || !is3DPrintableArea(area)) return false;
+        if (!hit || !area) return false;
 
         const normal = hitNormal(hit);
-        if (normal.dot(frontAxis) < 0.45) return false;
 
-        const point = normalizedGarmentPoint(hit.point);
-        return Boolean(point && pointInPolygon(point, area.geometry));
+        // A 3D garment has two printable faces. The front points toward +Z
+        // and the back toward -Z. Do not force the selected 2D print-area
+        // polygon here, because that polygon belongs to the front artwork map
+        // and would incorrectly block the back of the GLB.
+        //
+        // Keep the surface roughly facing the front/back direction so the
+        // decal cannot be placed on the inside of the collar or on steep
+        // side-facing surfaces.
+        return Math.abs(normal.dot(frontAxis)) >= 0.35;
     }
 
     function placementHit(area) {
-        if (!area || !is3DPrintableArea(area) || !camera || !garment) return null;
+        if (!area || !camera || !garment) return null;
 
         const center = areaCenter(area);
         const bounds = garmentNdcBounds();
