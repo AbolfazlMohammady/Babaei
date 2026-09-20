@@ -721,6 +721,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             // actually intersected the garment.
             if (!geometry.attributes.position?.count) {
                 geometry.dispose();
+
+                if (item.mesh) item.mesh.visible = true;
+                if (item.frame) item.frame.visible = item.id === selectedId;
+                if (item.handles) item.handles.visible = item.id === selectedId;
+                if (item.dragPreview) item.dragPreview.visible = false;
+
+                render();
                 return;
             }
 
@@ -842,6 +849,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             item.frame = frame;
             item.handles = handleGroup;
             item.dragPreview = dragPreview;
+            dragPreview.visible = false;
 
             if (previousMesh) {
                 previousMesh.geometry?.dispose();
@@ -1127,6 +1135,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function bind() {
         canvas.addEventListener("pointerdown", event => {
+            // Reset the ray to the exact point that was pressed. The shared
+            // raycaster is also used by hover/drag logic, so relying on its
+            // previous coordinates could select/move a label even when the
+            // user actually pressed somewhere else to orbit the shirt.
+            pointerOf(event);
+
             const decal = raycaster.intersectObjects(
                 Array.from(layers.values()).map(item => item.mesh).filter(Boolean),
                 true
@@ -1196,8 +1210,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 moveSelectedPreview(finalEvent);
 
                 const item = layers.get(selectedId);
-                const finalPoint = item?.surfacePoint;
-                const finalNormal = item?.surfaceNormal;
+                const finalPoint = item?.surfacePoint?.clone();
+                const finalNormal = item?.surfaceNormal?.clone();
 
                 drag = null;
                 dragEvent = null;
@@ -1205,9 +1219,16 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 canvas.releasePointerCapture?.(event.pointerId);
 
                 if (item && finalPoint && finalNormal) {
+                    // Restore the existing decal BEFORE rebuilding it. If the
+                    // new hit produces an empty DecalGeometry, project() keeps
+                    // the old decal instead of leaving the selected label hidden.
+                    if (item.mesh) item.mesh.visible = true;
                     project(item, finalPoint, finalNormal);
                 } else if (item) {
                     if (item.mesh) item.mesh.visible = true;
+                    if (item.frame) item.frame.visible = true;
+                    if (item.handles) item.handles.visible = true;
+                    if (item.dragPreview) item.dragPreview.visible = false;
                     sync();
                     render();
                 } else {
