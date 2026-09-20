@@ -5900,3 +5900,341 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
         left: 10px !important;
     }
 }
+
+/* =========================================================
+   Mobile studio v9 — focused phone layout
+   Keep the garment central, move actions to one thumb-friendly dock,
+   and keep camera controls separate from editing controls.
+   ========================================================= */
+@media (max-width: 600px) {
+    body.customizer-page .customizer-header {
+        position: fixed !important;
+        top: max(10px, env(safe-area-inset-top)) !important;
+        left: 16px !important;
+        right: 16px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        pointer-events: none !important;
+    }
+
+    body.customizer-page .customizer-header h1 {
+        max-width: 48vw !important;
+        margin: 0 !important;
+        font-size: 16px !important;
+        line-height: 1 !important;
+        text-align: center !important;
+    }
+
+    body.customizer-page .customizer-price-card {
+        position: fixed !important;
+        top: max(10px, env(safe-area-inset-top)) !important;
+        right: 16px !important;
+        width: 112px !important;
+        min-width: 112px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        padding: 5px 8px !important;
+        pointer-events: auto !important;
+    }
+
+    body.customizer-page .customizer-price-card span,
+    body.customizer-page .customizer-price-card small {
+        font-size: 8px !important;
+    }
+
+    body.customizer-page .customizer-price-card strong {
+        margin: 0 3px !important;
+        font-size: 14px !important;
+    }
+
+    .customizer-workspace--premium {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+    }
+
+    .customizer-stage-wrap--premium,
+    .customizer-stage--premium,
+    .designer-3d-stage {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+        padding: 0 !important;
+    }
+
+    .designer-3d-stage {
+        background:
+            radial-gradient(ellipse at 50% 43%, rgba(255,255,255,.075), transparent 34%),
+            radial-gradient(ellipse at 50% 74%, rgba(216,182,107,.055), transparent 38%),
+            linear-gradient(180deg, #171719 0%, #0b0b0d 55%, #070708 100%) !important;
+    }
+
+    .designer-3d-stage #designer-3d-canvas {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        transform: none !important;
+        touch-action: none !important;
+    }
+
+    .designer-3d-topbar {
+        display: flex !important;
+        top: calc(max(10px, env(safe-area-inset-top)) + 54px) !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        z-index: 15 !important;
+    }
+
+    .designer-3d-badge {
+        min-height: 28px !important;
+        padding: 6px 10px !important;
+        border-radius: 999px !important;
+        font-size: 9px !important;
+        white-space: nowrap !important;
+        background: rgba(10,10,12,.62) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+    }
+
+    .designer-3d-hint {
+        display: block !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: calc(max(8px, env(safe-area-inset-bottom)) + 166px) !important;
+        max-width: calc(100vw - 112px) !important;
+        padding: 6px 10px !important;
+        transform: translateX(-50%) !important;
+        border-radius: 999px !important;
+        font-size: 8px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        background: rgba(8,8,10,.58) !important;
+        border-color: rgba(255,255,255,.10) !important;
+        z-index: 12 !important;
+    }
+
+    /* Camera controls: one compact row above the main action dock. */
+    .designer-3d-bottom-controls {
+        position: fixed !important;
+        top: auto !important;
+        right: auto !important;
+        left: 50% !important;
+        bottom: calc(max(8px, env(safe-area-inset-bottom)) + 94px) !important;
+        width: max-content !important;
+        max-width: calc(100vw - 28px) !important;
+        min-height: 40px !important;
+        padding: 3px !important;
+        gap: 2px !important;
+        transform: translateX(-50%) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        border: 1px solid rgba(255,255,255,.12) !important;
+        border-radius: 14px !important;
+        background: rgba(10,10,12,.72) !important;
+        box-shadow: 0 10px 28px rgba(0,0,0,.30) !important;
+        backdrop-filter: blur(18px) !important;
+        -webkit-backdrop-filter: blur(18px) !important;
+        z-index: 30 !important;
+    }
+
+    .designer-3d-bottom-controls button {
+        width: 38px !important;
+        min-width: 38px !important;
+        height: 38px !important;
+        min-height: 38px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        background: transparent !important;
+        font-size: 17px !important;
+    }
+
+    .designer-3d-bottom-controls button:active,
+    .designer-3d-bottom-controls button:focus-visible {
+        background: rgba(216,182,107,.16) !important;
+        color: #f2d58d !important;
+    }
+
+    .designer-3d-bottom-controls span {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 38px !important;
+        font-size: 8px !important;
+        color: #aaa49a !important;
+    }
+
+    /* The old desktop zoom rail is redundant on a phone. */
+    .stage-controls--premium {
+        display: none !important;
+    }
+
+    /* One thumb-friendly action dock replaces the two vertical rails. */
+    .mobile-customizer-toolbar {
+        position: fixed !important;
+        top: auto !important;
+        left: max(8px, env(safe-area-inset-left)) !important;
+        right: max(8px, env(safe-area-inset-right)) !important;
+        bottom: max(8px, env(safe-area-inset-bottom)) !important;
+        width: auto !important;
+        height: 72px !important;
+        min-height: 72px !important;
+        padding: 6px !important;
+        gap: 4px !important;
+        transform: none !important;
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        border: 1px solid rgba(255,255,255,.12) !important;
+        border-radius: 20px !important;
+        background: rgba(14,14,17,.82) !important;
+        box-shadow: 0 14px 42px rgba(0,0,0,.42) !important;
+        backdrop-filter: blur(22px) saturate(135%) !important;
+        -webkit-backdrop-filter: blur(22px) saturate(135%) !important;
+        z-index: 40 !important;
+        transition: opacity .18s ease, transform .18s ease !important;
+    }
+
+    .mobile-customizer-toolbar.is-hidden {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transform: translateY(12px) !important;
+    }
+
+    .mobile-customizer-action {
+        width: 100% !important;
+        min-width: 0 !important;
+        height: 58px !important;
+        min-height: 58px !important;
+        padding: 4px 2px !important;
+        gap: 4px !important;
+        border: 1px solid transparent !important;
+        border-radius: 14px !important;
+        background: transparent !important;
+        color: #d7d1c6 !important;
+    }
+
+    .mobile-customizer-action:active,
+    .mobile-customizer-action:focus-visible {
+        background: rgba(216,182,107,.14) !important;
+        border-color: rgba(216,182,107,.24) !important;
+        color: #f2d58d !important;
+    }
+
+    .mobile-customizer-action__icon {
+        width: 28px !important;
+        height: 28px !important;
+        border-radius: 9px !important;
+        background: rgba(216,182,107,.10) !important;
+        color: #e4c475 !important;
+    }
+
+    .mobile-customizer-action__icon svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+    .mobile-customizer-action strong {
+        display: block !important;
+        font-size: 10px !important;
+        line-height: 1 !important;
+        font-weight: 850 !important;
+    }
+
+    /* Context actions sit above the dock; selection editing owns the bottom. */
+    .mobile-context-toolbar {
+        position: fixed !important;
+        left: max(8px, env(safe-area-inset-left)) !important;
+        right: max(8px, env(safe-area-inset-right)) !important;
+        bottom: calc(max(8px, env(safe-area-inset-bottom)) + 86px) !important;
+        width: auto !important;
+        height: 70px !important;
+        min-height: 70px !important;
+        padding: 6px !important;
+        gap: 4px !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        border-radius: 18px !important;
+        z-index: 35 !important;
+    }
+
+    .mobile-context-action {
+        min-width: 0 !important;
+        min-height: 56px !important;
+        border-radius: 12px !important;
+    }
+
+    .mobile-context-action strong {
+        font-size: 9px !important;
+    }
+
+    .mobile-context-action small {
+        display: none !important;
+    }
+
+    .mobile-selection-toolbar,
+    .mobile-color-sheet,
+    .mobile-text-sheet {
+        left: max(8px, env(safe-area-inset-left)) !important;
+        right: max(8px, env(safe-area-inset-right)) !important;
+        bottom: max(8px, env(safe-area-inset-bottom)) !important;
+        max-height: min(76svh, 560px) !important;
+        border-radius: 22px !important;
+        z-index: 60 !important;
+    }
+
+    /* Do not let author CSS override the semantic hidden attribute. */
+    .mobile-customizer-toolbar[hidden],
+    .mobile-context-toolbar[hidden],
+    .mobile-selection-toolbar[hidden],
+    .mobile-color-sheet[hidden],
+    .mobile-text-sheet[hidden] {
+        display: none !important;
+    }
+
+    .customizer-workspace--premium.mobile-drawer-open .designer-3d-bottom-controls,
+    .customizer-workspace--premium.mobile-drawer-open .mobile-customizer-toolbar {
+        opacity: .16 !important;
+        pointer-events: none !important;
+    }
+}
+
+@media (max-width: 430px) {
+    body.customizer-page .customizer-header {
+        left: 12px !important;
+        right: 12px !important;
+    }
+
+    body.customizer-page .customizer-header h1 {
+        max-width: 45vw !important;
+        font-size: 15px !important;
+    }
+
+    body.customizer-page .customizer-price-card {
+        right: 12px !important;
+        width: 102px !important;
+        min-width: 102px !important;
+    }
+
+    .designer-3d-bottom-controls {
+        bottom: calc(max(8px, env(safe-area-inset-bottom)) + 90px) !important;
+    }
+
+    .designer-3d-bottom-controls button {
+        width: 34px !important;
+        min-width: 34px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+    }
+
+    .designer-3d-bottom-controls span {
+        min-width: 34px !important;
+    }
+}

@@ -238,7 +238,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // A wider mobile FOV lets us keep the garment visually large while the
         // two-axis fit guarantees that the complete shirt remains inside the
         // canvas.
-        const targetFov = mobile ? 45 : 28;
+        // Portrait screens have very little horizontal field of view. A
+        // slightly tighter mobile FOV keeps the garment prominent without
+        // cropping the sleeves because the fit distance is still calculated
+        // from both axes below.
+        const targetFov = mobile ? 39 : 28;
         if (Math.abs(camera.fov - targetFov) > 0.01) {
             camera.fov = targetFov;
         }
