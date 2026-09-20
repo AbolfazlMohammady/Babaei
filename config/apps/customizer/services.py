@@ -19,6 +19,11 @@ MAX_ARTWORK_UPLOAD_BYTES = 8 * 1024 * 1024
 CUSTOM_UPLOAD_PRICE = 0
 
 
+def _is_3d_forbidden_area(area):
+    value = f"{area.key or ''} {area.name or ''}".lower()
+    return any(token in value for token in ("sleeve", "آستین", "collar", "یقه", "inside", "داخل"))
+
+
 @dataclass(frozen=True)
 class Placement:
     """Placement normalized to the print-area bounding box."""
@@ -163,6 +168,7 @@ def validate_design_payload(product, payload, variant=None, request=None):
     raw_layers = payload.get("layers", [])
     if not isinstance(raw_layers, list) or len(raw_layers) > 30:
         raise ValidationError("تعداد یا ساختار لیبل‌های طراحی نامعتبر است.")
+    is_3d_preview = payload.get("preview_mode") == "3d_glb_tshirt"
 
     if variant is not None and (variant.product_id != product.id or not variant.is_active or variant.stock_quantity <= 0):
         raise ValidationError("رنگ و سایز انتخاب‌شده موجود نیست.")
@@ -196,6 +202,8 @@ def validate_design_payload(product, payload, variant=None, request=None):
         try:
             area = areas[int(raw["area_id"])]
             artwork = artworks[int(raw["artwork_id"])]
+            if is_3d_preview and _is_3d_forbidden_area(area):
+                raise ValidationError(f"ناحیه «{area.name}» برای چاپ سه‌بعدی لیبل مجاز نیست.")
             placement = Placement(
                 x=float(raw["x"]), y=float(raw["y"]), width=float(raw["width"]),
                 height=float(raw["height"]), rotation=float(raw.get("rotation", 0)),
