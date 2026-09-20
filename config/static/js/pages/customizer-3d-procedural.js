@@ -238,7 +238,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // A wider mobile FOV lets us keep the garment visually large while the
         // two-axis fit guarantees that the complete shirt remains inside the
         // canvas.
-        const targetFov = mobile ? 50 : 28;
+        const targetFov = mobile ? 45 : 28;
         if (Math.abs(camera.fov - targetFov) > 0.01) {
             camera.fov = targetFov;
         }
@@ -271,11 +271,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const distance = fitDistance * (mobile ? 1.04 : 1.06);
         baseCameraDistance = distance;
 
-        // Keep the model centered around its real bounding-box center.
-        // Do not use a large arbitrary Y offset: that was creating the huge
-        // empty black area below the garment on the phone.
-        const targetY = center.y + (mobile ? size.y * 0.035 : 0);
-        const cameraY = center.y + (mobile ? size.y * 0.045 : size.y * 0.015);
+        // CENTER-LOCK: the garment's real bounding-box center is the
+        // screen center. Do not apply mobile Y offsets here. The old offsets
+        // moved the camera/target away from the model center and made the
+        // garment appear stuck near the top/bottom depending on viewport size.
+        const targetY = center.y;
+        const cameraY = center.y;
 
         camera.position.set(0, cameraY, distance);
         controls.target.set(center.x, targetY, center.z);
