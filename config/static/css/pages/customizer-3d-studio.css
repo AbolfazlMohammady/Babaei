@@ -6238,3 +6238,183 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
         min-width: 34px !important;
     }
 }
+
+
+/* =========================================================
+   Studio Text Designer — curved text, presets and color
+   ========================================================= */
+.desktop-text-editor {
+    margin-top: 12px;
+    padding: 13px;
+    border: 1px solid rgba(216,182,107,.15);
+    border-radius: 15px;
+    background: rgba(216,182,107,.045);
+}
+.desktop-text-editor[hidden] {
+    display: none !important;
+}
+.desktop-text-editor__head {
+    margin-bottom: 9px;
+}
+.desktop-text-editor__head span {
+    display: block;
+    color: #eee8df;
+    font-size: 11px;
+    font-weight: 850;
+}
+.desktop-text-editor__head small {
+    display: block;
+    margin-top: 4px;
+    color: #77736d;
+    font-size: 7px;
+    line-height: 1.5;
+}
+.desktop-text-editor > input {
+    width: 100%;
+    height: 40px;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 10px;
+    outline: none;
+    background: rgba(0,0,0,.22);
+    color: #f4efe8;
+    font: inherit;
+    font-size: 10px;
+    direction: rtl;
+}
+.desktop-text-editor > input:focus {
+    border-color: rgba(216,182,107,.52);
+    box-shadow: 0 0 0 3px rgba(216,182,107,.07);
+}
+
+.text-style-presets {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0,1fr));
+    gap: 5px;
+    margin-top: 9px;
+}
+.text-style-presets button {
+    min-width: 0;
+    min-height: 34px;
+    padding: 0 4px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 9px;
+    background: rgba(255,255,255,.035);
+    color: #aaa49a;
+    font-size: 7px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.text-style-presets button.is-active {
+    border-color: rgba(216,182,107,.42);
+    background: rgba(216,182,107,.13);
+    color: #f0d48d;
+}
+
+.text-style-range {
+    display: block;
+    margin-top: 10px;
+}
+.text-style-range > span {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: #aaa49a;
+    font-size: 8px;
+}
+.text-style-range output {
+    color: var(--studio-accent);
+    font-size: 8px;
+    font-weight: 850;
+}
+.text-style-range input {
+    width: 100%;
+    margin-top: 7px;
+    accent-color: var(--studio-accent);
+}
+.text-style-colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+.text-style-colors button {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 2px solid rgba(255,255,255,.16);
+    border-radius: 50%;
+    background: var(--swatch);
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    cursor: pointer;
+}
+.text-style-colors button.is-active {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px rgba(216,182,107,.48);
+}
+.desktop-text-editor__apply {
+    width: 100%;
+    min-height: 40px;
+    margin-top: 11px;
+    border: 1px solid rgba(83,190,92,.26);
+    border-radius: 10px;
+    background: rgba(83,190,92,.14);
+    color: var(--studio-success);
+    font-size: 9px;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.mobile-text-style {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,.08);
+}
+.mobile-text-style__title {
+    color: #eee8df;
+    font-size: 9px;
+    font-weight: 850;
+    margin-bottom: 7px;
+}
+
+@media (max-width: 820px) {
+    .mobile-text-sheet {
+        max-height: min(82svh, 620px) !important;
+        padding-bottom: max(14px, env(safe-area-inset-bottom)) !important;
+    }
+    .mobile-text-sheet textarea {
+        min-height: 88px !important;
+    }
+    .mobile-text-style .text-style-presets {
+        grid-template-columns: repeat(5, minmax(0,1fr));
+    }
+    .mobile-text-style .text-style-presets button {
+        min-height: 36px;
+        font-size: 7px;
+    }
+    .mobile-text-style .text-style-range {
+        margin-top: 9px;
+    }
+    .mobile-text-style .text-style-colors {
+        gap: 7px;
+    }
+    .mobile-text-style .text-style-colors button {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+@media (max-width: 430px) {
+    .mobile-text-sheet {
+        max-height: min(85svh, 640px) !important;
+    }
+    .mobile-text-style .text-style-presets {
+        gap: 4px;
+    }
+    .mobile-text-style .text-style-presets button {
+        min-height: 34px;
+        padding-inline: 2px;
+    }
+}
