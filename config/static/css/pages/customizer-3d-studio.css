@@ -5564,3 +5564,337 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
     .desktop-text-tools { display: none !important; }
 }
 
+
+
+/* =========================================================
+   Mobile studio — responsive version of the desktop studio
+   Uses the existing desktop components; no duplicate UI.
+   ========================================================= */
+@media (max-width: 600px) {
+    body.customizer-page {
+        background: #080809 !important;
+    }
+
+    body.customizer-page .customizer-shell--premium,
+    body.customizer-page .customizer-workspace--premium {
+        width: 100vw !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+    }
+
+    body.customizer-page .customizer-header {
+        top: max(12px, env(safe-area-inset-top)) !important;
+        left: 76px !important;
+        right: 76px !important;
+        height: 44px !important;
+        justify-content: center !important;
+        z-index: 80 !important;
+    }
+
+    body.customizer-page .customizer-header h1 {
+        font-size: 18px !important;
+        font-weight: 900 !important;
+        white-space: nowrap !important;
+    }
+
+    body.customizer-page .customizer-price-card {
+        position: fixed !important;
+        top: max(10px, env(safe-area-inset-top)) !important;
+        right: 10px !important;
+        min-width: 0 !important;
+        width: 116px !important;
+        height: 44px !important;
+        padding: 5px 9px !important;
+        z-index: 90 !important;
+    }
+
+    .customizer-stage-wrap--premium {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+    }
+
+    .customizer-stage--premium,
+    .designer-3d-stage {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 100dvh !important;
+    }
+
+    .designer-3d-topbar {
+        display: none !important;
+    }
+
+    /* Existing mobile action bar becomes the desktop left toolbar. */
+    .mobile-customizer-toolbar {
+        position: fixed !important;
+        top: 50% !important;
+        left: max(10px, env(safe-area-inset-left)) !important;
+        right: auto !important;
+        bottom: auto !important;
+        width: 50px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        transform: translateY(-50%) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 9px !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        z-index: 100 !important;
+    }
+
+    .mobile-customizer-action {
+        width: 50px !important;
+        min-width: 50px !important;
+        height: 50px !important;
+        min-height: 50px !important;
+        padding: 0 !important;
+        border-radius: 14px !important;
+        border: 1px solid rgba(255,255,255,.13) !important;
+        background: rgba(12,12,14,.68) !important;
+        box-shadow: 0 10px 26px rgba(0,0,0,.28) !important;
+        backdrop-filter: blur(15px) !important;
+        -webkit-backdrop-filter: blur(15px) !important;
+    }
+
+    .mobile-customizer-action__icon {
+        width: 26px !important;
+        height: 26px !important;
+        background: transparent !important;
+        color: #d9d5ce !important;
+    }
+
+    .mobile-customizer-action strong {
+        display: none !important;
+    }
+
+    .mobile-customizer-action[data-mobile-action="product"] .mobile-customizer-action__icon {
+        color: #e2bd68 !important;
+    }
+
+    /* Existing camera controls become the right toolbar. */
+    .designer-3d-bottom-controls {
+        position: fixed !important;
+        top: 50% !important;
+        right: max(10px, env(safe-area-inset-right)) !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: 50px !important;
+        max-width: none !important;
+        padding: 0 !important;
+        transform: translateY(-50%) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 9px !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        z-index: 100 !important;
+    }
+
+    .designer-3d-bottom-controls button {
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        border-radius: 14px !important;
+        border: 1px solid rgba(255,255,255,.13) !important;
+        background: rgba(12,12,14,.68) !important;
+        color: #d9d5ce !important;
+        backdrop-filter: blur(15px) !important;
+        -webkit-backdrop-filter: blur(15px) !important;
+        font-size: 21px !important;
+    }
+
+    .designer-3d-bottom-controls span {
+        display: none !important;
+    }
+
+    /* Keep all camera actions; unlike the previous implementation, none are
+       discarded so the mobile version remains functionally equivalent. */
+    .designer-3d-bottom-controls button[data-camera-action="zoom-out"],
+    .designer-3d-bottom-controls button[data-camera-action="zoom-in"] {
+        order: 3;
+    }
+
+    /* Zoom control from the shared desktop stage. */
+    .stage-controls--premium {
+        position: fixed !important;
+        left: 14px !important;
+        right: auto !important;
+        bottom: max(14px, env(safe-area-inset-bottom)) !important;
+        z-index: 101 !important;
+    }
+
+    .stage-control-group {
+        min-height: 48px !important;
+        height: 48px !important;
+        min-width: 148px !important;
+        padding: 4px !important;
+        border-radius: 15px !important;
+        background: rgba(12,12,14,.72) !important;
+        border: 1px solid rgba(255,255,255,.12) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+    }
+
+    .stage-control-group button {
+        min-width: 42px !important;
+        height: 40px !important;
+        border-radius: 11px !important;
+        font-size: 23px !important;
+    }
+
+    .stage-control-group span {
+        min-width: 42px !important;
+        font-size: 11px !important;
+    }
+
+    /* Drawer toggles are redundant on phone; the shared toolbar opens them. */
+    .studio-drawer-toggle--left,
+    .studio-drawer-toggle--right {
+        display: none !important;
+    }
+
+    /* Actual desktop panels become bottom sheets. */
+    .customizer-panel--premium-left,
+    .customizer-panel--premium-right {
+        left: 8px !important;
+        right: 8px !important;
+        bottom: max(8px, env(safe-area-inset-bottom)) !important;
+        width: auto !important;
+        height: min(62svh, 520px) !important;
+        max-height: min(62svh, 520px) !important;
+        padding: 14px !important;
+        border-radius: 22px !important;
+        background: linear-gradient(180deg, rgba(24,24,27,.97), rgba(10,10,12,.97)) !important;
+        border: 1px solid rgba(255,255,255,.13) !important;
+        box-shadow: 0 -20px 80px rgba(0,0,0,.60) !important;
+        backdrop-filter: blur(25px) saturate(125%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(125%) !important;
+        overflow-y: auto !important;
+        z-index: 120 !important;
+    }
+
+    .customizer-panel--premium-left.is-drawer-closed,
+    .customizer-panel--premium-right.is-drawer-closed {
+        transform: translateY(calc(100% + 32px)) !important;
+    }
+
+    .customizer-panel--premium-left::before,
+    .customizer-panel--premium-right::before {
+        width: 42px !important;
+        height: 4px !important;
+        margin: 0 auto 12px !important;
+        background: rgba(255,255,255,.22) !important;
+    }
+
+    .studio-tools-panel__heading,
+    .customizer-panel--premium-right .panel-heading {
+        position: sticky !important;
+        top: -14px !important;
+        z-index: 10 !important;
+        background: rgba(20,20,22,.96) !important;
+        padding: 8px 0 12px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .studio-tools-panel__heading h2,
+    .customizer-panel--premium-right .panel-heading h2 {
+        font-size: 18px !important;
+    }
+
+    .selected-label-tools--left {
+        padding: 12px !important;
+    }
+
+    .customizer-panel--premium-right .premium-setting-group {
+        padding: 13px !important;
+        margin-top: 8px !important;
+    }
+
+    .customizer-panel--premium-right .premium-color-button {
+        width: 38px !important;
+        height: 38px !important;
+    }
+
+    .customizer-panel--premium-right .premium-size-list {
+        grid-template-columns: repeat(4, minmax(0,1fr)) !important;
+    }
+
+    .customizer-panel--premium-right .premium-size-button {
+        min-height: 42px !important;
+        font-size: 11px !important;
+    }
+
+    /* Selection/context controls stay above the sheet and use the same visual
+       language as the desktop floating controls. */
+    .mobile-context-toolbar,
+    .mobile-selection-toolbar {
+        left: 8px !important;
+        right: 8px !important;
+        bottom: max(8px, env(safe-area-inset-bottom)) !important;
+        z-index: 115 !important;
+    }
+
+    .mobile-context-toolbar {
+        height: 68px !important;
+        min-height: 68px !important;
+        border-radius: 18px !important;
+    }
+
+    .mobile-selection-toolbar {
+        max-height: 58svh !important;
+        border-radius: 20px !important;
+    }
+
+    /* When a bottom sheet opens, hide the floating tool rail so the hierarchy
+       matches the desktop drawer behavior. */
+    .customizer-workspace--premium.mobile-drawer-open .mobile-customizer-toolbar {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transform: translate(-14px, -50%) !important;
+    }
+
+    .customizer-workspace--premium.mobile-drawer-open .designer-3d-bottom-controls,
+    .customizer-workspace--premium.mobile-drawer-open .stage-controls--premium {
+        opacity: .18 !important;
+        pointer-events: none !important;
+    }
+}
+
+@media (max-width: 430px) {
+    body.customizer-page .customizer-header {
+        left: 66px !important;
+        right: 66px !important;
+    }
+
+    body.customizer-page .customizer-header h1 {
+        font-size: 16px !important;
+    }
+
+    body.customizer-page .customizer-price-card {
+        width: 104px !important;
+    }
+
+    .mobile-customizer-toolbar,
+    .designer-3d-bottom-controls {
+        width: 46px !important;
+    }
+
+    .mobile-customizer-action,
+    .designer-3d-bottom-controls button {
+        width: 46px !important;
+        min-width: 46px !important;
+        height: 46px !important;
+        min-height: 46px !important;
+    }
+
+    .stage-controls--premium {
+        left: 10px !important;
+    }
+}
