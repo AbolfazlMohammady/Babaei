@@ -319,10 +319,14 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function resize() {
         if (!renderer || !camera) return;
-        // Size the renderer from the actual display box. This avoids
-        // viewport-vs-stage mismatches when the phone emulator changes size.
-        const width = Math.max(1, canvas.clientWidth || stage.clientWidth);
-        const height = Math.max(1, canvas.clientHeight || stage.clientHeight);
+        // The canvas may still have an inline height from an older responsive
+        // breakpoint. Never use canvas.clientHeight as the source of truth:
+        // that can lock the WebGL viewport to the old mobile height and leave
+        // the lower half of the 3D stage unrendered.
+        // The stage itself is the authoritative mobile viewport.
+        const stageRect = stage.getBoundingClientRect();
+        const width = Math.max(1, Math.round(stageRect.width));
+        const height = Math.max(1, Math.round(stageRect.height));
 
         const mobile = compactMedia.matches;
         const pixelRatioCap = mobile ? 1.5 : 2;
