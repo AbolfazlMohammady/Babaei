@@ -5922,3 +5922,145 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
         min-width: 135px;
     }
 }
+
+@media (max-width: 600px) {
+    /* Reference composition: left tool rail, right camera rail, bottom zoom. */
+    .mobile-customizer-toolbar {
+        position: fixed !important;
+        top: 50% !important;
+        left: 14px !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: translateY(-50%) !important;
+        width: 54px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        z-index: 105 !important;
+    }
+
+    .mobile-customizer-action {
+        width: 54px !important;
+        min-width: 54px !important;
+        height: 54px !important;
+        min-height: 54px !important;
+        padding: 0 !important;
+        border-radius: 15px !important;
+        border: 1px solid rgba(255,255,255,.14) !important;
+        background: rgba(13,13,15,.64) !important;
+        box-shadow: 0 10px 28px rgba(0,0,0,.22) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        display: grid !important;
+        place-items: center !important;
+    }
+
+    .mobile-customizer-action__icon {
+        width: 27px !important;
+        height: 27px !important;
+        background: transparent !important;
+        color: #d9d5cd !important;
+        border-radius: 0 !important;
+    }
+
+    .mobile-customizer-action strong {
+        display: none !important;
+    }
+
+    .mobile-customizer-action[data-mobile-action="product"] .mobile-customizer-action__icon {
+        color: #e6c56f !important;
+    }
+
+    .designer-3d-bottom-controls {
+        top: 50% !important;
+        right: 14px !important;
+        left: auto !important;
+        bottom: auto !important;
+        transform: translateY(-50%) !important;
+        width: 54px !important;
+        max-width: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        z-index: 105 !important;
+    }
+
+    .designer-3d-bottom-controls button {
+        display: none !important;
+    }
+
+    .designer-3d-bottom-controls button[data-camera-action="rotate-left"],
+    .designer-3d-bottom-controls button[data-camera-action="rotate-right"],
+    .designer-3d-bottom-controls button[data-camera-action="fit"] {
+        display: grid !important;
+        place-items: center !important;
+        width: 54px !important;
+        height: 54px !important;
+        min-width: 54px !important;
+        border-radius: 15px !important;
+        border: 1px solid rgba(255,255,255,.14) !important;
+        background: rgba(13,13,15,.64) !important;
+        color: #d9d5cd !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        font-size: 24px !important;
+    }
+
+    .designer-3d-bottom-controls span {
+        display: none !important;
+    }
+
+    .stage-controls--premium {
+        position: fixed !important;
+        left: 20px !important;
+        right: auto !important;
+        bottom: calc(min(39svh, 355px) + 26px) !important;
+        z-index: 105 !important;
+        display: block !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: 0 !important;
+    }
+
+    .stage-control-group {
+        height: 56px !important;
+        min-height: 56px !important;
+        min-width: 148px !important;
+        padding: 4px !important;
+        border-radius: 16px !important;
+        border: 1px solid rgba(255,255,255,.12) !important;
+        background: rgba(13,13,15,.68) !important;
+        box-shadow: 0 12px 30px rgba(0,0,0,.24) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+    }
+
+    .stage-control-group button {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        border-radius: 12px !important;
+        font-size: 27px !important;
+    }
+
+    .stage-control-group span {
+        min-width: 46px !important;
+        font-size: 13px !important;
+        color: #aaa59d !important;
+    }
+
+    .mobile-studio-sheet {
+        height: min(39svh, 355px) !important;
+    }
+}
