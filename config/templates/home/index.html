@@ -15,9 +15,13 @@
     <link rel="stylesheet" href="{% static 'css/pages/home.css' %}">
 {% endblock %}
 
+{% block page_final_css %}
+    <link rel="stylesheet" href="{% static 'css/pages/home-motion.css' %}?v=1">
+{% endblock %}
+
 {% block content %}
 
-<section class="hero" aria-label="BABAEI">
+<section class="hero" aria-label="BABAEI" data-home-hero>
     <div class="hero__slider">
         <article class="hero__slide hero__slide--editorial is-active" aria-hidden="false">
             <img class="hero__art" src="{% static 'images/home/garment-story.svg' %}" alt="لباس مشکی BABAEI" width="800" height="1000" fetchpriority="high">
@@ -33,7 +37,7 @@
     </div>
 </section>
 
-<section class="categories section">
+<section class="categories section" data-motion-section>
     <div class="section-header">
         <h2>دسته‌بندی‌ها</h2>
         <a href="{% url 'shop:index' %}" class="section-header__link">مشاهده همه <span>←</span></a>
@@ -56,7 +60,7 @@
     </div>
 </section>
 
-<section id="label-story" class="label-story" data-label-story aria-labelledby="label-story-title">
+<section id="label-story" class="label-story" data-label-story data-motion-section aria-labelledby="label-story-title">
     <div class="label-story__intro" data-reveal>
         <span class="section-kicker">THE MAKING OF A PIECE</span>
         <h2 id="label-story-title">ایده‌ات را<br><em>روی لباس</em> بنشان.</h2>
@@ -82,19 +86,19 @@
     </div>
 </section>
 
-<section class="feature-banner">
+<section class="feature-banner" data-motion-section>
     <div class="feature-banner__item"><img src="{% static 'images/home/black_left.png' %}" alt="طراحی اختصاصی BABAEI" loading="lazy"><div class="feature-banner__overlay"></div><div class="feature-banner__content"><h2>چیزی بپوش<br>که شبیه توست</h2><p>از یک محصول ساده شروع کن و<br>امضای خودت را به آن اضافه کن.</p><a href="{% url 'shop:index' %}" class="button button--light">انتخاب لباس</a></div></div>
     <div class="feature-banner__item"><img src="{% static 'images/home/about_us.png' %}" alt="کیفیت در جزئیات BABAEI" loading="lazy"><div class="feature-banner__overlay"></div><div class="feature-banner__content feature-banner__content--dark"><h2>کمتر،<br>اما بهتر</h2><p>متریال باکیفیت، فرم دقیق<br>و جزئیاتی که دیده می‌شوند.</p><a href="#products">کشف مجموعه <span>←</span></a></div></div>
 </section>
 
-<section class="trust section" aria-label="مزایای خرید از BABAEI">
+<section class="trust section" data-motion-section aria-label="مزایای خرید از BABAEI">
     <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 8.5V6l-8-4-8 4v2.5M4 8.5l8 4 8-4M12 12.5V22M4 8.5V18l8 4 8-4V8.5"/></svg></div><h3>متریال خوب</h3><p>برای استفاده‌ی طولانی</p></div>
     <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7zM6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></div><h3>ارسال مطمئن</h3><p>سریع و قابل پیگیری</p></div>
     <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg></div><h3>خرید امن</h3><p>پرداخت راحت و مطمئن</p></div>
     <div class="trust__item"><div class="trust__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 5v5h-5"/></svg></div><h3>همراه تو</h3><p>پشتیبانی واقعی</p></div>
 </section>
 
-<section id="products" class="products section">
+<section id="products" class="products section" data-motion-section>
     <div class="section-header">
         <h2>جدیدترین محصولات</h2>
         <a href="{% url 'shop:index' %}" class="section-header__link">مشاهده همه <span>←</span></a>
@@ -105,7 +109,7 @@
                 <a href="{{ product.get_absolute_url }}" class="product-card__link" aria-label="مشاهده {{ product.name }}">
                     <div class="product-card__image">
                         {% if product.primary_image_url %}
-                            <img src="{{ product.primary_image_url }}" alt="{{ product.primary_image_alt|default:product.name }}" loading="lazy">
+                            <img src="{{ product.primary_image_url }}" alt="{{ product.primary_image_alt|default:product.name }}" loading="lazy" decoding="async">
                         {% else %}
                             <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy">
                         {% endif %}
@@ -122,8 +126,8 @@
     </div>
 </section>
 
-<section class="story">
-    <div class="story__image"><img src="{% static 'images/home/every.png' %}" alt="Every Detail Matters" loading="lazy"><div class="story__overlay"></div><h2>Every<br>Detail<br>Matters</h2></div>
+<section class="story" data-motion-story>
+    <div class="story__image"><img src="{% static 'images/home/every.png' %}" alt="Every Detail Matters" loading="lazy" decoding="async"><div class="story__overlay"></div><h2>Every<br>Detail<br>Matters</h2></div>
     <div class="story__content"><p class="story__eyebrow">BABAEI</p><h2>همیشه یک قدم جلوتر</h2><p>جدیدترین محصولات، تخفیف‌ها<br>و اخبار BABAEI را از دست نده.</p><form class="newsletter" method="post">{% csrf_token %}<input type="email" name="email" placeholder="ایمیل خود را وارد کنید" aria-label="ایمیل" required><button type="submit" aria-label="عضویت">→</button></form><div class="social-links"><a href="#">Instagram</a><a href="#">Telegram</a><a href="#">YouTube</a><a href="#">LinkedIn</a></div></div>
 </section>
 
