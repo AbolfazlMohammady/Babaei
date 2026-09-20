@@ -70,6 +70,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     const modelUrl = stage.dataset.modelUrl;
     const compactMedia = window.matchMedia("(max-width: 1023px)");
     let renderFrameId = 0;
+    let shadowMapDirty = true;
+    let resizePending = false;
 
     function status(text) {
         const el = document.getElementById("save-status");
@@ -120,8 +122,18 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.05;
+
+        // Keep the existing look, but avoid rebuilding the shadow atlas on
+        // every render. The shadow map only changes when the garment itself
+        // changes; camera orbiting and label edits do not require a new map.
+        const lowPowerDevice =
+            compactMedia.matches ||
+            Number(navigator.deviceMemory || 8) <= 4 ||
+            Number(navigator.hardwareConcurrency || 8) <= 4;
+
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowMap.autoUpdate = false;
 
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
@@ -140,7 +152,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const key = new THREE.DirectionalLight(0xffffff, 3.2);
         key.position.set(3.5, 4.5, 5.5);
         key.castShadow = true;
-        key.shadow.mapSize.set(1024, 1024);
+        const shadowResolution = lowPowerDevice ? 512 : 1024;
+        key.shadow.mapSize.set(shadowResolution, shadowResolution);
         scene.add(key);
 
         const fill = new THREE.DirectionalLight(0xdfe8ff, 1.25);
@@ -197,6 +210,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const finalMax = Math.max(finalSize.x, finalSize.y, finalSize.z);
 
         garmentMaxSize = finalMax;
+        shadowMapDirty = true;
         controls.target.set(0, finalSize.y * 0.03, 0);
         controls.minDistance = Math.max(2.6, finalMax * 0.72);
         controls.maxDistance = Math.max(8.5, finalMax * 2.5);
@@ -404,13 +418,17 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     function rotateGarment(step) {
         if (!garment) return;
         garment.rotation.y += THREE.MathUtils.degToRad(step);
+        shadowMapDirty = true;
         render();
     }
 
     function resize() {
         if (!renderer || !camera) return;
+        if (resizePending) return;
 
+        resizePending = true;
         const apply = () => {
+            resizePending = false;
             // Wait for the responsive CSS layout to settle before measuring
             // the stage. This prevents the desktop camera framing from
             // surviving the first desktop -> phone transition in DevTools.
@@ -419,7 +437,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             const height = Math.max(1, Math.round(stageRect.height));
 
             const mobile = compactMedia.matches;
-            const pixelRatioCap = mobile ? 1.5 : 2;
+            const lowPowerDevice =
+                mobile ||
+                Number(navigator.deviceMemory || 8) <= 4 ||
+                Number(navigator.hardwareConcurrency || 8) <= 4;
+            const pixelRatioCap = lowPowerDevice
+                ? 1.25
+                : 1.75;
 
             if (garment) {
                 applyResponsiveGarmentScale();
@@ -458,7 +482,14 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function render() {
-        if (renderer && scene && camera) renderer.render(scene, camera);
+        if (!renderer || !scene || !camera) return;
+
+        if (renderer.shadowMap.enabled && shadowMapDirty) {
+            renderer.shadowMap.needsUpdate = true;
+            shadowMapDirty = false;
+        }
+
+        renderer.render(scene, camera);
     }
 
     function scheduleRenderLoop() {
@@ -489,7 +520,14 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         if (textures.has(url)) return textures.get(url);
         const promise = new THREE.TextureLoader().loadAsync(url).then(texture => {
             texture.colorSpace = THREE.SRGBColorSpace;
-            texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+            const lowPowerDevice =
+                compactMedia.matches ||
+                Number(navigator.deviceMemory || 8) <= 4 ||
+                Number(navigator.hardwareConcurrency || 8) <= 4;
+            texture.anisotropy = Math.min(
+                renderer.capabilities.getMaxAnisotropy(),
+                lowPowerDevice ? 2 : 4
+            );
             return texture;
         });
         textures.set(url, promise);
