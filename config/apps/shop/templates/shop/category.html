@@ -23,7 +23,7 @@
         <span aria-current="page">{{ category.name }}</span>
     </nav>
 
-    <header class="category-intro">
+    <header class="category-intro" data-reveal>
         <div class="shop-kicker">BABAEI / CATEGORY</div>
         <h1>{{ category.name }}</h1>
         {% if category.description %}<p>{{ category.description }}</p>{% endif %}
@@ -31,7 +31,7 @@
 
     <div class="products" aria-label="محصولات {{ category.name }}">
         {% for product in products %}
-            <article class="product-card" data-product-card>
+            <article class="product-card{% if forloop.first %} product-card--featured{% endif %}" data-product-card data-reveal>
                 <div class="product-card__media">
                     <a class="product-card__gallery" href="{% url 'shop:product' product.slug %}" aria-label="{{ product.name }}">
                         <div class="product-card__slides">
@@ -53,9 +53,7 @@
                 </div>
                 <div class="product-card__body">
                     <a href="{% url 'shop:product' product.slug %}" class="product-card__info">
-                        <div class="product-card__category">{{ product.category.name }}</div>
                         <div class="product-card__name">{{ product.name }}</div>
-                        {% if product.short_description %}<p class="product-card__description">{{ product.short_description|truncatechars:90 }}</p>{% endif %}
                         <div class="product-card__price-row"><div class="product-card__price">{{ product.display_price|price }} <span>تومان</span></div>{% if product.has_discount %}<del>{{ product.display_compare_price|price }} تومان</del>{% endif %}</div>
                     </a>
                     {% if product.has_variants %}<a class="product-card__cart" href="{% url 'shop:product' product.slug %}">انتخاب و افزودن</a>{% else %}

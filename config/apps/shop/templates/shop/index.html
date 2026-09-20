@@ -14,12 +14,12 @@
 
 {% block content %}
 <div class="shop-shell">
-    <section class="shop-hero" aria-labelledby="shop-title">
+    <section class="shop-hero" aria-labelledby="shop-title" data-reveal>
         <div class="shop-hero__copy">
             <div class="shop-kicker">BABAEI / COLLECTION</div>
             <h1 id="shop-title">لباسی که<br>داستان تو را می‌گوید.</h1>
             <p>مدل مورد علاقه‌ات را انتخاب کن، رنگ و سایز را مشخص کن و بعد چاپ خودت را روی ناحیه دلخواه لباس قرار بده.</p>
-            <a class="shop-hero__cta" href="#products">مشاهده محصولات</a>
+            <a class="shop-hero__cta" href="#products">کشف مجموعه <span>↓</span></a>
         </div>
         <div class="shop-hero__visual" aria-hidden="true">
             {% if hero_product and hero_product.primary_image_url %}
@@ -33,15 +33,15 @@
 
     {% if categories %}
     <section aria-labelledby="categories-title">
-        <div class="section-head"><h2 id="categories-title">دسته‌بندی‌ها</h2></div>
+        <div class="section-head" data-reveal><div><span class="shop-kicker">CURATED FOR YOU</span><h2 id="categories-title">برای هر حال‌و‌هوا</h2></div></div>
         <div class="categories">
             {% for category in categories %}
-                <a class="category-card" href="{% url 'shop:category' category.slug %}">
+                <a class="category-card" href="{% url 'shop:category' category.slug %}" data-reveal>
                     <div class="category-card__image">
                         {% if category.image %}<img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">
                         {% else %}<img src="{% static 'images/home/Tshirt.png' %}" alt="{{ category.name }}" loading="lazy" decoding="async">{% endif %}
                     </div>
-                    <div class="category-card__title">{{ category.name }}</div>
+                    <div class="category-card__title"><span>{{ category.name }}</span><b aria-hidden="true">↗</b></div>
                 </a>
             {% endfor %}
         </div>
@@ -106,7 +106,7 @@
 
         <div class="products">
             {% for product in products %}
-                <article class="product-card" data-product-card>
+            <article class="product-card{% if forloop.first %} product-card--featured{% endif %}" data-product-card data-reveal>
                     <div class="product-card__media">
                         <a class="product-card__gallery" href="{% url 'shop:product' product.slug %}" aria-label="{{ product.name }}">
                             <div class="product-card__slides">
@@ -137,9 +137,7 @@
                     </div>
                     <div class="product-card__body">
                         <a href="{% url 'shop:product' product.slug %}" class="product-card__info">
-                            <div class="product-card__category">{{ product.category.name }}</div>
                             <div class="product-card__name">{{ product.name }}</div>
-                            {% if product.short_description %}<p class="product-card__description">{{ product.short_description|truncatechars:90 }}</p>{% endif %}
                             <div class="product-card__price-row">
                                 <div class="product-card__price">{{ product.display_price|price }} <span>تومان</span></div>
                                 {% if product.has_discount %}<del>{{ product.display_compare_price|price }} تومان</del>{% endif %}
