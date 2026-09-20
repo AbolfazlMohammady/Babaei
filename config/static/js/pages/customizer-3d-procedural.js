@@ -75,6 +75,25 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         if (el) el.textContent = text || "";
     }
 
+    function showModelPreview() {
+        const preview = data.views?.[0]?.background;
+        if (!preview) return;
+        stage.style.backgroundImage =
+            "radial-gradient(ellipse at 50% 40%, rgba(255,255,255,.07), transparent 34%)," +
+            "radial-gradient(ellipse at 50% 82%, rgba(216,182,107,.045), transparent 38%)," +
+            `url("${String(preview).replace(/"/g, "\\\"")}")`;
+        stage.style.backgroundPosition = "center, center, center";
+        stage.style.backgroundSize = "auto, auto, min(68vw, 420px) auto";
+        stage.style.backgroundRepeat = "no-repeat, no-repeat, no-repeat";
+    }
+
+    function clearModelPreview() {
+        stage.style.backgroundImage = "";
+        stage.style.backgroundPosition = "";
+        stage.style.backgroundSize = "";
+        stage.style.backgroundRepeat = "";
+    }
+
     function setLoading(text, visible = true) {
         const el = document.getElementById("designer-3d-loading");
         if (!el) return;
@@ -187,6 +206,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         if (!modelUrl) throw new Error("مدل سه‌بعدی تیشرت تعریف نشده است.");
 
         setLoading("در حال بارگذاری مدل سه‌بعدی…", true);
+        showModelPreview();
         const loader = new GLTFLoader();
 
         // Start the 33MB GLB request first, then build the reflection
@@ -234,6 +254,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // Keep the original PBR materials/textures from the supplied GLB.
         scene.add(garment);
         normalizeGarment(garment);
+        clearModelPreview();
         setLoading("", false);
         render();
     }
