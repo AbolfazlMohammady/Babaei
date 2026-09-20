@@ -103,13 +103,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-        const pmrem = new THREE.PMREMGenerator(renderer);
-        const environment = new RoomEnvironment();
-        scene.environment = pmrem.fromScene(environment, 0.03).texture;
-        scene.environmentIntensity = 0.55;
-        environment.dispose();
-        pmrem.dispose();
-
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.055;
@@ -181,13 +174,24 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         fitCamera(true);
     }
 
+    function setupEnvironment() {
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        const environment = new RoomEnvironment();
+        scene.environment = pmrem.fromScene(environment, 0.03).texture;
+        scene.environmentIntensity = 0.55;
+        environment.dispose();
+        pmrem.dispose();
+    }
+
     async function loadGarment() {
         if (!modelUrl) throw new Error("مدل سه‌بعدی تیشرت تعریف نشده است.");
 
         setLoading("در حال بارگذاری مدل سه‌بعدی…", true);
         const loader = new GLTFLoader();
 
-        const gltf = await new Promise((resolve, reject) => {
+        // Start the 33MB GLB request first, then build the reflection
+        // environment while the browser is receiving the asset.
+        const gltfPromise = new Promise((resolve, reject) => {
             loader.load(
                 modelUrl,
                 resolve,
@@ -203,6 +207,10 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             );
         });
 
+        setupEnvironment();
+        const gltf = await gltfPromise;
+
+        
         garment = gltf.scene;
         garment.name = "BabaeiTshirtGLB";
 
