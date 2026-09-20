@@ -43,26 +43,37 @@
         if (!story || !label || !scene || !target) return;
 
         let ticking = false;
-        const update = () => {
-            ticking = false;
-            const rect = story.getBoundingClientRect();
-            const travel = Math.max(1, story.offsetHeight - window.innerHeight * 0.72);
-            const progress = clamp((window.innerHeight * 0.34 - rect.top) / travel);
-            const compact = window.matchMedia("(max-width: 560px)").matches;
+        let metrics = null;
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        const measure = () => {
+            const storyRect = story.getBoundingClientRect();
             const sceneRect = scene.getBoundingClientRect();
             const targetRect = target.getBoundingClientRect();
             const labelWidth = label.offsetWidth;
             const labelHeight = label.offsetHeight;
             const finalX = targetRect.left - sceneRect.left + (targetRect.width - labelWidth) / 2;
             const finalY = targetRect.top - sceneRect.top + (targetRect.height - labelHeight) / 2;
-            const startX = compact ? -sceneRect.width * 0.52 : -sceneRect.width * 0.44;
-            const startY = finalY - sceneRect.height * (compact ? 0.13 : 0.16);
-            const x = startX + (finalX - startX) * progress;
-            const y = startY + (finalY - startY) * progress;
+            metrics = {
+                startScroll: storyRect.top + window.scrollY - window.innerHeight * 0.34,
+                travel: Math.max(1, story.offsetHeight - window.innerHeight * 0.72),
+                finalX,
+                finalY,
+                startX: (window.innerWidth <= 560 ? -sceneRect.width * 0.52 : -sceneRect.width * 0.44),
+                startY: finalY - sceneRect.height * (window.innerWidth <= 560 ? 0.13 : 0.16),
+            };
+        };
+
+        const update = () => {
+            ticking = false;
+            if (!metrics) measure();
+            const progress = reduceMotion ? 1 : clamp((window.scrollY - metrics.startScroll) / metrics.travel);
+            const x = metrics.startX + (metrics.finalX - metrics.startX) * progress;
+            const y = metrics.startY + (metrics.finalY - metrics.startY) * progress;
             const rotation = -13 * (1 - progress);
             const scale = 0.84 + progress * 0.16;
             story.style.setProperty("--story-progress", progress.toFixed(3));
-            story.style.setProperty("--target-opacity", clamp((progress - 0.28) * 2.5).toFixed(3));
+            story.style.setProperty("--target-opacity", clamp((0.78 - progress) * 2.2).toFixed(3));
             story.style.setProperty("--garment-scale", (1 + progress * 0.025).toFixed(3));
             label.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rotation}deg) scale(${scale})`;
         };
@@ -73,9 +84,10 @@
             window.requestAnimationFrame(update);
         };
 
+        measure();
         update();
-        window.addEventListener("scroll", requestUpdate, { passive: true });
-        window.addEventListener("resize", requestUpdate, { passive: true });
+        if (!reduceMotion) window.addEventListener("scroll", requestUpdate, { passive: true });
+        window.addEventListener("resize", () => { measure(); requestUpdate(); }, { passive: true });
     };
 
     const setupProductGallery = () => {
