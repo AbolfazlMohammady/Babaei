@@ -108,7 +108,14 @@ class DesignerPageView(View):
         for artwork in artworks:
             image = _file_url(request, artwork.image)
             if image:
-                artwork_data.append({"id": artwork.id, "code": artwork.code, "name": artwork.name, "image": image, "base_price": artwork.base_price})
+                artwork_data.append({
+                    "id": artwork.id,
+                    "code": artwork.code,
+                    "name": artwork.name,
+                    "image": image,
+                    "base_price": artwork.base_price,
+                    "background_removed": bool(artwork.background_removed),
+                })
             for price in getattr(artwork, "designer_area_prices", []):
                 if price.area.product_id == product.id and price.area.is_active:
                     price_data[f"{artwork.id}:{price.area_id}"] = price.price
