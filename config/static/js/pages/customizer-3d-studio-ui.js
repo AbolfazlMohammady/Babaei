@@ -182,6 +182,14 @@
         setMobileEditorUi({ selected: selectedMobile, drawerOpen });
     }
 
+    function openMobileText() {
+        if (!mobileTextSheet) return;
+        closeMobileText();
+        mobileTextSheet.hidden = false;
+        document.body.classList.add("customizer-mobile-sheet-open");
+        mobileTextInput?.focus();
+    }
+
     function setMobileEditorUi({ selected = selectedMobile, drawerOpen = false } = {}) {
         if (drawerOpen || !mobileMedia.matches) {
             mobileToolbar?.classList.toggle("is-hidden", drawerOpen);
@@ -242,11 +250,7 @@
                 document.getElementById("label-library-trigger")?.click();
             }
             if (action === "tools") setDrawer("left", true);
-            if (action === "text") {
-                closeMobileText();
-                if (mobileTextSheet) mobileTextSheet.hidden = false;
-                mobileTextInput?.focus();
-            }
+            if (action === "text") openMobileText();
         });
     });
 
@@ -315,7 +319,7 @@
         button.addEventListener("click", () => {
             const action = button.dataset.mobileContext;
             if (action === "color") openMobileColorSheet("color");
-            if (action === "paint") openMobileColorSheet("paint");
+            if (action === "text") openMobileText();
             if (action === "background") setDrawer("right", true);
             if (action === "edit") openMobileEdit();
         });
