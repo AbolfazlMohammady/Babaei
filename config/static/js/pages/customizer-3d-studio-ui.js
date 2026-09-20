@@ -173,6 +173,68 @@
     const mobileLayerOpacity = document.getElementById("mobile-layer-opacity");
     const mobileLayerOpacityValue = document.getElementById("mobile-layer-opacity-value");
     const mobileLayerColorCustom = document.getElementById("mobile-layer-color-custom");
+    const mobileTextSheetMode = document.getElementById("mobile-text-sheet-mode");
+    const mobileTextSheetTitle = document.getElementById("mobile-text-sheet-title");
+    const mobileTextAdd = document.getElementById("mobile-text-add");
+    const mobileTextCurve = document.getElementById("mobile-text-curve");
+    const mobileTextCurveValue = document.getElementById("mobile-text-curve-value");
+    const mobileTextSpacing = document.getElementById("mobile-text-spacing");
+    const mobileTextSpacingValue = document.getElementById("mobile-text-spacing-value");
+    const desktopTextEditor = document.getElementById("desktop-text-editor");
+    const desktopTextEditInput = document.getElementById("desktop-text-edit-input");
+    const desktopTextCurve = document.getElementById("desktop-text-curve");
+    const desktopTextCurveValue = document.getElementById("desktop-text-curve-value");
+    const desktopTextSpacing = document.getElementById("desktop-text-spacing");
+    const desktopTextSpacingValue = document.getElementById("desktop-text-spacing-value");
+    const desktopTextApply = document.getElementById("desktop-text-apply");
+    let selectedTextState = null;
+    let mobileTextMode = "add";
+    let draftTextColor = "#ffffff";
+    let draftTextStyle = {
+        preset: "modern",
+        fontFamily: "Arial, Tahoma, sans-serif",
+        fontWeight: 700,
+        fontStyle: "normal",
+        curve: 0,
+        letterSpacing: 0,
+    };
+
+    const TEXT_PRESETS = {
+        modern: { fontFamily: "Arial, Tahoma, sans-serif", fontWeight: 700, fontStyle: "normal" },
+        classic: { fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 700, fontStyle: "normal" },
+        impact: { fontFamily: "Impact, Haettenschweiler, sans-serif", fontWeight: 900, fontStyle: "normal" },
+        mono: { fontFamily: "'Courier New', monospace", fontWeight: 700, fontStyle: "normal" },
+        elegant: { fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, fontStyle: "italic" },
+    };
+
+    function normalizedTextStyle(style = {}) {
+        return {
+            ...(draftTextStyle || {}),
+            ...style,
+            curve: Math.max(-80, Math.min(80, Number(style.curve ?? draftTextStyle.curve ?? 0))),
+            letterSpacing: Math.max(-2, Math.min(12, Number(style.letterSpacing ?? draftTextStyle.letterSpacing ?? 0))),
+        };
+    }
+
+    function paintTextControls(style = {}, color = "#ffffff") {
+        const next = normalizedTextStyle(style);
+        draftTextStyle = next;
+        draftTextColor = color || draftTextColor;
+        if (mobileTextCurve) mobileTextCurve.value = String(next.curve);
+        if (mobileTextCurveValue) mobileTextCurveValue.textContent = String(next.curve);
+        if (mobileTextSpacing) mobileTextSpacing.value = String(next.letterSpacing);
+        if (mobileTextSpacingValue) mobileTextSpacingValue.textContent = String(next.letterSpacing);
+        if (desktopTextCurve) desktopTextCurve.value = String(next.curve);
+        if (desktopTextCurveValue) desktopTextCurveValue.textContent = String(next.curve);
+        if (desktopTextSpacing) desktopTextSpacing.value = String(next.letterSpacing);
+        if (desktopTextSpacingValue) desktopTextSpacingValue.textContent = String(next.letterSpacing);
+        document.querySelectorAll("[data-text-style]").forEach(button => {
+            button.classList.toggle("is-active", button.dataset.textStyle === next.preset);
+        });
+        document.querySelectorAll("[data-text-color]").forEach(button => {
+            button.classList.toggle("is-active", button.dataset.textColor === draftTextColor);
+        });
+    }
 
     function closeMobileText() {
         if (mobileTextSheet) mobileTextSheet.hidden = true;
@@ -184,7 +246,22 @@
 
     function openMobileText() {
         if (!mobileTextSheet) return;
-        closeMobileText();
+
+        mobileTextMode = selectedTextState ? "edit" : "add";
+        if (mobileTextMode === "edit") {
+            if (mobileTextInput) mobileTextInput.value = selectedTextState.text || "";
+            if (mobileTextSheetMode) mobileTextSheetMode.textContent = "ویرایش متن";
+            if (mobileTextSheetTitle) mobileTextSheetTitle.textContent = "طراحی متن انتخاب‌شده";
+            if (mobileTextAdd) mobileTextAdd.textContent = "اعمال تغییرات متن";
+            paintTextControls(selectedTextState.textStyle || {}, selectedTextState.color || "#ffffff");
+        } else {
+            if (mobileTextInput) mobileTextInput.value = "";
+            if (mobileTextSheetMode) mobileTextSheetMode.textContent = "افزودن به لباس";
+            if (mobileTextSheetTitle) mobileTextSheetTitle.textContent = "متن خودت را بنویس";
+            if (mobileTextAdd) mobileTextAdd.textContent = "افزودن متن به تیشرت";
+            paintTextControls({}, draftTextColor);
+        }
+
         mobileTextSheet.hidden = false;
         document.body.classList.add("customizer-mobile-sheet-open");
         mobileTextInput?.focus();
@@ -255,13 +332,24 @@
     });
 
     document.getElementById("mobile-text-close")?.addEventListener("click", closeMobileText);
-    document.getElementById("mobile-text-add")?.addEventListener("click", () => {
+    mobileTextAdd?.addEventListener("click", () => {
         const value = mobileTextInput?.value?.trim();
         if (!value) {
             mobileTextInput?.focus();
             return;
         }
-        document.dispatchEvent(new CustomEvent("babaei:add-text", { detail: { text: value } }));
+
+        const detail = {
+            text: value,
+            style: draftTextStyle,
+            color: draftTextColor,
+        };
+
+        document.dispatchEvent(new CustomEvent(
+            mobileTextMode === "edit" ? "babaei:update-text" : "babaei:add-text",
+            { detail }
+        ));
+
         if (mobileTextInput) mobileTextInput.value = "";
         closeMobileText();
     });
@@ -290,6 +378,83 @@
         }
     });
 
+    desktopTextApply?.addEventListener("click", () => {
+        if (!selectedTextState) return;
+        const value = desktopTextEditInput?.value?.trim();
+        if (!value) {
+            desktopTextEditInput?.focus();
+            return;
+        }
+
+        document.dispatchEvent(new CustomEvent("babaei:update-text", {
+            detail: {
+                text: value,
+                style: draftTextStyle,
+                color: draftTextColor,
+            }
+        }));
+    });
+
+    document.querySelectorAll("[data-text-style]").forEach(button => {
+        button.addEventListener("click", () => {
+            const preset = TEXT_PRESETS[button.dataset.textStyle];
+            if (!preset) return;
+
+            draftTextStyle = {
+                ...draftTextStyle,
+                ...preset,
+                preset: button.dataset.textStyle,
+            };
+
+            paintTextControls(draftTextStyle, draftTextColor);
+
+            if (selectedTextState) {
+                document.dispatchEvent(new CustomEvent("babaei:update-text-style", {
+                    detail: { style: draftTextStyle }
+                }));
+            }
+        });
+    });
+
+    function wireTextRange(input, output, key) {
+        input?.addEventListener("input", () => {
+            const value = Number(input.value);
+            draftTextStyle = {
+                ...draftTextStyle,
+                [key]: value,
+            };
+            if (output) output.textContent = String(value);
+
+            if (selectedTextState) {
+                document.dispatchEvent(new CustomEvent("babaei:update-text-style", {
+                    detail: { style: draftTextStyle }
+                }));
+            }
+        });
+    }
+
+    wireTextRange(mobileTextCurve, mobileTextCurveValue, "curve");
+    wireTextRange(mobileTextSpacing, mobileTextSpacingValue, "letterSpacing");
+    wireTextRange(desktopTextCurve, desktopTextCurveValue, "curve");
+    wireTextRange(desktopTextSpacing, desktopTextSpacingValue, "letterSpacing");
+
+    document.querySelectorAll("[data-text-color]").forEach(button => {
+        button.addEventListener("click", () => {
+            const color = button.dataset.textColor;
+            if (!color) return;
+            draftTextColor = color;
+            document.querySelectorAll("[data-text-color]").forEach(item => {
+                item.classList.toggle("is-active", item === button);
+            });
+
+            if (selectedTextState) {
+                document.dispatchEvent(new CustomEvent("babaei:set-layer-color", {
+                    detail: { color }
+                }));
+            }
+        });
+    });
+
     document.addEventListener("babaei:drawer-state", event => {
         const open = Boolean(event.detail?.open);
         document.body.classList.toggle("customizer-mobile-sheet-open", open);
@@ -298,7 +463,24 @@
 
     document.addEventListener("babaei:selection-changed", event => {
         selectedMobile = Boolean(event.detail?.selected);
+        selectedTextState = event.detail?.isText
+            ? {
+                id: event.detail.id,
+                text: String(event.detail.text || ""),
+                textStyle: event.detail.textStyle || {},
+                color: event.detail.color || "#ffffff",
+            }
+            : null;
         if (!selectedMobile) editingMobile = false;
+
+        if (desktopTextEditor) {
+            desktopTextEditor.hidden = !selectedTextState;
+            if (selectedTextState) {
+                if (desktopTextEditInput) desktopTextEditInput.value = selectedTextState.text;
+                paintTextControls(selectedTextState.textStyle, selectedTextState.color);
+            }
+        }
+
         const drawerOpen = Boolean(
             !leftDrawer?.classList.contains("is-drawer-closed") ||
             !rightDrawer?.classList.contains("is-drawer-closed")
