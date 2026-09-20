@@ -56,6 +56,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     let garmentMaterials = [];
     let garmentMaxSize = 3;
     let baseCameraDistance = 5.6;
+    let garmentBaseScale = new THREE.Vector3(1, 1, 1);
     let currentVariant = null;
     let selectedId = null;
     let activeAreaId = areas[0]?.id || null;
@@ -161,6 +162,17 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         }
     }
 
+    function applyResponsiveGarmentScale(rootObject = garment) {
+        if (!rootObject) return;
+
+        const isPhone = window.matchMedia("(max-width: 600px)").matches;
+        rootObject.scale.set(
+            garmentBaseScale.x,
+            garmentBaseScale.y * (isPhone ? 1.12 : 1),
+            garmentBaseScale.z
+        );
+    }
+
     function normalizeGarment(rootObject) {
         const box = new THREE.Box3().setFromObject(rootObject);
         const size = box.getSize(new THREE.Vector3());
@@ -169,13 +181,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         const targetHeight = 2.72;
         rootObject.scale.setScalar(targetHeight / maxSize);
+        garmentBaseScale.copy(rootObject.scale);
 
-        // The supplied shirt asset reads slightly too square on narrow
-        // portrait screens. Add a restrained Y-only stretch for phones so
-        // the silhouette reads like a real T-shirt without changing width.
-        if (window.matchMedia("(max-width: 600px)").matches) {
-            rootObject.scale.y *= 1.12;
-        }
+        // Responsive proportions must be reversible because the user can
+        // switch DevTools between desktop and phone without a page reload.
+        applyResponsiveGarmentScale(rootObject);
 
         const scaledBox = new THREE.Box3().setFromObject(rootObject);
         const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
@@ -403,40 +413,52 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function resize() {
         if (!renderer || !camera) return;
-        // The canvas may still have an inline height from an older responsive
-        // breakpoint. Never use canvas.clientHeight as the source of truth:
-        // that can lock the WebGL viewport to the old mobile height and leave
-        // the lower half of the 3D stage unrendered.
-        // The stage itself is the authoritative mobile viewport.
-        const stageRect = stage.getBoundingClientRect();
-        const width = Math.max(1, Math.round(stageRect.width));
-        const height = Math.max(1, Math.round(stageRect.height));
 
-        const mobile = compactMedia.matches;
-        const pixelRatioCap = mobile ? 1.5 : 2;
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pixelRatioCap));
-        renderer.setSize(width, height, false);
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
+        const apply = () => {
+            // Wait for the responsive CSS layout to settle before measuring
+            // the stage. This prevents the desktop camera framing from
+            // surviving the first desktop -> phone transition in DevTools.
+            const stageRect = stage.getBoundingClientRect();
+            const width = Math.max(1, Math.round(stageRect.width));
+            const height = Math.max(1, Math.round(stageRect.height));
 
-        if (mobile) {
-            canvas.style.position = "absolute";
-            canvas.style.left = "0";
-            canvas.style.right = "0";
-            canvas.style.top = "0px";
-            canvas.style.width = "100%";
-            canvas.style.height = `${height}px`;
-        } else {
-            canvas.style.position = "";
-            canvas.style.left = "";
-            canvas.style.right = "";
-            canvas.style.top = "";
-            canvas.style.width = "";
-            canvas.style.height = "";
-        }
+            const mobile = compactMedia.matches;
+            const pixelRatioCap = mobile ? 1.5 : 2;
 
-        if (garment) fitCamera();
-        else render();
+            if (garment) {
+                applyResponsiveGarmentScale();
+            }
+
+            renderer.setPixelRatio(
+                Math.min(window.devicePixelRatio || 1, pixelRatioCap)
+            );
+            renderer.setSize(width, height, false);
+
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+
+            if (mobile) {
+                canvas.style.position = "absolute";
+                canvas.style.left = "0";
+                canvas.style.right = "0";
+                canvas.style.top = "0px";
+                canvas.style.width = "100%";
+                canvas.style.height = `${height}`;
+            } else {
+                canvas.style.position = "";
+                canvas.style.left = "";
+                canvas.style.right = "";
+                canvas.style.top = "";
+                canvas.style.width = "";
+                canvas.style.height = "";
+            }
+
+            if (garment) fitCamera();
+            else render();
+        };
+
+        apply();
+        requestAnimationFrame(() => requestAnimationFrame(apply));
     }
 
     function render() {
@@ -1182,6 +1204,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     resizeObserver.observe(stage);
     window.addEventListener("orientationchange", resize, { passive: true });
     compactMedia.addEventListener?.("change", resize);
+    window.matchMedia("(max-width: 600px)").addEventListener?.("change", resize);
 
     window.addEventListener("pagehide", () => {
         if (renderFrameId) cancelAnimationFrame(renderFrameId);
