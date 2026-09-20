@@ -198,6 +198,10 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         garment = gltf.scene;
         garment.name = "BabaeiTshirtGLB";
+
+        // Preserve the established mobile presentation angle. The full-stage
+        // viewport fix must not reset the garment to a flat front view.
+        garment.rotation.y = THREE.MathUtils.degToRad(-8);
         garment.traverse(object => {
             if (!object.isMesh) return;
 
