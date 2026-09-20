@@ -903,6 +903,61 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             });
         });
 
+        function syncMobileStudioOptions() {
+            const sizeHost = document.getElementById("mobile-studio-size-list");
+            const colorHost = document.getElementById("mobile-studio-color-list");
+            const totalHost = document.getElementById("mobile-studio-cart-total");
+            const selectedId = currentVariant ? String(currentVariant.id) : "";
+
+            if (sizeHost) {
+                sizeHost.innerHTML = Array.from(document.querySelectorAll("#premium-size-list .premium-size-button"))
+                    .map(button => {
+                        const active = button.classList.contains("is-active");
+                        return '<button type="button" class="mobile-studio-size' + (active ? ' is-active' : '') + '" data-forward-selector="#' + button.id + '">' +
+                            esc(button.textContent.trim()) + '</button>';
+                    }).join("");
+            }
+
+            if (colorHost) {
+                colorHost.innerHTML = Array.from(document.querySelectorAll("#variant-color-list-right .premium-color-button"))
+                    .map(button => {
+                        const active = button.classList.contains("is-active");
+                        const color = button.dataset.color || button.style.getPropertyValue("--color") || "#111111";
+                        return '<button type="button" class="mobile-studio-color' + (active ? ' is-active' : '') + '" data-forward-selector="#' + button.id + '" style="--mobile-color:' + esc(color) + '" aria-label="' + esc(button.getAttribute("aria-label") || "رنگ") + '"></button>';
+                    }).join("");
+            }
+
+            if (totalHost) totalHost.textContent = document.getElementById("designer-total")?.textContent || "—";
+            void selectedId;
+        }
+
+        document.addEventListener("click", event => {
+            const action = event.target.closest("[data-mobile-sheet-action]")?.dataset.mobileSheetAction;
+            if (!action) {
+                const sizeButton = event.target.closest(".mobile-studio-size[data-forward-selector]");
+                const colorButton = event.target.closest(".mobile-studio-color[data-forward-selector]");
+                if (sizeButton || colorButton) {
+                    document.querySelector(sizeButton?.dataset.forwardSelector || colorButton?.dataset.forwardSelector)?.click();
+                    window.setTimeout(syncMobileStudioOptions, 0);
+                }
+                return;
+            }
+
+            if (action === "text") document.querySelector('[data-mobile-action="text"]')?.click();
+            if (action === "upload") document.getElementById("artwork-upload")?.click();
+            if (action === "gallery") document.getElementById("label-library-trigger")?.click();
+            if (action === "shapes") document.getElementById("label-library-trigger")?.click();
+            if (action === "color") document.getElementById("studio-drawer-right-toggle")?.click();
+        });
+
+        document.getElementById("mobile-studio-add-cart")?.addEventListener("click", () => {
+            document.getElementById("variant-select")?.focus();
+            document.getElementById("studio-drawer-right-toggle")?.click();
+        });
+
+        document.addEventListener("babaei:selection-changed", syncMobileStudioOptions);
+        document.addEventListener("babaei:variant-changed", syncMobileStudioOptions);
+
         document.querySelectorAll("[data-mode]").forEach(button => {
             button.addEventListener("click", () => {
                 const is3d = button.dataset.mode === "3d";
