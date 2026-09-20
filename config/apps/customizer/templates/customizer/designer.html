@@ -10,13 +10,14 @@
 {% block og_title %}{{ og_title }}{% endblock %}
 {% block og_description %}{{ og_description }}{% endblock %}
 {% block og_image %}{% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}">{% endif %}{% endblock %}
-{% block extra_head %}<script type="application/ld+json">{{ designer_schema }}</script>{% endblock %}
+{% block extra_head %}<link rel="preload" href="{% static 'Glb/whit_t_shirt.glb' %}" as="fetch" type="model/gltf-binary" crossorigin>
+<script type="application/ld+json">{{ designer_schema }}</script>{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260920-mobile1">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260919-8">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260920-10">
 {% endblock %}
 
 {% block content %}
@@ -291,7 +292,7 @@
 <script src="{% static 'js/pages/customizer.js' %}?v=20260919-4" defer></script>
 {% if designer_has_3d %}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
-<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260920-16"></script>
+<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260920-17"></script>
 <script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260919-7" defer></script>
 {% endif %}
 {% endblock %}
