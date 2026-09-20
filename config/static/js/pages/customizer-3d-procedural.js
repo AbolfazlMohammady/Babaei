@@ -272,8 +272,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // On the portrait phone the garment is vertically too high, so move
         // ONLY the look-at target upward. Do not move the camera itself and do
         // not change the fitted distance: width/height framing stays untouched.
-        const targetY = center.y + (mobile ? size.y * 0.21 : 0.015 * size.y);
-        const cameraY = center.y + (mobile ? size.y * 0.025 : size.y * 0.015);
+        // Mobile model pivot: the visible black collar/origin marker in the
+        // supplied GLB is the visual reference point that must sit at the
+        // center of the phone stage. Keep camera + target on the same offset
+        // so the framing scale and viewing angle remain unchanged.
+        const mobilePivotOffset = mobile ? size.y * 0.95 : 0;
+        const targetY = center.y + mobilePivotOffset + (mobile ? size.y * 0.015 : 0);
+        const cameraY = center.y + mobilePivotOffset + (mobile ? size.y * 0.025 : size.y * 0.015);
 
         camera.position.set(0, cameraY, distance);
         controls.target.set(center.x, targetY, center.z);
