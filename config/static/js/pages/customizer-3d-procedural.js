@@ -214,45 +214,66 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 
     function fitCamera(initial = false) {
-        if (!camera || !controls) return;
-        const aspect = Math.max(0.45, camera.aspect || 1);
-        const verticalFov = THREE.MathUtils.degToRad(camera.fov);
-        const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * aspect);
-        const verticalDistance = garmentMaxSize / (2 * Math.tan(verticalFov / 2));
-        const horizontalDistance = garmentMaxSize / (2 * Math.tan(horizontalFov / 2));
-        const framingScale = mobileFrameScale();
-        const mobile = compactMedia.matches;
+        if (!camera || !controls || !garment) return;
 
-        // In portrait, fitting against horizontal FOV is the wrong constraint:
-        // it makes the shirt tiny because a phone has a very narrow horizontal
-        // field of view. Fit against the garment's vertical footprint instead.
-        const fitDistance = mobile
-            ? verticalDistance
-            : Math.max(4.7, verticalDistance, horizontalDistance);
-        const distance = fitDistance * 1.06 * framingScale;
+        const mobile = compactMedia.matches;
+        const aspect = Math.max(0.35, camera.aspect || 1);
+
+        // PerspectiveCamera.fov is the VERTICAL FOV. On a portrait phone the
+        // horizontal FOV becomes very narrow, so fitting only by height causes
+        // the shirt's shoulders/sleeves to be cropped. This was the root cause
+        // of the previous mobile framing.
+        //
+        // Use a wider vertical FOV on phones and fit against BOTH dimensions.
+        // This keeps the whole garment visible while preserving a useful scale.
+        const targetFov = mobile ? 40 : 28;
+        if (Math.abs(camera.fov - targetFov) > 0.01) {
+            camera.fov = targetFov;
+        }
+
+        const box = new THREE.Box3().setFromObject(garment);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+
+        const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+        const horizontalFov = 2 * Math.atan(
+            Math.tan(verticalFov / 2) * aspect
+        );
+
+        const verticalDistance =
+            size.y / (2 * Math.tan(verticalFov / 2));
+
+        const horizontalDistance =
+            size.x / (2 * Math.tan(horizontalFov / 2));
+
+        // Add a small safety margin so anti-aliased edges, sleeves and model
+        // rotation never touch the viewport boundary.
+        const fitDistance = Math.max(
+            verticalDistance,
+            horizontalDistance,
+            size.z * 1.25
+        );
+
+        const distance = fitDistance * (mobile ? 1.08 : 1.06);
         baseCameraDistance = distance;
 
-        // Phone screens are much taller than they are wide. The old framing
-        // placed the shirt's visual center too high, leaving a large empty
-        // black area underneath the garment. Translate the camera and target
-        // together so the shirt sits in the usable area above the bottom bar.
-        // Keep the shirt centered in the actual mobile work area. The bottom
-        // toolbar occupies the lower part of the viewport, so the visual center
-        // must sit slightly above the viewport center — not near the top.
-        const mobileCameraY = mobile ? garmentMaxSize * 0.20 : garmentMaxSize * 0.015;
-        const targetY = mobile ? garmentMaxSize * 0.52 : garmentMaxSize * 0.025;
-        camera.position.set(0, mobileCameraY, distance);
-        controls.target.set(0, targetY, 0);
-        if (initial) controls.update();
+        // The model was normalized around its actual bounding-box center.
+        // Aim the camera at that center instead of an arbitrary +52% Y offset.
+        // That arbitrary offset was responsible for the large empty band under
+        // the garment on phones.
+        const targetY = center.y + (mobile ? size.y * 0.015 : 0);
+        const cameraY = center.y + (mobile ? size.y * 0.025 : size.y * 0.015);
+
+        camera.position.set(0, cameraY, distance);
+        controls.target.set(center.x, targetY, center.z);
+
+        camera.near = Math.max(0.01, distance / 100);
+        camera.far = Math.max(100, distance * 20);
         camera.updateProjectionMatrix();
+
+        if (initial) controls.update();
         render();
         updateCameraZoomLabel();
-    }
-
-    function mobileFrameScale() {
-        // A little more breathing room on narrow phones prevents the garment
-        // from touching the top edge while keeping it large enough for editing.
-        return compactMedia.matches ? 0.96 : 1;
     }
 
     function updateCameraZoomLabel() {
@@ -283,14 +304,10 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function resize() {
         if (!renderer || !camera) return;
-        const width = Math.max(1, stage.clientWidth);
-        const stageHeight = Math.max(1, stage.clientHeight);
-        const mobile = compactMedia.matches;
-
-        // On mobile the 3D canvas uses the full viewport. The camera framing
-        // is adjusted separately so the garment stays centered instead of
-        // creating a large empty band above or below it.
-        const height = stageHeight;
+        // Size the renderer from the actual display box. This avoids
+        // viewport-vs-stage mismatches when the phone emulator changes size.
+        const width = Math.max(1, canvas.clientWidth || stage.clientWidth);
+        const height = Math.max(1, canvas.clientHeight || stage.clientHeight);
 
         const pixelRatioCap = compactMedia.matches ? 1.5 : 2;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pixelRatioCap));
