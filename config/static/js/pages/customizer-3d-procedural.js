@@ -272,18 +272,19 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         // Slightly tighter on mobile so the shirt is not unnecessarily small,
         // while still leaving enough safety margin around the silhouette.
-        const distance = fitDistance * (mobile ? 1.04 : 1.06);
+        // On phones the portrait viewport should show a compact, centered
+        // garment rather than letting the narrow horizontal FOV dominate the
+        // composition. A controlled mobile distance keeps the shirt narrower
+        // while leaving enough breathing room around the sleeves.
+        const distance = fitDistance * (mobile ? 1.22 : 1.06);
         baseCameraDistance = distance;
 
-        // Keep the bounding-box center as the reference point, but apply a
-        // small phone-only visual bias. The mobile editor has a tall portrait
-        // viewport with fixed top/bottom UI, so a strict geometric center
-        // makes the shirt read too high. The bias is based on aspect ratio and
-        // is intentionally capped so larger portrait devices remain stable.
+        // The phone UI occupies a fixed header/dock region. Center the garment
+        // in the actual visual work area rather than around the raw viewport
+        // center. Keep this adjustment isolated to phones so desktop framing
+        // remains unchanged.
         const isPhone = window.matchMedia("(max-width: 600px)").matches;
-        const visualCenterBias = isPhone
-            ? THREE.MathUtils.clamp((1 - aspect) * 0.34, 0.14, 0.24)
-            : 0;
+        const visualCenterBias = isPhone ? 0.34 : 0;
         const targetY = center.y + size.y * visualCenterBias;
         const cameraY = center.y + size.y * visualCenterBias;
 
