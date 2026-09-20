@@ -155,10 +155,11 @@
         setDrawer("right", true);
     });
 
-    // When a label is added, switch the user directly to its transform controls.
+    // After choosing a label, close both sheets and keep the contextual
+    // controls in the bottom action area. The 3D model remains unobstructed.
     document.addEventListener("babaei:label-added", () => {
         setDrawer("right", false);
-        setDrawer("left", true);
+        setDrawer("left", false);
     });
 
     const mobileToolbar = document.getElementById("mobile-customizer-toolbar");
