@@ -913,7 +913,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 sizeHost.innerHTML = Array.from(document.querySelectorAll("#premium-size-list .premium-size-button"))
                     .map(button => {
                         const active = button.classList.contains("is-active");
-                        return '<button type="button" class="mobile-studio-size' + (active ? ' is-active' : '') + '" data-forward-selector="#' + button.id + '">' +
+                        return '<button type="button" class="mobile-studio-size' + (active ? ' is-active' : '') + '" data-forward-size="' + esc(button.dataset.size || button.textContent.trim()) + '">' +
                             esc(button.textContent.trim()) + '</button>';
                     }).join("");
             }
@@ -922,8 +922,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 colorHost.innerHTML = Array.from(document.querySelectorAll("#variant-color-list-right .premium-color-button"))
                     .map(button => {
                         const active = button.classList.contains("is-active");
-                        const color = button.dataset.color || button.style.getPropertyValue("--color") || "#111111";
-                        return '<button type="button" class="mobile-studio-color' + (active ? ' is-active' : '') + '" data-forward-selector="#' + button.id + '" style="--mobile-color:' + esc(color) + '" aria-label="' + esc(button.getAttribute("aria-label") || "رنگ") + '"></button>';
+                        const color = button.style.getPropertyValue("--swatch") || "#111111";
+                        return '<button type="button" class="mobile-studio-color' + (active ? ' is-active' : '') + '" data-forward-color="' + esc(button.dataset.color || "") + '" style="--mobile-color:' + esc(color) + '" aria-label="' + esc(button.getAttribute("aria-label") || "رنگ") + '"></button>';
                     }).join("");
             }
 
@@ -934,10 +934,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         document.addEventListener("click", event => {
             const action = event.target.closest("[data-mobile-sheet-action]")?.dataset.mobileSheetAction;
             if (!action) {
-                const sizeButton = event.target.closest(".mobile-studio-size[data-forward-selector]");
-                const colorButton = event.target.closest(".mobile-studio-color[data-forward-selector]");
-                if (sizeButton || colorButton) {
-                    document.querySelector(sizeButton?.dataset.forwardSelector || colorButton?.dataset.forwardSelector)?.click();
+                const sizeButton = event.target.closest(".mobile-studio-size[data-forward-size]");
+                const colorButton = event.target.closest(".mobile-studio-color[data-forward-color]");
+                if (sizeButton) {
+                    document.querySelector('#premium-size-list .premium-size-button[data-size="' + CSS.escape(sizeButton.dataset.forwardSize) + '"]')?.click();
+                    window.setTimeout(syncMobileStudioOptions, 0);
+                } else if (colorButton) {
+                    document.querySelector('#variant-color-list-right .premium-color-button[data-color="' + CSS.escape(colorButton.dataset.forwardColor) + '"]')?.click();
                     window.setTimeout(syncMobileStudioOptions, 0);
                 }
                 return;
