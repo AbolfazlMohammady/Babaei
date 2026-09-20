@@ -652,6 +652,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const preview = item?.dragPreview;
         if (!preview || !item?.size || !target) return;
 
+        if (preview.parent !== target) {
+            preview.parent?.remove(preview);
+            target.add(preview);
+        }
+
         const localPoint = point.clone().addScaledVector(normal, 0.012);
         target.worldToLocal(localPoint);
         preview.position.copy(localPoint);
