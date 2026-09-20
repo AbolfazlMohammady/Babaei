@@ -272,19 +272,20 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         // Slightly tighter on mobile so the shirt is not unnecessarily small,
         // while still leaving enough safety margin around the silhouette.
-        // Phone composition: keep the garment compact so the silhouette does
-        // not span almost the entire 412px viewport width. The previous 1.22x
-        // safety factor still left the shirt too wide on narrow screens.
-        const distance = fitDistance * (mobile ? 1.45 : 1.06);
+        // Phone composition: keep the garment visually compact without
+        // changing the model itself. The phone screenshot is a portrait
+        // viewport, so a modest extra camera distance prevents the shirt from
+        // looking overly wide while preserving the full silhouette.
+        const distance = fitDistance * (mobile ? 1.55 : 1.06);
         baseCameraDistance = distance;
 
-        // Use a screen-space anchor instead of an arbitrary model-space Y
-        // offset. On the reference 412x914 layout the intended garment/chest
-        // anchor is around 55% of the visible 3D viewport height. Converting
-        // that percentage through the current perspective projection keeps the
-        // anchor stable across different phone heights and aspect ratios.
+        // Standard Three.js camera framing is controlled through the
+        // OrbitControls target: the point assigned to controls.target becomes
+        // the center of the camera's view. For this phone editor we anchor the
+        // garment at the actual viewport center, rather than leaving the model
+        // in the upper half of the screen because of the fixed mobile chrome.
         const isPhone = window.matchMedia("(max-width: 600px)").matches;
-        const visualCenterRatio = isPhone ? 0.55 : 0.50;
+        const visualCenterRatio = isPhone ? 0.665 : 0.50;
         const visualCenterShift = isPhone
             ? (visualCenterRatio - 0.50)
               * 2
