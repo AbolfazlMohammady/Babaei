@@ -62,6 +62,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     let activeAreaId = areas[0]?.id || null;
     let nextId = 1;
     let drag = null;
+    let dragFrameId = 0;
+    let dragEvent = null;
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const layers = new Map();
@@ -113,9 +115,16 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(28, 1, 0.01, 100);
 
+        // Keep the existing desktop renderer quality while avoiding MSAA
+        // overhead on compact / low-power devices.
+        const lowPowerDevice =
+            compactMedia.matches ||
+            Number(navigator.deviceMemory || 8) <= 4 ||
+            Number(navigator.hardwareConcurrency || 8) <= 4;
+
         renderer = new THREE.WebGLRenderer({
             canvas,
-            antialias: true,
+            antialias: !lowPowerDevice,
             alpha: true,
             powerPreference: "high-performance",
         });
@@ -126,10 +135,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // Keep the existing look, but avoid rebuilding the shadow atlas on
         // every render. The shadow map only changes when the garment itself
         // changes; camera orbiting and label edits do not require a new map.
-        const lowPowerDevice =
-            compactMedia.matches ||
-            Number(navigator.deviceMemory || 8) <= 4 ||
-            Number(navigator.hardwareConcurrency || 8) <= 4;
 
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -137,7 +142,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.dampingFactor = 0.055;
+        controls.dampingFactor = 0.075;
         controls.enablePan = false;
         controls.rotateSpeed = 0.62;
         controls.zoomSpeed = 0.72;
@@ -418,7 +423,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     function rotateGarment(step) {
         if (!garment) return;
         garment.rotation.y += THREE.MathUtils.degToRad(step);
-        shadowMapDirty = true;
         render();
     }
 
@@ -443,7 +447,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 Number(navigator.hardwareConcurrency || 8) <= 4;
             const pixelRatioCap = lowPowerDevice
                 ? 1.25
-                : 1.75;
+                : 1.5;
 
             if (garment) {
                 applyResponsiveGarmentScale();
@@ -610,8 +614,45 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         return new THREE.Euler().setFromQuaternion(spin.multiply(frame));
     }
 
+    function updateDragPreviewTransform(item, point, normal) {
+        const preview = item?.dragPreview;
+        const target = item?.target;
+        if (!preview || !target) return;
+
+        if (preview.parent !== target) {
+            preview.parent?.remove(preview);
+            target.add(preview);
+        }
+
+        const localPoint = point.clone()
+            .addScaledVector(normal, 0.012);
+
+        target.worldToLocal(localPoint);
+        preview.position.copy(localPoint);
+
+        const worldQuaternion = new THREE.Quaternion().setFromEuler(
+            orientation(normal, item.layer.rotation)
+        );
+        const targetWorldQuaternion = target.getWorldQuaternion(
+            new THREE.Quaternion()
+        );
+
+        preview.quaternion.copy(
+            targetWorldQuaternion.invert().multiply(worldQuaternion)
+        );
+    }
+
     function disposeLayer(item) {
-        if (!item?.mesh) return;
+        if (!item?.mesh && !item?.dragPreview) return;
+
+        if (item.dragPreview) {
+            item.dragPreview.geometry?.dispose();
+            item.dragPreview.material?.dispose();
+            item.dragPreview.parent?.remove(item.dragPreview);
+            item.dragPreview = null;
+        }
+
+        if (!item.mesh) return;
         item.mesh.geometry?.dispose();
         // Textures are cached/shared between projections; dispose only the
         // per-decal material, otherwise a drag would invalidate the cached texture. 
@@ -683,7 +724,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 return;
             }
 
-            const material = new THREE.MeshPhysicalMaterial({
+            const material = new THREE.MeshStandardMaterial({
                 map: texture,
                 color: new THREE.Color(item.layer.color || "#ffffff"),
                 transparent: true,
@@ -691,7 +732,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 alphaTest: 0.02,
                 roughness: 0.72,
                 metalness: 0,
-                clearcoat: 0.03,
                 depthTest: true,
                 depthWrite: false,
                 polygonOffset: true,
@@ -767,13 +807,41 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             });
             target.add(handleGroup);
 
+            // Lightweight drag preview: a single textured plane follows the
+            // raycast hit during pointer movement. The expensive DecalGeometry
+            // is rebuilt once when the drag is committed.
+            const dragPreviewGeometry = new THREE.PlaneGeometry(size.x, size.y);
+            const dragPreviewMaterial = new THREE.MeshBasicMaterial({
+                map: texture,
+                color: new THREE.Color(item.layer.color || "#ffffff"),
+                transparent: true,
+                opacity: Math.max(0.2, Math.min(1, Number(item.layer.opacity ?? 1))),
+                alphaTest: 0.02,
+                depthTest: true,
+                depthWrite: false,
+                polygonOffset: true,
+                polygonOffsetFactor: -4,
+                polygonOffsetUnits: -1,
+                side: THREE.DoubleSide,
+            });
+            const dragPreview = new THREE.Mesh(
+                dragPreviewGeometry,
+                dragPreviewMaterial
+            );
+            dragPreview.renderOrder = 29;
+            dragPreview.visible = false;
+            dragPreview.userData.customizerLayerId = item.id;
+            target.add(dragPreview);
+
             const previousMesh = item.mesh;
             const previousFrame = item.frame;
             const previousHandles = item.handles;
+            const previousDragPreview = item.dragPreview;
 
             item.mesh = mesh;
             item.frame = frame;
             item.handles = handleGroup;
+            item.dragPreview = dragPreview;
 
             if (previousMesh) {
                 previousMesh.geometry?.dispose();
@@ -792,6 +860,18 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 });
                 previousHandles.parent?.remove(previousHandles);
             }
+            if (previousDragPreview) {
+                previousDragPreview.geometry?.dispose();
+                previousDragPreview.material?.dispose();
+                previousDragPreview.parent?.remove(previousDragPreview);
+            }
+
+            updateDragPreviewTransform(
+                item,
+                item.surfacePoint || item.position,
+                item.surfaceNormal || item.normal
+            );
+            dragPreview.visible = false;
 
             render();
         }).catch(() => status("تصویر لیبل برای پیش‌نمایش بارگذاری نشد."));
@@ -864,20 +944,66 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         document.dispatchEvent(new CustomEvent("babaei:label-added"));
     }
 
-    function moveSelected(event) {
+    function moveSelectedPreview(event) {
         const item = layers.get(selectedId);
-        if (!item) return;
+        if (!item || !drag) return;
 
-        // A drag is an explicit placement action, so follow the garment mesh
-        // currently under the pointer. This allows torso -> sleeve placement,
-        // while ordinary clicks still never move a selected label.
-        pointerOf(event);
+        const clientX = Number(event?.clientX ?? drag.lastClientX ?? 0);
+        const clientY = Number(event?.clientY ?? drag.lastClientY ?? 0);
+
+        if (
+            Number.isFinite(drag.lastClientX) &&
+            Number.isFinite(drag.lastClientY) &&
+            Math.hypot(
+                clientX - drag.lastClientX,
+                clientY - drag.lastClientY
+            ) < 2
+        ) {
+            return;
+        }
+
+        drag.lastClientX = clientX;
+        drag.lastClientY = clientY;
+
+        // During drag, only move a lightweight textured plane. This avoids
+        // rebuilding DecalGeometry + selection geometry on every pointer event.
+        pointerOf({ clientX, clientY });
         raycaster.setFromCamera(pointer, camera);
         const hit = raycaster.intersectObjects(garmentMeshes, false)[0];
         if (!hit) return;
 
+        const normal = hitNormal(hit);
         item.target = hit.object;
-        project(item, hit.point, hitNormal(hit));
+        item.surfacePoint = hit.point.clone();
+        item.surfaceNormal = normal.clone();
+        item.normal = normal.clone();
+        item.position = hit.point.clone().addScaledVector(normal, 0.008);
+
+        updateDragPreviewTransform(item, hit.point, normal);
+
+        if (item.mesh) item.mesh.visible = false;
+        if (item.frame) item.frame.visible = false;
+        if (item.handles) item.handles.visible = false;
+        if (item.dragPreview) item.dragPreview.visible = true;
+    }
+
+    function queueDragMove(event) {
+        if (!drag || drag.pointerId !== event.pointerId) return;
+
+        dragEvent = {
+            clientX: event.clientX,
+            clientY: event.clientY,
+            pointerId: event.pointerId,
+        };
+
+        if (dragFrameId) return;
+
+        dragFrameId = requestAnimationFrame(() => {
+            dragFrameId = 0;
+            if (!drag || !dragEvent) return;
+            moveSelectedPreview(dragEvent);
+            render();
+        });
     }
 
     function moveSelectedBy(dx, dy) {
@@ -1001,7 +1127,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function bind() {
         canvas.addEventListener("pointerdown", event => {
-            const intersections = garmentHits(event);
             const decal = raycaster.intersectObjects(
                 Array.from(layers.values()).map(item => item.mesh).filter(Boolean),
                 true
@@ -1009,7 +1134,30 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
             if (decal) {
                 selectedId = Number(decal.object.userData.customizerLayerId);
-                drag = { pointerId: event.pointerId };
+                drag = {
+                    pointerId: event.pointerId,
+                    lastClientX: event.clientX,
+                    lastClientY: event.clientY,
+                };
+                dragEvent = {
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    pointerId: event.pointerId,
+                };
+
+                const item = layers.get(selectedId);
+                if (item?.mesh) item.mesh.visible = false;
+                if (item?.frame) item.frame.visible = false;
+                if (item?.handles) item.handles.visible = false;
+                if (item?.dragPreview) {
+                    updateDragPreviewTransform(
+                        item,
+                        item.surfacePoint || item.position,
+                        item.surfaceNormal || item.normal
+                    );
+                    item.dragPreview.visible = true;
+                }
+
                 controls.enabled = false;
                 canvas.setPointerCapture(event.pointerId);
                 sync();
@@ -1024,16 +1172,48 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         });
 
         canvas.addEventListener("pointermove", event => {
-            if (drag?.pointerId === event.pointerId) moveSelected(event);
+            queueDragMove(event);
         });
 
         ["pointerup", "pointercancel"].forEach(type => {
             canvas.addEventListener(type, event => {
                 if (drag?.pointerId !== event.pointerId) return;
+
+                if (dragFrameId) {
+                    cancelAnimationFrame(dragFrameId);
+                    dragFrameId = 0;
+                }
+
+                const finalEvent = dragEvent || {
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    pointerId: event.pointerId,
+                };
+
+                // Commit the final raycast exactly once with the real
+                // DecalGeometry. Normal placement quality is therefore kept,
+                // while the drag itself stays lightweight.
+                moveSelectedPreview(finalEvent);
+
+                const item = layers.get(selectedId);
+                const finalPoint = item?.surfacePoint;
+                const finalNormal = item?.surfaceNormal;
+
                 drag = null;
+                dragEvent = null;
                 controls.enabled = true;
                 canvas.releasePointerCapture?.(event.pointerId);
-                sync();
+
+                if (item && finalPoint && finalNormal) {
+                    project(item, finalPoint, finalNormal);
+                } else if (item) {
+                    if (item.mesh) item.mesh.visible = true;
+                    sync();
+                    render();
+                } else {
+                    sync();
+                    render();
+                }
             });
         });
 
