@@ -158,6 +158,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const targetHeight = 2.72;
         rootObject.scale.setScalar(targetHeight / maxSize);
 
+        // The supplied shirt asset reads slightly too square on narrow
+        // portrait screens. Add a restrained Y-only stretch for phones so
+        // the silhouette reads like a real T-shirt without changing width.
+        if (window.matchMedia("(max-width: 600px)").matches) {
+            rootObject.scale.y *= 1.12;
+        }
+
         const scaledBox = new THREE.Box3().setFromObject(rootObject);
         const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
         rootObject.position.sub(scaledCenter);
