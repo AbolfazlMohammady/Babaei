@@ -298,30 +298,41 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const horizontalDistance =
             size.x / (2 * Math.tan(horizontalFov / 2));
 
-        // Fit the actual bounding box on both axes. The small depth term keeps
-        // the model from touching the camera when it is rotated.
+        // Reserve the fixed phone UI as a safe visual area. The old framing
+        // centered the garment in the full canvas, so an enlarged label could
+        // land underneath the bottom editing controls.
+        const viewportHeight = Math.max(
+            1,
+            stage.clientHeight || renderer?.domElement?.clientHeight || window.innerHeight
+        );
+        const isPhone = window.matchMedia("(max-width: 600px)").matches;
+        const safeTop = isPhone ? Math.min(72, viewportHeight * 0.09) : 0;
+        const safeBottom = isPhone ? Math.min(92, viewportHeight * 0.12) : 0;
+        const usableHeight = Math.max(
+            viewportHeight * 0.68,
+            viewportHeight - safeTop - safeBottom
+        );
+
+        const verticalDistanceSafe =
+            verticalDistance * (viewportHeight / usableHeight);
+
+        // Fit both axes, but use the safe vertical area on phones.
         const fitDistance = Math.max(
-            verticalDistance,
+            verticalDistanceSafe,
             horizontalDistance,
             size.z * 1.25
         );
 
-        // Slightly tighter on mobile so the shirt is not unnecessarily small,
-        // while still leaving enough safety margin around the silhouette.
-        // Phone composition: keep the garment visually compact without
-        // changing the model itself. The phone screenshot is a portrait
-        // viewport, so a modest extra camera distance prevents the shirt from
-        // looking overly wide while preserving the full silhouette.
-        const distance = fitDistance * (mobile ? 1.55 : 1.06);
+        // Preserve the compact phone scale while giving the selected-label
+        // toolbar enough room below the garment.
+        const distance = fitDistance * (mobile ? 1.52 : 1.06);
         baseCameraDistance = distance;
 
-        // Standard Three.js camera framing is controlled through the
-        // OrbitControls target: the point assigned to controls.target becomes
-        // the center of the camera's view. For this phone editor we anchor the
-        // garment at the actual viewport center, rather than leaving the model
-        // in the upper half of the screen because of the fixed mobile chrome.
-        const isPhone = window.matchMedia("(max-width: 600px)").matches;
-        const visualCenterRatio = isPhone ? 0.665 : 0.50;
+        // The center of the camera view is the OrbitControls target. On phones
+        // place that center in the safe area above the bottom dock.
+        const visualCenterRatio = isPhone
+            ? (safeTop + usableHeight / 2) / viewportHeight
+            : 0.50;
         const visualCenterShift = isPhone
             ? (visualCenterRatio - 0.50)
               * 2
