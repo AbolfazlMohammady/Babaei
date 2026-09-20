@@ -102,7 +102,7 @@ class DesignerPageView(View):
                 target_view["areas"].append({"id": area_map.area_id, "key": area_map.area.key, "name": area_map.area.name, "geometry": area_map.geometry, "max_layers": area_map.area.max_layers, "max_width_mm": float(area_map.area.max_width_mm), "max_height_mm": float(area_map.area.max_height_mm)})
 
         price_area_ids = {area.id for area in areas}
-        artworks = list(Artwork.objects.filter(is_active=True, source=Artwork.Source.LIBRARY) .only("id", "code", "name", "image", "base_price").prefetch_related(Prefetch("area_prices", queryset=ArtworkAreaPrice.objects.filter(area_id__in=price_area_ids).select_related("area").only("id", "artwork_id", "area_id", "price", "area__id", "area__product_id", "area__is_active"), to_attr="designer_area_prices")).order_by("name"))
+        artworks = list(Artwork.objects.filter(is_active=True, source=Artwork.Source.LIBRARY) .only("id", "code", "name", "image", "base_price", "background_removed").prefetch_related(Prefetch("area_prices", queryset=ArtworkAreaPrice.objects.filter(area_id__in=price_area_ids).select_related("area").only("id", "artwork_id", "area_id", "price", "area__id", "area__product_id", "area__is_active"), to_attr="designer_area_prices")).order_by("name"))
         artwork_data = []
         price_data = {}
         for artwork in artworks:
