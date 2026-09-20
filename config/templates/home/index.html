@@ -19,27 +19,17 @@
 
 <section class="hero" aria-label="BABAEI">
     <div class="hero__slider">
-        <article class="hero__slide is-active" aria-hidden="false">
-            <img src="{% static 'images/home/baner1.png' %}" alt="مجموعه جدید BABAEI" fetchpriority="high">
+        <article class="hero__slide hero__slide--editorial is-active" aria-hidden="false">
+            <img class="hero__art" src="{% static 'images/home/garment-story.svg' %}" alt="لباس مشکی BABAEI" width="800" height="1000" fetchpriority="high">
             <div class="hero__overlay"></div>
             <div class="hero__content">
-                <p class="hero__eyebrow">MORE THAN CLOTHING</p>
-                <h1 class="hero__title">More<br>Than<br>Clothing</h1>
-                <p class="hero__description">لباس فقط پوشش نیست،<br>راهی برای بیان خودته.</p>
-                <div class="hero__actions"><a href="{% url 'shop:index' %}" class="button button--light">ورود به فروشگاه</a><a href="#label-story" class="hero__link">داستان لباس <span>↓</span></a></div>
+                <p class="hero__eyebrow">A PIECE OF YOU</p>
+                <h1 class="hero__title">Wear<br>Your<br>Story</h1>
+                <p class="hero__description">هر تکه از استایل تو،<br>با یک انتخاب شروع می‌شود.</p>
+                <div class="hero__actions"><a href="{% url 'shop:index' %}" class="button button--light">کشف مجموعه</a><a href="#label-story" class="hero__link">ساختن یک امضا <span>↓</span></a></div>
             </div>
         </article>
-        <article class="hero__slide" aria-hidden="true">
-            <img src="{% static 'images/home/banner2.png' %}" alt="طراحی اختصاصی BABAEI" loading="lazy">
-            <div class="hero__overlay"></div>
-            <div class="hero__content">
-                <p class="hero__eyebrow">CREATE YOUR STYLE</p>
-                <h2 class="hero__title">Wear<br>Your<br>Story</h2>
-                <p class="hero__description">چیزی که می‌پوشی،<br>داستان تو را تعریف می‌کند.</p>
-                <div class="hero__actions"><a href="{% url 'shop:index' %}" class="button button--light">ورود به فروشگاه</a><a href="#products" class="hero__link">مشاهده محصولات <span>↓</span></a></div>
-            </div>
-        </article>
-        <div class="hero__counter" aria-label="کنترل اسلایدها"><span class="hero__current">01</span><span>/</span><span>02</span><button type="button" class="hero__arrow hero__prev" aria-label="اسلاید قبلی">←</button><button type="button" class="hero__arrow hero__next" aria-label="اسلاید بعدی">→</button></div>
+        <div class="hero__counter" aria-label="نمایش اصلی"><span class="hero__current">01</span><span>/</span><span>01</span></div>
     </div>
 </section>
 

@@ -54,9 +54,11 @@
             const labelHeight = label.offsetHeight;
             const finalX = targetRect.left - sceneRect.left + (targetRect.width - labelWidth) / 2;
             const finalY = targetRect.top - sceneRect.top + (targetRect.height - labelHeight) / 2;
+            const startScroll = storyRect.top + window.scrollY - window.innerHeight * 0.18;
+            const endScroll = storyRect.top + window.scrollY + story.offsetHeight - window.innerHeight * 0.84;
             metrics = {
-                startScroll: storyRect.top + window.scrollY - window.innerHeight * 0.34,
-                travel: Math.max(1, story.offsetHeight - window.innerHeight * 0.72),
+                startScroll,
+                travel: Math.max(window.innerHeight * 0.72, endScroll - startScroll),
                 finalX,
                 finalY,
                 startX: (window.innerWidth <= 560 ? -sceneRect.width * 0.52 : -sceneRect.width * 0.44),
