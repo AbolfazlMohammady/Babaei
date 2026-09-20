@@ -5563,3 +5563,362 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
 @media (max-width: 1023px) {
     .desktop-text-tools { display: none !important; }
 }
+
+
+/* =========================================================
+   Mobile reference UI — exact studio composition
+   ========================================================= */
+@media (max-width: 600px) {
+    body.customizer-page {
+        background: #09090a !important;
+    }
+
+    body.customizer-page .customizer-header {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        left: 72px !important;
+        right: 72px !important;
+        top: max(18px, env(safe-area-inset-top)) !important;
+        min-height: 48px !important;
+        pointer-events: none;
+    }
+
+    body.customizer-page .customizer-header > div:first-child {
+        pointer-events: auto;
+    }
+
+    body.customizer-page .customizer-header h1 {
+        margin: 0 !important;
+        font-size: 20px !important;
+        font-weight: 900 !important;
+        color: #f5f1e9 !important;
+    }
+
+    body.customizer-page .customizer-price-card {
+        display: none !important;
+    }
+
+    .mobile-studio-header-actions {
+        position: fixed;
+        inset: max(16px, env(safe-area-inset-top)) 14px auto;
+        z-index: 120;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        pointer-events: none;
+    }
+
+    .mobile-studio-back,
+    .mobile-studio-cart {
+        pointer-events: auto;
+        height: 52px;
+        border: 1px solid rgba(255,255,255,.16);
+        background: rgba(13,13,15,.72);
+        box-shadow: 0 14px 36px rgba(0,0,0,.28);
+        backdrop-filter: blur(18px) saturate(125%);
+        -webkit-backdrop-filter: blur(18px) saturate(125%);
+        color: #f2eee7;
+    }
+
+    .mobile-studio-back {
+        width: 52px;
+        display: grid;
+        place-items: center;
+        border-radius: 15px;
+        font-size: 30px;
+        line-height: 1;
+        text-decoration: none;
+    }
+
+    .mobile-studio-cart {
+        min-width: 164px;
+        padding: 7px 12px;
+        border-radius: 16px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 7px;
+        text-align: right;
+    }
+
+    .mobile-studio-cart span {
+        color: #a8a39a;
+        font-size: 9px;
+    }
+
+    .mobile-studio-cart strong {
+        font-size: 16px;
+        font-weight: 900;
+        direction: rtl;
+    }
+
+    .mobile-studio-cart b {
+        font-size: 22px;
+        font-weight: 400;
+        filter: grayscale(1);
+    }
+
+    .mobile-studio-sheet {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: max(10px, env(safe-area-inset-bottom));
+        z-index: 110;
+        height: min(39svh, 355px);
+        min-height: 320px;
+        padding: 11px 12px 12px;
+        box-sizing: border-box;
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(24,24,26,.98), rgba(13,13,15,.98));
+        box-shadow: 0 -18px 60px rgba(0,0,0,.42);
+        backdrop-filter: blur(24px) saturate(120%);
+        -webkit-backdrop-filter: blur(24px) saturate(120%);
+        direction: rtl;
+        color: #f3efe7;
+    }
+
+    .mobile-studio-sheet__grab {
+        width: 54px;
+        height: 5px;
+        border-radius: 99px;
+        background: #59585a;
+        margin: 0 auto 11px;
+    }
+
+    .mobile-studio-sheet__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 0 4px 12px;
+    }
+
+    .mobile-studio-sheet__head h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .mobile-studio-text-cta {
+        border: 0;
+        min-width: 146px;
+        height: 48px;
+        padding: 0 15px;
+        border-radius: 15px;
+        background: rgba(216,182,107,.13);
+        color: #e7c875;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 13px;
+        font-weight: 900;
+    }
+
+    .mobile-studio-text-cta span {
+        font: 900 25px Georgia, serif;
+    }
+
+    .mobile-studio-tool-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0,1fr));
+        gap: 7px;
+        margin-bottom: 13px;
+    }
+
+    .mobile-studio-tool {
+        height: 72px;
+        border: 1px solid rgba(255,255,255,.05);
+        border-radius: 15px;
+        background: rgba(255,255,255,.045);
+        color: #eeeae3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .mobile-studio-tool__icon {
+        font-size: 27px;
+        line-height: 1;
+        color: #d7d4ce;
+    }
+
+    .mobile-studio-tool strong {
+        font-size: 10px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .mobile-studio-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        align-items: start;
+        margin: 0 4px 11px;
+    }
+
+    .mobile-studio-option-group h3 {
+        margin: 0 0 9px;
+        font-size: 14px;
+        font-weight: 900;
+    }
+
+    .mobile-studio-size-list,
+    .mobile-studio-color-list {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mobile-studio-size {
+        width: 47px;
+        height: 42px;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 12px;
+        background: rgba(255,255,255,.025);
+        color: #aaa69f;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .mobile-studio-size.is-active {
+        color: #e6c56f;
+        border-color: #e6c56f;
+        background: rgba(216,182,107,.07);
+    }
+
+    .mobile-studio-color {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        background: var(--mobile-color, #111);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
+    }
+
+    .mobile-studio-color.is-active {
+        border-color: #fff;
+        box-shadow: 0 0 0 2px #09090a, 0 0 0 3px #fff;
+    }
+
+    .mobile-studio-add-cart {
+        width: 100%;
+        height: 58px;
+        border: 0;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #e8c979, #d7b35d);
+        color: #151311;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-size: 16px;
+        font-weight: 950;
+        box-shadow: 0 10px 30px rgba(216,182,107,.16);
+    }
+
+    .mobile-studio-add-cart span {
+        font-size: 22px;
+    }
+
+    .mobile-customizer-toolbar {
+        display: none !important;
+    }
+
+    .mobile-context-toolbar,
+    .mobile-selection-toolbar {
+        display: none !important;
+    }
+
+    .studio-drawer-toggle--left,
+    .studio-drawer-toggle--right {
+        display: none !important;
+    }
+
+    .customizer-panel--premium-left,
+    .customizer-panel--premium-right {
+        display: none !important;
+    }
+
+    .designer-3d-topbar {
+        display: none !important;
+    }
+
+    .designer-3d-bottom-controls {
+        left: auto !important;
+        right: 20px !important;
+        bottom: calc(min(39svh, 355px) + 26px) !important;
+        transform: none !important;
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr);
+        width: 68px;
+        gap: 8px;
+        padding: 0;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .designer-3d-bottom-controls button,
+    .designer-3d-bottom-controls span {
+        display: none !important;
+    }
+
+    .designer-3d-bottom-controls button[data-camera-action="rotate-left"],
+    .designer-3d-bottom-controls button[data-camera-action="rotate-right"],
+    .designer-3d-bottom-controls button[data-camera-action="fit"] {
+        display: grid !important;
+        width: 56px !important;
+        height: 56px !important;
+        border: 1px solid rgba(255,255,255,.14) !important;
+        border-radius: 15px !important;
+        background: rgba(12,12,14,.68) !important;
+        color: #ddd9d2 !important;
+        backdrop-filter: blur(14px);
+        font-size: 23px !important;
+    }
+
+    .designer-3d-bottom-controls button[data-camera-action="rotate-left"] { grid-column: 1; }
+    .designer-3d-bottom-controls button[data-camera-action="rotate-right"] { grid-column: 1; }
+    .designer-3d-bottom-controls button[data-camera-action="fit"] { grid-column: 1; }
+
+    .customizer-stage-wrap--premium {
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 100dvh !important;
+    }
+
+    .designer-3d-stage {
+        min-height: 100dvh !important;
+        height: 100dvh !important;
+        padding: 0 !important;
+    }
+}
+
+@media (max-width: 430px) {
+    .mobile-studio-sheet {
+        height: min(40svh, 350px);
+        min-height: 315px;
+        left: 8px;
+        right: 8px;
+        bottom: max(8px, env(safe-area-inset-bottom));
+    }
+
+    .mobile-studio-tool {
+        height: 68px;
+    }
+
+    .mobile-studio-add-cart {
+        height: 55px;
+    }
+
+    .mobile-studio-text-cta {
+        min-width: 135px;
+    }
+}
