@@ -648,7 +648,36 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         return new THREE.Euler().setFromQuaternion(spin.multiply(frame));
     }
 
+    function updateDragPreviewTransform(item, point, normal, target) {
+        const preview = item?.dragPreview;
+        if (!preview || !item?.size || !target) return;
+
+        const localPoint = point.clone().addScaledVector(normal, 0.012);
+        target.worldToLocal(localPoint);
+        preview.position.copy(localPoint);
+
+        const worldQuaternion = new THREE.Quaternion().setFromEuler(
+            orientation(normal, item.layer.rotation)
+        );
+        const targetWorldQuaternion = target.getWorldQuaternion(
+            new THREE.Quaternion()
+        );
+
+        preview.quaternion.copy(
+            targetWorldQuaternion.invert().multiply(worldQuaternion)
+        );
+    }
+
     function disposeLayer(item) {
+        if (!item) return;
+
+        if (item.dragPreview) {
+            item.dragPreview.geometry?.dispose();
+            item.dragPreview.material?.dispose();
+            item.dragPreview.parent?.remove(item.dragPreview);
+            item.dragPreview = null;
+        }
+
         if (!item?.mesh) return;
         item.mesh.geometry?.dispose();
         // Textures are cached/shared between projections; dispose only the
@@ -805,13 +834,34 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             });
             target.add(handleGroup);
 
+            const dragPreviewMaterial = new THREE.MeshBasicMaterial({
+                map: texture,
+                color: new THREE.Color(item.layer.color || "#ffffff"),
+                transparent: true,
+                opacity: Math.max(0.2, Math.min(1, Number(item.layer.opacity ?? 1))),
+                alphaTest: 0.02,
+                depthTest: true,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+            });
+            const dragPreview = new THREE.Mesh(
+                new THREE.PlaneGeometry(size.x, size.y),
+                dragPreviewMaterial
+            );
+            dragPreview.renderOrder = 29;
+            dragPreview.visible = false;
+            dragPreview.userData.customizerLayerId = item.id;
+            target.add(dragPreview);
+
             const previousMesh = item.mesh;
             const previousFrame = item.frame;
             const previousHandles = item.handles;
+            const previousDragPreview = item.dragPreview;
 
             item.mesh = mesh;
             item.frame = frame;
             item.handles = handleGroup;
+            item.dragPreview = dragPreview;
 
             if (previousMesh) {
                 previousMesh.geometry?.dispose();
@@ -830,6 +880,19 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 });
                 previousHandles.parent?.remove(previousHandles);
             }
+            if (previousDragPreview) {
+                previousDragPreview.geometry?.dispose();
+                previousDragPreview.material?.dispose();
+                previousDragPreview.parent?.remove(previousDragPreview);
+            }
+
+            updateDragPreviewTransform(
+                item,
+                item.surfacePoint || item.position,
+                item.surfaceNormal || item.normal,
+                target
+            );
+            dragPreview.visible = false;
 
             render();
         }).catch(() => status("تصویر لیبل برای پیش‌نمایش بارگذاری نشد."));
@@ -974,20 +1037,54 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         document.dispatchEvent(new CustomEvent("babaei:label-added"));
     }
 
-    function moveSelected(event) {
+    function moveSelectedPreview(event) {
         const item = layers.get(selectedId);
-        if (!item) return;
+        if (!item || !drag) return;
 
-        // A drag is an explicit placement action, so follow the garment mesh
-        // currently under the pointer. This allows torso -> sleeve placement,
-        // while ordinary clicks still never move a selected label.
         pointerOf(event);
         raycaster.setFromCamera(pointer, camera);
         const hit = raycaster.intersectObjects(garmentMeshes, false)[0];
         if (!hit) return;
 
-        item.target = hit.object;
-        project(item, hit.point, hitNormal(hit));
+        const normal = hitNormal(hit);
+        drag.pending = {
+            target: hit.object,
+            point: hit.point.clone(),
+            normal: normal.clone(),
+        };
+
+        if (!item.dragPreview || !item.size) return;
+
+        updateDragPreviewTransform(
+            item,
+            hit.point,
+            normal,
+            hit.object
+        );
+
+        if (item.mesh) item.mesh.visible = false;
+        if (item.frame) item.frame.visible = false;
+        if (item.handles) item.handles.visible = false;
+        item.dragPreview.visible = true;
+    }
+
+    function queueDragMove(event) {
+        if (!drag || drag.pointerId !== event.pointerId) return;
+
+        dragEvent = {
+            clientX: event.clientX,
+            clientY: event.clientY,
+            pointerId: event.pointerId,
+        };
+
+        if (dragFrameId) return;
+
+        dragFrameId = requestAnimationFrame(() => {
+            dragFrameId = 0;
+            if (!drag || !dragEvent) return;
+            moveSelectedPreview(dragEvent);
+            render();
+        });
     }
 
     function moveSelectedBy(dx, dy) {
@@ -1130,7 +1227,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function bind() {
         canvas.addEventListener("pointerdown", event => {
-            const intersections = garmentHits(event);
+            pointerOf(event);
+
             const decal = raycaster.intersectObjects(
                 Array.from(layers.values()).map(item => item.mesh).filter(Boolean),
                 true
@@ -1138,7 +1236,25 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
             if (decal) {
                 selectedId = Number(decal.object.userData.customizerLayerId);
-                drag = { pointerId: event.pointerId };
+                drag = {
+                    pointerId: event.pointerId,
+                    pending: null,
+                };
+
+                const item = layers.get(selectedId);
+                if (item?.dragPreview && item.size) {
+                    updateDragPreviewTransform(
+                        item,
+                        item.surfacePoint || item.position,
+                        item.surfaceNormal || item.normal,
+                        item.target
+                    );
+                    item.dragPreview.visible = true;
+                    if (item.mesh) item.mesh.visible = false;
+                    if (item.frame) item.frame.visible = false;
+                    if (item.handles) item.handles.visible = false;
+                }
+
                 controls.enabled = false;
                 canvas.setPointerCapture(event.pointerId);
                 sync();
@@ -1146,23 +1262,44 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             }
 
             if (event.button === 1 || event.altKey) return;
-
-            // A selected label must only move after the user starts dragging the label itself.
-            // Clicking another point on the garment must never teleport the selected label.
-            return;
         });
 
-        canvas.addEventListener("pointermove", event => {
-            if (drag?.pointerId === event.pointerId) moveSelected(event);
-        });
+        canvas.addEventListener("pointermove", queueDragMove);
 
         ["pointerup", "pointercancel"].forEach(type => {
             canvas.addEventListener(type, event => {
                 if (drag?.pointerId !== event.pointerId) return;
+
+                if (dragFrameId) {
+                    cancelAnimationFrame(dragFrameId);
+                    dragFrameId = 0;
+                }
+
+                if (type === "pointerup" && dragEvent) {
+                    moveSelectedPreview(dragEvent);
+                }
+
+                const item = layers.get(selectedId);
+                const pending = drag?.pending;
+
                 drag = null;
+                dragEvent = null;
                 controls.enabled = true;
                 canvas.releasePointerCapture?.(event.pointerId);
+
+                // Never leave the old label hidden while async DecalGeometry is rebuilding.
+                if (item?.mesh) item.mesh.visible = true;
+                if (item?.frame) item.frame.visible = item.id === selectedId;
+                if (item?.handles) item.handles.visible = item.id === selectedId;
+                if (item?.dragPreview) item.dragPreview.visible = false;
+
+                if (type === "pointerup" && item && pending) {
+                    item.target = pending.target;
+                    project(item, pending.point, pending.normal);
+                }
+
                 sync();
+                render();
             });
         });
 
