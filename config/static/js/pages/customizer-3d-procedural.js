@@ -268,13 +268,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // Aim the camera at that center instead of an arbitrary +52% Y offset.
         // That arbitrary offset was responsible for the large empty band under
         // the garment on phones.
-        // Keep the garment visually centered inside the full mobile stage.
-        // The model is already correctly framed horizontally; this offset only
-        // compensates the tall portrait composition so the garment center aligns
-        // with the usable visual center instead of sitting too high.
-        const mobileVerticalOffset = mobile ? size.y * 0.21 : 0;
-        const targetY = center.y + mobileVerticalOffset + (mobile ? size.y * 0.015 : 0);
-        const cameraY = center.y + mobileVerticalOffset + (mobile ? size.y * 0.025 : size.y * 0.015);
+        // Keep the proven model scale/framing unchanged.
+        // On the portrait phone the garment is vertically too high, so move
+        // ONLY the look-at target upward. Do not move the camera itself and do
+        // not change the fitted distance: width/height framing stays untouched.
+        const targetY = center.y + (mobile ? size.y * 0.21 : 0.015 * size.y);
+        const cameraY = center.y + (mobile ? size.y * 0.025 : size.y * 0.015);
 
         camera.position.set(0, cameraY, distance);
         controls.target.set(center.x, targetY, center.z);
