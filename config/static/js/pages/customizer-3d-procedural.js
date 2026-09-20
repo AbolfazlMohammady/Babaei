@@ -1287,9 +1287,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                     : null,
                 three_d: {
                     position: item.position?.toArray().map(value => Number(value.toFixed(6))) || null,
-                normal: item.normal?.toArray().map(value => Number(value.toFixed(6))) || null,
-                mesh: item.target?.name || null,
-                size: item.size?.toArray().map(value => Number(value.toFixed(6))) || null,
+                    normal: item.normal?.toArray().map(value => Number(value.toFixed(6))) || null,
+                    mesh: item.target?.name || null,
+                    size: item.size?.toArray().map(value => Number(value.toFixed(6))) || null,
                     mode: "glb_surface_decal",
                     template: "babaei_tshirt_glb_v1",
                     model: "Glb/whit_t_shirt.glb",
@@ -1303,6 +1303,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 },
             };
         });
+    }
 
     function bind() {
         canvas.addEventListener("pointerdown", event => {
