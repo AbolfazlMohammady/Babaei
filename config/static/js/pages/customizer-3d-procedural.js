@@ -257,13 +257,15 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const horizontalDistance =
             size.x / (2 * Math.tan(horizontalFov / 2));
 
-        // Add a small safety margin so anti-aliased edges, sleeves and model
-        // rotation never touch the viewport boundary.
-        const fitDistance = Math.max(
-            verticalDistance,
-            horizontalDistance,
-            size.z * 1.25
-        );
+        // Desktop can safely fit against both axes because its stage is wide.
+        // On a portrait phone, using horizontalDistance makes the garment look
+        // unnaturally short/wide: the narrow horizontal FOV becomes the limiting
+        // axis. The reference desktop presentation is height-driven, so mobile
+        // must fit by the garment height while keeping its full width comfortably
+        // inside the portrait stage.
+        const fitDistance = mobile
+            ? verticalDistance
+            : Math.max(verticalDistance, horizontalDistance, size.z * 1.25);
 
         const distance = fitDistance * (mobile ? 1.08 : 1.06);
         baseCameraDistance = distance;
