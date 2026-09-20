@@ -336,11 +336,15 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         //   so the model cannot jump to a different frame after refresh.
         const isPhone = window.matchMedia("(max-width: 600px)").matches;
 
-        let distance = fitDistance * 1.06;
+        let distance = 0;
         let targetY = center.y;
         let cameraY = center.y;
 
         if (isPhone) {
+            // Only change the camera distance: CSS/canvas sizing stays untouched.
+            // The 0.34 ratio controls the requested compact garment width, while
+            // the final factor gives the additional size reduction the reference
+            // screenshot needs.
             const targetWidthRatio = 0.34;
             const mobileWidthDistance =
                 horizontalDistance / targetWidthRatio;
@@ -349,7 +353,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 verticalDistance,
                 mobileWidthDistance,
                 size.z * 1.25
-            );
+            ) * 1.30;
 
             // Exact screen-center anchor. Do not compensate for the bottom
             // toolbar here; the toolbar is an overlay and the reference frame
