@@ -202,6 +202,33 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         pmrem.dispose();
     }
 
+    async function loadGlbArrayBuffer(loader, url) {
+        const cacheName = "babaei-3d-models-v1";
+
+        if ("caches" in window) {
+            try {
+                const cache = await caches.open(cacheName);
+                const cached = await cache.match(url);
+                if (cached) return await cached.arrayBuffer();
+
+                const response = await fetch(url, {
+                    credentials: "same-origin",
+                    cache: "force-cache",
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                void cache.put(url, response.clone()).catch(() => {});
+                return await response.arrayBuffer();
+            } catch {
+                // Cache Storage is best-effort; fall back to GLTFLoader below.
+            }
+        }
+
+        return await new Promise((resolve, reject) => {
+            loader.load(url, resolve, undefined, reject);
+        });
+    }
+
     async function loadGarment() {
         if (!modelUrl) throw new Error("مدل سه‌بعدی تیشرت تعریف نشده است.");
 
@@ -209,23 +236,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         showModelPreview();
         const loader = new GLTFLoader();
 
-        // Start the 33MB GLB request first, then build the reflection
-        // environment while the browser is receiving the asset.
-        const gltfPromise = new Promise((resolve, reject) => {
-            loader.load(
-                modelUrl,
-                resolve,
-                event => {
-                    if (!event.total) {
-                        setLoading("در حال بارگذاری مدل سه‌بعدی…", true);
-                        return;
-                    }
-                    const percent = Math.round((event.loaded / event.total) * 100);
-                    setLoading(`در حال بارگذاری مدل سه‌بعدی… ${percent}%`, true);
-                },
-                reject
-            );
-        });
+        // Start the model request immediately. Cache Storage makes repeat
+        // refreshes reuse the downloaded GLB when supported by the browser.
+        const gltfPromise = loadGlbArrayBuffer(loader, modelUrl);
 
         setupEnvironment();
         const gltf = await gltfPromise;
