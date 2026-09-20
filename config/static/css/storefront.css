@@ -395,8 +395,8 @@ html { scroll-behavior: smooth; }
 
 .label-story__label {
     position: absolute;
-    top: 38%;
-    left: 50%;
+    top: 0;
+    left: 0;
     z-index: 4;
     display: flex;
     align-items: center;
@@ -409,7 +409,7 @@ html { scroll-behavior: smooth; }
     background: rgba(28, 28, 25, .96);
     box-shadow: 0 20px 50px rgba(0, 0, 0, .38);
     color: var(--store-light);
-    transform: translate3d(var(--label-x, -30vw), var(--label-y, -18vh), 0) rotate(var(--label-r, -13deg)) scale(var(--label-s, .86));
+    transform: translate3d(-30vw, -18vh, 0) rotate(-13deg) scale(.86);
     transform-origin: center;
     transition: box-shadow .25s ease;
     will-change: transform;
@@ -784,6 +784,19 @@ html { scroll-behavior: smooth; }
     background: #e2ded5;
 }
 
+.shop-page .product-card__gallery,
+.shop-page .product-card__slides,
+.shop-page .product-card__slide {
+    width: 100%;
+    height: 100%;
+}
+
+.shop-page .product-card__slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .shop-page .product-card__slide img {
     transition: transform .7s cubic-bezier(.2, .7, .2, 1);
 }
@@ -999,12 +1012,12 @@ html { scroll-behavior: smooth; }
 .product-benefits > div { padding: 24px 20px; border-left: 1px solid var(--store-line); }
 .product-benefits > div:first-child { border-left: 0; }
 .product-benefits__number { display: block; margin-bottom: 25px; color: var(--store-accent); font-size: 11px; letter-spacing: .12em; }
-.product-benefits strong { display: block; color: var(--store-ink); font-size: 14px; }
-.product-benefits small { display: block; margin-top: 8px; color: var(--store-muted); font-size: 11px; line-height: 1.7; }
+.product-benefits strong { display: block; color: #f4f0e7 !important; font-size: 14px; }
+.product-benefits small { display: block; margin-top: 8px; color: rgba(244, 240, 231, .62) !important; font-size: 11px; line-height: 1.7; }
 
 .product-detail-page .product-description { max-width: 760px; margin-top: 82px; border-top-color: var(--store-line); }
 .product-detail-page .product-description h2 { color: var(--store-ink); font-size: 23px; }
-.product-detail-page .product-description div { color: var(--store-muted); font-size: 14px; line-height: 2.2; }
+.product-detail-page .product-description div { color: rgba(244, 240, 231, .64) !important; font-size: 14px; line-height: 2.2; }
 
 .product-detail-page .next-step-card {
     position: relative;
@@ -1071,6 +1084,18 @@ html { scroll-behavior: smooth; }
     .product-detail-page .product-gallery,
     .product-detail-page .product-info { position: relative; top: auto; }
     .product-detail-page .product-info { padding-top: 0; }
+}
+
+@media (min-width: 901px) {
+    /*
+     * Storefront pages are intentionally canvas-first on desktop.
+     * The global header remains available on account/cart pages and
+     * the compact mobile header stays enabled below 900px.
+     */
+    body.home-page .site-header,
+    body.shop-page .site-header {
+        display: none !important;
+    }
 }
 
 @media (max-width: 560px) {

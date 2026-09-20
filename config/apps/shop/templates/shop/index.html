@@ -31,23 +31,6 @@
         </div>
     </section>
 
-    {% if categories %}
-    <section aria-labelledby="categories-title">
-        <div class="section-head" data-reveal><div><span class="shop-kicker">CURATED FOR YOU</span><h2 id="categories-title">برای هر حال‌و‌هوا</h2></div></div>
-        <div class="categories">
-            {% for category in categories %}
-                <a class="category-card" href="{% url 'shop:category' category.slug %}" data-reveal>
-                    <div class="category-card__image">
-                        {% if category.image %}<img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">
-                        {% else %}<img src="{% static 'images/home/Tshirt.png' %}" alt="{{ category.name }}" loading="lazy" decoding="async">{% endif %}
-                    </div>
-                    <div class="category-card__title"><span>{{ category.name }}</span><b aria-hidden="true">↗</b></div>
-                </a>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
-
     <section id="products" aria-labelledby="products-title">
         <div class="section-head section-head--products">
             <div>

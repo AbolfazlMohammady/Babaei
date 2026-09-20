@@ -38,7 +38,9 @@
     const setupLabelStory = () => {
         const story = document.querySelector("[data-label-story]");
         const label = story?.querySelector("[data-label-piece]");
-        if (!story || !label) return;
+        const scene = story?.querySelector(".label-story__scene");
+        const target = story?.querySelector(".label-story__target");
+        if (!story || !label || !scene || !target) return;
 
         let ticking = false;
         const update = () => {
@@ -47,19 +49,22 @@
             const travel = Math.max(1, story.offsetHeight - window.innerHeight * 0.72);
             const progress = clamp((window.innerHeight * 0.34 - rect.top) / travel);
             const compact = window.matchMedia("(max-width: 560px)").matches;
-            const startX = compact ? -52 : -34;
-            const startY = compact ? -13 : -18;
-            const x = startX * (1 - progress);
-            const y = startY * (1 - progress);
+            const sceneRect = scene.getBoundingClientRect();
+            const targetRect = target.getBoundingClientRect();
+            const labelWidth = label.offsetWidth;
+            const labelHeight = label.offsetHeight;
+            const finalX = targetRect.left - sceneRect.left + (targetRect.width - labelWidth) / 2;
+            const finalY = targetRect.top - sceneRect.top + (targetRect.height - labelHeight) / 2;
+            const startX = compact ? -sceneRect.width * 0.52 : -sceneRect.width * 0.44;
+            const startY = finalY - sceneRect.height * (compact ? 0.13 : 0.16);
+            const x = startX + (finalX - startX) * progress;
+            const y = startY + (finalY - startY) * progress;
             const rotation = -13 * (1 - progress);
             const scale = 0.84 + progress * 0.16;
             story.style.setProperty("--story-progress", progress.toFixed(3));
-            story.style.setProperty("--label-x", `${x}vw`);
-            story.style.setProperty("--label-y", `${y}vh`);
-            story.style.setProperty("--label-r", `${rotation}deg`);
-            story.style.setProperty("--label-s", scale.toFixed(3));
             story.style.setProperty("--target-opacity", clamp((progress - 0.28) * 2.5).toFixed(3));
             story.style.setProperty("--garment-scale", (1 + progress * 0.025).toFixed(3));
+            label.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rotation}deg) scale(${scale})`;
         };
 
         const requestUpdate = () => {
