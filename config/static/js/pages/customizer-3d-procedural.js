@@ -108,6 +108,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     let renderFrameId = 0;
     let shadowMapDirty = true;
     let resizePending = false;
+    let garmentLocalBounds = null;
 
     function status(text) {
         const el = document.getElementById("save-status");
@@ -334,6 +335,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // Keep the original PBR materials/textures from the supplied GLB.
         scene.add(garment);
         normalizeGarment(garment);
+        garmentLocalBounds = computeGarmentLocalBounds();
         clearModelPreview();
         setLoading("", false);
         render();
@@ -587,24 +589,179 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         return raycaster.intersectObjects(garmentMeshes, false)[0] || null;
     }
 
-    function placementHit() {
-        // The exact viewport center can occasionally fall inside the collar/hole
-        // or between thin mesh parts. Try a small set of nearby points so an
-        // uploaded artwork always gets a valid cloth anchor.
+    function computeGarmentLocalBounds() {
+        if (!garment) return null;
+        garment.updateMatrixWorld(true);
+
+        const box = new THREE.Box3();
+        const corners = Array.from({ length: 8 }, () => new THREE.Vector3());
+
+        garmentMeshes.forEach(mesh => {
+            if (!mesh.geometry) return;
+            if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
+            const source = mesh.geometry.boundingBox;
+            if (!source) return;
+
+            corners[0].set(source.min.x, source.min.y, source.min.z);
+            corners[1].set(source.max.x, source.min.y, source.min.z);
+            corners[2].set(source.min.x, source.max.y, source.min.z);
+            corners[3].set(source.max.x, source.max.y, source.min.z);
+            corners[4].set(source.min.x, source.min.y, source.max.z);
+            corners[5].set(source.max.x, source.min.y, source.max.z);
+            corners[6].set(source.min.x, source.max.y, source.max.z);
+            corners[7].set(source.max.x, source.max.y, source.max.z);
+
+            corners.forEach(corner => {
+                const world = mesh.localToWorld(corner.clone());
+                box.expandByPoint(garment.worldToLocal(world.clone()));
+            });
+        });
+
+        return box.isEmpty() ? null : box;
+    }
+
+    function normalizedGarmentPoint(point) {
+        if (!garment || !point) return null;
+        if (!garmentLocalBounds) garmentLocalBounds = computeGarmentLocalBounds();
+        if (!garmentLocalBounds) return null;
+
+        const size = garmentLocalBounds.getSize(new THREE.Vector3());
+        if (size.x <= 1e-6 || size.y <= 1e-6) return null;
+
+        const local = garment.worldToLocal(point.clone());
+        return {
+            x: THREE.MathUtils.clamp(
+                (local.x - garmentLocalBounds.min.x) / size.x,
+                0,
+                1
+            ),
+            y: THREE.MathUtils.clamp(
+                1 - ((local.y - garmentLocalBounds.min.y) / size.y),
+                0,
+                1
+            ),
+        };
+    }
+
+    function pointInPolygon(point, polygon) {
+        if (!point || !Array.isArray(polygon) || polygon.length < 3) return false;
+        let inside = false;
+
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = Number(polygon[i]?.x);
+            const yi = Number(polygon[i]?.y);
+            const xj = Number(polygon[j]?.x);
+            const yj = Number(polygon[j]?.y);
+            const intersects = ((yi > point.y) !== (yj > point.y)) &&
+                (point.x < ((xj - xi) * (point.y - yi)) / ((yj - yi) || Number.EPSILON) + xi);
+            if (intersects) inside = !inside;
+        }
+
+        return inside;
+    }
+
+    function is3DPrintableArea(area) {
+        if (!area) return false;
+        const key = String(area.key || "").toLowerCase();
+        const name = String(area.name || "").toLowerCase();
+        return !/(sleeve|آستین|collar|یقه|inside|داخل)/i.test(key + " " + name);
+    }
+
+    function areaCenter(area) {
+        const geometry = Array.isArray(area?.geometry) ? area.geometry : [];
+        if (!geometry.length) return { x: 0.5, y: 0.5 };
+
+        return geometry.reduce(
+            (sum, point) => ({
+                x: sum.x + Number(point.x || 0),
+                y: sum.y + Number(point.y || 0),
+            }),
+            { x: 0, y: 0 }
+        );
+    }
+
+    function areaRelativePlacement(item) {
+        const area = areaById(item?.layer?.area_id);
+        const normalized = normalizedGarmentPoint(item?.surfacePoint || item?.position);
+        const geometry = Array.isArray(area?.geometry) ? area.geometry : [];
+        if (!area || !normalized || geometry.length < 3) return null;
+
+        const xs = geometry.map(point => Number(point.x));
+        const ys = geometry.map(point => Number(point.y));
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+
+        return {
+            x: THREE.MathUtils.clamp(
+                (normalized.x - minX) / Math.max(maxX - minX, Number.EPSILON),
+                0,
+                1
+            ),
+            y: THREE.MathUtils.clamp(
+                (normalized.y - minY) / Math.max(maxY - minY, Number.EPSILON),
+                0,
+                1
+            ),
+        };
+    }
+
+    function garmentNdcBounds() {
+        const worldBox = new THREE.Box3().setFromObject(garment);
+        if (worldBox.isEmpty()) return null;
+
+        const points = [];
+        [worldBox.min.x, worldBox.max.x].forEach(x => {
+            [worldBox.min.y, worldBox.max.y].forEach(y => {
+                [worldBox.min.z, worldBox.max.z].forEach(z => {
+                    points.push(new THREE.Vector3(x, y, z).project(camera));
+                });
+            });
+        });
+
+        return {
+            minX: Math.min(...points.map(point => point.x)),
+            maxX: Math.max(...points.map(point => point.x)),
+            minY: Math.min(...points.map(point => point.y)),
+            maxY: Math.max(...points.map(point => point.y)),
+        };
+    }
+
+    function isValidPrintSurface(hit, area) {
+        if (!hit || !area || !is3DPrintableArea(area)) return false;
+
+        const normal = hitNormal(hit);
+        if (normal.dot(frontAxis) < 0.45) return false;
+
+        const point = normalizedGarmentPoint(hit.point);
+        return Boolean(point && pointInPolygon(point, area.geometry));
+    }
+
+    function placementHit(area) {
+        if (!area || !is3DPrintableArea(area) || !camera || !garment) return null;
+
+        const center = areaCenter(area);
+        const bounds = garmentNdcBounds();
+        if (!bounds) return null;
+
+        const width = Math.max(bounds.maxX - bounds.minX, 0.1);
+        const height = Math.max(bounds.maxY - bounds.minY, 0.1);
+        const baseX = bounds.minX + center.x * width;
+        const baseY = bounds.maxY - center.y * height;
         const candidates = [
-            [0, 0],
-            [0, 0.08],
-            [0, -0.08],
-            [-0.08, 0],
-            [0.08, 0],
-            [-0.06, 0.08],
-            [0.06, 0.08],
+            [0, 0], [0.04, 0], [-0.04, 0], [0, 0.04], [0, -0.04],
+            [0.07, 0], [-0.07, 0], [0, 0.07], [0, -0.07],
         ];
-        for (const [x, y] of candidates) {
+
+        for (const [dx, dy] of candidates) {
+            const x = THREE.MathUtils.clamp(baseX + dx, -0.98, 0.98);
+            const y = THREE.MathUtils.clamp(baseY + dy, -0.98, 0.98);
             raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
             const hit = raycaster.intersectObjects(garmentMeshes, false)[0];
-            if (hit) return hit;
+            if (isValidPrintSurface(hit, area)) return hit;
         }
+
         return null;
     }
 
@@ -926,10 +1083,15 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             ? artworkOrId
             : artworkById(artworkOrId);
         const area = areaById(activeAreaId);
-        const hit = placementHit();
 
-        if (!artwork || !area || !hit) {
-            status("ابتدا ناحیه چاپ را انتخاب کنید.");
+        if (!artwork || !area || !is3DPrintableArea(area)) {
+            status("این ناحیه برای چاپ سه‌بعدی لیبل قابل استفاده نیست.");
+            return;
+        }
+
+        const hit = placementHit(area);
+        if (!hit) {
+            status("لیبل فقط روی محدوده چاپ مجازِ جلوی لباس قرار می‌گیرد.");
             return;
         }
 
@@ -975,13 +1137,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const item = layers.get(selectedId);
         if (!item) return;
 
-        // A drag is an explicit placement action, so follow the garment mesh
-        // currently under the pointer. This allows torso -> sleeve placement,
-        // while ordinary clicks still never move a selected label.
+        const area = areaById(item.layer.area_id);
         pointerOf(event);
         raycaster.setFromCamera(pointer, camera);
         const hit = raycaster.intersectObjects(garmentMeshes, false)[0];
-        if (!hit) return;
+        if (!isValidPrintSurface(hit, area)) return;
 
         item.target = hit.object;
         project(item, hit.point, hitNormal(hit));
@@ -1006,7 +1166,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const direction = normal.clone().multiplyScalar(-1);
         const probe = new THREE.Raycaster(origin, direction, 0, 0.9);
         const hit = probe.intersectObject(item.target, false)[0];
-        if (!hit) return;
+        if (!isValidPrintSurface(hit, areaById(item.layer.area_id))) return;
 
         item.target = hit.object;
         project(item, hit.point, hitNormal(hit));
@@ -1016,9 +1176,17 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const host = document.getElementById("area-list");
         if (!host) return;
 
-        if (!activeAreaId) activeAreaId = areas[0]?.id || null;
+        const printableAreas = areas.filter(is3DPrintableArea);
+        if (!activeAreaId || !printableAreas.some(area => Number(area.id) === Number(activeAreaId))) {
+            activeAreaId = printableAreas[0]?.id || null;
+        }
 
-        host.innerHTML = areas.map(area => {
+        if (!printableAreas.length) {
+            host.innerHTML = "<div class=\"area-option area-option--empty\"><span>ناحیه چاپ سه‌بعدی تعریف نشده است.</span></div>";
+            return;
+        }
+
+        host.innerHTML = printableAreas.map(area => {
             return `<button type="button" class="area-option ${Number(area.id) === Number(activeAreaId) ? "is-active" : ""}" data-area-id="${area.id}">
                 <span>${esc(area.name)}</span>
             </button>`;
@@ -1103,27 +1271,38 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function saveLayers() {
-        return Array.from(layers.values()).map(item => ({
-            ...item.layer,
-            color: item.layer.color || "#ffffff",
-            opacity: Number(item.layer.opacity ?? 1),
-            text: item.artwork?.is_text
-                ? String(item.layer.text || item.artwork.name || "")
-                : null,
-            text_style: item.artwork?.is_text
-                ? normalizeTextStyle(item.layer.text_style || item.artwork.text_style || {})
-                : null,
-            three_d: {
-                position: item.position?.toArray().map(value => Number(value.toFixed(6))) || null,
+        return Array.from(layers.values()).map(item => {
+            const productionPlacement = areaRelativePlacement(item);
+            return {
+                ...item.layer,
+                x: productionPlacement?.x ?? item.layer.x,
+                y: productionPlacement?.y ?? item.layer.y,
+                color: item.layer.color || "#ffffff",
+                opacity: Number(item.layer.opacity ?? 1),
+                text: item.artwork?.is_text
+                    ? String(item.layer.text || item.artwork.name || "")
+                    : null,
+                text_style: item.artwork?.is_text
+                    ? normalizeTextStyle(item.layer.text_style || item.artwork.text_style || {})
+                    : null,
+                three_d: {
+                    position: item.position?.toArray().map(value => Number(value.toFixed(6))) || null,
                 normal: item.normal?.toArray().map(value => Number(value.toFixed(6))) || null,
                 mesh: item.target?.name || null,
                 size: item.size?.toArray().map(value => Number(value.toFixed(6))) || null,
-                mode: "glb_surface_decal",
-                template: "babaei_tshirt_glb_v1",
-                model: "Glb/whit_t_shirt.glb",
-            },
-        }));
-    }
+                    mode: "glb_surface_decal",
+                    template: "babaei_tshirt_glb_v1",
+                    model: "Glb/whit_t_shirt.glb",
+                    label: {
+                        id: item.artwork?.id ?? null,
+                        code: item.artwork?.code || null,
+                        name: item.artwork?.name || "",
+                        image: item.artwork?.image || null,
+                        background_removed: item.artwork?.background_removed !== false,
+                    },
+                },
+            };
+        });
 
     function bind() {
         canvas.addEventListener("pointerdown", event => {
@@ -1190,7 +1369,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                     );
                     project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);
                 } else if (action === "center-label") {
-                    const hit = centerHit();
+                    const hit = placementHit(areaById(item.layer.area_id));
                     if (hit) {
                         item.target = hit.object;
                         project(item, hit.point, hitNormal(hit));
