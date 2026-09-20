@@ -272,21 +272,28 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         // Slightly tighter on mobile so the shirt is not unnecessarily small,
         // while still leaving enough safety margin around the silhouette.
-        // On phones the portrait viewport should show a compact, centered
-        // garment rather than letting the narrow horizontal FOV dominate the
-        // composition. A controlled mobile distance keeps the shirt narrower
-        // while leaving enough breathing room around the sleeves.
-        const distance = fitDistance * (mobile ? 1.22 : 1.06);
+        // Phone composition: keep the garment compact so the silhouette does
+        // not span almost the entire 412px viewport width. The previous 1.22x
+        // safety factor still left the shirt too wide on narrow screens.
+        const distance = fitDistance * (mobile ? 1.45 : 1.06);
         baseCameraDistance = distance;
 
-        // The phone UI occupies a fixed header/dock region. Center the garment
-        // in the actual visual work area rather than around the raw viewport
-        // center. Keep this adjustment isolated to phones so desktop framing
-        // remains unchanged.
+        // Use a screen-space anchor instead of an arbitrary model-space Y
+        // offset. On the reference 412x914 layout the intended garment/chest
+        // anchor is around 55% of the visible 3D viewport height. Converting
+        // that percentage through the current perspective projection keeps the
+        // anchor stable across different phone heights and aspect ratios.
         const isPhone = window.matchMedia("(max-width: 600px)").matches;
-        const visualCenterBias = isPhone ? 0.34 : 0;
-        const targetY = center.y + size.y * visualCenterBias;
-        const cameraY = center.y + size.y * visualCenterBias;
+        const visualCenterRatio = isPhone ? 0.55 : 0.50;
+        const visualCenterShift = isPhone
+            ? (visualCenterRatio - 0.50)
+              * 2
+              * Math.tan(verticalFov / 2)
+              * distance
+            : 0;
+
+        const targetY = center.y + visualCenterShift;
+        const cameraY = center.y + visualCenterShift;
 
         camera.position.set(0, cameraY, distance);
         controls.target.set(center.x, targetY, center.z);
