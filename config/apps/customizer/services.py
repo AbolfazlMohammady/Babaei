@@ -331,11 +331,15 @@ def create_uploaded_artwork(*, request, uploaded_file):
         raise ValidationError("فایل انتخاب‌شده یک تصویر معتبر نیست.")
     if width < 300 or height < 300:
         raise ValidationError("ابعاد تصویر باید حداقل ۳۰۰×۳۰۰ پیکسل باشد.")
-    has_alpha = "A" in image.getbands() or (image.mode == "P" and "transparency" in image.info)
+    has_alpha = False
+    if "A" in image.getbands():
+        has_alpha = image.getchannel("A").getextrema()[0] < 255
+    elif image.mode == "P" and "transparency" in image.info:
+        has_alpha = image.convert("RGBA").getchannel("A").getextrema()[0] < 255
 
     artwork = Artwork(
         name=Path(uploaded_file.name).stem[:160], source=Artwork.Source.UPLOAD,
-        processing_status=Artwork.ProcessingStatus.READY, background_removed=has_alpha,
+        processing_status=Artwork.ProcessingStatus.READY, background_removed=True,
         base_price=int(getattr(settings, "CUSTOMIZER_UPLOAD_PRICE", CUSTOM_UPLOAD_PRICE)),
         owner=request.user if request.user.is_authenticated else None,
         session_key=request.session.session_key,
