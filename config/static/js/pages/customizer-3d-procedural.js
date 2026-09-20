@@ -671,13 +671,18 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const geometry = Array.isArray(area?.geometry) ? area.geometry : [];
         if (!geometry.length) return { x: 0.5, y: 0.5 };
 
-        return geometry.reduce(
+        const total = geometry.reduce(
             (sum, point) => ({
                 x: sum.x + Number(point.x || 0),
                 y: sum.y + Number(point.y || 0),
             }),
             { x: 0, y: 0 }
         );
+
+        return {
+            x: total.x / geometry.length,
+            y: total.y / geometry.length,
+        };
     }
 
     function areaRelativePlacement(item) {
