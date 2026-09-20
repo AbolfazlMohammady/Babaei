@@ -41,6 +41,7 @@
         const scene = story?.querySelector(".label-story__scene");
         const target = story?.querySelector(".label-story__target");
         if (!story || !label || !scene || !target) return;
+        if (document.body.classList.contains("home-page")) return;
 
         let ticking = false;
         let metrics = null;
