@@ -309,7 +309,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const width = Math.max(1, canvas.clientWidth || stage.clientWidth);
         const height = Math.max(1, canvas.clientHeight || stage.clientHeight);
 
-        const pixelRatioCap = compactMedia.matches ? 1.5 : 2;
+        const mobile = compactMedia.matches;
+        const pixelRatioCap = mobile ? 1.5 : 2;
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pixelRatioCap));
         renderer.setSize(width, height, false);
         camera.aspect = width / height;
