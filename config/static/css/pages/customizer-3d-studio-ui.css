@@ -137,3 +137,141 @@
         min-height: 72px !important;
     }
 }
+
+/* =========================================================
+   FINAL STUDIO VIEWPORT CONTRACT
+   This block intentionally comes last so legacy responsive patches
+   cannot resize the studio or move the mobile controls.
+   ========================================================= */
+
+body.customizer-page {
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+}
+
+@media (min-width: 821px) {
+    body.customizer-page > main {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+
+    body.customizer-page .customizer-shell--premium {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        max-width: none !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+
+    body.customizer-page .customizer-shell--premium .customizer-header {
+        position: absolute !important;
+        top: 14px !important;
+        left: 22px !important;
+        right: 22px !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        margin: 0 !important;
+        z-index: 70 !important;
+    }
+
+    body.customizer-page .customizer-workspace--premium {
+        position: absolute !important;
+        inset: 62px 0 0 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        overflow: hidden !important;
+    }
+
+    body.customizer-page .customizer-stage-wrap--premium,
+    body.customizer-page .customizer-stage--premium,
+    body.customizer-page .designer-3d-stage {
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: none !important;
+    }
+}
+
+@media (max-width: 820px) {
+    body.customizer-page > main,
+    body.customizer-page .customizer-shell--premium,
+    body.customizer-page .customizer-workspace--premium,
+    body.customizer-page .customizer-stage-wrap--premium,
+    body.customizer-page .customizer-stage--premium,
+    body.customizer-page .designer-3d-stage {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* Mobile drawers are sheets, not a backdrop layer over the 3D scene. */
+    body.customizer-page .studio-drawer-backdrop,
+    body.customizer-page .customizer-workspace--premium.mobile-drawer-open::after {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* Both normal and selected states keep their controls glued to the same
+       bottom dock position. */
+    body.customizer-page .mobile-customizer-toolbar,
+    body.customizer-page .mobile-context-toolbar,
+    body.customizer-page .mobile-selection-toolbar {
+        top: auto !important;
+        left: max(8px, env(safe-area-inset-left)) !important;
+        right: max(8px, env(safe-area-inset-right)) !important;
+        bottom: max(8px, env(safe-area-inset-bottom)) !important;
+        transform: none !important;
+    }
+
+    body.customizer-page .mobile-customizer-toolbar[hidden],
+    body.customizer-page .mobile-context-toolbar[hidden],
+    body.customizer-page .mobile-selection-toolbar[hidden] {
+        display: none !important;
+    }
+
+    body.customizer-page .mobile-context-toolbar {
+        position: fixed !important;
+        height: 72px !important;
+        min-height: 72px !important;
+        z-index: 150 !important;
+    }
+
+    body.customizer-page .mobile-selection-toolbar {
+        position: fixed !important;
+        max-height: min(52svh, 420px) !important;
+        z-index: 155 !important;
+    }
+}
+
+@media (max-width: 430px) {
+    body.customizer-page .mobile-context-toolbar,
+    body.customizer-page .mobile-selection-toolbar {
+        left: max(8px, env(safe-area-inset-left)) !important;
+        right: max(8px, env(safe-area-inset-right)) !important;
+        bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    }
+}
