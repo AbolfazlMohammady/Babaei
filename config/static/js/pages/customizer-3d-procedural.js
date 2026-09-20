@@ -7,6 +7,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 (() => {
     "use strict";
 
+    // ================================================================
+    // BABAei 3D STUDIO — MOBILE MODEL BASELINE v1.0.0
+    // #MODEL-FIXED #MOBILE-FRAME #DO-NOT-REGRESS
+    // The GLB loading + base framing is considered stable at this point.
+    // Future mobile UI changes must not alter this baseline without testing.
+    // ================================================================
+
     const root = document.getElementById("customizer");
     const stage = document.getElementById("designer-3d-stage");
     const canvas = document.getElementById("designer-3d-canvas");
@@ -261,8 +268,13 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         // Aim the camera at that center instead of an arbitrary +52% Y offset.
         // That arbitrary offset was responsible for the large empty band under
         // the garment on phones.
-        const targetY = center.y + (mobile ? size.y * 0.015 : 0);
-        const cameraY = center.y + (mobile ? size.y * 0.025 : size.y * 0.015);
+        // Keep the garment visually centered inside the full mobile stage.
+        // The model is already correctly framed horizontally; this offset only
+        // compensates the tall portrait composition so the garment center aligns
+        // with the usable visual center instead of sitting too high.
+        const mobileVerticalOffset = mobile ? size.y * 0.21 : 0;
+        const targetY = center.y + mobileVerticalOffset + (mobile ? size.y * 0.015 : 0);
+        const cameraY = center.y + mobileVerticalOffset + (mobile ? size.y * 0.025 : size.y * 0.015);
 
         camera.position.set(0, cameraY, distance);
         controls.target.set(center.x, targetY, center.z);
