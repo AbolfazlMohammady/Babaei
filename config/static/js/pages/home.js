@@ -421,6 +421,22 @@
             const c1 = colors[index];
             const c2 = colors[next];
 
+            /*
+             * The dense inner core stays on the main color. The sparse outer
+             * dust gets a second, contrasting color so the cloud has depth
+             * instead of reading as one flat monochrome mass.
+             * Green -> blue, yellow -> green, red -> yellow, blue -> red.
+             */
+            const outerColor = colors[(index + 3) % colors.length];
+            const outerMix = smoothstep(0.38, 0.92, r);
+            let baseR = cr = c1.r + (c2.r - c1.r) * mix;
+            let baseG = cg = c1.g + (c2.g - c1.g) * mix;
+            let baseB = cb = c1.b + (c2.b - c1.b) * mix;
+
+            baseR += (outerColor.r - baseR) * outerMix * 0.72;
+            baseG += (outerColor.g - baseG) * outerMix * 0.72;
+            baseB += (outerColor.b - baseB) * outerMix * 0.72;
+
             /* Expanding color wave: the next palette color travels through
              * the whole cloud from the click/touch origin. */
             const waveElapsed = elapsed - waveStart;
@@ -450,10 +466,6 @@
              * the reference's color-changing behavior.
              */
             const greenBias = 0.72;
-
-            let cr = c1.r + (c2.r - c1.r) * mix;
-            let cg = c1.g + (c2.g - c1.g) * mix;
-            let cb = c1.b + (c2.b - c1.b) * mix;
 
             cr *= 1 - greenBias * 0.32;
             cg = Math.min(1, cg + greenBias * 0.18);
