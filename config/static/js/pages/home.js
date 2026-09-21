@@ -22,35 +22,42 @@
     let particles = [];
 
     const palette = [
-        [2, 31, 19],
-        [3, 55, 32],
-        [5, 82, 45],
-        [7, 112, 60],
-        [13, 148, 76],
-        [35, 190, 101],
-        [100, 235, 151]
+        [2, 24, 15],
+        [3, 48, 28],
+        [5, 76, 43],
+        [7, 108, 59],
+        [15, 145, 78],
+        [37, 188, 105],
+        [108, 238, 157]
     ];
 
     const rand = (a, b) => a + Math.random() * (b - a);
 
+    /*
+     * Gemini-like volumetric dust:
+     * particles live on a soft, warped 3D shell around a central void.
+     * There are no fixed left/right sheets and no straight diagonals.
+     * Perspective makes the shell expand toward the viewport edges.
+     */
     function makeParticle() {
-        const sheet = Math.random() < 0.5 ? -1 : 1;
-        const t = Math.random();
-        const layer = Math.random();
+        const arm = Math.random() * Math.PI * 2;
+        const radius = Math.pow(Math.random(), 0.72);
+        const depth = Math.random();
+        const ribbon = Math.random();
 
         return {
-            sheet,
-            t,
-            layer,
-            depth: Math.random(),
+            angle: arm,
+            radius,
+            depth,
+            ribbon,
             phase: rand(0, Math.PI * 2),
-            speed: rand(0.000008, 0.000030),
-            size: rand(0.22, 1.05),
-            alpha: rand(0.14, 0.82),
-            side: Math.random() < 0.5 ? -1 : 1,
-            atmosphere: Math.random() > 0.93,
-            atmosphereX: rand(-0.10, 0.10),
-            atmosphereY: rand(-0.07, 0.07)
+            speed: rand(0.00045, 0.00115),
+            size: rand(0.20, 0.92),
+            alpha: rand(0.10, 0.66),
+            drift: rand(0.6, 1.4),
+            seedX: rand(-1, 1),
+            seedY: rand(-1, 1),
+            seedZ: rand(-1, 1)
         };
     }
 
@@ -58,14 +65,14 @@
         const rect = canvas.getBoundingClientRect();
         width = Math.max(1, rect.width);
         height = Math.max(1, rect.height);
-        dpr = Math.min(window.devicePixelRatio || 1, 1.6);
+        dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
         canvas.width = Math.round(width * dpr);
         canvas.height = Math.round(height * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         particles = Array.from(
-            { length: isMobile() ? 7200 : 18000 },
+            { length: isMobile() ? 6200 : 15000 },
             makeParticle
         );
     }
@@ -90,112 +97,140 @@
         time += delta;
 
         if (!reduced) {
-            pointerX += (targetX - pointerX) * 0.025;
-            pointerY += (targetY - pointerY) * 0.025;
+            pointerX += (targetX - pointerX) * 0.018;
+            pointerY += (targetY - pointerY) * 0.018;
         }
 
         ctx.clearRect(0, 0, width, height);
 
         const unit = Math.min(width, height);
-        const cx = width * 0.5 + pointerX * width * 0.012;
-        const cy = height * 0.5 + pointerY * height * 0.010;
+        const cx = width * 0.5 + pointerX * width * 0.018;
+        const cy = height * 0.5 + pointerY * height * 0.014;
 
-        const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, unit * 0.95);
-        bg.addColorStop(0, 'rgba(5, 34, 22, .46)');
-        bg.addColorStop(.32, 'rgba(2, 19, 12, .25)');
-        bg.addColorStop(.70, 'rgba(1, 8, 5, .10)');
+        const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, unit * 0.92);
+        bg.addColorStop(0, 'rgba(4, 29, 19, .34)');
+        bg.addColorStop(.30, 'rgba(2, 15, 10, .20)');
+        bg.addColorStop(.68, 'rgba(1, 7, 4, .08)');
         bg.addColorStop(1, 'rgba(0, 2, 1, 1)');
         ctx.fillStyle = bg;
         ctx.fillRect(0, 0, width, height);
 
         for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
-            const t = (p.t + time * p.speed * (p.atmosphere ? 0.55 : 1)) % 1;
 
-            const arch = Math.sin(Math.PI * t);
-            const archEase = Math.pow(arch, 0.72);
+            const a = p.angle
+                + time * p.speed
+                + Math.sin(time * 0.00018 + p.phase) * 0.045;
 
-            const sheetY = p.sheet * (0.62 - t * 1.24);
+            /*
+             * A broad asymmetric shell. The four large lobes create
+             * the reference's sweeping volumetric arms without drawing
+             * visible geometric lines.
+             */
+            const lobe =
+                0.62 +
+                0.22 * Math.sin(a * 2.0 + p.phase * 0.55) +
+                0.11 * Math.sin(a * 4.0 - p.phase * 0.35);
 
-            const spread = 0.025 + archEase * 0.47;
+            const shell =
+                0.31 +
+                p.radius * lobe +
+                Math.sin(a * 3.0 + p.phase) * 0.035;
 
-            const thickness =
-                (0.012 + Math.pow(p.layer, 1.18) * 0.24) *
-                (0.45 + archEase * 1.05);
+            const tube =
+                (p.ribbon - 0.5) *
+                (0.16 + p.radius * 0.16);
 
-            const lateral = (p.layer - 0.5) * thickness;
+            let x3 = Math.cos(a) * (shell + tube);
+            let y3 = Math.sin(a) * (shell * 0.74 + tube * 0.60);
 
-            let x = cx + (p.side * spread + lateral) * unit;
-            let y = cy + sheetY * unit;
+            /*
+             * Warp the shell into a flowing cloth-like surface.
+             * The center stays empty while the outer volume becomes dense.
+             */
+            const wave =
+                Math.sin(a * 3.0 + p.phase + time * 0.00022) *
+                (0.025 + p.radius * 0.055);
 
-            const slowWave =
-                Math.sin(t * 5.3 + p.phase + time * 0.00008) *
-                (0.025 + archEase * 0.075);
+            x3 += Math.sin(a * 1.7 + p.phase) * wave;
+            y3 += Math.cos(a * 2.3 - p.phase) * wave;
 
-            const fineWave =
-                Math.sin(t * 19.0 - p.phase * 0.65 + time * 0.00015) *
-                (0.004 + archEase * 0.024);
+            /*
+             * Fake depth: the front of the cloud is larger/brighter,
+             * the rear recedes and becomes fine dust.
+             */
+            const z =
+                0.5 +
+                0.5 * Math.sin(a * 2.0 + p.phase) +
+                p.seedZ * 0.16;
 
-            const crossWave =
-                Math.cos(t * 11.0 + p.phase * 1.7 - time * 0.00010) *
-                (0.006 + archEase * 0.035);
+            const perspective = 1.0 + z * 0.72;
 
-            x += slowWave * unit;
-            x += crossWave * unit;
-            y += fineWave * unit;
+            let x = cx + x3 * unit * perspective;
+            let y = cy + y3 * unit * perspective;
 
-            if (p.atmosphere) {
-                x += p.atmosphereX * unit * archEase;
-                y += p.atmosphereY * unit * archEase;
+            /*
+             * Add a second atmospheric layer around the shell.
+             * These particles break the silhouette so it feels like
+             * a volumetric field instead of a ring.
+             */
+            if (p.depth > 0.78) {
+                const atmosphere = (p.depth - 0.78) / 0.22;
+                x += p.seedX * atmosphere * unit * 0.22;
+                y += p.seedY * atmosphere * unit * 0.18;
             }
 
-            x += pointerX * (5 + p.depth * 24);
-            y += pointerY * (4 + p.depth * 18);
+            x += pointerX * (8 + p.depth * 22);
+            y += pointerY * (6 + p.depth * 18);
 
-            const dx = (x - cx) / unit;
-            const dy = (y - cy) / unit;
-            const centerRadius = Math.sqrt(
-                Math.pow(dx / 0.30, 2) +
-                Math.pow(dy / 0.18, 2)
+            /*
+             * Keep the typography readable with a soft central void.
+             * There is no hard mask: density simply falls off near center.
+             */
+            const nx = (x - cx) / unit;
+            const ny = (y - cy) / unit;
+            const centerDistance = Math.sqrt(
+                Math.pow(nx / 0.25, 2) +
+                Math.pow(ny / 0.19, 2)
             );
 
-            const centerFade = centerRadius < 1
-                ? 0.12 + Math.pow(centerRadius, 1.45) * 0.88
+            const centerFade = centerDistance < 1
+                ? 0.025 + Math.pow(centerDistance, 1.85) * 0.975
                 : 1;
 
-            const edgeX = Math.min(x / width, 1 - x / width);
-            const edgeY = Math.min(y / height, 1 - y / height);
-            const edgeFade = Math.max(
-                0.28,
-                Math.min(1, Math.min(edgeX, edgeY) * 7)
+            const edgeDistance = Math.min(
+                Math.max(x / width, 0),
+                Math.max(1 - x / width, 0),
+                Math.max(y / height, 0),
+                Math.max(1 - y / height, 0)
             );
 
-            const alpha =
-                p.alpha *
-                (0.34 + p.depth * 0.66) *
-                centerFade *
-                (0.68 + edgeFade * 0.32);
+            const edgeFade = 0.45 + Math.min(1, edgeDistance * 5.0) * 0.55;
 
-            if (alpha < 0.010) continue;
+            const depthFade = 0.38 + z * 0.62;
+            const alpha = p.alpha * centerFade * edgeFade * depthFade;
+
+            if (alpha < 0.008) continue;
 
             const rgb = colorAt(
-                p.depth * 0.72 +
-                archEase * 0.25 +
-                time * 0.000004
+                0.14 +
+                z * 0.54 +
+                p.depth * 0.26 +
+                time * 0.000003
             );
 
             const size =
                 p.size *
-                (0.60 + p.depth * 1.40) *
-                (0.72 + archEase * 0.55);
+                (0.62 + z * 1.18) *
+                (0.78 + p.radius * 0.38);
 
             ctx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
             ctx.fillRect(x, y, size, size);
 
-            if (p.depth > 0.992 && i % 59 === 0) {
-                ctx.globalAlpha = alpha * 0.18;
+            if (p.depth > 0.985 && i % 71 === 0) {
+                ctx.globalAlpha = alpha * 0.14;
                 ctx.beginPath();
-                ctx.arc(x, y, size * 2.8, 0, Math.PI * 2);
+                ctx.arc(x, y, size * 2.4, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.globalAlpha = 1;
             }
