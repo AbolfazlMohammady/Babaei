@@ -316,8 +316,13 @@
             const starRadius =
                 0.055 +
                 0.945 * Math.pow(Math.abs(Math.cos(2 * t)), 4.8);
-            const starX = Math.cos(t) * starRadius * 0.92;
-            const starY = Math.sin(t) * starRadius * 0.92;
+            const starRotation = -Math.PI / 8;
+            const starCos = Math.cos(starRotation);
+            const starSin = Math.sin(starRotation);
+            const rawStarX = Math.cos(t) * starRadius * 0.92;
+            const rawStarY = Math.sin(t) * starRadius * 0.92;
+            const starX = rawStarX * starCos - rawStarY * starSin;
+            const starY = rawStarX * starSin + rawStarY * starCos;
 
             x = x * (1 - starBlend) + starX * starBlend;
             y = y * (1 - starBlend) + starY * starBlend;
