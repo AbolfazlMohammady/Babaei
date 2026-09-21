@@ -19,6 +19,7 @@
      */
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const lowPower = window.matchMedia('(max-width: 900px)').matches || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
     const mobile = () => window.innerWidth <= 700;
 
     let gl = canvas.getContext('webgl', {
@@ -30,8 +31,8 @@
     if (!gl) gl = canvas.getContext('experimental-webgl');
     if (!gl) return;
 
-    const PARTICLES_DESKTOP = 40000;
-    const PARTICLES_MOBILE = 18000;
+    const PARTICLES_DESKTOP = lowPower ? 36000 : 46000;
+    const PARTICLES_MOBILE = 16000;
     const RADIUS = 92;
     const CAMERA_Z = 240;
     const FOV = 75;
@@ -89,7 +90,7 @@
         const rect = canvas.getBoundingClientRect();
         width = Math.max(1, rect.width);
         height = Math.max(1, rect.height);
-        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
         canvas.width = Math.round(width * dpr);
         canvas.height = Math.round(height * dpr);
