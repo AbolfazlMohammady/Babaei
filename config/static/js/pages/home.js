@@ -257,17 +257,17 @@
          * Slowly respond to the mouse like the original OrbitControls
          * interaction, without enabling zoom.
          */
-        rotationX += (targetRX - rotationX) * 0.085;
-        rotationY += (targetRY - rotationY) * 0.085;
-        interactionStrength += (interactionTarget - interactionStrength) * 0.085;
+        rotationX += (targetRX - rotationX) * 0.045;
+        rotationY += (targetRY - rotationY) * 0.045;
+        interactionStrength += (interactionTarget - interactionStrength) * 0.18;
 
         const mx = Math.sin(rotationX);
         const mcx = Math.cos(rotationX);
         const my = Math.sin(rotationY);
         const mcy = Math.cos(rotationY);
 
-        const pointRotationX = rotationX * 0.92;
-        const pointRotationY = rotationY * 1.05;
+        const pointRotationX = rotationX * 0.72;
+        const pointRotationY = rotationY * 0.82;
 
         const prx = Math.sin(pointRotationX);
         const pcx = Math.cos(pointRotationX);
@@ -500,8 +500,8 @@
         const x = (clientX - rect.left) / Math.max(1, rect.width) - 0.5;
         const y = (clientY - rect.top) / Math.max(1, rect.height) - 0.5;
 
-        targetRY = x * 0.85;
-        targetRX = -y * 0.62;
+        targetRY = x * 0.62;
+        targetRX = -y * 0.44;
     }
 
     /*
