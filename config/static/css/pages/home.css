@@ -109,7 +109,7 @@
 .home-hero__cta {
     opacity: 0;
     transform: translateY(22px);
-    animation: babaei-cta-rise .8s cubic-bezier(.16,1,.3,1) 1.18s forwards;
+    animation: babaei-cta-rise .8s cubic-bezier(.16,1,.3,1) .82s forwards;
     -webkit-user-drag: none;
 }
 
@@ -146,7 +146,7 @@
 }
 
 .home-hero__content h1 {
-    animation: babaei-title-rise 1.05s cubic-bezier(.16,1,.3,1) .28s both;
+    animation: babaei-title-rise 1.05s cubic-bezier(.16,1,.3,1) .18s both;
 }
 
 @keyframes babaei-title-rise {
@@ -168,7 +168,7 @@
     opacity: 0;
     transform: translateY(24px);
     filter: blur(5px);
-    animation: babaei-subtitle-rise .8s cubic-bezier(.16,1,.3,1) .72s forwards;
+    animation: babaei-subtitle-rise .8s cubic-bezier(.16,1,.3,1) .52s forwards;
 }
 
 @keyframes babaei-subtitle-rise {
