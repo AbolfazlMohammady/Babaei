@@ -242,8 +242,8 @@
         /* Cinematic entrance: particles begin deep/far and gently
          * travel toward their final depth instead of appearing fully formed. */
         const intro = smoothstep(0, 1, Math.min(1, elapsed / 2100));
-        const introDepth = 3.8 - intro * 2.8;
-        const introScale = 1.65 - intro * 0.65;
+        const introDepth = 0.28 + intro * 0.82;
+        const introScale = 0.12 + intro * 0.88;
 
         const phase = elapsed * 0.000105;
 
@@ -388,7 +388,7 @@
                 sizeSeed[i] *
                 (0.36 + depth * 0.66) *
                 (0.60 + r * 0.34) *
-                (0.58 + intro * 0.42);
+                (0.42 + intro * 0.58);
 
             /*
              * Use the Gemini source palette. BABAEI starts green,
