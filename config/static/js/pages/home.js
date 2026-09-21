@@ -56,6 +56,9 @@
 
     let targetRX = 0;
     let targetRY = 0;
+    let interactionTarget = 0;
+    let interactionStrength = 0;
+    let pointerActive = false;
     let rotationX = 0;
     let rotationY = 0;
     let rotationZ = 0;
@@ -254,8 +257,9 @@
          * Slowly respond to the mouse like the original OrbitControls
          * interaction, without enabling zoom.
          */
-        rotationX += (targetRX - rotationX) * 0.035;
-        rotationY += (targetRY - rotationY) * 0.035;
+        rotationX += (targetRX - rotationX) * 0.055;
+        rotationY += (targetRY - rotationY) * 0.055;
+        interactionStrength += (interactionTarget - interactionStrength) * 0.085;
 
         const mx = Math.sin(rotationX);
         const mcx = Math.cos(rotationX);
@@ -404,6 +408,16 @@
             cb *= 1 - greenBias * 0.20;
 
             /*
+             * Pointer/touch press shifts the whole field toward BABAEI jade.
+             * The strength is eased every frame, so press/release never pops.
+             */
+            const interactionColor = { r: 0.0, g: 1.0, b: 0.42 };
+            const interactionMix = interactionStrength * (0.45 + depth * 0.35);
+            cr += (interactionColor.r - cr) * interactionMix;
+            cg += (interactionColor.g - cg) * interactionMix;
+            cb += (interactionColor.b - cb) * interactionMix;
+
+            /*
              * Slightly darken the rear of the cloud.
              */
             const brightness =
@@ -471,18 +485,74 @@
         }
     }
 
-    canvas.addEventListener('pointermove', (event) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = (event.clientX - rect.left) / rect.width - 0.5;
-        const y = (event.clientY - rect.top) / rect.height - 0.5;
+    function isInsideHero(clientX, clientY) {
+        const rect = hero.getBoundingClientRect();
+        return (
+            clientX >= rect.left &&
+            clientX <= rect.right &&
+            clientY >= rect.top &&
+            clientY <= rect.bottom
+        );
+    }
 
-        targetRY = x * 0.38;
-        targetRX = -y * 0.28;
+    function updatePointer(clientX, clientY) {
+        const rect = hero.getBoundingClientRect();
+        const x = (clientX - rect.left) / Math.max(1, rect.width) - 0.5;
+        const y = (clientY - rect.top) / Math.max(1, rect.height) - 0.5;
+
+        targetRY = x * 0.55;
+        targetRX = -y * 0.40;
+    }
+
+    /*
+     * The canvas itself is intentionally pointer-events:none so the CTA/text
+     * remain clickable. Listen on window instead; this also makes the exact
+     * same interaction work for mouse, touch and pen through Pointer Events.
+     */
+    window.addEventListener('pointerdown', (event) => {
+        if (!isInsideHero(event.clientX, event.clientY)) return;
+
+        pointerActive = true;
+        interactionTarget = 1;
+        updatePointer(event.clientX, event.clientY);
     }, { passive: true });
 
-    canvas.addEventListener('pointerleave', () => {
+    window.addEventListener('pointermove', (event) => {
+        if (!isInsideHero(event.clientX, event.clientY)) {
+            if (!pointerActive) {
+                targetRX = 0;
+                targetRY = 0;
+            }
+            return;
+        }
+
+        updatePointer(event.clientX, event.clientY);
+
+        /* Mouse hover gives a gentle parallax; touch/pen gets full drag feel. */
+        if (event.pointerType === 'mouse' && !pointerActive) {
+            interactionTarget = 0;
+        }
+    }, { passive: true });
+
+    window.addEventListener('pointerup', () => {
+        pointerActive = false;
+        interactionTarget = 0;
         targetRX = 0;
         targetRY = 0;
+    }, { passive: true });
+
+    window.addEventListener('pointercancel', () => {
+        pointerActive = false;
+        interactionTarget = 0;
+        targetRX = 0;
+        targetRY = 0;
+    }, { passive: true });
+
+    hero.addEventListener('mouseleave', () => {
+        if (!pointerActive) {
+            targetRX = 0;
+            targetRY = 0;
+        }
     }, { passive: true });
 
     const observer = new ResizeObserver(resize);
