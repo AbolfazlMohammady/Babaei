@@ -58,6 +58,8 @@
     let targetRY = 0;
     let interactionTarget = 0;
     let interactionStrength = 0;
+    let colorTarget = 0;
+    let colorStrength = 0;
     let pointerActive = false;
     let rotationX = 0;
     let rotationY = 0;
@@ -260,6 +262,7 @@
         rotationX += (targetRX - rotationX) * 0.045;
         rotationY += (targetRY - rotationY) * 0.045;
         interactionStrength += (interactionTarget - interactionStrength) * 0.18;
+        colorStrength += (colorTarget - colorStrength) * 0.22;
 
         const mx = Math.sin(rotationX);
         const mcx = Math.cos(rotationX);
@@ -383,8 +386,9 @@
              * Use the Gemini source palette. BABAEI starts green,
              * then slowly travels through the same Google palette.
              */
+            const colorSpeed = 0.000035 + colorStrength * 0.00115;
             const cycle =
-                (elapsed * 0.000035 + r * 0.25 + depth * 0.42) % 4;
+                (elapsed * colorSpeed + depth * 0.08) % 4;
 
             const index = Math.floor(cycle);
             const next = (index + 1) % 4;
@@ -514,6 +518,7 @@
 
         pointerActive = true;
         interactionTarget = 1;
+        colorTarget = 1;
         updatePointer(event.clientX, event.clientY);
     }, { passive: true });
 
@@ -523,6 +528,12 @@
          * The particle field only responds while the pointer is pressed
          * and dragged, on both mouse and touch.
          */
+        if (isInsideHero(event.clientX, event.clientY)) {
+            colorTarget = 1;
+        } else if (!pointerActive) {
+            colorTarget = 0;
+        }
+
         if (!pointerActive) return;
 
         updatePointer(event.clientX, event.clientY);
@@ -531,6 +542,7 @@
     window.addEventListener('pointerup', () => {
         pointerActive = false;
         interactionTarget = 0;
+        colorTarget = 0;
         targetRX = 0;
         targetRY = 0;
     }, { passive: true });
@@ -538,6 +550,7 @@
     window.addEventListener('pointercancel', () => {
         pointerActive = false;
         interactionTarget = 0;
+        colorTarget = 0;
         targetRX = 0;
         targetRY = 0;
     }, { passive: true });
@@ -546,6 +559,7 @@
         if (!pointerActive) {
             targetRX = 0;
             targetRY = 0;
+            colorTarget = 0;
         }
     }, { passive: true });
 
