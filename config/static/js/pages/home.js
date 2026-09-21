@@ -235,11 +235,11 @@
         const n =
             (3.5 + SPARK_N) / 2 +
             (3.5 - SPARK_N) / 2 *
-            Math.sin(elapsed * 0.0012);
+            Math.sin(elapsed * 0.00062);
 
         const scatter = 1.0;
 
-        const phase = elapsed * 0.00022;
+        const phase = elapsed * 0.000105;
 
         const sinX = Math.sin(phase * 2);
         const sinY = Math.sin(phase);
@@ -325,7 +325,7 @@
              * from reading as a mathematically perfect sphere.
              */
             const organic =
-                Math.sin(t * 3 + elapsed * 0.00045) *
+                Math.sin(t * 3 + elapsed * 0.00022) *
                 (2.0 + r * 5.0);
 
             x += organic * Math.cos(t * 2.0);
