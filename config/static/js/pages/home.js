@@ -429,13 +429,17 @@
              */
             const outerColor = colors[(index + 3) % colors.length];
             const outerMix = smoothstep(0.38, 0.92, r);
-            let baseR = cr = c1.r + (c2.r - c1.r) * mix;
-            let baseG = cg = c1.g + (c2.g - c1.g) * mix;
-            let baseB = cb = c1.b + (c2.b - c1.b) * mix;
+            let baseR = c1.r + (c2.r - c1.r) * mix;
+            let baseG = c1.g + (c2.g - c1.g) * mix;
+            let baseB = c1.b + (c2.b - c1.b) * mix;
 
             baseR += (outerColor.r - baseR) * outerMix * 0.72;
             baseG += (outerColor.g - baseG) * outerMix * 0.72;
             baseB += (outerColor.b - baseB) * outerMix * 0.72;
+
+            let cr = baseR;
+            let cg = baseG;
+            let cb = baseB;
 
             /* Expanding color wave: the next palette color travels through
              * the whole cloud from the click/touch origin. */
