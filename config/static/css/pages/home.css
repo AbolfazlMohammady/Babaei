@@ -251,7 +251,15 @@
 }
 
 .home-hero__content h1 span:last-child {
-    margin-top: .02em;
+    margin-top: 0;
+}
+
+.home-hero__content p {
+    margin-top: 24px;
+}
+
+.home-hero__cta {
+    margin-top: 34px;
 }
 
 @keyframes babaei-title-rise {
