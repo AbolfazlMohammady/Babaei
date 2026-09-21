@@ -21,7 +21,11 @@
     <div class="home-hero__grain" aria-hidden="true"></div>
 
     <div class="home-hero__content">
-        <h1>بیش از یک لباس</h1>
+        <h1 aria-label="بیش از یک لباس">
+            <span>بیش از</span>
+            <span>یک لباس</span>
+        </h1>
+        <div class="home-hero__spark" aria-hidden="true"></div>
         <p>داستان خودت را بپوش</p>
         <a class="home-hero__cta" href="{% url 'shop:index' %}">
             <span>مشاهده محصولات</span>
