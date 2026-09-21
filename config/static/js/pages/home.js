@@ -15,35 +15,52 @@
     let raf = 0;
     let time = 0;
     let last = performance.now();
-    let scrollProgress = 0;
-    let targetX = 0;
-    let targetY = 0;
     let pointerX = 0;
     let pointerY = 0;
+    let targetX = 0;
+    let targetY = 0;
     let particles = [];
 
     const palette = [
-        [4, 48, 30],
-        [5, 76, 45],
-        [7, 108, 61],
-        [13, 145, 78],
-        [35, 181, 103],
-        [101, 225, 153]
+        [5, 52, 32],
+        [7, 83, 48],
+        [9, 118, 64],
+        [18, 157, 82],
+        [54, 203, 111],
+        [132, 242, 170]
     ];
 
-    const random = (min, max) => min + Math.random() * (max - min);
+    const rand = (min, max) => min + Math.random() * (max - min);
 
-    function particle() {
+    /*
+     * The reference hero is not a pair of vertical particle columns.
+     * It is a large flowing particle volume with four curved arms:
+     *
+     *             \       //
+     *              \     //
+     *       --------\   //--------
+     *                 VOID
+     *       --------//   \\--------
+     *              //     \\
+     *             //       \\
+     *
+     * We generate that shape mathematically so it remains responsive
+     * without shipping a huge video/image asset.
+     */
+    function makeParticle() {
+        const branch = Math.floor(Math.random() * 4);
+        const t = Math.random();
+        const depth = Math.pow(Math.random(), 1.7);
+        const spread = Math.pow(Math.random(), 1.35);
         return {
-            side: Math.random() < 0.5 ? -1 : 1,
-            y: Math.random(),
-            spread: Math.pow(Math.random(), 1.75),
-            speed: random(0.000018, 0.000055),
-            phase: random(0, Math.PI * 2),
-            depth: Math.random(),
-            size: random(0.28, 1.15),
-            alpha: random(0.22, 0.92),
-            drift: random(0.7, 1.4)
+            branch,
+            t,
+            depth,
+            spread,
+            phase: rand(0, Math.PI * 2),
+            speed: rand(0.000010, 0.000032),
+            size: rand(0.24, 1.15) * (depth > 0.94 ? 1.45 : 1),
+            alpha: rand(0.18, 0.92)
         };
     }
 
@@ -51,16 +68,16 @@
         const rect = canvas.getBoundingClientRect();
         width = Math.max(1, rect.width);
         height = Math.max(1, rect.height);
-        dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+        dpr = Math.min(window.devicePixelRatio || 1, 1.6);
 
         canvas.width = Math.round(width * dpr);
         canvas.height = Math.round(height * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        // Gemini's real hero uses a single full-viewport Three.js canvas.
-        // We keep the same composition but use a lightweight 2D field.
-        const count = mobile() ? 5200 : 11800;
-        particles = Array.from({ length: count }, particle);
+        particles = Array.from(
+            { length: mobile() ? 6500 : 14500 },
+            makeParticle
+        );
     }
 
     function colorAt(value) {
@@ -78,93 +95,154 @@
     }
 
     function draw(now) {
-        const delta = Math.min(34, now - last);
+        const delta = Math.min(40, now - last);
         last = now;
         time += delta;
 
         if (!reduced) {
-            pointerX += (targetX - pointerX) * 0.035;
-            pointerY += (targetY - pointerY) * 0.035;
+            pointerX += (targetX - pointerX) * 0.028;
+            pointerY += (targetY - pointerY) * 0.028;
         }
 
         ctx.clearRect(0, 0, width, height);
 
-        const centerX = width * 0.5 + pointerX * width * 0.012;
-        const centerY = height * 0.5 + pointerY * height * 0.012;
         const unit = Math.min(width, height);
+        const cx = width * 0.5 + pointerX * width * 0.012;
+        const cy = height * 0.5 + pointerY * height * 0.012;
 
-        const background = ctx.createRadialGradient(
-            centerX, centerY, 0,
-            centerX, centerY, unit * 0.78
-        );
-        background.addColorStop(0, 'rgba(3, 26, 17, .26)');
-        background.addColorStop(.48, 'rgba(1, 13, 8, .10)');
-        background.addColorStop(1, 'rgba(0, 3, 2, 1)');
-        ctx.fillStyle = background;
+        // Deep black-green base, with a very subtle luminous center.
+        const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, unit * 0.82);
+        bg.addColorStop(0, 'rgba(7, 35, 23, .34)');
+        bg.addColorStop(.34, 'rgba(2, 17, 10, .18)');
+        bg.addColorStop(.72, 'rgba(1, 8, 5, .08)');
+        bg.addColorStop(1, 'rgba(0, 2, 1, 1)');
+        ctx.fillStyle = bg;
         ctx.fillRect(0, 0, width, height);
 
+        /*
+         * Four-arm flow:
+         * Each branch starts near the center and travels toward a corner.
+         * A sinusoidal curve gives the wide S-shaped ribbons visible
+         * in the reference image.
+         */
         for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
 
-            // Vertical travel is deliberately slow. The field never resets.
-            let y = (p.y + time * p.speed * p.drift) % 1;
+            let t = (p.t + time * p.speed) % 1;
+            if (p.branch >= 2) t = (p.t - time * p.speed * 0.72 + 1) % 1;
 
-            // Mirror the two clouds around the center.
-            const vertical = y - 0.5;
-            const absY = Math.abs(vertical);
+            // Non-linear distribution: very dense around the main stream,
+            // sparse at its outer atmosphere.
+            const radial = Math.pow(t, 0.72);
+            const centerPull = 1 - radial;
 
-            // Both clouds are wide at the top/bottom and pinch toward the middle.
-            // This is the key difference from the previous X/diamond shape.
-            const inward = Math.pow(Math.sin(Math.PI * y), 0.72);
-            const baseX = 0.245 + (1 - inward) * 0.115;
+            let x;
+            let y;
 
-            // Dense core + airy outer particles.
-            const widthSpread = (0.012 + p.spread * 0.115) * (0.72 + absY * 0.65);
+            const side = p.branch % 2 === 0 ? -1 : 1;
+            const vertical = p.branch < 2 ? -1 : 1;
 
-            // Curl-like movement inside each ribbon.
-            const wave1 = Math.sin(y * 19 + p.phase + time * 0.00022) * 0.010;
-            const wave2 = Math.sin(y * 43 - p.phase + time * 0.00016) * 0.004;
-            const breathing = Math.sin(time * 0.00028 + p.phase) * 0.012;
+            /*
+             * Main trajectory. At the center it begins around x=0 and
+             * quickly bends toward the outside as it travels vertically.
+             */
+            const verticalDistance = 0.04 + radial * 0.58;
+            const curve =
+                Math.sin(radial * Math.PI * 1.18 + p.phase * 0.035) *
+                (0.055 + radial * 0.15);
 
-            let x = centerX + p.side * unit * (
-                baseX +
-                (p.spread - 0.5) * widthSpread +
-                wave1 + wave2 + breathing * p.depth
+            const sweep =
+                Math.sin(radial * Math.PI * 2.15 + p.phase) *
+                (0.014 + radial * 0.038);
+
+            // Wide outer cloud + thin bright ribbon.
+            const ribbonWidth =
+                (0.004 + p.spread * 0.105) *
+                (0.22 + radial * 0.95);
+
+            // Pull particles toward a curved stream center.
+            const streamX =
+                side * (0.015 + verticalDistance * 0.82 + curve);
+
+            const outer =
+                (p.spread - 0.5) * ribbonWidth +
+                sweep +
+                Math.sin(time * 0.00017 + p.phase) * 0.008;
+
+            x = cx + (streamX + outer) * unit;
+
+            // Branches mirror around the center.
+            y = cy + vertical * (
+                (0.015 + radial * 0.64) * unit
             );
 
-            y = centerY + (y - 0.5) * unit;
+            // Give the upper and lower arms their broad horizontal wings.
+            // The wing expands strongly near the outside of the viewport.
+            const wing = Math.pow(radial, 1.65) * 0.28;
+            x += side * wing * unit;
 
-            // Gentle parallax, matching the source page's viewport-parallax idea.
-            x += pointerX * (7 + p.depth * 24);
-            y += pointerY * (5 + p.depth * 18);
+            // Organic turbulent motion, strongest in the outer cloud.
+            x += Math.sin(t * 23 + p.phase + time * 0.00016) *
+                (0.003 + p.depth * 0.018) * unit;
 
-            // Soft fade toward the top and bottom edges.
-            const edge = Math.sin(Math.PI * y / unit + Math.PI / 2);
-            const edgeFade = 0.32 + 0.68 * Math.max(0, Math.min(1, edge));
+            y += Math.cos(t * 17 + p.phase - time * 0.00013) *
+                (0.002 + p.depth * 0.014) * unit;
 
-            // Keep the center as clean negative space.
-            const centerDistance = Math.abs((x - centerX) / unit);
-            const centerVoid = Math.max(0, 1 - centerDistance / 0.20);
-            const voidFade = 1 - Math.pow(centerVoid, 2.4) * 0.93;
+            // Mouse parallax.
+            x += pointerX * (5 + p.depth * 28);
+            y += pointerY * (4 + p.depth * 22);
 
-            // Scroll subtly tightens the field, rather than moving the content away.
-            const scrollTighten = 1 - Math.min(scrollProgress, 1) * 0.08;
-            x = centerX + (x - centerX) * scrollTighten;
+            /*
+             * Create the clean central negative space.
+             * Particles near the center of the screen are progressively
+             * removed, leaving the same dark breathing room behind text.
+             */
+            const nx = Math.abs((x - cx) / unit);
+            const ny = Math.abs((y - cy) / unit);
 
-            const alpha = p.alpha * edgeFade * voidFade * (0.42 + p.depth * 0.58);
-            if (alpha < 0.018) continue;
+            const centerVoid =
+                Math.max(0, 1 - Math.sqrt(
+                    Math.pow(nx / 0.29, 2) +
+                    Math.pow(ny / 0.19, 2)
+                ));
 
-            const rgb = colorAt(p.depth + y * 0.11 + time * 0.000008);
-            const size = p.size * (0.72 + p.depth * 1.15);
+            const voidFade = 1 - Math.pow(centerVoid, 2.15) * 0.985;
 
-            ctx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
+            // Fade the extreme edges so the field feels atmospheric.
+            const edgeX = Math.min(x / width, 1 - x / width);
+            const edgeY = Math.min(y / height, 1 - y / height);
+            const edgeFade = Math.min(1, Math.max(.18, Math.min(edgeX, edgeY) * 8));
+
+            const alpha =
+                p.alpha *
+                (.34 + p.depth * .66) *
+                voidFade *
+                (.58 + edgeFade * .42);
+
+            if (alpha < 0.012) continue;
+
+            const rgb = colorAt(
+                p.depth * .8 +
+                radial * .22 +
+                time * 0.000006
+            );
+
+            const size = p.size * (
+                0.68 +
+                p.depth * 1.65 +
+                radial * .32
+            );
+
+            ctx.fillStyle =
+                `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
+
             ctx.fillRect(x, y, size, size);
 
-            // Only a tiny percentage get a soft glow.
-            if (p.depth > 0.988 && i % 67 === 0) {
-                ctx.globalAlpha = alpha * 0.13;
+            // Rare bright particles create the photographic sparkle.
+            if (p.depth > .985 && i % 43 === 0) {
+                ctx.globalAlpha = alpha * .22;
                 ctx.beginPath();
-                ctx.arc(x, y, size * 2.6, 0, Math.PI * 2);
+                ctx.arc(x, y, size * 3.4, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.globalAlpha = 1;
             }
@@ -174,18 +252,6 @@
             raf = requestAnimationFrame(draw);
         }
     }
-
-    function updateScroll() {
-        const rect = hero.getBoundingClientRect();
-        const travel = Math.max(1, hero.offsetHeight - window.innerHeight);
-        scrollProgress = Math.max(0, Math.min(1, -rect.top / travel));
-
-        // Inspired by Gemini's hero: the scene is a sticky viewport whose
-        // visual state is controlled by scroll progress.
-        hero.style.setProperty('--hero-progress', scrollProgress.toFixed(4));
-    }
-
-    window.addEventListener('scroll', updateScroll, { passive: true });
 
     window.addEventListener('pointermove', (event) => {
         targetX = (event.clientX / window.innerWidth - 0.5) * 2;
@@ -201,7 +267,6 @@
     observer.observe(canvas);
 
     resize();
-    updateScroll();
     draw(performance.now());
 
     window.addEventListener('pagehide', () => {
