@@ -314,10 +314,10 @@
             /* First frame is a compact four-point star, then it dissolves
              * organically into the final cloud. */
             const starRadius =
-                0.12 +
-                0.88 * Math.pow(Math.abs(Math.cos(2 * t)), 3.8);
-            const starX = Math.cos(t) * starRadius;
-            const starY = Math.sin(t) * starRadius;
+                0.055 +
+                0.945 * Math.pow(Math.abs(Math.cos(2 * t)), 4.8);
+            const starX = Math.cos(t) * starRadius * 0.92;
+            const starY = Math.sin(t) * starRadius * 0.92;
 
             x = x * (1 - starBlend) + starX * starBlend;
             y = y * (1 - starBlend) + starY * starBlend;
