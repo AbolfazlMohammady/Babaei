@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}BABAEI | Wear Your Story{% endblock %}
-{% block meta_description %}BABAEI — Wear Your Story.{% endblock %}
+{% block title %}BABAEI | Wear Your Identity{% endblock %}
+{% block meta_description %}BABAEI — لباس، لیبل و هویت شخصی تو.{% endblock %}
 {% block body_class %}home-page{% endblock %}
 
-{# The home landing is self-contained so the storefront/admin visual systems do not load here. #}
 {% block site_components_css %}{% endblock %}
+{% block common_page_css %}{% endblock %}
 {% block site_optional_css %}{% endblock %}
 
 {% block extra_css %}
@@ -14,57 +14,93 @@
 {% endblock %}
 
 {% block content %}
-<div class="home-landing" aria-label="BABAEI">
+<section class="home-landing" aria-label="BABAEI">
     <div class="home-video" aria-hidden="true">
-        <video id="home-background-video" autoplay muted loop playsinline></video>
+        <video id="home-background-video" autoplay muted loop playsinline preload="auto"></video>
     </div>
 
-    <nav class="home-nav" aria-label="Main navigation">
-        <div class="home-nav__inner liquid-glass">
-            <div class="home-nav__left">
-                <a href="/" class="home-brand" aria-label="BABAEI home">
-                    <svg class="home-brand__icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="12" cy="12" r="8.5"></circle>
-                        <path d="M3.8 12h16.4M12 3.5c2.2 2.3 3.3 5.1 3.3 8.5S14.2 18.2 12 20.5M12 3.5c-2.2 2.3-3.3 5.1-3.3 8.5s1.1 6.2 3.3 8.5"></path>
-                    </svg>
-                    <span class="home-brand__name">BABAEI</span>
-                </a>
+    <div class="home-scrim" aria-hidden="true"></div>
 
-                <div class="home-nav__links">
-                    <a href="#features">Features</a>
-                    <a href="#pricing">Pricing</a>
-                    <a href="#about">About</a>
-                </div>
-            </div>
+    <nav class="home-nav" aria-label="ناوبری اصلی">
+        <a href="/" class="home-brand" aria-label="BABAEI">
+            <span class="home-brand__mark" aria-hidden="true">
+                <span></span><span></span><span></span>
+            </span>
+            <span class="home-brand__name">BABAEI</span>
+        </a>
 
-            <div class="home-nav__right">
-                <a href="{% url 'users:profile' %}" class="home-nav__signup">Sign Up</a>
-                <a href="{% url 'users:profile' %}" class="home-login glass-pill">Login</a>
-            </div>
+        <div class="home-nav__desktop">
+            <a href="#studio" class="is-active">استودیو</a>
+            <a href="{% url 'shop:index' %}">فروشگاه</a>
+            <a href="#about">درباره ما</a>
+            <a href="#process">فرآیند</a>
+        </div>
+
+        <div class="home-nav__actions">
+            <a href="{% url 'users:profile' %}" class="home-nav__action home-nav__action--signup">ثبت‌نام</a>
+            <a href="{% url 'users:profile' %}" class="home-nav__action home-nav__action--login">ورود</a>
+            <button type="button" class="home-menu-toggle" id="home-menu-toggle" aria-label="باز کردن منو" aria-expanded="false">
+                <span></span><span></span>
+            </button>
         </div>
     </nav>
 
-    <section class="home-hero" aria-labelledby="home-title">
-        <div class="home-hero__content">
-            <div class="home-hero__copy">
-                <p class="home-tagline">YOUR LABEL. YOUR STORY.</p>
-                <h1 id="home-title" class="home-title">
-                    هر لباس،
-                    <br class="home-title__break">
-                    یک هویت تازه.
-                </h1>
-            </div>
-
-            <div class="home-cta-wrap" id="home-cta-wrap">
-                <button type="button" class="home-cta" id="home-access-button">ساخت لیبل من</button>
-            </div>
-
-            <a class="home-demo" href="#home-video-demo">ورود به استودیو</a>
+    <div class="home-mobile-menu" id="home-mobile-menu" aria-hidden="true">
+        <div class="home-mobile-menu__backdrop" data-home-menu-close></div>
+        <div class="home-mobile-menu__panel">
+            <button type="button" class="home-mobile-menu__close" data-home-menu-close aria-label="بستن منو">×</button>
+            <a href="#studio" data-home-menu-close>استودیو</a>
+            <a href="{% url 'shop:index' %}">فروشگاه</a>
+            <a href="#about" data-home-menu-close>درباره ما</a>
+            <a href="#process" data-home-menu-close>فرآیند</a>
+            <div class="home-mobile-menu__divider"></div>
+            <a href="{% url 'users:profile' %}">ثبت‌نام</a>
+            <a href="{% url 'users:profile' %}">ورود</a>
         </div>
-    </section>
+    </div>
+
+    <main class="home-content" id="studio">
+        <div class="home-hero-copy">
+            <p class="home-eyebrow">YOUR LABEL. YOUR STORY.</p>
+            <h1>
+                هر لباس،
+                <span>یک هویت تازه.</span>
+            </h1>
+            <p class="home-description">
+                لباسی که می‌پوشی فقط یک انتخاب نیست؛
+                امضایی‌ست که داستان تو را تعریف می‌کند.
+            </p>
+        </div>
+    </main>
+
+    <div class="home-bottom-left" id="about">
+        <div class="home-bottom-left__label">
+            <span class="home-spark" aria-hidden="true">✦</span>
+            <strong>BABAEI STUDIO</strong>
+        </div>
+        <p>
+            لباس خودت را انتخاب کن، لیبل خودت را بساز
+            و هویتت را روی آن ثبت کن.
+        </p>
+        <div class="home-bottom-left__actions">
+            <a href="{% url 'shop:index' %}#design" class="home-primary-action">ساخت لیبل من</a>
+            <a href="#process" class="home-secondary-action">بیشتر بدانید</a>
+        </div>
+    </div>
+
+    <a class="home-video-link" href="#process">
+        <span class="home-video-link__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9 7.5 16 12l-7 4.5V7.5Z"></path></svg>
+        </span>
+        <span>استودیو را ببین</span>
+        <span class="home-video-link__time">01:35</span>
+    </a>
+
+    <div class="home-section-anchor" id="process" aria-hidden="true"></div>
+    <div class="home-section-anchor" id="pricing" aria-hidden="true"></div>
 
     <div class="home-toast" id="home-toast" role="status" aria-live="polite"></div>
-</div>
+</section>
 {% endblock %}
 
 {% block site_optional_js %}{% endblock %}
