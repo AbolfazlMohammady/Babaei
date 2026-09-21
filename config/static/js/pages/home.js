@@ -1,145 +1,75 @@
 (() => {
     const canvas = document.querySelector('[data-particle-field]');
-    if (!canvas) return;
+    const hero = document.querySelector('.home-hero');
+    if (!canvas || !hero) return;
 
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let w = 0, h = 0, dpr = 1, raf = 0;
-    let particles = [];
-    let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
-    let clock = 0;
-    let previous = performance.now();
+    const mobile = () => window.innerWidth <= 700;
 
-    // The reference is monochromatic: deep emerald / jade particles on black.
+    let width = 1;
+    let height = 1;
+    let dpr = 1;
+    let raf = 0;
+    let time = 0;
+    let last = performance.now();
+    let scrollProgress = 0;
+    let targetX = 0;
+    let targetY = 0;
+    let pointerX = 0;
+    let pointerY = 0;
+    let particles = [];
+
     const palette = [
-        [7, 57, 38],
-        [10, 92, 59],
-        [15, 132, 78],
-        [35, 176, 104],
-        [90, 216, 147],
-        [175, 239, 201]
+        [4, 48, 30],
+        [5, 76, 45],
+        [7, 108, 61],
+        [13, 145, 78],
+        [35, 181, 103],
+        [101, 225, 153]
     ];
 
-    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-    const rnd = (a, b) => a + Math.random() * (b - a);
+    const random = (min, max) => min + Math.random() * (max - min);
 
-    /*
-     * Four continuous Bézier streams:
-     *
-     *             TOP
-     *              /\
-     *             /  \
-     * LEFT -------    ------- RIGHT
-     *             \  //
-     *              \/
-     *            BOTTOM
-     *
-     * This is deliberately a flowing fabric, not a ring/diamond.
-     */
-    function curve(path, t, time) {
-        const center = { x: 0.50, y: 0.50 };
-        const edge = {
-            0: { x: 0.50, y: -0.10 }, // top -> center-left
-            1: { x: 0.50, y: -0.10 }, // top -> center-right
-            2: { x: 0.50, y: 1.10 },  // bottom -> center-left
-            3: { x: 0.50, y: 1.10 }   // bottom -> center-right
-        }[path];
-
-        const target = {
-            0: { x: -0.12, y: 0.50 },
-            1: { x: 1.12, y: 0.50 },
-            2: { x: -0.12, y: 0.50 },
-            3: { x: 1.12, y: 0.50 }
-        }[path];
-
-        // Start/end are deliberately wide enough to fill the viewport.
-        const p0 = edge;
-        const p3 = target;
-
-        let p1, p2;
-        if (path === 0) {
-            p1 = { x: 0.47, y: 0.20 };
-            p2 = { x: 0.15, y: 0.36 };
-        } else if (path === 1) {
-            p1 = { x: 0.53, y: 0.20 };
-            p2 = { x: 0.85, y: 0.36 };
-        } else if (path === 2) {
-            p1 = { x: 0.47, y: 0.80 };
-            p2 = { x: 0.15, y: 0.64 };
-        } else {
-            p1 = { x: 0.53, y: 0.80 };
-            p2 = { x: 0.85, y: 0.64 };
-        }
-
-        // Slow breathing of the whole fabric, not individual jitter.
-        const breath = Math.sin(time * 0.00023 + path * 1.7) * 0.018;
-        const s = Math.sin(t * Math.PI);
-
-        const mt = 1 - t;
-        let x = mt*mt*mt*p0.x + 3*mt*mt*t*p1.x + 3*mt*t*t*p2.x + t*t*t*p3.x;
-        let y = mt*mt*mt*p0.y + 3*mt*mt*t*p1.y + 3*mt*t*t*p2.y + t*t*t*p3.y;
-
-        // Organic bow: strongest around the middle of each stream.
-        const bow = Math.sin(t * Math.PI) * Math.sin(t * Math.PI * 0.7) * 0.055;
-        if (path === 0 || path === 2) x += bow;
-        else x -= bow;
-
-        y += breath * s;
-
-        // Derivative for a stable perpendicular.
-        let dx =
-            3*mt*mt*(p1.x-p0.x) +
-            6*mt*t*(p2.x-p1.x) +
-            3*t*t*(p3.x-p2.x);
-        let dy =
-            3*mt*mt*(p1.y-p0.y) +
-            6*mt*t*(p2.y-p1.y) +
-            3*t*t*(p3.y-p2.y);
-
-        const len = Math.hypot(dx, dy) || 1;
-        dx /= len; dy /= len;
-
-        return { x, y, nx: -dy, ny: dx };
-    }
-
-    function makeParticle() {
-        const path = Math.floor(Math.random() * 4);
+    function particle() {
         return {
-            path,
-            t: Math.random(),
-            offset: Math.random() * Math.PI * 2,
-            spread: Math.pow(Math.random(), 1.55),
-            speed: rnd(0.000022, 0.000065),
-            size: rnd(0.32, 1.18),
-            alpha: rnd(0.20, 0.86),
+            side: Math.random() < 0.5 ? -1 : 1,
+            y: Math.random(),
+            spread: Math.pow(Math.random(), 1.75),
+            speed: random(0.000018, 0.000055),
+            phase: random(0, Math.PI * 2),
             depth: Math.random(),
-            color: Math.random()
+            size: random(0.28, 1.15),
+            alpha: random(0.22, 0.92),
+            drift: random(0.7, 1.4)
         };
     }
 
     function resize() {
-        const r = canvas.getBoundingClientRect();
-        w = Math.max(1, r.width);
-        h = Math.max(1, r.height);
+        const rect = canvas.getBoundingClientRect();
+        width = Math.max(1, rect.width);
+        height = Math.max(1, rect.height);
         dpr = Math.min(window.devicePixelRatio || 1, 1.75);
 
-        canvas.width = Math.round(w * dpr);
-        canvas.height = Math.round(h * dpr);
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        // Dense but smooth. Stable particle count prevents animation stutter.
-        const count = w < 700 ? 4200 : 10500;
-        particles = Array.from({ length: count }, makeParticle);
+        // Gemini's real hero uses a single full-viewport Three.js canvas.
+        // We keep the same composition but use a lightweight 2D field.
+        const count = mobile() ? 5200 : 11800;
+        particles = Array.from({ length: count }, particle);
     }
 
-    function getColor(v) {
-        const p = ((v % 1) + 1) % 1 * (palette.length - 1);
+    function colorAt(value) {
+        const p = ((value % 1) + 1) % 1 * (palette.length - 1);
         const i = Math.floor(p);
         const f = p - i;
         const a = palette[i];
         const b = palette[Math.min(i + 1, palette.length - 1)];
+
         return [
             Math.round(a[0] + (b[0] - a[0]) * f),
             Math.round(a[1] + (b[1] - a[1]) * f),
@@ -147,107 +77,115 @@
         ];
     }
 
-    function render(now) {
-        const dt = Math.min(32, now - previous);
-        previous = now;
+    function draw(now) {
+        const delta = Math.min(34, now - last);
+        last = now;
+        time += delta;
 
         if (!reduced) {
-            clock += dt;
-            mouseX += (targetX - mouseX) * 0.045;
-            mouseY += (targetY - mouseY) * 0.045;
+            pointerX += (targetX - pointerX) * 0.035;
+            pointerY += (targetY - pointerY) * 0.035;
         }
 
-        ctx.clearRect(0, 0, w, h);
+        ctx.clearRect(0, 0, width, height);
 
-        // Nearly black green atmosphere.
-        const bg = ctx.createRadialGradient(
-            w * (0.5 + mouseX * 0.025),
-            h * (0.5 + mouseY * 0.025),
-            0,
-            w * 0.5,
-            h * 0.5,
-            Math.max(w, h) * 0.78
+        const centerX = width * 0.5 + pointerX * width * 0.012;
+        const centerY = height * 0.5 + pointerY * height * 0.012;
+        const unit = Math.min(width, height);
+
+        const background = ctx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, unit * 0.78
         );
-        bg.addColorStop(0, 'rgba(4, 35, 23, .28)');
-        bg.addColorStop(.45, 'rgba(2, 18, 12, .12)');
-        bg.addColorStop(1, 'rgba(0, 4, 3, 1)');
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, w, h);
-
-        const S = Math.min(w, h);
-        const cx = w * 0.5 + mouseX * w * 0.020;
-        const cy = h * 0.5 + mouseY * h * 0.018;
+        background.addColorStop(0, 'rgba(3, 26, 17, .26)');
+        background.addColorStop(.48, 'rgba(1, 13, 8, .10)');
+        background.addColorStop(1, 'rgba(0, 3, 2, 1)');
+        ctx.fillStyle = background;
+        ctx.fillRect(0, 0, width, height);
 
         for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
 
-            // Continuous motion along a fixed stream. No respawning and no jumps.
-            let t = (p.t + clock * p.speed) % 1;
+            // Vertical travel is deliberately slow. The field never resets.
+            let y = (p.y + time * p.speed * p.drift) % 1;
 
-            // Opposite streams travel in the opposite direction so the center feels alive.
-            if (p.path === 1 || p.path === 2) t = 1 - t;
+            // Mirror the two clouds around the center.
+            const vertical = y - 0.5;
+            const absY = Math.abs(vertical);
 
-            const q = curve(p.path, t, clock);
+            // Both clouds are wide at the top/bottom and pinch toward the middle.
+            // This is the key difference from the previous X/diamond shape.
+            const inward = Math.pow(Math.sin(Math.PI * y), 0.72);
+            const baseX = 0.245 + (1 - inward) * 0.115;
 
-            // Stream thickness: very thin at the central source, broadens outward.
-            const edgeWidth = 0.004 + Math.pow(p.spread, 1.12) * 0.115;
-            const turbulence =
-                Math.sin(t * 22 + p.offset + clock * 0.00042) * 0.008 +
-                Math.sin(t * 47 - p.offset + clock * 0.00024) * 0.0035;
+            // Dense core + airy outer particles.
+            const widthSpread = (0.012 + p.spread * 0.115) * (0.72 + absY * 0.65);
 
-            let offset = (edgeWidth * (0.72 + p.depth * 0.72)) + turbulence * p.spread;
+            // Curl-like movement inside each ribbon.
+            const wave1 = Math.sin(y * 19 + p.phase + time * 0.00022) * 0.010;
+            const wave2 = Math.sin(y * 43 - p.phase + time * 0.00016) * 0.004;
+            const breathing = Math.sin(time * 0.00028 + p.phase) * 0.012;
 
-            // Soft breathing around the fabric.
-            offset *= 1 + Math.sin(clock * 0.00032 + p.offset) * 0.055;
-
-            let nx = q.nx * offset;
-            let ny = q.ny * offset;
-
-            // Fine flow noise along the stream.
-            nx += Math.sin(t * 31 + p.offset + clock * 0.00031) * 0.004 * p.depth;
-            ny += Math.cos(t * 27 + p.offset + clock * 0.00029) * 0.004 * p.depth;
-
-            let x = cx + (q.x - 0.5 + nx) * S;
-            let y = cy + (q.y - 0.5 + ny) * S;
-
-            // Mouse: a broad, elegant parallax field, never a violent repulsion.
-            x += mouseX * (10 + p.depth * 28);
-            y += mouseY * (8 + p.depth * 22);
-
-            // The center remains a deep black negative-space window.
-            const centerX = Math.abs((x - cx) / S);
-            const centerY = Math.abs((y - cy) / S);
-            const centralVoid = Math.max(0, 1 - (centerX / 0.17 + centerY / 0.12));
-            const voidFade = 1 - Math.pow(centralVoid, 2.2) * 0.92;
-
-            // Soft falloff at the viewport edges and around the source.
-            const edgeFade = 0.35 + 0.65 * Math.sin(Math.PI * t);
-            const alpha = p.alpha * (0.45 + p.depth * 0.55) * voidFade * edgeFade;
-
-            if (alpha < 0.015) continue;
-
-            const rgb = getColor(
-                p.color + t * 0.12 + clock * 0.000010 + p.depth * 0.05
+            let x = centerX + p.side * unit * (
+                baseX +
+                (p.spread - 0.5) * widthSpread +
+                wave1 + wave2 + breathing * p.depth
             );
 
-            const size = p.size * (0.72 + p.depth * 1.35);
+            y = centerY + (y - 0.5) * unit;
 
-            ctx.fillStyle =
-                'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',' + alpha + ')';
+            // Gentle parallax, matching the source page's viewport-parallax idea.
+            x += pointerX * (7 + p.depth * 24);
+            y += pointerY * (5 + p.depth * 18);
+
+            // Soft fade toward the top and bottom edges.
+            const edge = Math.sin(Math.PI * y / unit + Math.PI / 2);
+            const edgeFade = 0.32 + 0.68 * Math.max(0, Math.min(1, edge));
+
+            // Keep the center as clean negative space.
+            const centerDistance = Math.abs((x - centerX) / unit);
+            const centerVoid = Math.max(0, 1 - centerDistance / 0.20);
+            const voidFade = 1 - Math.pow(centerVoid, 2.4) * 0.93;
+
+            // Scroll subtly tightens the field, rather than moving the content away.
+            const scrollTighten = 1 - Math.min(scrollProgress, 1) * 0.08;
+            x = centerX + (x - centerX) * scrollTighten;
+
+            const alpha = p.alpha * edgeFade * voidFade * (0.42 + p.depth * 0.58);
+            if (alpha < 0.018) continue;
+
+            const rgb = colorAt(p.depth + y * 0.11 + time * 0.000008);
+            const size = p.size * (0.72 + p.depth * 1.15);
+
+            ctx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
             ctx.fillRect(x, y, size, size);
 
-            // Sparse luminous grains give depth without the previous "bubble" look.
-            if (p.depth > 0.985 && i % 83 === 0) {
-                ctx.globalAlpha = alpha * 0.16;
+            // Only a tiny percentage get a soft glow.
+            if (p.depth > 0.988 && i % 67 === 0) {
+                ctx.globalAlpha = alpha * 0.13;
                 ctx.beginPath();
-                ctx.arc(x, y, size * 2.8, 0, Math.PI * 2);
+                ctx.arc(x, y, size * 2.6, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.globalAlpha = 1;
             }
         }
 
-        if (!reduced) raf = requestAnimationFrame(render);
+        if (!reduced) {
+            raf = requestAnimationFrame(draw);
+        }
     }
+
+    function updateScroll() {
+        const rect = hero.getBoundingClientRect();
+        const travel = Math.max(1, hero.offsetHeight - window.innerHeight);
+        scrollProgress = Math.max(0, Math.min(1, -rect.top / travel));
+
+        // Inspired by Gemini's hero: the scene is a sticky viewport whose
+        // visual state is controlled by scroll progress.
+        hero.style.setProperty('--hero-progress', scrollProgress.toFixed(4));
+    }
+
+    window.addEventListener('scroll', updateScroll, { passive: true });
 
     window.addEventListener('pointermove', (event) => {
         targetX = (event.clientX / window.innerWidth - 0.5) * 2;
@@ -261,8 +199,10 @@
 
     const observer = new ResizeObserver(resize);
     observer.observe(canvas);
+
     resize();
-    render(performance.now());
+    updateScroll();
+    draw(performance.now());
 
     window.addEventListener('pagehide', () => {
         cancelAnimationFrame(raf);
