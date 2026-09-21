@@ -1,86 +1,61 @@
 (() => {
     const canvas = document.querySelector('[data-particle-field]');
     if (!canvas) return;
+
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let w = 0, h = 0, dpr = 1, raf = 0;
     let particles = [];
-    let ambient = [];
-    let mx = 0, my = 0, tx = 0, ty = 0;
-    const started = performance.now();
+    let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+    let previousTime = performance.now();
+    let elapsed = 0;
 
     const jade = [
-        [16, 88, 58],
-        [20, 132, 78],
-        [37, 177, 104],
-        [84, 205, 141],
-        [169, 235, 197]
+        [15, 82, 53],
+        [20, 119, 70],
+        [28, 158, 91],
+        [55, 191, 119],
+        [116, 221, 166]
     ];
 
     const rnd = (a, b) => a + Math.random() * (b - a);
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-    // Four large, sweeping ribbons. Each ribbon is a curved path from an
-    // outer edge into the central void and back out to another edge.
-    function curvePath(id, t) {
-        const side = id % 2 === 0 ? 1 : -1;
-        const top = id < 2;
-        const x = side * (0.5 - t) * 2;
-
-        if (top) {
-            return {
-                x: side * (0.045 + Math.pow(t, .82) * .53),
-                y: -0.08 + Math.pow(t, .82) * .63
-            };
-        }
-
+    /*
+     * Important performance rule:
+     * particles keep immutable seeds and are evaluated from one smooth clock.
+     * Nothing is randomly regenerated during animation, so there is no
+     * visible stepping/jitter.
+     */
+    function makeParticle() {
         return {
-            x: side * (0.045 + Math.pow(t, .82) * .53),
-            y: 1.08 - Math.pow(t, .82) * .63
-        };
-    }
-
-    function makeRibbon() {
-        return {
-            path: Math.floor(Math.random() * 4),
-            t: Math.random(),
-            width: Math.pow(Math.random(), 1.65),
-            offset: Math.random() * Math.PI * 2,
-            speed: rnd(.000035, .00010),
-            size: rnd(.38, 1.55),
-            alpha: rnd(.28, .95),
-            color: Math.random(),
-            depth: Math.random()
-        };
-    }
-
-    function makeAmbient() {
-        return {
-            x: Math.random(),
-            y: Math.random(),
-            size: rnd(.35, 1.25),
-            alpha: rnd(.08, .42),
+            u: Math.random(),
+            spread: Math.pow(Math.random(), 1.85),
+            side: Math.random() < 0.5 ? -1 : 1,
             phase: Math.random() * Math.PI * 2,
-            drift: rnd(.000004, .000018)
+            speed: rnd(0.000018, 0.000055),
+            size: rnd(0.35, 1.15),
+            alpha: rnd(0.22, 0.78),
+            depth: Math.random(),
+            color: Math.random()
         };
     }
 
     function resize() {
-        const r = canvas.getBoundingClientRect();
-        w = Math.max(1, r.width);
-        h = Math.max(1, r.height);
-        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const rect = canvas.getBoundingClientRect();
+        w = Math.max(1, rect.width);
+        h = Math.max(1, rect.height);
+        dpr = Math.min(window.devicePixelRatio || 1, 1.75);
 
         canvas.width = Math.round(w * dpr);
         canvas.height = Math.round(h * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        // Dense enough to look like the reference, with a separate ambient field.
-        const count = w < 700 ? 6000 : 15500;
-        particles = Array.from({ length: count }, makeRibbon);
-        ambient = Array.from({ length: w < 700 ? 900 : 2300 }, makeAmbient);
+        // Fewer particles = much smoother motion while preserving density.
+        const count = w < 700 ? 3400 : 8200;
+        particles = Array.from({ length: count }, makeParticle);
     }
 
     function getColor(t) {
@@ -89,6 +64,7 @@
         const f = p - i;
         const a = jade[i];
         const b = jade[Math.min(i + 1, jade.length - 1)];
+
         return [
             Math.round(a[0] + (b[0] - a[0]) * f),
             Math.round(a[1] + (b[1] - a[1]) * f),
@@ -96,156 +72,118 @@
         ];
     }
 
-    function ribbonPoint(path, t, time) {
-        // Make the ribbons breathe slowly. This is intentionally smooth rather
-        // than geometric: the reference feels like flowing particles/smoke.
-        const pulse = Math.sin(time * .00024 + path * 1.7) * .035;
-        const tt = clamp(t + pulse, 0, 1);
-        const base = curvePath(path, tt);
-
-        // A broad S-shaped bow makes the outer portions sweep across the screen.
-        const wave = Math.sin(tt * Math.PI * 1.22);
-        const bow = wave * .20;
-
-        let x = base.x + (path % 2 === 0 ? bow : -bow);
-        let y = base.y;
-
-        // The four ribbons are mirrored around the center.
-        if (path === 0) { x += .10 * wave; }
-        if (path === 1) { x -= .10 * wave; }
-        if (path === 2) { x += .10 * wave; }
-        if (path === 3) { x -= .10 * wave; }
-
-        return { x, y };
-    }
-
     function draw(now) {
-        const time = reduced ? 0 : now - started;
+        const dt = Math.min(32, now - previousTime);
+        previousTime = now;
 
-        mx += (tx - mx) * .045;
-        my += (ty - my) * .045;
+        if (!reduced) {
+            elapsed += dt;
+            mouseX += (targetX - mouseX) * 0.035;
+            mouseY += (targetY - mouseY) * 0.035;
+        }
 
         ctx.clearRect(0, 0, w, h);
 
-        // Deep black/emerald atmospheric base.
-        const atmosphere = ctx.createRadialGradient(
-            w * (.5 + mx * .05), h * (.5 + my * .05), 0,
-            w * .5, h * .5, Math.max(w, h) * .82
-        );
-        atmosphere.addColorStop(0, 'rgba(8, 42, 28, .34)');
-        atmosphere.addColorStop(.32, 'rgba(4, 27, 18, .20)');
-        atmosphere.addColorStop(.7, 'rgba(1, 13, 9, .10)');
-        atmosphere.addColorStop(1, 'rgba(0, 3, 2, .95)');
-        ctx.fillStyle = atmosphere;
-        ctx.fillRect(0, 0, w, h);
-
+        // Static atmosphere: no per-frame gradient allocation.
+        const cx = w * 0.5 + mouseX * w * 0.018;
+        const cy = h * 0.5 + mouseY * h * 0.018;
         const S = Math.min(w, h);
-        const cx = w * .5 + mx * w * .025;
-        const cy = h * .5 + my * h * .025;
+        const time = elapsed;
 
-        // Ambient depth particles first.
-        for (let i = 0; i < ambient.length; i++) {
-            const p = ambient[i];
-            const x = p.x * w + Math.sin(time * p.drift * 8000 + p.phase) * 18 + mx * 20;
-            const y = p.y * h + Math.cos(time * p.drift * 7000 + p.phase) * 12 + my * 14;
-            const a = p.alpha * (.55 + .45 * Math.sin(time * .001 + p.phase));
-            ctx.fillStyle = 'rgba(42,150,91,' + Math.max(.02, a) + ')';
-            ctx.fillRect(x, y, p.size, p.size);
-        }
-
-        // The main flowing ribbons.
+        /*
+         * One continuous mathematical flow field.
+         * The ribbons are generated from smooth sine curves instead of
+         * particles jumping between path segments.
+         */
         for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
 
-            let t = (p.t + time * p.speed) % 1;
-            // Make particles travel both ways depending on their ribbon.
-            if (p.path === 1 || p.path === 3) t = 1 - t;
+            const u = (p.u + time * p.speed) % 1;
+            const theta = u * Math.PI * 2 + p.phase * 0.015;
 
-            const q = ribbonPoint(p.path, t, time);
+            // Large breathing wave. It changes very slowly.
+            const breath = Math.sin(time * 0.00018 + p.phase) * 0.035;
 
-            // Perpendicular offset creates a thick particle "fabric" around each ribbon.
-            const eps = .002;
-            const q2 = ribbonPoint(p.path, clamp(t + eps, 0, 1), time);
-            let dx = q2.x - q.x;
-            let dy = q2.y - q.y;
-            const len = Math.hypot(dx, dy) || 1;
-            const nx = -dy / len;
-            const ny = dx / len;
+            // Two broad organic ribbons crossing the composition.
+            const envelope = Math.sin(u * Math.PI);
+            const broad = 0.075 + envelope * 0.34;
 
-            const thickness = (.006 + Math.pow(p.width, 1.25) * .15)
-                * (0.72 + .28 * Math.sin(t * Math.PI));
-
-            const breathing = 1 + Math.sin(time * .00055 + p.offset) * .10;
-            const offset = thickness * breathing;
-
-            let nxp = q.x + nx * offset;
-            let nyp = q.y + ny * offset;
-
-            // Add fine turbulence: tiny, layered motion rather than straight lines.
-            const turbulence =
-                Math.sin(t * 19 + p.offset + time * .00065) * .012 * p.depth +
-                Math.sin(t * 43 - p.offset + time * .00031) * .004;
-
-            nxp += turbulence;
-            nyp += Math.cos(t * 17 + p.offset + time * .00052) * .009 * p.depth;
-
-            // Mouse moves the entire field and bends it slightly.
-            nxp += mx * (.018 + p.depth * .055);
-            nyp += my * (.014 + p.depth * .045);
-
-            let x = cx + nxp * S;
-            let y = cy + nyp * S;
-
-            // Central void: strongly suppress particles in the diamond-shaped core.
-            const vx = Math.abs(nxp) / .16;
-            const vy = Math.abs(nyp) / .18;
-            const voidShape = Math.max(vx + vy, 0);
-            const voidFade = clamp((voidShape - .78) / .34, 0, 1);
-
-            // Fade at extreme ends so the stream feels atmospheric, not clipped.
-            const endFade = Math.sin(Math.PI * t);
-            const alpha = p.alpha * (.45 + .55 * p.depth) * voidFade
-                * (.42 + .58 * endFade);
-
-            if (alpha < .018) continue;
-
-            const rgb = getColor(
-                p.color + t * .14 + time * .000012 + p.depth * .08
+            let x = p.side * (
+                0.035 +
+                broad * (0.72 + p.spread * 0.52) +
+                Math.sin(theta * 1.7 + time * 0.00008) * 0.035 * envelope
             );
 
-            // Reference has mostly pin-prick particles, with occasional larger glowing grains.
-            let size = p.size * (.65 + p.depth * 1.9);
-            if (p.depth > .92 && i % 17 === 0) size *= 2.5;
+            let y =
+                Math.cos(u * Math.PI * 2) * 0.37 +
+                Math.sin(theta * 0.75) * 0.035 +
+                breath;
+
+            // Fine turbulence follows the ribbon; no discontinuous jumps.
+            x += Math.sin(theta * 9.0 + p.phase) * 0.009 * p.spread;
+            y += Math.cos(theta * 7.0 + p.phase) * 0.008 * p.spread;
+
+            // Make the outer field softer and wider.
+            const widthFactor = 0.72 + p.depth * 0.46;
+            x *= widthFactor;
+            y *= 0.96 + p.depth * 0.08;
+
+            // Gentle mouse parallax.
+            x += mouseX * (0.018 + p.depth * 0.038);
+            y += mouseY * (0.014 + p.depth * 0.030);
+
+            const px = cx + x * S;
+            const py = cy + y * S;
+
+            // Deep central opening, with a soft edge rather than a hard cut.
+            const centerDistance = Math.abs(x);
+            const hole = 0.095 + envelope * 0.105;
+            const opening = clamp((centerDistance - hole) / 0.085, 0, 1);
+
+            // Keep the ribbon strongest around the middle of its curve.
+            const bodyFade = 0.25 + 0.75 * Math.sin(u * Math.PI);
+            const alpha = p.alpha * opening * bodyFade * (0.42 + p.depth * 0.58);
+
+            if (alpha < 0.018) continue;
+
+            const rgb = getColor(
+                p.color + u * 0.20 + time * 0.000012
+            );
+
+            const size = p.size * (0.72 + p.depth * 1.25);
 
             ctx.fillStyle =
                 'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',' + alpha + ')';
+            ctx.fillRect(px, py, size, size);
 
-            ctx.fillRect(x, y, size, size);
-
-            if (size > 2.1 && i % 29 === 0) {
-                ctx.globalAlpha = alpha * .20;
+            // Very rare glow particles. Kept tiny so they don't look like bubbles.
+            if (p.depth > 0.96 && i % 97 === 0) {
+                ctx.globalAlpha = alpha * 0.16;
                 ctx.beginPath();
-                ctx.arc(x, y, size * 3.5, 0, Math.PI * 2);
+                ctx.arc(px, py, size * 2.4, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.globalAlpha = 1;
             }
         }
 
-        if (!reduced) raf = requestAnimationFrame(draw);
+        if (!reduced) {
+            raf = requestAnimationFrame(draw);
+        }
     }
 
     window.addEventListener('pointermove', (event) => {
-        tx = (event.clientX / window.innerWidth - .5) * 2;
-        ty = (event.clientY / window.innerHeight - .5) * 2;
+        targetX = (event.clientX / window.innerWidth - 0.5) * 2;
+        targetY = (event.clientY / window.innerHeight - 0.5) * 2;
     }, { passive: true });
 
     window.addEventListener('pointerleave', () => {
-        tx = 0;
-        ty = 0;
+        targetX = 0;
+        targetY = 0;
     }, { passive: true });
 
     const observer = new ResizeObserver(resize);
     observer.observe(canvas);
+
     resize();
     draw(performance.now());
 
