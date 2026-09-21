@@ -107,6 +107,9 @@
         gl.viewport(0, 0, canvas.width, canvas.height);
 
         createParticles();
+        initializeBuffer(positionBuffer, positions, positionLocation, 3);
+        initializeBuffer(colorBuffer, colorsBuffer, colorLocation, 3);
+        initializeBuffer(sizeBuffer, sizes, sizeLocation, 1);
     }
 
     function createParticles() {
@@ -254,10 +257,6 @@
         gl.enableVertexAttribArray(location);
         gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
     }
-
-    initializeBuffer(positionBuffer, positions, positionLocation, 3);
-    initializeBuffer(colorBuffer, colorsBuffer, colorLocation, 3);
-    initializeBuffer(sizeBuffer, sizes, sizeLocation, 1);
 
     function updateGeometry(elapsed) {
         /*
