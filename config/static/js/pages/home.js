@@ -497,10 +497,6 @@
         colorShiftTarget += 1;
     }, { passive: true });
 
-    hero.addEventListener('touchstart', () => {
-        colorShiftTarget += 1;
-    }, { passive: true });
-
     const observer = new ResizeObserver(resize);
     observer.observe(canvas);
 
