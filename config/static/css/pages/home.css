@@ -114,15 +114,16 @@
 }
 
 .home-hero__content {
-    position: relative;
+    position: absolute;
     z-index: 4;
+    left: 50%;
+    top: 50%;
     width: min(900px, calc(100% - 40px));
-    margin: 0 auto;
+    margin: 0;
     padding: 0 20px;
     text-align: center;
     color: var(--babaei-text);
-    transform: translateY(calc(var(--hero-progress, 0) * -16px))
-               scale(calc(1 - (var(--hero-progress, 0) * .055)));
+    transform: translate(-50%, -50%);
     transform-origin: center;
     transition: transform 120ms linear;
 }
@@ -135,10 +136,10 @@
     max-width: 900px;
     margin: 0 auto;
     font-family: var(--font-sans, "Vazirmatn", Tahoma, Arial, sans-serif);
-    font-size: clamp(54px, 6.7vw, 92px);
-    font-weight: 600;
-    line-height: 1.15;
-    letter-spacing: -1.8px;
+    font-size: clamp(52px, 6.2vw, 88px);
+    font-weight: 500;
+    line-height: 1.18;
+    letter-spacing: -2.2px;
     direction: rtl;
     text-wrap: pretty;
     text-shadow: 0 12px 50px rgba(0,0,0,.48);
