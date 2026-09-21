@@ -314,3 +314,49 @@
         font-size: 11px;
     }
 }
+
+/* BABAEI standalone particle hero */
+.home-page {
+    background: #020806 !important;
+}
+.home-page > header,
+.home-page .site-header,
+.home-page footer,
+.home-page .babaei-quick-actions,
+.home-page .mobile-bottom-nav {
+    display: none !important;
+}
+.home-page main {
+    position: relative !important;
+    width: 100% !important;
+    height: 100svh !important;
+    min-height: 100svh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.home-hero {
+    height: 100svh !important;
+    min-height: 100svh !important;
+    background:
+        radial-gradient(ellipse at 50% 50%, rgba(12,53,38,.18) 0%, rgba(2,8,6,0) 48%),
+        #020806 !important;
+}
+.home-hero__backdrop {
+    background: #020806 !important;
+}
+.home-hero__particles {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+.home-hero__grain {
+    z-index: 2 !important;
+    opacity: .09 !important;
+}
+.home-hero__content,
+.home-hero__side,
+.home-hero__bottom {
+    z-index: 4 !important;
+}
