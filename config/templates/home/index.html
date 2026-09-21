@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}BABAEI | فروشگاه{% endblock %}
-{% block meta_description %}فروشگاه BABAEI — لباس و لیبل با هویت خودت.{% endblock %}
+{% block title %}BABAEI | Wear Your Story{% endblock %}
+{% block meta_description %}BABAEI — Wear Your Story.{% endblock %}
 {% block body_class %}home-page{% endblock %}
 
 {% block extra_css %}
@@ -10,38 +10,36 @@
 {% endblock %}
 
 {% block content %}
-<div class="home-store">
-    <section class="home-store__hero">
-        <div class="home-store__content">
-            <span class="home-store__eyebrow">BABAEI STORE</span>
-            <h1>لباسی که<br><em>متعلق به توست.</em></h1>
-            <p>مجموعه لباس‌های BABAEI را ببین و مدل موردنظرت را انتخاب کن.</p>
-            <a class="home-store__button" href="{% url 'shop:index' %}">مشاهده فروشگاه</a>
-        </div>
-        <div class="home-store__image" aria-hidden="true">
-            <img src="{% static 'images/home/garment-story.svg' %}" alt="">
-        </div>
-    </section>
+<section class="home-hero" aria-label="BABAEI">
+    <div class="home-hero__backdrop" aria-hidden="true"></div>
+    <div class="home-hero__grain" aria-hidden="true"></div>
 
-    <section class="home-store__categories">
-        <div class="home-store__section-head">
-            <span>دسته‌بندی‌ها</span>
-            <a href="{% url 'shop:index' %}">مشاهده همه</a>
-        </div>
-        <div class="home-store__grid">
-            <a href="{% url 'shop:index' %}" class="home-store__card">
-                <img src="{% static 'images/home/Tshirt.png' %}" alt="">
-                <span>تیشرت</span>
-            </a>
-            <a href="{% url 'shop:index' %}" class="home-store__card">
-                <img src="{% static 'images/home/black_left.png' %}" alt="">
-                <span>لباس‌های مشکی</span>
-            </a>
-            <a href="{% url 'shop:index' %}" class="home-store__card">
-                <img src="{% static 'images/home/about_us.png' %}" alt="">
-                <span>مجموعه BABAEI</span>
-            </a>
-        </div>
-    </section>
-</div>
+    <div class="home-hero__content">
+        <span class="home-hero__eyebrow">BABAEI / CLOTHING LABEL / STUDIO</span>
+        <h1>بیش از یک لباس</h1>
+        <p>داستان خودت را بپوش</p>
+        <a class="home-hero__cta" href="{% url 'shop:index' %}">
+            <span>مشاهده محصولات</span>
+            <span aria-hidden="true">←</span>
+        </a>
+    </div>
+
+    <div class="home-hero__side home-hero__side--left" aria-hidden="true">
+        <span>EST. 2024</span>
+        <i></i>
+        <span>WEAR<br>YOUR<br>STORY</span>
+    </div>
+
+    <div class="home-hero__side home-hero__side--right" aria-hidden="true">
+        <span>MORE<br>THAN<br>CLOTHES</span>
+        <i></i>
+        <span>A PART<br>OF YOU</span>
+    </div>
+
+    <div class="home-hero__bottom">
+        <span>کیفیت در جزئیات است</span>
+        <span class="home-hero__bottom-line"></span>
+        <span>BABAEI</span>
+    </div>
+</section>
 {% endblock %}
