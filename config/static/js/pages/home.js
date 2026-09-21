@@ -242,8 +242,9 @@
         /* Cinematic entrance: particles begin deep/far and gently
          * travel toward their final depth instead of appearing fully formed. */
         const intro = smoothstep(0, 1, Math.min(1, elapsed / 2100));
-        const introDepth = 0.28 + intro * 0.82;
-        const introScale = 0.12 + intro * 0.88;
+        const introDepth = 0.16 + intro * 0.84;
+        const introScale = 0.10 + intro * 0.90;
+        const starBlend = 1 - intro;
 
         const phase = elapsed * 0.000105;
 
@@ -309,6 +310,17 @@
             let y =
                 superY * (1 - rounding) +
                 sinT * rounding;
+
+            /* First frame is a compact four-point star, then it dissolves
+             * organically into the final cloud. */
+            const starRadius =
+                0.12 +
+                0.88 * Math.pow(Math.abs(Math.cos(2 * t)), 3.8);
+            const starX = Math.cos(t) * starRadius;
+            const starY = Math.sin(t) * starRadius;
+
+            x = x * (1 - starBlend) + starX * starBlend;
+            y = y * (1 - starBlend) + starY * starBlend;
 
             /*
              * Gemini scatters points radially from a compact core.
