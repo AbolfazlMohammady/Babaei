@@ -56,11 +56,9 @@
 
     let targetRX = 0;
     let targetRY = 0;
-    let interactionTarget = 0;
     let interactionStrength = 0;
-    let colorTarget = 0;
-    let colorStrength = 0;
-    let pointerActive = false;
+    let colorShiftTarget = 0;
+    let colorShift = 0;
     let rotationX = 0;
     let rotationY = 0;
     let rotationZ = 0;
@@ -259,10 +257,9 @@
          * Slowly respond to the mouse like the original OrbitControls
          * interaction, without enabling zoom.
          */
-        rotationX += (targetRX - rotationX) * 0.045;
-        rotationY += (targetRY - rotationY) * 0.045;
-        interactionStrength += (interactionTarget - interactionStrength) * 0.18;
-        colorStrength += (colorTarget - colorStrength) * 0.22;
+        rotationX += (0 - rotationX) * 0.045;
+        rotationY += (0 - rotationY) * 0.045;
+        colorShift += (colorShiftTarget - colorShift) * 0.16;
 
         const mx = Math.sin(rotationX);
         const mcx = Math.cos(rotationX);
@@ -386,9 +383,8 @@
              * Use the Gemini source palette. BABAEI starts green,
              * then slowly travels through the same Google palette.
              */
-            const colorSpeed = 0.000035 + colorStrength * 0.00115;
             const cycle =
-                (elapsed * colorSpeed + depth * 0.08) % 4;
+                (elapsed * 0.000035 + r * 0.25 + depth * 0.42 + colorShift) % 4;
 
             const index = Math.floor(cycle);
             const next = (index + 1) % 4;
@@ -489,78 +485,20 @@
         }
     }
 
-    function isInsideHero(clientX, clientY) {
-        const rect = hero.getBoundingClientRect();
-        return (
-            clientX >= rect.left &&
-            clientX <= rect.right &&
-            clientY >= rect.top &&
-            clientY <= rect.bottom
-        );
-    }
-
-    function updatePointer(clientX, clientY) {
-        const rect = hero.getBoundingClientRect();
-        const x = (clientX - rect.left) / Math.max(1, rect.width) - 0.5;
-        const y = (clientY - rect.top) / Math.max(1, rect.height) - 0.5;
-
-        targetRY = x * 0.62;
-        targetRX = -y * 0.44;
-    }
-
     /*
-     * The canvas itself is intentionally pointer-events:none so the CTA/text
-     * remain clickable. Listen on window instead; this also makes the exact
-     * same interaction work for mouse, touch and pen through Pointer Events.
+     * Interaction is intentionally color-only.
+     * Mouse movement and dragging never control the particle position.
+     * The field keeps its own slow autonomous motion.
+     * Each press advances the entire field toward its next palette color.
      */
-    window.addEventListener('pointerdown', (event) => {
-        if (!isInsideHero(event.clientX, event.clientY)) return;
+    hero.addEventListener('pointerdown', (event) => {
+        if (event.button !== undefined && event.button !== 0) return;
 
-        pointerActive = true;
-        interactionTarget = 1;
-        colorTarget = 1;
-        updatePointer(event.clientX, event.clientY);
+        colorShiftTarget += 1;
     }, { passive: true });
 
-    window.addEventListener('pointermove', (event) => {
-        /*
-         * IMPORTANT: hovering must never move the field.
-         * The particle field only responds while the pointer is pressed
-         * and dragged, on both mouse and touch.
-         */
-        if (isInsideHero(event.clientX, event.clientY)) {
-            colorTarget = 1;
-        } else if (!pointerActive) {
-            colorTarget = 0;
-        }
-
-        if (!pointerActive) return;
-
-        updatePointer(event.clientX, event.clientY);
-    }, { passive: true });
-
-    window.addEventListener('pointerup', () => {
-        pointerActive = false;
-        interactionTarget = 0;
-        colorTarget = 0;
-        targetRX = 0;
-        targetRY = 0;
-    }, { passive: true });
-
-    window.addEventListener('pointercancel', () => {
-        pointerActive = false;
-        interactionTarget = 0;
-        colorTarget = 0;
-        targetRX = 0;
-        targetRY = 0;
-    }, { passive: true });
-
-    hero.addEventListener('mouseleave', () => {
-        if (!pointerActive) {
-            targetRX = 0;
-            targetRY = 0;
-            colorTarget = 0;
-        }
+    hero.addEventListener('touchstart', () => {
+        colorShiftTarget += 1;
     }, { passive: true });
 
     const observer = new ResizeObserver(resize);
