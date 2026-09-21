@@ -30,9 +30,9 @@
     if (!gl) gl = canvas.getContext('experimental-webgl');
     if (!gl) return;
 
-    const PARTICLES_DESKTOP = 80000;
-    const PARTICLES_MOBILE = 36000;
-    const RADIUS = 120;
+    const PARTICLES_DESKTOP = 60000;
+    const PARTICLES_MOBILE = 26000;
+    const RADIUS = 92;
     const CAMERA_Z = 240;
     const FOV = 75;
     const SPARK_N = 0.7;
