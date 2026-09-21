@@ -239,6 +239,12 @@
 
         const scatter = 1.0;
 
+        /* Cinematic entrance: particles begin deep/far and gently
+         * travel toward their final depth instead of appearing fully formed. */
+        const intro = smoothstep(0, 1, Math.min(1, elapsed / 2100));
+        const introDepth = 3.8 - intro * 2.8;
+        const introScale = 1.65 - intro * 0.65;
+
         const phase = elapsed * 0.000105;
 
         const sinX = Math.sin(phase * 2);
@@ -312,13 +318,14 @@
             const radialScale =
                 1 + r * scatter - 0.04;
 
-            x *= RADIUS * radialScale;
-            y *= RADIUS * radialScale;
+            x *= RADIUS * radialScale * introScale;
+            y *= RADIUS * radialScale * introScale;
 
             let z =
                 zSeed[i] *
                 RADIUS *
-                (0.1 + 1.2 * scatter);
+                (0.1 + 1.2 * scatter) *
+                introDepth;
 
             /*
              * A gentle organic breathing deformation prevents the cloud
@@ -380,7 +387,8 @@
             sizes[i] =
                 sizeSeed[i] *
                 (0.52 + depth * 0.95) *
-                (0.72 + r * 0.45);
+                (0.72 + r * 0.45) *
+                (0.58 + intro * 0.42);
 
             /*
              * Use the Gemini source palette. BABAEI starts green,
