@@ -85,6 +85,31 @@
     mix-blend-mode: soft-light;
 }
 
+.home-hero__content,
+.home-hero__eyebrow,
+.home-hero__content h1,
+.home-hero__content p,
+.home-hero__side,
+.home-hero__bottom {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-drag: none;
+}
+
+.home-hero__content h1,
+.home-hero__content p,
+.home-hero__eyebrow,
+.home-hero__side span,
+.home-hero__bottom span {
+    cursor: default;
+}
+
+.home-hero__cta {
+    -webkit-user-drag: none;
+}
+
 .home-hero__content {
     position: relative;
     z-index: 4;
