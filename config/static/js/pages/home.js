@@ -1,10 +1,11 @@
 (() => {
+    const HERO_VERSION = '1.0.0';
     const canvas = document.querySelector('[data-particle-field]');
     const hero = document.querySelector('.home-hero');
     if (!canvas || !hero) return;
 
     /*
-     * BABAEI Hero Particle Field
+     * BABAEI Hero Particle Field — v1.0.0
      * Rebuilt from the Gemini hero source supplied with the project.
      *
      * Source characteristics preserved:
@@ -38,6 +39,7 @@
     const FOV = 75;
     const SPARK_N = 0.7;
     const ROUNDING = 0.18;
+    const scatter = 1.0;
 
     const colors = [
         hex('#00B95C'),
@@ -54,9 +56,6 @@
     let start = performance.now();
     let last = start;
 
-    let targetRX = 0;
-    let targetRY = 0;
-    let interactionStrength = 0;
     let colorShift = 0;
     let waveStart = -Infinity;
     let waveOriginX = 0;
@@ -73,6 +72,11 @@
     let radiusSeed;
     let zSeed;
     let sizeSeed;
+    let cosTheta;
+    let sinTheta;
+    let starXSeed;
+    let starYSeed;
+    let radialScaleSeed;
 
     function hex(value) {
         const n = parseInt(value.slice(1), 16);
@@ -116,6 +120,15 @@
         radiusSeed = new Float32Array(count);
         zSeed = new Float32Array(count);
         sizeSeed = new Float32Array(count);
+        cosTheta = new Float32Array(count);
+        sinTheta = new Float32Array(count);
+        starXSeed = new Float32Array(count);
+        starYSeed = new Float32Array(count);
+        radialScaleSeed = new Float32Array(count);
+
+        const starRotation = -Math.PI / 8;
+        const starCos = Math.cos(starRotation);
+        const starSin = Math.sin(starRotation);
 
         for (let i = 0; i < count; i++) {
             theta[i] = Math.random() * Math.PI * 2;
@@ -126,6 +139,19 @@
                 Math.random() -
                 1.5;
             sizeSeed[i] = 0.8 + Math.random() * 1.2;
+
+            const t = theta[i];
+            const cosT = Math.cos(t);
+            const sinT = Math.sin(t);
+            const starRadius = 0.055 + 0.945 * Math.pow(Math.abs(Math.cos(2 * t)), 4.8);
+            const rawStarX = cosT * starRadius * 0.92;
+            const rawStarY = sinT * starRadius * 0.92;
+
+            cosTheta[i] = cosT;
+            sinTheta[i] = sinT;
+            starXSeed[i] = rawStarX * starCos - rawStarY * starSin;
+            starYSeed[i] = rawStarX * starSin + rawStarY * starCos;
+            radialScaleSeed[i] = 1 + radiusSeed[i] * scatter - 0.04;
         }
     }
 
@@ -215,12 +241,23 @@
     const colorBuffer = gl.createBuffer();
     const sizeBuffer = gl.createBuffer();
 
-    function updateBuffer(buffer, data, location, size) {
+    function initializeBuffer(buffer, data, location, size) {
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
         gl.enableVertexAttribArray(location);
         gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
     }
+
+    function updateBuffer(buffer, data, location, size) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, data);
+        gl.enableVertexAttribArray(location);
+        gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
+    }
+
+    initializeBuffer(positionBuffer, positions, positionLocation, 3);
+    initializeBuffer(colorBuffer, colorsBuffer, colorLocation, 3);
+    initializeBuffer(sizeBuffer, sizes, sizeLocation, 1);
 
     function updateGeometry(elapsed) {
         /*
@@ -236,8 +273,6 @@
             (3.5 + SPARK_N) / 2 +
             (3.5 - SPARK_N) / 2 *
             Math.sin(elapsed * 0.00062);
-
-        const scatter = 1.0;
 
         /* Cinematic entrance: particles begin deep/far and gently
          * travel toward their final depth instead of appearing fully formed. */
@@ -271,11 +306,6 @@
         rotationY += (0 - rotationY) * 0.045;
         
 
-        const mx = Math.sin(rotationX);
-        const mcx = Math.cos(rotationX);
-        const my = Math.sin(rotationY);
-        const mcy = Math.cos(rotationY);
-
         const pointRotationX = rotationX * 0.72;
         const pointRotationY = rotationY * 0.82;
 
@@ -284,15 +314,11 @@
         const pry = Math.sin(pointRotationY);
         const pcy = Math.cos(pointRotationY);
 
-        let minZ = Infinity;
-        let maxZ = -Infinity;
-
         for (let i = 0; i < count; i++) {
             const t = theta[i];
             const r = radiusSeed[i];
-
-            const cosT = Math.cos(t);
-            const sinT = Math.sin(t);
+            const cosT = cosTheta[i];
+            const sinT = sinTheta[i];
 
             const superX =
                 Math.abs(cosT) ** (2 / n) * sign(cosT);
@@ -313,27 +339,15 @@
 
             /* First frame is a compact four-point star, then it dissolves
              * organically into the final cloud. */
-            const starRadius =
-                0.055 +
-                0.945 * Math.pow(Math.abs(Math.cos(2 * t)), 4.8);
-            const starRotation = -Math.PI / 8;
-            const starCos = Math.cos(starRotation);
-            const starSin = Math.sin(starRotation);
-            const rawStarX = Math.cos(t) * starRadius * 0.92;
-            const rawStarY = Math.sin(t) * starRadius * 0.92;
-            const starX = rawStarX * starCos - rawStarY * starSin;
-            const starY = rawStarX * starSin + rawStarY * starCos;
-
-            x = x * (1 - starBlend) + starX * starBlend;
-            y = y * (1 - starBlend) + starY * starBlend;
+            x = x * (1 - starBlend) + starXSeed[i] * starBlend;
+            y = y * (1 - starBlend) + starYSeed[i] * starBlend;
 
             /*
              * Gemini scatters points radially from a compact core.
              * The fifth-power distribution heavily favors the inner
              * surface and produces the characteristic dense dust.
              */
-            const radialScale =
-                1 + r * scatter - 0.04;
+            const radialScale = radialScaleSeed[i];
 
             x *= RADIUS * radialScale * introScale;
             y *= RADIUS * radialScale * introScale;
@@ -391,9 +405,6 @@
             positions[o] = x;
             positions[o + 1] = y;
             positions[o + 2] = z;
-
-            minZ = Math.min(minZ, z);
-            maxZ = Math.max(maxZ, z);
 
             /*
              * Depth controls point size exactly like the source.
@@ -479,8 +490,6 @@
              * Pointer/touch press shifts the whole field toward BABAEI jade.
              * The strength is eased every frame, so press/release never pops.
              */
-            const interactionColor = { r: 0.0, g: 1.0, b: 0.42 };
-            const interactionMix = interactionStrength * (0.45 + depth * 0.35);
             cr += (waveColor.r - cr) * waveMix;
             cg += (waveColor.g - cg) * waveMix;
             cb += (waveColor.b - cb) * waveMix;
