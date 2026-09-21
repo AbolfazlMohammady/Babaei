@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
         input.placeholder = "";
         let index = 0;
 
-        typingTimer = setInterval(() => {
+        typingTimer = window.setInterval(() => {
             input.placeholder = value.slice(0, index + 1);
             index += 1;
 
@@ -54,9 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const showToast = (message) => {
         if (!toast) return;
+
         toast.textContent = message;
         toast.classList.add("is-visible");
-        window.setTimeout(() => toast.classList.remove("is-visible"), 2600);
+
+        window.setTimeout(() => {
+            toast.classList.remove("is-visible");
+        }, 2600);
     };
 
     const renderButton = () => {
