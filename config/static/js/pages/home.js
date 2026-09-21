@@ -416,7 +416,7 @@
                 waveDistance
             );
 
-            const waveColor = colors[(waveColorIndex + 1) % colors.length];
+            const waveColor = colors[waveColorIndex];
             const waveMix = Math.max(0, waveBand) * (waveProgress >= 0 ? 1 : 0);
 
             /*
