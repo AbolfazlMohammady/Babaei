@@ -400,7 +400,7 @@
              * the whole cloud from the click/touch origin. */
             const waveElapsed = elapsed - waveStart;
             const waveProgress = waveElapsed > 0
-                ? Math.min(1.25, waveElapsed / 1150)
+                ? Math.min(1.25, waveElapsed / 1400)
                 : -1;
 
             const projectedX = x / (RADIUS * 1.55);
@@ -409,15 +409,16 @@
                 Math.pow(projectedX - waveOriginX, 2) +
                 Math.pow(projectedY - waveOriginY, 2)
             );
-            const waveRadius = waveProgress * 2.25;
+            const waveRadius = waveProgress * 2.75;
             const waveBand = smoothstep(
-                waveRadius + 0.30,
-                waveRadius - 0.30,
+                waveRadius + 0.20,
+                waveRadius - 0.20,
                 waveDistance
             );
 
             const waveColor = colors[waveColorIndex];
             const waveMix = Math.max(0, waveBand) * (waveProgress >= 0 ? 1 : 0);
+            const waveGlow = waveMix * (0.35 + depth * 0.65);
 
             /*
              * Keep BABAEI's field predominantly green while retaining
@@ -448,7 +449,10 @@
              */
             const brightness =
                 0.24 +
-                depth * 0.76;
+                depth * 0.76 +
+                waveGlow * 0.42;
+
+            sizes[i] *= 1 + waveGlow * 0.22;
 
             colorsBuffer[o] = cr * brightness;
             colorsBuffer[o + 1] = cg * brightness;
