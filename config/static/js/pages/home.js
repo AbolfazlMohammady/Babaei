@@ -57,8 +57,11 @@
     let targetRX = 0;
     let targetRY = 0;
     let interactionStrength = 0;
-    let colorShiftTarget = 0;
     let colorShift = 0;
+    let waveStart = -Infinity;
+    let waveOriginX = 0;
+    let waveOriginY = 0;
+    let waveColorIndex = 0;
     let rotationX = 0;
     let rotationY = 0;
     let rotationZ = 0;
@@ -259,7 +262,7 @@
          */
         rotationX += (0 - rotationX) * 0.045;
         rotationY += (0 - rotationY) * 0.045;
-        colorShift += (colorShiftTarget - colorShift) * 0.16;
+        
 
         const mx = Math.sin(rotationX);
         const mcx = Math.cos(rotationX);
@@ -393,6 +396,29 @@
             const c1 = colors[index];
             const c2 = colors[next];
 
+            /* Expanding color wave: the next palette color travels through
+             * the whole cloud from the click/touch origin. */
+            const waveElapsed = elapsed - waveStart;
+            const waveProgress = waveElapsed > 0
+                ? Math.min(1.25, waveElapsed / 1150)
+                : -1;
+
+            const projectedX = x / (RADIUS * 1.55);
+            const projectedY = y / (RADIUS * 1.55);
+            const waveDistance = Math.sqrt(
+                Math.pow(projectedX - waveOriginX, 2) +
+                Math.pow(projectedY - waveOriginY, 2)
+            );
+            const waveRadius = waveProgress * 2.25;
+            const waveBand = smoothstep(
+                waveRadius + 0.30,
+                waveRadius - 0.30,
+                waveDistance
+            );
+
+            const waveColor = colors[(waveColorIndex + 1) % colors.length];
+            const waveMix = Math.max(0, waveBand) * (waveProgress >= 0 ? 1 : 0);
+
             /*
              * Keep BABAEI's field predominantly green while retaining
              * the reference's color-changing behavior.
@@ -413,9 +439,9 @@
              */
             const interactionColor = { r: 0.0, g: 1.0, b: 0.42 };
             const interactionMix = interactionStrength * (0.45 + depth * 0.35);
-            cr += (interactionColor.r - cr) * interactionMix;
-            cg += (interactionColor.g - cg) * interactionMix;
-            cb += (interactionColor.b - cb) * interactionMix;
+            cr += (waveColor.r - cr) * waveMix;
+            cg += (waveColor.g - cg) * waveMix;
+            cb += (waveColor.b - cb) * waveMix;
 
             /*
              * Slightly darken the rear of the cloud.
@@ -486,15 +512,17 @@
     }
 
     /*
-     * Interaction is intentionally color-only.
-     * Mouse movement and dragging never control the particle position.
-     * The field keeps its own slow autonomous motion.
-     * Each press advances the entire field toward its next palette color.
+     * Click/touch only: the cloud keeps its own autonomous motion.
+     * Each press launches one color wave from the exact press location.
      */
     hero.addEventListener('pointerdown', (event) => {
         if (event.button !== undefined && event.button !== 0) return;
 
-        colorShiftTarget += 1;
+        const rect = hero.getBoundingClientRect();
+        waveOriginX = ((event.clientX - rect.left) / Math.max(1, rect.width) - 0.5) * 1.55;
+        waveOriginY = ((event.clientY - rect.top) / Math.max(1, rect.height) - 0.5) * 1.55;
+        waveStart = performance.now() - start;
+        waveColorIndex = (waveColorIndex + 1) % colors.length;
     }, { passive: true });
 
     const observer = new ResizeObserver(resize);
