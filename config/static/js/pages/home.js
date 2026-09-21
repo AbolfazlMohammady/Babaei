@@ -386,8 +386,8 @@
 
             sizes[i] =
                 sizeSeed[i] *
-                (0.52 + depth * 0.95) *
-                (0.72 + r * 0.45) *
+                (0.36 + depth * 0.66) *
+                (0.60 + r * 0.34) *
                 (0.58 + intro * 0.42);
 
             /*
@@ -460,7 +460,7 @@
                 depth * 0.76 +
                 waveGlow * 0.42;
 
-            sizes[i] *= 1 + waveGlow * 0.22;
+            sizes[i] *= 1 + waveGlow * 0.12;
 
             colorsBuffer[o] = cr * brightness;
             colorsBuffer[o + 1] = cg * brightness;
