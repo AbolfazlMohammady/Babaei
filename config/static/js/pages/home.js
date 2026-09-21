@@ -1,16 +1,170 @@
 (() => {
-const canvas=document.querySelector('[data-particle-field]'); if(!canvas)return;
-const ctx=canvas.getContext('2d',{alpha:true}); if(!ctx)return;
-const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const mobile=window.matchMedia('(max-width:700px)').matches;
-let w=0,h=0,dpr=1,particles=[],raf=0,start=performance.now();
-const palette=[[44,112,76],[68,145,91],[115,157,112],[171,183,139],[226,218,190]];
-const rnd=(a,b)=>a+Math.random()*(b-a);
-function make(){return{a:rnd(0,Math.PI*2),r:Math.pow(Math.random(),.72),z:rnd(.15,1),s:rnd(.00024,.00072),o:rnd(.65,1.45),d:rnd(-1,1),p:rnd(0,Math.PI*2),size:rnd(.55,1.75),alpha:rnd(.25,.9),co:rnd(0,palette.length-1)};}
-function resize(){const r=canvas.getBoundingClientRect();w=Math.max(1,r.width);h=Math.max(1,r.height);dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);const n=reduced?500:(mobile?850:1750);particles=Array.from({length:n},make);}
-function col(i,t){const pos=(i+t)%palette.length,a=Math.floor(pos),b=(a+1)%palette.length,m=pos-a,x=palette[a],y=palette[b];return[Math.round(x[0]+(y[0]-x[0])*m),Math.round(x[1]+(y[1]-x[1])*m),Math.round(x[2]+(y[2]-x[2])*m)];}
-function draw(now){const time=reduced?0:now-start;ctx.clearRect(0,0,w,h);const g=ctx.createRadialGradient(w*.5,h*.51,0,w*.5,h*.51,Math.max(w,h)*.55);g.addColorStop(0,'rgba(42,104,67,.15)');g.addColorStop(.34,'rgba(24,64,42,.07)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);const cx=w*.5,cy=h*.51,scale=Math.min(w,h),shift=(time*.000045)%palette.length;
-for(let i=0;i<particles.length;i++){const p=particles[i];if(!reduced){p.z-=p.s*.95*(1+p.r);if(p.z<.06){p.z=1;p.a=rnd(0,Math.PI*2);p.r=Math.pow(Math.random(),.72);}}const z=p.z,pulse=1+Math.sin(time*.0012+p.p)*.045,ring=p.r*(.22+z*.9)*pulse,tw=p.a+time*.00028*p.o+(1-z)*2.4+Math.sin(time*.00045+p.p)*.06, pinch=.52+Math.pow(Math.abs(Math.sin(tw)),.8)*.78,x=cx+Math.cos(tw)*ring*scale*pinch,y=cy+Math.sin(tw)*ring*scale*(.48+z*.26)+Math.sin(time*.0007+p.p)*p.d*7,dist=Math.hypot((x-cx)/scale,(y-cy)/scale),alpha=p.alpha*Math.min(1,dist*7.5)*Math.pow(z,.38);if(alpha<.015)continue;const rgb=col(p.co,shift+p.r*.8),size=p.size*(.55+z*1.65);ctx.fillStyle='rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+alpha+')';ctx.fillRect(x,y,size,size);if(i%23===0&&size>1.2){ctx.globalAlpha=alpha*.22;ctx.beginPath();ctx.arc(x,y,size*3.2,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}}
-if(!reduced)raf=requestAnimationFrame(draw);}
-const observer=new ResizeObserver(resize);observer.observe(canvas);resize();draw(performance.now());window.addEventListener('pagehide',()=>{cancelAnimationFrame(raf);observer.disconnect();},{once:true});
+    const canvas = document.querySelector('[data-particle-field]');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let particles = [];
+    let raf = 0;
+    let last = performance.now();
+
+    const palette = [
+        [242, 190, 72],
+        [190, 211, 90],
+        [42, 196, 108],
+        [46, 136, 214],
+        [120, 96, 225],
+        [242, 190, 72]
+    ];
+
+    const random = (min, max) => min + Math.random() * (max - min);
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+    function makeParticle() {
+        return {
+            u: Math.random(),
+            v: Math.random(),
+            seed: Math.random() * Math.PI * 2,
+            speed: random(.00008, .00022),
+            size: random(.55, 1.65),
+            alpha: random(.28, .92),
+            color: Math.random(),
+            drift: random(-1, 1)
+        };
+    }
+
+    function resize() {
+        const rect = canvas.getBoundingClientRect();
+        width = Math.max(1, rect.width);
+        height = Math.max(1, rect.height);
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        // Gemini-like density: many tiny particles, but still reasonable for mobile.
+        const count = width < 700 ? 1800 : 4300;
+        particles = Array.from({ length: count }, makeParticle);
+    }
+
+    function lerp(a, b, t) {
+        return a + (b - a) * t;
+    }
+
+    function paletteColor(t) {
+        const p = (t % 1 + 1) % 1 * (palette.length - 1);
+        const i = Math.floor(p);
+        const n = Math.min(i + 1, palette.length - 1);
+        const f = p - i;
+        return [
+            Math.round(lerp(palette[i][0], palette[n][0], f)),
+            Math.round(lerp(palette[i][1], palette[n][1], f)),
+            Math.round(lerp(palette[i][2], palette[n][2], f))
+        ];
+    }
+
+    function drawParticle(p, time) {
+        /*
+         * The reference is not a normal circular particle cloud.
+         * It behaves like a constantly breathing stream:
+         * - a dark void stays in the center
+         * - particles concentrate around the void's edges
+         * - the whole mass bends from a narrow A/arch into a wide wave
+         * - color travels through the stream instead of changing all at once
+         */
+        const phase = time * p.speed + p.seed;
+        const cycle = time * 0.000075;
+        const morph = (Math.sin(cycle * Math.PI * 2) + 1) * .5;
+
+        const side = p.u < .5 ? -1 : 1;
+        const edge = Math.abs(p.u - .5) * 2;
+        const spread = lerp(.34, 1.08, morph);
+
+        // Horizontal stream coordinate.
+        let x = (p.u - .5) * width * spread;
+
+        // Narrow near the top, wider toward the sides: an A/portal silhouette.
+        const vertical = p.v;
+        const centerWidth = .08 + vertical * .46;
+        const portalDistance = Math.abs(x) / Math.max(1, width);
+        const arch = centerWidth + .07 * Math.sin(vertical * Math.PI);
+
+        // Pull particles toward two luminous rails and leave a clean central void.
+        const targetX = side * (width * (.08 + vertical * .28));
+        const railPull = Math.pow(1 - clamp(Math.abs(x - targetX) / (width * .42), 0, 1), 1.6);
+        x = lerp(x, targetX, railPull * .68);
+
+        // During the wide phase, let the stream fan horizontally.
+        x += Math.sin(vertical * 8 + phase) * width * .035 * spread;
+
+        // Make the top converge and the lower section breathe outward.
+        const y = height * (.14 + vertical * .78)
+            + Math.sin(phase * .7 + vertical * 13) * height * .025;
+
+        // Keep the central opening visibly empty.
+        const voidRadius = height * (.055 + vertical * .11);
+        const distFromCenter = Math.hypot(x, y - height * .50);
+        const voidFade = clamp((distFromCenter - voidRadius) / (height * .16), 0, 1);
+
+        // A few particles escape far away, like the reference's scattered field.
+        const scatter = Math.pow(p.v, 2.7) * width * .28;
+        x += Math.sin(p.seed * 3.1 + time * p.speed * 3000) * scatter * p.drift;
+
+        const shimmer = .78 + Math.sin(time * .002 + p.seed) * .22;
+        const alpha = p.alpha * voidFade * shimmer;
+
+        if (alpha < .035) return;
+
+        // Color flows through the particle field.
+        const color = paletteColor(p.color + cycle * .7 + p.v * .34);
+        const size = p.size * (0.75 + edge * .7);
+
+        ctx.fillStyle = 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + alpha + ')';
+        ctx.fillRect(x + width * .5, y, size, size);
+    }
+
+    function draw(time) {
+        const delta = Math.min(40, time - last);
+        last = time;
+
+        ctx.clearRect(0, 0, width, height);
+
+        // Deep black/green atmosphere.
+        const glow = ctx.createRadialGradient(
+            width * .5, height * .5, 0,
+            width * .5, height * .5, height * .72
+        );
+        glow.addColorStop(0, 'rgba(26, 75, 45, .22)');
+        glow.addColorStop(.34, 'rgba(14, 43, 28, .10)');
+        glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, width, height);
+
+        for (let i = 0; i < particles.length; i++) {
+            drawParticle(particles[i], reduceMotion ? 0 : time);
+        }
+
+        if (!reduceMotion) {
+            raf = requestAnimationFrame(draw);
+        }
+    }
+
+    const observer = new ResizeObserver(resize);
+    observer.observe(canvas);
+
+    resize();
+    draw(performance.now());
+
+    window.addEventListener('pagehide', () => {
+        cancelAnimationFrame(raf);
+        observer.disconnect();
+    }, { once: true });
 })();
