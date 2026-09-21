@@ -30,8 +30,8 @@
     if (!gl) gl = canvas.getContext('experimental-webgl');
     if (!gl) return;
 
-    const PARTICLES_DESKTOP = 60000;
-    const PARTICLES_MOBILE = 26000;
+    const PARTICLES_DESKTOP = 40000;
+    const PARTICLES_MOBILE = 18000;
     const RADIUS = 92;
     const CAMERA_Z = 240;
     const FOV = 75;
@@ -488,7 +488,18 @@
     observer.observe(canvas);
 
     resize();
-    render(performance.now());
+
+    /*
+     * Give the browser a couple of paint opportunities after refresh before
+     * the first heavy 40k-particle geometry pass. This prevents the initial
+     * JavaScript/WebGL upload from freezing the whole page while it is
+     * becoming visible. After that, the animation runs normally.
+     */
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            render(performance.now());
+        });
+    });
 
     window.addEventListener('pagehide', () => {
         cancelAnimationFrame(raf);
