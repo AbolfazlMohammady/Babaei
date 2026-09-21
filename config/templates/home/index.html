@@ -2,11 +2,10 @@
 {% load static %}
 
 {% block title %}BABAEI | Wear Your Story{% endblock %}
-
 {% block meta_description %}BABAEI — Wear Your Story.{% endblock %}
-
 {% block body_class %}home-page{% endblock %}
 
+{# The home landing is self-contained so the storefront/admin visual systems do not load here. #}
 {% block site_components_css %}{% endblock %}
 {% block site_optional_css %}{% endblock %}
 
@@ -21,7 +20,7 @@
     </div>
 
     <nav class="home-nav" aria-label="Main navigation">
-        <div class="home-nav__inner">
+        <div class="home-nav__inner liquid-glass">
             <div class="home-nav__left">
                 <a href="/" class="home-brand" aria-label="BABAEI home">
                     <svg class="home-brand__icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -47,7 +46,7 @@
 
     <section class="home-hero" aria-labelledby="home-title">
         <div class="home-hero__content">
-            <div>
+            <div class="home-hero__copy">
                 <p class="home-tagline">WEAR YOUR STORY</p>
                 <h1 id="home-title" class="home-title">
                     A new way to think and create
