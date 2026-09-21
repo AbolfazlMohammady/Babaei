@@ -7,7 +7,7 @@
     if (!ctx) return;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const mobile = () => window.innerWidth <= 700;
+    const isMobile = () => window.innerWidth <= 700;
 
     let width = 1;
     let height = 1;
@@ -22,45 +22,42 @@
     let particles = [];
 
     const palette = [
-        [5, 52, 32],
-        [7, 83, 48],
-        [9, 118, 64],
-        [18, 157, 82],
-        [54, 203, 111],
-        [132, 242, 170]
+        [3, 38, 24],
+        [4, 66, 39],
+        [6, 96, 53],
+        [9, 132, 69],
+        [20, 174, 91],
+        [62, 214, 123],
+        [145, 245, 176]
     ];
 
-    const rand = (min, max) => min + Math.random() * (max - min);
+    const rand = (a, b) => a + Math.random() * (b - a);
 
     /*
-     * The reference hero is not a pair of vertical particle columns.
-     * It is a large flowing particle volume with four curved arms:
+     * Gemini-like composition:
+     * This is intentionally a PARTICLE VOLUME, not four thin curves.
      *
-     *             \       //
-     *              \     //
-     *       --------\   //--------
-     *                 VOID
-     *       --------//   \\--------
-     *              //     \\
-     *             //       \\
-     *
-     * We generate that shape mathematically so it remains responsive
-     * without shipping a huge video/image asset.
+     * Particles originate around the center and flow toward the four
+     * corners. The further they travel, the wider and more atmospheric
+     * the cloud becomes. This makes the scene feel like a luminous fabric
+     * or smoke volume coming toward the viewer instead of a geometric X.
      */
     function makeParticle() {
-        const branch = Math.floor(Math.random() * 4);
-        const t = Math.random();
-        const depth = Math.pow(Math.random(), 1.7);
-        const spread = Math.pow(Math.random(), 1.35);
+        const arm = Math.floor(Math.random() * 4);
+        const t = Math.pow(Math.random(), 0.72);
+        const cloud = Math.pow(Math.random(), 1.05);
+
         return {
-            branch,
+            arm,
             t,
-            depth,
-            spread,
+            cloud,
+            depth: Math.random(),
             phase: rand(0, Math.PI * 2),
-            speed: rand(0.000010, 0.000032),
-            size: rand(0.24, 1.15) * (depth > 0.94 ? 1.45 : 1),
-            alpha: rand(0.18, 0.92)
+            speed: rand(0.000007, 0.000026),
+            size: rand(0.22, 1.25),
+            alpha: rand(0.16, 0.82),
+            // Gives a small number of particles photographic scale.
+            large: Math.random() > 0.985
         };
     }
 
@@ -68,14 +65,14 @@
         const rect = canvas.getBoundingClientRect();
         width = Math.max(1, rect.width);
         height = Math.max(1, rect.height);
-        dpr = Math.min(window.devicePixelRatio || 1, 1.6);
+        dpr = Math.min(window.devicePixelRatio || 1, 1.55);
 
         canvas.width = Math.round(width * dpr);
         canvas.height = Math.round(height * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         particles = Array.from(
-            { length: mobile() ? 6500 : 14500 },
+            { length: isMobile() ? 7200 : 17000 },
             makeParticle
         );
     }
@@ -100,152 +97,141 @@
         time += delta;
 
         if (!reduced) {
-            pointerX += (targetX - pointerX) * 0.028;
-            pointerY += (targetY - pointerY) * 0.028;
+            pointerX += (targetX - pointerX) * 0.025;
+            pointerY += (targetY - pointerY) * 0.025;
         }
 
         ctx.clearRect(0, 0, width, height);
 
         const unit = Math.min(width, height);
-        const cx = width * 0.5 + pointerX * width * 0.012;
-        const cy = height * 0.5 + pointerY * height * 0.012;
+        const cx = width * 0.5 + pointerX * width * 0.018;
+        const cy = height * 0.5 + pointerY * height * 0.014;
 
-        // Deep black-green base, with a very subtle luminous center.
-        const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, unit * 0.82);
-        bg.addColorStop(0, 'rgba(7, 35, 23, .34)');
-        bg.addColorStop(.34, 'rgba(2, 17, 10, .18)');
-        bg.addColorStop(.72, 'rgba(1, 8, 5, .08)');
+        const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, unit * 0.9);
+        bg.addColorStop(0, 'rgba(7, 39, 25, .38)');
+        bg.addColorStop(.28, 'rgba(3, 22, 14, .22)');
+        bg.addColorStop(.68, 'rgba(1, 9, 5, .10)');
         bg.addColorStop(1, 'rgba(0, 2, 1, 1)');
         ctx.fillStyle = bg;
         ctx.fillRect(0, 0, width, height);
 
-        /*
-         * Four-arm flow:
-         * Each branch starts near the center and travels toward a corner.
-         * A sinusoidal curve gives the wide S-shaped ribbons visible
-         * in the reference image.
-         */
         for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
 
             let t = (p.t + time * p.speed) % 1;
-            if (p.branch >= 2) t = (p.t - time * p.speed * 0.72 + 1) % 1;
 
-            // Non-linear distribution: very dense around the main stream,
-            // sparse at its outer atmosphere.
-            const radial = Math.pow(t, 0.72);
-            const centerPull = 1 - radial;
-
-            let x;
-            let y;
-
-            const side = p.branch % 2 === 0 ? -1 : 1;
-            const vertical = p.branch < 2 ? -1 : 1;
+            // Four directions: top-left, top-right, bottom-left, bottom-right.
+            const sx = p.arm % 2 === 0 ? -1 : 1;
+            const sy = p.arm < 2 ? -1 : 1;
 
             /*
-             * Main trajectory. At the center it begins around x=0 and
-             * quickly bends toward the outside as it travels vertically.
+             * Radius grows almost to the viewport edges. Unlike the
+             * previous version, the stream has no single visible spine.
              */
-            const verticalDistance = 0.04 + radial * 0.58;
-            const curve =
-                Math.sin(radial * Math.PI * 1.18 + p.phase * 0.035) *
-                (0.055 + radial * 0.15);
+            const radius = (0.04 + t * 0.84) * unit;
 
-            const sweep =
-                Math.sin(radial * Math.PI * 2.15 + p.phase) *
-                (0.014 + radial * 0.038);
+            /*
+             * A broad Gaussian-ish cloud around each arm.
+             * The farther from the center, the wider it becomes.
+             * A small core remains denser, creating the layered look
+             * visible in the reference.
+             */
+            const broadWidth =
+                (0.012 + Math.pow(t, 0.78) * 0.27) * unit;
 
-            // Wide outer cloud + thin bright ribbon.
-            const ribbonWidth =
-                (0.004 + p.spread * 0.105) *
-                (0.22 + radial * 0.95);
+            const u = (p.cloud - 0.5) * broadWidth;
 
-            // Pull particles toward a curved stream center.
-            const streamX =
-                side * (0.015 + verticalDistance * 0.82 + curve);
+            // Tangential direction around the diagonal flow.
+            const diagonal = Math.SQRT1_2;
+            let x = cx + sx * radius * diagonal;
+            let y = cy + sy * radius * diagonal;
 
-            const outer =
-                (p.spread - 0.5) * ribbonWidth +
-                sweep +
-                Math.sin(time * 0.00017 + p.phase) * 0.008;
+            x += u * diagonal;
+            y -= u * diagonal;
 
-            x = cx + (streamX + outer) * unit;
+            /*
+             * Large-scale waves make the cloud bend organically.
+             * Multiple frequencies avoid the obvious mathematical curve
+             * from the previous implementation.
+             */
+            const wave =
+                Math.sin(t * 7.0 + p.phase + time * 0.00010) *
+                    (0.018 + t * 0.065) * unit +
+                Math.sin(t * 16.0 - p.phase * 0.7 + time * 0.00007) *
+                    (0.006 + t * 0.026) * unit;
 
-            // Branches mirror around the center.
-            y = cy + vertical * (
-                (0.015 + radial * 0.64) * unit
+            const crossWave =
+                Math.cos(t * 11.0 + p.phase * 1.4 - time * 0.00008) *
+                (0.004 + t * 0.024) * unit;
+
+            x += sx * wave * 0.72;
+            y += sy * wave * 0.72;
+            x += crossWave;
+            y -= crossWave;
+
+            // Deep, slow parallax following the cursor.
+            x += pointerX * (8 + p.depth * 34);
+            y += pointerY * (6 + p.depth * 28);
+
+            /*
+             * The reference has a dark breathing hole around the text,
+             * but the particle field still exists around it. We only
+             * reduce opacity here; we do NOT cut a hard geometric hole.
+             */
+            const dx = (x - cx) / unit;
+            const dy = (y - cy) / unit;
+            const centerDistance = Math.sqrt(
+                Math.pow(dx / 0.29, 2) +
+                Math.pow(dy / 0.22, 2)
             );
 
-            // Give the upper and lower arms their broad horizontal wings.
-            // The wing expands strongly near the outside of the viewport.
-            const wing = Math.pow(radial, 1.65) * 0.28;
-            x += side * wing * unit;
+            const centerFade =
+                centerDistance < 1
+                    ? 0.10 + centerDistance * 0.90
+                    : 1;
 
-            // Organic turbulent motion, strongest in the outer cloud.
-            x += Math.sin(t * 23 + p.phase + time * 0.00016) *
-                (0.003 + p.depth * 0.018) * unit;
+            // Keep the extreme viewport corners alive but atmospheric.
+            const edgeDistance = Math.min(
+                x / width,
+                1 - x / width,
+                y / height,
+                1 - y / height
+            );
+            const edgeFade = Math.max(0.30, Math.min(1, edgeDistance * 6));
 
-            y += Math.cos(t * 17 + p.phase - time * 0.00013) *
-                (0.002 + p.depth * 0.014) * unit;
-
-            // Mouse parallax.
-            x += pointerX * (5 + p.depth * 28);
-            y += pointerY * (4 + p.depth * 22);
-
-            /*
-             * Create the clean central negative space.
-             * Particles near the center of the screen are progressively
-             * removed, leaving the same dark breathing room behind text.
-             */
-            const nx = Math.abs((x - cx) / unit);
-            const ny = Math.abs((y - cy) / unit);
-
-            const centerVoid =
-                Math.max(0, 1 - Math.sqrt(
-                    Math.pow(nx / 0.29, 2) +
-                    Math.pow(ny / 0.19, 2)
-                ));
-
-            const voidFade = 1 - Math.pow(centerVoid, 2.15) * 0.985;
-
-            // Fade the extreme edges so the field feels atmospheric.
-            const edgeX = Math.min(x / width, 1 - x / width);
-            const edgeY = Math.min(y / height, 1 - y / height);
-            const edgeFade = Math.min(1, Math.max(.18, Math.min(edgeX, edgeY) * 8));
+            const depthFade = 0.34 + p.depth * 0.66;
 
             const alpha =
                 p.alpha *
-                (.34 + p.depth * .66) *
-                voidFade *
-                (.58 + edgeFade * .42);
+                depthFade *
+                centerFade *
+                (0.72 + edgeFade * 0.28);
 
             if (alpha < 0.012) continue;
 
             const rgb = colorAt(
-                p.depth * .8 +
-                radial * .22 +
-                time * 0.000006
+                p.depth * 0.72 +
+                t * 0.26 +
+                time * 0.000004
             );
 
-            const size = p.size * (
-                0.68 +
-                p.depth * 1.65 +
-                radial * .32
-            );
+            const size =
+                p.size *
+                (0.65 + p.depth * 1.35) *
+                (p.large ? 2.6 : 1);
 
             ctx.fillStyle =
                 `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
 
-            ctx.fillRect(x, y, size, size);
-
-            // Rare bright particles create the photographic sparkle.
-            if (p.depth > .985 && i % 43 === 0) {
-                ctx.globalAlpha = alpha * .22;
+            if (p.large) {
+                ctx.globalAlpha = alpha * 0.22;
                 ctx.beginPath();
-                ctx.arc(x, y, size * 3.4, 0, Math.PI * 2);
+                ctx.arc(x, y, size * 3.6, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.globalAlpha = 1;
             }
+
+            ctx.fillRect(x, y, size, size);
         }
 
         if (!reduced) {
