@@ -33,30 +33,8 @@
 
     const rand = (a, b) => a + Math.random() * (b - a);
 
-    /*
-     * The reference is a wide, volumetric particle surface.
-     * It is NOT four diagonal lines.
-     *
-     * We build two opposing flowing sheets:
-     *
-     *             dense
-     *              ||
-     *          \       //
-     *           \     //
-     *            \   //
-     *             \ //
-     *              VOID
-     *             // \\
-     *            //   \\
-     *           //     \\
-     *          //       \\
-     *              ||
-     *
-     * Each sheet is many particles around a curved centerline,
-     * with large turbulent width and a second atmospheric layer.
-     */
     function makeParticle() {
-        const sheet = Math.random() < 0.5 ? -1 : 1; // top / bottom
+        const sheet = Math.random() < 0.5 ? -1 : 1;
         const t = Math.random();
         const layer = Math.random();
 
@@ -69,7 +47,10 @@
             speed: rand(0.000008, 0.000030),
             size: rand(0.22, 1.05),
             alpha: rand(0.14, 0.82),
-            atmosphere: Math.random() > 0.93
+            side: Math.random() < 0.5 ? -1 : 1,
+            atmosphere: Math.random() > 0.93,
+            atmosphereX: rand(-0.10, 0.10),
+            atmosphereY: rand(-0.07, 0.07)
         };
     }
 
@@ -129,95 +110,48 @@
 
         for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
+            const t = (p.t + time * p.speed * (p.atmosphere ? 0.55 : 1)) % 1;
 
-            let t = (p.t + time * p.speed * (p.atmosphere ? 0.55 : 1)) % 1;
-
-            /*
-             * A full arch from top/bottom center -> wide sides -> center.
-             * sin(pi*t) gives exactly the broad "coming out of the screen"
-             * silhouette instead of the unwanted diagonal X.
-             */
             const arch = Math.sin(Math.PI * t);
             const archEase = Math.pow(arch, 0.72);
 
-            // Vertical position of the upper/lower sheet.
-            const sheetY = p.sheet * (
-                0.62 - t * 1.24
-            );
+            const sheetY = p.sheet * (0.62 - t * 1.24);
 
-            /*
-             * Horizontal spread is widest around the middle of the
-             * particle travel and narrow near the top/bottom center.
-             */
-            const spread =
-                0.025 +
-                archEase * 0.47;
+            const spread = 0.025 + archEase * 0.47;
 
-            /*
-             * Very wide volumetric thickness. Particles are not glued
-             * to the centerline.
-             */
             const thickness =
                 (0.012 + Math.pow(p.layer, 1.18) * 0.24) *
                 (0.45 + archEase * 1.05);
 
-            const side = Math.random() < 0.5 ? -1 : 1;
             const lateral = (p.layer - 0.5) * thickness;
 
-            let x = cx + (
-                side * spread +
-                lateral
-            ) * unit;
-
+            let x = cx + (p.side * spread + lateral) * unit;
             let y = cy + sheetY * unit;
 
-            /*
-             * Large organic waves bend the entire sheet.
-             * The important part: the wave affects the broad volume,
-             * not a single line.
-             */
             const slowWave =
-                Math.sin(
-                    t * 5.3 +
-                    p.phase +
-                    time * 0.00008
-                ) * (0.025 + archEase * 0.075);
+                Math.sin(t * 5.3 + p.phase + time * 0.00008) *
+                (0.025 + archEase * 0.075);
 
             const fineWave =
-                Math.sin(
-                    t * 19.0 -
-                    p.phase * 0.65 +
-                    time * 0.00015
-                ) * (0.004 + archEase * 0.024);
+                Math.sin(t * 19.0 - p.phase * 0.65 + time * 0.00015) *
+                (0.004 + archEase * 0.024);
 
             const crossWave =
-                Math.cos(
-                    t * 11.0 +
-                    p.phase * 1.7 -
-                    time * 0.00010
-                ) * (0.006 + archEase * 0.035);
+                Math.cos(t * 11.0 + p.phase * 1.7 - time * 0.00010) *
+                (0.006 + archEase * 0.035);
 
             x += slowWave * unit;
             x += crossWave * unit;
             y += fineWave * unit;
 
-            /*
-             * Atmospheric layer: spreads further outside the main
-             * surface, making the field occupy the whole viewport.
-             */
             if (p.atmosphere) {
-                x += rand(-0.10, 0.10) * unit * archEase;
-                y += rand(-0.07, 0.07) * unit * archEase;
+                x += p.atmosphereX * unit * archEase;
+                y += p.atmosphereY * unit * archEase;
             }
 
-            // Gentle cursor parallax, not cursor-driven particle teleporting.
             x += pointerX * (5 + p.depth * 24);
             y += pointerY * (4 + p.depth * 18);
 
-            /*
-             * Keep a soft dark breathing zone behind the typography.
-             * This is a gradient fade, not a hard geometric cutout.
-             */
             const dx = (x - cx) / unit;
             const dy = (y - cy) / unit;
             const centerRadius = Math.sqrt(
@@ -225,12 +159,10 @@
                 Math.pow(dy / 0.18, 2)
             );
 
-            const centerFade =
-                centerRadius < 1
-                    ? 0.12 + Math.pow(centerRadius, 1.45) * 0.88
-                    : 1;
+            const centerFade = centerRadius < 1
+                ? 0.12 + Math.pow(centerRadius, 1.45) * 0.88
+                : 1;
 
-            // Fade only at the extreme viewport edges.
             const edgeX = Math.min(x / width, 1 - x / width);
             const edgeY = Math.min(y / height, 1 - y / height);
             const edgeFade = Math.max(
@@ -257,15 +189,9 @@
                 (0.60 + p.depth * 1.40) *
                 (0.72 + archEase * 0.55);
 
-            ctx.fillStyle =
-                `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
-
+            ctx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
             ctx.fillRect(x, y, size, size);
 
-            /*
-             * Tiny soft luminous particles. No giant green bubbles:
-             * the reference is made of dust-like points.
-             */
             if (p.depth > 0.992 && i % 59 === 0) {
                 ctx.globalAlpha = alpha * 0.18;
                 ctx.beginPath();
