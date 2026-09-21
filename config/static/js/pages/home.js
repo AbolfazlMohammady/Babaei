@@ -1,165 +1,151 @@
 (() => {
     const canvas = document.querySelector('[data-particle-field]');
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let width = 0;
-    let height = 0;
-    let dpr = 1;
-    let particles = [];
-    let raf = 0;
-    let last = performance.now();
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let w = 0, h = 0, dpr = 1, particles = [], raf = 0;
+    const start = performance.now();
 
-    const palette = [
-        [242, 190, 72],
-        [190, 211, 90],
-        [42, 196, 108],
-        [46, 136, 214],
-        [120, 96, 225],
-        [242, 190, 72]
+    const colors = [
+        [255, 211, 55],   // yellow
+        [71, 211, 103],   // green
+        [65, 177, 255],   // blue
+        [133, 92, 255],   // violet
+        [255, 211, 55]
     ];
 
-    const random = (min, max) => min + Math.random() * (max - min);
-    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+    const rnd = (a, b) => a + Math.random() * (b - a);
 
-    function makeParticle() {
+    function particle() {
         return {
-            u: Math.random(),
-            v: Math.random(),
+            t: Math.random(),
+            side: Math.random() < .5 ? -1 : 1,
+            spread: Math.pow(Math.random(), 1.55),
             seed: Math.random() * Math.PI * 2,
-            speed: random(.00008, .00022),
-            size: random(.55, 1.65),
-            alpha: random(.28, .92),
-            color: Math.random(),
-            drift: random(-1, 1)
+            speed: rnd(.000035, .00012),
+            size: rnd(.45, 1.55),
+            alpha: rnd(.3, .95),
+            scatter: Math.random() < .13
         };
     }
 
     function resize() {
-        const rect = canvas.getBoundingClientRect();
-        width = Math.max(1, rect.width);
-        height = Math.max(1, rect.height);
+        const r = canvas.getBoundingClientRect();
+        w = Math.max(1, r.width);
+        h = Math.max(1, r.height);
         dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-        canvas.width = Math.floor(width * dpr);
-        canvas.height = Math.floor(height * dpr);
-        canvas.style.width = width + 'px';
-        canvas.style.height = height + 'px';
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        // Gemini-like density: many tiny particles, but still reasonable for mobile.
-        const count = width < 700 ? 1800 : 4300;
-        particles = Array.from({ length: count }, makeParticle);
+        const count = w < 700 ? 2400 : 6200;
+        particles = Array.from({ length: count }, particle);
     }
 
-    function lerp(a, b, t) {
-        return a + (b - a) * t;
-    }
-
-    function paletteColor(t) {
-        const p = (t % 1 + 1) % 1 * (palette.length - 1);
-        const i = Math.floor(p);
-        const n = Math.min(i + 1, palette.length - 1);
-        const f = p - i;
+    function colorAt(t) {
+        const x = ((t % 1) + 1) % 1 * (colors.length - 1);
+        const i = Math.floor(x);
+        const f = x - i;
+        const a = colors[i], b = colors[i + 1];
         return [
-            Math.round(lerp(palette[i][0], palette[n][0], f)),
-            Math.round(lerp(palette[i][1], palette[n][1], f)),
-            Math.round(lerp(palette[i][2], palette[n][2], f))
+            Math.round(a[0] + (b[0] - a[0]) * f),
+            Math.round(a[1] + (b[1] - a[1]) * f),
+            Math.round(a[2] + (b[2] - a[2]) * f)
         ];
     }
 
-    function drawParticle(p, time) {
-        /*
-         * The reference is not a normal circular particle cloud.
-         * It behaves like a constantly breathing stream:
-         * - a dark void stays in the center
-         * - particles concentrate around the void's edges
-         * - the whole mass bends from a narrow A/arch into a wide wave
-         * - color travels through the stream instead of changing all at once
-         */
-        const phase = time * p.speed + p.seed;
-        const cycle = time * 0.000075;
-        const morph = (Math.sin(cycle * Math.PI * 2) + 1) * .5;
+    function draw(now) {
+        const time = reduced ? 0 : now - start;
+        ctx.clearRect(0, 0, w, h);
 
-        const side = p.u < .5 ? -1 : 1;
-        const edge = Math.abs(p.u - .5) * 2;
-        const spread = lerp(.34, 1.08, morph);
-
-        // Horizontal stream coordinate.
-        let x = (p.u - .5) * width * spread;
-
-        // Narrow near the top, wider toward the sides: an A/portal silhouette.
-        const vertical = p.v;
-        const centerWidth = .08 + vertical * .46;
-        const portalDistance = Math.abs(x) / Math.max(1, width);
-        const arch = centerWidth + .07 * Math.sin(vertical * Math.PI);
-
-        // Pull particles toward two luminous rails and leave a clean central void.
-        const targetX = side * (width * (.08 + vertical * .28));
-        const railPull = Math.pow(1 - clamp(Math.abs(x - targetX) / (width * .42), 0, 1), 1.6);
-        x = lerp(x, targetX, railPull * .68);
-
-        // During the wide phase, let the stream fan horizontally.
-        x += Math.sin(vertical * 8 + phase) * width * .035 * spread;
-
-        // Make the top converge and the lower section breathe outward.
-        const y = height * (.14 + vertical * .78)
-            + Math.sin(phase * .7 + vertical * 13) * height * .025;
-
-        // Keep the central opening visibly empty.
-        const voidRadius = height * (.055 + vertical * .11);
-        const distFromCenter = Math.hypot(x, y - height * .50);
-        const voidFade = clamp((distFromCenter - voidRadius) / (height * .16), 0, 1);
-
-        // A few particles escape far away, like the reference's scattered field.
-        const scatter = Math.pow(p.v, 2.7) * width * .28;
-        x += Math.sin(p.seed * 3.1 + time * p.speed * 3000) * scatter * p.drift;
-
-        const shimmer = .78 + Math.sin(time * .002 + p.seed) * .22;
-        const alpha = p.alpha * voidFade * shimmer;
-
-        if (alpha < .035) return;
-
-        // Color flows through the particle field.
-        const color = paletteColor(p.color + cycle * .7 + p.v * .34);
-        const size = p.size * (0.75 + edge * .7);
-
-        ctx.fillStyle = 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + alpha + ')';
-        ctx.fillRect(x + width * .5, y, size, size);
-    }
-
-    function draw(time) {
-        const delta = Math.min(40, time - last);
-        last = time;
-
-        ctx.clearRect(0, 0, width, height);
-
-        // Deep black/green atmosphere.
-        const glow = ctx.createRadialGradient(
-            width * .5, height * .5, 0,
-            width * .5, height * .5, height * .72
-        );
-        glow.addColorStop(0, 'rgba(26, 75, 45, .22)');
-        glow.addColorStop(.34, 'rgba(14, 43, 28, .10)');
-        glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        // Very subtle atmosphere; the reference stays essentially black.
+        const glow = ctx.createRadialGradient(w * .5, h * .5, 0, w * .5, h * .5, h * .62);
+        glow.addColorStop(0, 'rgba(30,70,42,.08)');
+        glow.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = glow;
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, w, h);
+
+        const cx = w * .5;
+        const cy = h * .5;
+        const scale = Math.min(w, h);
+        const cycle = time * .000035;
+        const colorFlow = time * .000055;
 
         for (let i = 0; i < particles.length; i++) {
-            drawParticle(particles[i], reduceMotion ? 0 : time);
+            const p = particles[i];
+
+            // Continuous movement along the vertical flow.
+            let v = (p.t + time * p.speed) % 1;
+            const yNorm = v * 2 - 1;
+
+            /*
+             * Core shape taken from the reference:
+             * narrow vertical column at top/bottom,
+             * opening dramatically around the middle,
+             * leaving a clean black central void.
+             */
+            const middle = 1 - Math.abs(yNorm);
+            const arm = Math.pow(middle, .82);
+
+            // Width of each luminous arm.
+            const centerLine = .025 + arm * .31;
+            const thickness = (.006 + .055 * p.spread) * (0.72 + arm);
+
+            let xNorm = p.side * (centerLine + (p.spread - .5) * thickness);
+
+            // Make the stream breathe and rotate very slightly.
+            xNorm += Math.sin(time * .00042 + p.seed + v * 8) * .012;
+            xNorm += Math.sin(time * .00016 + p.seed * 2) * .018 * arm;
+
+            // Top/bottom columns are dense; outer sides are more dispersed.
+            const density = .38 + .62 * Math.pow(1 - p.spread, 1.5);
+            const scatter = p.scatter
+                ? (Math.sin(p.seed + time * p.speed * 9000) * .22 * arm)
+                : 0;
+
+            xNorm += scatter;
+
+            const x = cx + xNorm * scale;
+            const y = h * (.09 + v * .82)
+                + Math.sin(time * .00055 + p.seed) * h * .012;
+
+            // Empty central hole: remove particles close to the vertical center.
+            const holeWidth = .045 + arm * .13;
+            const distanceToVoid = Math.abs(xNorm);
+            const holeFade = distanceToVoid < holeWidth
+                ? Math.pow(distanceToVoid / holeWidth, 2.2)
+                : 1;
+
+            // Fade the outermost particles, while keeping a sparse halo.
+            const edgeFade = .42 + .58 * Math.pow(1 - p.spread, .55);
+            const alpha = p.alpha * holeFade * edgeFade * density;
+
+            if (alpha < .018) continue;
+
+            const rgb = colorAt(p.seed * .08 + colorFlow + v * .36);
+            const size = p.size * (.72 + (1 - p.spread) * 1.35);
+
+            ctx.fillStyle =
+                'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',' + alpha + ')';
+            ctx.fillRect(x, y, size, size);
+
+            // Rare bright particles create the granular sparkle visible in the reference.
+            if (i % 41 === 0 && size > .9) {
+                ctx.globalAlpha = alpha * .25;
+                ctx.beginPath();
+                ctx.arc(x, y, size * 2.8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
         }
 
-        if (!reduceMotion) {
-            raf = requestAnimationFrame(draw);
-        }
+        if (!reduced) raf = requestAnimationFrame(draw);
     }
 
     const observer = new ResizeObserver(resize);
     observer.observe(canvas);
-
     resize();
     draw(performance.now());
 
