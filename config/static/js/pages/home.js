@@ -119,7 +119,7 @@
 
         for (let i = 0; i < count; i++) {
             theta[i] = Math.random() * Math.PI * 2;
-            radiusSeed[i] = Math.pow(Math.random(), 5);
+            radiusSeed[i] = Math.pow(Math.random(), 3.35);
             zSeed[i] =
                 Math.random() +
                 Math.random() +
@@ -428,7 +428,7 @@
              * Green -> blue, yellow -> green, red -> yellow, blue -> red.
              */
             const outerColor = colors[(index + 3) % colors.length];
-            const outerMix = smoothstep(0.38, 0.92, r);
+            const outerMix = smoothstep(0.28, 0.88, r);
             let baseR = c1.r + (c2.r - c1.r) * mix;
             let baseG = c1.g + (c2.g - c1.g) * mix;
             let baseB = c1.b + (c2.b - c1.b) * mix;
