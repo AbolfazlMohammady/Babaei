@@ -170,20 +170,23 @@
     align-items: center;
     justify-content: center;
     gap: 18px;
-    min-width: 190px;
-    height: 54px;
+    min-width: 176px;
+    height: 50px;
     margin-top: 38px;
-    padding: 0 8px 0 22px;
-    border: 1px solid rgba(244,240,231,.28);
+    padding: 0 24px;
+    border: 1px solid rgba(244,240,231,.32);
     border-radius: 999px;
-    background: rgba(244,240,231,.94);
-    color: #102219 !important;
-    font-size: 14px;
-    font-weight: 600;
+    background: rgba(2,8,6,.42);
+    color: #f4f0e7 !important;
+    font-size: 13px;
+    font-weight: 500;
     line-height: 1;
+    letter-spacing: .04em;
     text-decoration: none;
-    box-shadow: 0 16px 50px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.45);
-    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease, background-color .35s ease;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.10);
+    transition: transform .35s cubic-bezier(.22,1,.36,1), border-color .35s ease, background-color .35s ease, box-shadow .35s ease;
 }
 
 .home-hero__cta span:first-child {
@@ -191,26 +194,19 @@
 }
 
 .home-hero__cta span:last-child {
-    display: grid;
-    width: 38px;
-    height: 38px;
-    place-items: center;
-    border-radius: 50%;
-    background: #102219;
-    color: #f4f0e7;
-    font-size: 17px;
-    transition: transform .35s cubic-bezier(.22,1,.36,1), background-color .35s ease;
+    display: none;
 }
 
 .home-hero__cta:hover {
-    background: #fff;
-    transform: translateY(-4px);
-    box-shadow: 0 22px 60px rgba(0,0,0,.38), 0 0 35px rgba(0,185,92,.08);
+    background: rgba(0,185,92,.10);
+    border-color: rgba(0,185,92,.52);
+    transform: translateY(-3px);
+    box-shadow: 0 18px 55px rgba(0,0,0,.32), 0 0 32px rgba(0,185,92,.10);
 }
 
-.home-hero__cta:hover span:last-child {
-    transform: translateX(-2px) rotate(8deg);
-    background: #00a653;
+ .home-hero__side,
+.home-hero__bottom {
+    display: none !important;
 }
 
 .home-hero__side {
