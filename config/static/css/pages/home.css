@@ -372,3 +372,32 @@
 .home-hero__backdrop {
     background: #010604 !important;
 }
+
+
+/* Reference-inspired hero field: one sticky viewport canvas + centered overlay. */
+.home-hero {
+    --hero-progress: 0;
+    position: relative;
+    height: 100svh !important;
+    min-height: 680px !important;
+}
+
+.home-hero__particles {
+    transform: scale(calc(1 + (var(--hero-progress) * .045)));
+    transform-origin: center;
+    transition: transform 120ms linear;
+}
+
+.home-hero__content {
+    transform: translateY(calc(var(--hero-progress) * -16px))
+               scale(calc(1 - (var(--hero-progress) * .055)));
+    transform-origin: center;
+    transition: transform 120ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-hero__particles,
+    .home-hero__content {
+        transform: none !important;
+    }
+}
