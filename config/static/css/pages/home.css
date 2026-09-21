@@ -1,12 +1,6 @@
 :root {
     --babaei-bg: #020806;
     --babaei-text: #f4f0e7;
-    --babaei-muted: rgba(244,240,231,.68);
-    --babaei-line: rgba(244,240,231,.22);
-    --grid-columns: 12;
-    --grid-gap: 24px;
-    --grid-padding: max(60px, calc(50% - 660px));
-    --grid-max-width: 1320px;
 }
 
 .home-page {
@@ -44,8 +38,7 @@
 }
 
 .home-hero__backdrop,
-.home-hero__particles,
-.home-hero__grain {
+.home-hero__particles {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -73,24 +66,9 @@
     display: block;
 }
 
-.home-hero__grain {
-    z-index: 2;
-    pointer-events: none;
-    opacity: .055;
-    background-image:
-        radial-gradient(rgba(255,255,255,.7) .4px, transparent .55px),
-        radial-gradient(rgba(255,255,255,.35) .35px, transparent .5px);
-    background-position: 0 0, 11px 13px;
-    background-size: 19px 19px, 23px 23px;
-    mix-blend-mode: soft-light;
-}
-
 .home-hero__content,
-.home-hero__eyebrow,
 .home-hero__content h1,
-.home-hero__content p,
-.home-hero__side,
-.home-hero__bottom {
+.home-hero__content p {
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -99,10 +77,7 @@
 }
 
 .home-hero__content h1,
-.home-hero__content p,
-.home-hero__eyebrow,
-.home-hero__side span,
-.home-hero__bottom span {
+.home-hero__content p {
     cursor: default;
 }
 
@@ -241,12 +216,6 @@
     text-align: center;
     color: var(--babaei-text);
     transform: translate(-50%, -50%);
-    transform-origin: center;
-    transition: transform 120ms linear;
-}
-
-.home-hero__eyebrow {
-    display: none;
 }
 
 .home-hero__content h1 {
@@ -259,7 +228,6 @@
     letter-spacing: -3.2px;
     direction: rtl;
     white-space: nowrap;
-    text-wrap: nowrap;
     text-shadow: 0 12px 50px rgba(0,0,0,.48);
 }
 
@@ -271,13 +239,6 @@
     display: block;
 }
 
-.home-hero__content p {
-    margin-top: 24px;
-}
-
-.home-hero__cta {
-    margin-top: 34px;
-}
 
 @keyframes babaei-title-rise {
     0% {
@@ -309,12 +270,6 @@
     }
 }
 
-@keyframes babaei-spark-in {
-    0% { opacity: 0; transform: translateY(28px) scale(.72) rotate(-18deg); }
-    65% { opacity: 1; transform: translateY(-3px) scale(1.08) rotate(4deg); }
-    100% { opacity: .9; transform: translateY(0) scale(1) rotate(0); }
-}
-
 @keyframes babaei-cta-rise {
     to {
         opacity: 1;
@@ -329,7 +284,7 @@
 
     .home-hero__particles,
     .home-hero__content,
-    .home-hero__content h1 span,
+    .home-hero__content h1,
     .home-hero__content p,
     .home-hero__cta {
         transform: none !important;
@@ -375,9 +330,6 @@
         font-size: 13px;
     }
 
-    .home-hero__particles {
-        transform: translateZ(0) scale(1);
-    }
 }
 
 @media (max-height: 700px) and (max-width: 768px) {
