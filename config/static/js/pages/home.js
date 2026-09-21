@@ -518,20 +518,14 @@
     }, { passive: true });
 
     window.addEventListener('pointermove', (event) => {
-        if (!isInsideHero(event.clientX, event.clientY)) {
-            if (!pointerActive) {
-                targetRX = 0;
-                targetRY = 0;
-            }
-            return;
-        }
+        /*
+         * IMPORTANT: hovering must never move the field.
+         * The particle field only responds while the pointer is pressed
+         * and dragged, on both mouse and touch.
+         */
+        if (!pointerActive) return;
 
         updatePointer(event.clientX, event.clientY);
-
-        /* Mouse hover gives a gentle parallax; touch/pen gets full drag feel. */
-        if (event.pointerType === 'mouse' && !pointerActive) {
-            interactionTarget = 0;
-        }
     }, { passive: true });
 
     window.addEventListener('pointerup', () => {
