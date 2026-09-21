@@ -84,24 +84,24 @@ document.addEventListener("DOMContentLoaded", () => {
         const submit = form.querySelector(".home-email-submit");
 
         input.focus();
-        typePlaceholder(input, "Enter Your Email Here For Early Access");
+        typePlaceholder(input, "ایمیل خود را وارد کنید");
 
         form.addEventListener("submit", (event) => {
             event.preventDefault();
 
             if (!input.value.trim() || !input.checkValidity()) {
                 input.focus();
-                showToast("Please enter a valid email.");
+                showToast("لطفاً ایمیل معتبر وارد کنید.");
                 return;
             }
 
             clearTyping();
             input.value = "";
-            typePlaceholder(input, "You Will Receive Notifications By Email");
+            typePlaceholder(input, "اطلاعات شما ثبت شد");
 
             submit.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>';
 
-            showToast("Thanks — you are on the early access list.");
+            showToast("اطلاعات شما ثبت شد");
 
             window.clearTimeout(resetTimer);
             resetTimer = window.setTimeout(renderButton, 4000);
