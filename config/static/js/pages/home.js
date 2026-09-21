@@ -411,14 +411,14 @@
             );
             const waveRadius = waveProgress * 2.75;
             const waveBand = smoothstep(
-                waveRadius + 0.20,
-                waveRadius - 0.20,
+                waveRadius + 0.34,
+                waveRadius - 0.34,
                 waveDistance
             );
 
             const waveColor = colors[waveColorIndex];
             const waveMix = Math.max(0, waveBand) * (waveProgress >= 0 ? 1 : 0);
-            const waveGlow = waveMix * (0.35 + depth * 0.65);
+            const waveGlow = waveMix * (0.42 + depth * 0.78);
 
             /*
              * Keep BABAEI's field predominantly green while retaining
