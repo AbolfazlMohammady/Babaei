@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}BABAEI | Wear Your Identity{% endblock %}
-{% block meta_description %}BABAEI — لباس، لیبل و هویت شخصی تو.{% endblock %}
+{% block title %}BABAEI — Wear Your Identity{% endblock %}
+{% block meta_description %}BABAEI — لباس خودت را انتخاب کن، لیبل خودت را بساز.{% endblock %}
 {% block body_class %}home-page{% endblock %}
 
 {% block site_components_css %}{% endblock %}
@@ -14,92 +14,98 @@
 {% endblock %}
 
 {% block content %}
-<section class="home-landing" aria-label="BABAEI">
+<section class="home-landing">
     <div class="home-video" aria-hidden="true">
         <video id="home-background-video" autoplay muted loop playsinline preload="auto"></video>
     </div>
 
-    <div class="home-scrim" aria-hidden="true"></div>
+    <div class="home-overlay" aria-hidden="true"></div>
+    <div class="home-grain" aria-hidden="true"></div>
 
-    <nav class="home-nav" aria-label="ناوبری اصلی">
-        <a href="/" class="home-brand" aria-label="BABAEI">
-            <span class="home-brand__mark" aria-hidden="true">
-                <span></span><span></span><span></span>
-            </span>
-            <span class="home-brand__name">BABAEI</span>
+    <header class="home-header">
+        <a href="/" class="home-logo" aria-label="BABAEI">
+            <span class="home-logo__mark"><i></i><i></i><i></i></span>
+            <span>BABAEI</span>
         </a>
 
-        <div class="home-nav__desktop">
-            <a href="#studio" class="is-active">استودیو</a>
+        <nav class="home-nav" aria-label="ناوبری">
             <a href="{% url 'shop:index' %}">فروشگاه</a>
-            <a href="#about">درباره ما</a>
-            <a href="#process">فرآیند</a>
-        </div>
+            <a href="{% if product %}{% url 'customizer:designer' product.slug %}{% else %}{% url 'shop:index' %}#design{% endif %}">طراحی</a>
+            <a href="#story">داستان ما</a>
+        </nav>
 
-        <div class="home-nav__actions">
-            <a href="{% url 'users:profile' %}" class="home-nav__action home-nav__action--signup">ثبت‌نام</a>
-            <a href="{% url 'users:profile' %}" class="home-nav__action home-nav__action--login">ورود</a>
-            <button type="button" class="home-menu-toggle" id="home-menu-toggle" aria-label="باز کردن منو" aria-expanded="false">
-                <span></span><span></span>
-            </button>
-        </div>
-    </nav>
+        <a class="home-account" href="{% url 'users:profile' %}">
+            <span>حساب من</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/></svg>
+        </a>
+
+        <button class="home-menu" id="home-menu" type="button" aria-label="منو" aria-expanded="false">
+            <span></span><span></span>
+        </button>
+    </header>
 
     <div class="home-mobile-menu" id="home-mobile-menu" aria-hidden="true">
-        <div class="home-mobile-menu__backdrop" data-home-menu-close></div>
+        <div class="home-mobile-menu__backdrop" data-close-menu></div>
         <div class="home-mobile-menu__panel">
-            <button type="button" class="home-mobile-menu__close" data-home-menu-close aria-label="بستن منو">×</button>
-            <a href="#studio" data-home-menu-close>استودیو</a>
+            <button type="button" class="home-mobile-menu__close" data-close-menu>×</button>
+            <span class="home-mobile-menu__eyebrow">BABAEI</span>
             <a href="{% url 'shop:index' %}">فروشگاه</a>
-            <a href="#about" data-home-menu-close>درباره ما</a>
-            <a href="#process" data-home-menu-close>فرآیند</a>
-            <div class="home-mobile-menu__divider"></div>
-            <a href="{% url 'users:profile' %}">ثبت‌نام</a>
-            <a href="{% url 'users:profile' %}">ورود</a>
+            <a href="{% if product %}{% url 'customizer:designer' product.slug %}{% else %}{% url 'shop:index' %}#design{% endif %}">استودیو طراحی</a>
+            <a href="#story" data-close-menu>داستان ما</a>
+            <a href="{% url 'users:profile' %}">حساب من</a>
         </div>
     </div>
 
-    <main class="home-content" id="studio">
-        <div class="home-hero-copy">
-            <p class="home-eyebrow">YOUR LABEL. YOUR STORY.</p>
+    <main class="home-main">
+        <div class="home-copy">
+            <div class="home-kicker">
+                <span></span>
+                LABEL / CLOTHING / IDENTITY
+            </div>
+
             <h1>
-                هر لباس،
-                <span>یک هویت تازه.</span>
+                لباس تو،
+                <em>امضای تو.</em>
             </h1>
-            <p class="home-description">
-                لباسی که می‌پوشی فقط یک انتخاب نیست؛
-                امضایی‌ست که داستان تو را تعریف می‌کند.
+
+            <p>
+                لباس را انتخاب کن. جزئیاتش را بساز.
+                <br class="desktop-only">
+                و چیزی بپوش که واقعاً متعلق به توست.
             </p>
+
+            <div class="home-actions">
+                <a class="home-primary" href="{% if product %}{% url 'customizer:designer' product.slug %}{% else %}{% url 'shop:index' %}#design{% endif %}">
+                    <span>ساخت لیبل من</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+                </a>
+                <a class="home-secondary" href="{% url 'shop:index' %}">
+                    مشاهده مجموعه
+                </a>
+            </div>
         </div>
     </main>
 
-    <div class="home-bottom-left" id="about">
-        <div class="home-bottom-left__label">
-            <span class="home-spark" aria-hidden="true">✦</span>
-            <strong>BABAEI STUDIO</strong>
-        </div>
-        <p>
-            لباس خودت را انتخاب کن، لیبل خودت را بساز
-            و هویتت را روی آن ثبت کن.
-        </p>
-        <div class="home-bottom-left__actions">
-            <a href="{% url 'shop:index' %}#design" class="home-primary-action">ساخت لیبل من</a>
-            <a href="#process" class="home-secondary-action">بیشتر بدانید</a>
+    <div class="home-meta home-meta--left">
+        <span class="home-meta__line"></span>
+        <div>
+            <small>01</small>
+            <strong>YOUR LABEL</strong>
         </div>
     </div>
 
-    <a class="home-video-link" href="#process">
-        <span class="home-video-link__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M9 7.5 16 12l-7 4.5V7.5Z"></path></svg>
-        </span>
-        <span>استودیو را ببین</span>
-        <span class="home-video-link__time">01:35</span>
-    </a>
+    <div class="home-meta home-meta--right">
+        <span>SCROLL TO EXPLORE</span>
+        <i></i>
+    </div>
 
-    <div class="home-section-anchor" id="process" aria-hidden="true"></div>
-    <div class="home-section-anchor" id="pricing" aria-hidden="true"></div>
-
-    <div class="home-toast" id="home-toast" role="status" aria-live="polite"></div>
+    <div class="home-bottom" id="story">
+        <div class="home-bottom__label">
+            <span>01 — 03</span>
+            <strong>BABAEI STUDIO</strong>
+        </div>
+        <p>ساختن یک لباس، از انتخاب آن شروع نمی‌شود؛ از هویت تو شروع می‌شود.</p>
+    </div>
 </section>
 {% endblock %}
 
