@@ -1,117 +1,47 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}BABAEI — Wear Your Identity{% endblock %}
-{% block meta_description %}BABAEI — لباس خودت را انتخاب کن، لیبل خودت را بساز.{% endblock %}
+{% block title %}BABAEI | فروشگاه{% endblock %}
+{% block meta_description %}فروشگاه BABAEI — لباس و لیبل با هویت خودت.{% endblock %}
 {% block body_class %}home-page{% endblock %}
-
-{% block site_components_css %}{% endblock %}
-{% block common_page_css %}{% endblock %}
-{% block site_optional_css %}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/home.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="home-landing">
-    <div class="home-video" aria-hidden="true">
-        <video id="home-background-video" autoplay muted loop playsinline preload="auto"></video>
-    </div>
-
-    <div class="home-overlay" aria-hidden="true"></div>
-    <div class="home-grain" aria-hidden="true"></div>
-
-    <header class="home-header">
-        <a href="/" class="home-logo" aria-label="BABAEI">
-            <span class="home-logo__mark"><i></i><i></i><i></i></span>
-            <span>BABAEI</span>
-        </a>
-
-        <nav class="home-nav" aria-label="ناوبری">
-            <a href="{% url 'shop:index' %}">فروشگاه</a>
-            <a href="{% if product %}{% url 'customizer:designer' product.slug %}{% else %}{% url 'shop:index' %}#design{% endif %}">طراحی</a>
-            <a href="#story">داستان ما</a>
-        </nav>
-
-        <a class="home-account" href="{% url 'users:profile' %}">
-            <span>حساب من</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/></svg>
-        </a>
-
-        <button class="home-menu" id="home-menu" type="button" aria-label="منو" aria-expanded="false">
-            <span></span><span></span>
-        </button>
-    </header>
-
-    <div class="home-mobile-menu" id="home-mobile-menu" aria-hidden="true">
-        <div class="home-mobile-menu__backdrop" data-close-menu></div>
-        <div class="home-mobile-menu__panel">
-            <button type="button" class="home-mobile-menu__close" data-close-menu>×</button>
-            <span class="home-mobile-menu__eyebrow">BABAEI</span>
-            <a href="{% url 'shop:index' %}">فروشگاه</a>
-            <a href="{% if product %}{% url 'customizer:designer' product.slug %}{% else %}{% url 'shop:index' %}#design{% endif %}">استودیو طراحی</a>
-            <a href="#story" data-close-menu>داستان ما</a>
-            <a href="{% url 'users:profile' %}">حساب من</a>
+<div class="home-store">
+    <section class="home-store__hero">
+        <div class="home-store__content">
+            <span class="home-store__eyebrow">BABAEI STORE</span>
+            <h1>لباسی که<br><em>متعلق به توست.</em></h1>
+            <p>مجموعه لباس‌های BABAEI را ببین و مدل موردنظرت را انتخاب کن.</p>
+            <a class="home-store__button" href="{% url 'shop:index' %}">مشاهده فروشگاه</a>
         </div>
-    </div>
-
-    <main class="home-main">
-        <div class="home-copy">
-            <div class="home-kicker">
-                <span></span>
-                LABEL / CLOTHING / IDENTITY
-            </div>
-
-            <h1>
-                لباس تو،
-                <em>امضای تو.</em>
-            </h1>
-
-            <p>
-                لباس را انتخاب کن. جزئیاتش را بساز.
-                <br class="desktop-only">
-                و چیزی بپوش که واقعاً متعلق به توست.
-            </p>
-
-            <div class="home-actions">
-                <a class="home-primary" href="{% if product %}{% url 'customizer:designer' product.slug %}{% else %}{% url 'shop:index' %}#design{% endif %}">
-                    <span>ساخت لیبل من</span>
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
-                </a>
-                <a class="home-secondary" href="{% url 'shop:index' %}">
-                    مشاهده مجموعه
-                </a>
-            </div>
+        <div class="home-store__image" aria-hidden="true">
+            <img src="{% static 'images/home/garment-story.svg' %}" alt="">
         </div>
-    </main>
+    </section>
 
-    <div class="home-meta home-meta--left">
-        <span class="home-meta__line"></span>
-        <div>
-            <small>01</small>
-            <strong>YOUR LABEL</strong>
+    <section class="home-store__categories">
+        <div class="home-store__section-head">
+            <span>دسته‌بندی‌ها</span>
+            <a href="{% url 'shop:index' %}">مشاهده همه</a>
         </div>
-    </div>
-
-    <div class="home-meta home-meta--right">
-        <span>SCROLL TO EXPLORE</span>
-        <i></i>
-    </div>
-
-    <div class="home-bottom" id="story">
-        <div class="home-bottom__label">
-            <span>01 — 03</span>
-            <strong>BABAEI STUDIO</strong>
+        <div class="home-store__grid">
+            <a href="{% url 'shop:index' %}" class="home-store__card">
+                <img src="{% static 'images/home/Tshirt.png' %}" alt="">
+                <span>تیشرت</span>
+            </a>
+            <a href="{% url 'shop:index' %}" class="home-store__card">
+                <img src="{% static 'images/home/black_left.png' %}" alt="">
+                <span>لباس‌های مشکی</span>
+            </a>
+            <a href="{% url 'shop:index' %}" class="home-store__card">
+                <img src="{% static 'images/home/about_us.png' %}" alt="">
+                <span>مجموعه BABAEI</span>
+            </a>
         </div>
-        <p>ساختن یک لباس، از انتخاب آن شروع نمی‌شود؛ از هویت تو شروع می‌شود.</p>
-    </div>
-</section>
-{% endblock %}
-
-{% block site_optional_js %}{% endblock %}
-
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="{% static 'js/pages/home.js' %}" defer></script>
+    </section>
+</div>
 {% endblock %}
