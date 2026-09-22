@@ -178,10 +178,19 @@ class ShopIndexView(ListView):
         context["hero_product"] = products[0] if products else None
         context["categories"] = get_active_categories()
         context["filter_category"] = self.request.GET.get("category", "")
+        # Which row of the shared filter rail is current: the filtered slug here,
+        # self.category.slug on CategoryDetailView.
+        context["current_category_slug"] = context["filter_category"]
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
-        context["price_min"], context["price_max"] = catalog_price_bounds(Product.objects.filter(is_active=True, category__is_active=True))
+        # The slider bounds follow the active category. They used to be computed
+        # from every active product on the site, so filtering to a category still
+        # showed a price range that category did not have.
+        bounds_queryset = Product.objects.filter(is_active=True, category__is_active=True)
+        if context["filter_category"]:
+            bounds_queryset = bounds_queryset.filter(category__slug=context["filter_category"])
+        context["price_min"], context["price_max"] = catalog_price_bounds(bounds_queryset)
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
         context["canonical_url"] = absolute_url(self.request, self.request.path)
@@ -255,6 +264,10 @@ class CategoryDetailView(ListView):
         context = super().get_context_data(**kwargs)
         context["category"] = self.category
         context["categories"] = get_active_categories()
+        # The category is the page here, not a filter, so filter_category stays
+        # empty and no "remove category" chip is offered for the page you are on.
+        context["filter_category"] = ""
+        context["current_category_slug"] = self.category.slug
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"

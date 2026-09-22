@@ -602,6 +602,18 @@ body.shop-page {
     color: var(--sh-on-dark);
 }
 
+/* The breadcrumb's default colour is muted ink, because it also renders on the
+   category page's light header. Here it sits on the dark hero photo, so it
+   switches to the on-dark tone. */
+.sh-hero .shop-reference__crumbs {
+    margin-bottom: 26px;
+    color: var(--sh-on-dark-soft);
+}
+
+.sh-hero .shop-reference__crumbs a:hover {
+    color: var(--sh-on-dark);
+}
+
 .sh-hero__eyebrow {
     display: inline-flex;
     align-items: center;
