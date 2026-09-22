@@ -179,6 +179,26 @@
             fetchCatalog(clearLink.href);
             return;
         }
+
+        const categoryLink = event.target.closest(".shop-reference__category-list a");
+        if (categoryLink) {
+            const url = new URL(categoryLink.href, window.location.href);
+            if (url.pathname === window.location.pathname) {
+                event.preventDefault();
+                fetchCatalog(url);
+                return;
+            }
+        }
+
+        const paginationLink = event.target.closest(".shop-reference__pagination a");
+        if (paginationLink) {
+            const url = new URL(paginationLink.href, window.location.href);
+            if (url.pathname === window.location.pathname) {
+                event.preventDefault();
+                fetchCatalog(url);
+                return;
+            }
+        }
     });
 
     root.addEventListener("submit", (event) => {
