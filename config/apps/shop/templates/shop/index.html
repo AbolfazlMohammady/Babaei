@@ -15,7 +15,7 @@
 {% block site_optional_css %}
 <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
 <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=5">
-<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=5">
+<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=6">
 {% endblock %}
 
 {% block extra_js %}
@@ -51,6 +51,7 @@
             <span data-filter-count></span>
         </button>
 
+
         <aside class="shop-reference__sidebar" id="shop-reference-sidebar" data-shop-filter-panel>
             <div class="shop-reference__sidebar-head">
                 <strong>فیلتر محصولات</strong>
@@ -66,7 +67,7 @@
                         </a>
                         {% for category in categories %}
                         <a href="?category={{ category.slug }}" class="{% if filter_category == category.slug %}is-active{% endif %}">
-                            <span>{{ category.name }}</span>
+                            <span>{{ category.name }}</span><small>{{ category.product_count }}</small>
                         </a>
                         {% endfor %}
                     </div>
@@ -75,10 +76,10 @@
                 <section class="shop-reference__filter-section">
                     <h2>محدوده قیمت</h2>
                     <div class="shop-reference__price-labels">
-                        <span data-min-price-label>{{ filter_min_price|default:"۰" }} تومان</span>
-                        <span data-max-price-label>{{ filter_max_price|default:"۵,۰۰۰,۰۰۰" }} تومان</span>
+                        <span><small>از</small> <b data-min-price-label>{{ filter_min_price|default:"۰" }}</b> تومان</span>
+                        <span><small>تا</small> <b data-max-price-label>{{ filter_max_price|default:"۵,۰۰۰,۰۰۰" }}</b> تومان</span>
                     </div>
-                    <div class="shop-reference__range">
+                    <div class="shop-reference__range" aria-label="انتخاب بازه قیمت">
                         <div class="shop-reference__range-track"></div>
                         <input type="range" min="0" max="5000000" step="50000" value="{{ filter_min_price|default:0 }}" data-min-range aria-label="حداقل قیمت">
                         <input type="range" min="0" max="5000000" step="50000" value="{{ filter_max_price|default:5000000 }}" data-max-range aria-label="حداکثر قیمت">
@@ -86,26 +87,18 @@
                     <input type="hidden" name="min_price" value="{{ filter_min_price }}" data-min-price-input>
                     <input type="hidden" name="max_price" value="{{ filter_max_price }}" data-max-price-input>
                 </section>
+
                 <section class="shop-reference__filter-section">
                     <h2>سایز</h2>
                     <div class="shop-reference__sizes" role="radiogroup" aria-label="انتخاب سایز">
-                        {% for size in filter_sizes %}
-                        <label class="{% if filter_size == size.slug %}is-active{% endif %}">
-                            <input type="radio" name="size" value="{{ size.slug }}" {% if filter_size == size.slug %}checked{% endif %}>
-                            <span>{{ size.name }}</span>
-                        </label>
-                        {% endfor %}
-                    </div>
-                </section>">
-                            <input type="radio" name="size" value="{{ size.slug }}" {% if filter_size == size.slug %}checked{% endif %}>
-                            <span>{{ size.name }}</span>
-                        </label>
-                        {% endfor %}
+                        <label class="{% if filter_size == "s" %}is-active{% endif %}"><input type="radio" name="size" value="s" {% if filter_size == "s" %}checked{% endif %}><span>S</span></label>
+                        <label class="{% if filter_size == "m" %}is-active{% endif %}"><input type="radio" name="size" value="m" {% if filter_size == "m" %}checked{% endif %}><span>M</span></label>
+                        <label class="{% if filter_size == "l" %}is-active{% endif %}"><input type="radio" name="size" value="l" {% if filter_size == "l" %}checked{% endif %}><span>L</span></label>
+                        <label class="{% if filter_size == "xl" %}is-active{% endif %}"><input type="radio" name="size" value="xl" {% if filter_size == "xl" %}checked{% endif %}><span>XL</span></label>
+                        <label class="{% if filter_size == "xxl" %}is-active{% endif %}"><input type="radio" name="size" value="xxl" {% if filter_size == "xxl" %}checked{% endif %}><span>XXL</span></label>
                     </div>
                 </section>
-                {% endif %}
 
-                
                 <section class="shop-reference__filter-section shop-reference__filter-section--checks">
                     <label class="shop-reference__discount-check">
                         <input type="checkbox" name="discount" value="1" {% if filter_discount %}checked{% endif %}>
@@ -116,22 +109,10 @@
                 <section class="shop-reference__filter-section shop-reference__filter-section--sort">
                     <h2>مرتب‌سازی</h2>
                     <div class="shop-reference__sort-options">
-                        <label class="{% if filter_sort == "featured" %}is-active{% endif %}">
-                            <input type="radio" name="sort" value="featured" {% if filter_sort == "featured" %}checked{% endif %}>
-                            <span>پیشنهاد شده</span>
-                        </label>
-                        <label class="{% if filter_sort == "newest" %}is-active{% endif %}">
-                            <input type="radio" name="sort" value="newest" {% if filter_sort == "newest" %}checked{% endif %}>
-                            <span>جدیدترین</span>
-                        </label>
-                        <label class="{% if filter_sort == "price_asc" %}is-active{% endif %}">
-                            <input type="radio" name="sort" value="price_asc" {% if filter_sort == "price_asc" %}checked{% endif %}>
-                            <span>ارزان‌ترین</span>
-                        </label>
-                        <label class="{% if filter_sort == "price_desc" %}is-active{% endif %}">
-                            <input type="radio" name="sort" value="price_desc" {% if filter_sort == "price_desc" %}checked{% endif %}>
-                            <span>گران‌ترین</span>
-                        </label>
+                        <label class="{% if filter_sort == "featured" %}is-active{% endif %}"><input type="radio" name="sort" value="featured" {% if filter_sort == "featured" %}checked{% endif %}><span>پیشنهاد شده</span></label>
+                        <label class="{% if filter_sort == "newest" %}is-active{% endif %}"><input type="radio" name="sort" value="newest" {% if filter_sort == "newest" %}checked{% endif %}><span>جدیدترین</span></label>
+                        <label class="{% if filter_sort == "price_asc" %}is-active{% endif %}"><input type="radio" name="sort" value="price_asc" {% if filter_sort == "price_asc" %}checked{% endif %}><span>ارزان‌ترین</span></label>
+                        <label class="{% if filter_sort == "price_desc" %}is-active{% endif %}"><input type="radio" name="sort" value="price_desc" {% if filter_sort == "price_desc" %}checked{% endif %}><span>گران‌ترین</span></label>
                     </div>
                 </section>
 
