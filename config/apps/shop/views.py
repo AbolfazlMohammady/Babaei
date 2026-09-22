@@ -89,7 +89,7 @@ class ShopIndexView(ListView):
                 default=1,
                 output_field=IntegerField(),
             )
-        ).order_by("type_priority", "sort_order", "id")
+        ).order_by("type_priority", "sort_order", "id")[:2]
 
         queryset = Product.objects.filter(
             is_active=True,
@@ -170,7 +170,7 @@ class CategoryDetailView(ListView):
                 default=1,
                 output_field=IntegerField(),
             )
-        ).order_by("type_priority", "sort_order", "id")
+        ).order_by("type_priority", "sort_order", "id")[:2]
         return Product.objects.filter(category_id=self.category.id, is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, **annotations).prefetch_related(Prefetch("images", queryset=card_images, to_attr="card_images"))
 
     def get_context_data(self, **kwargs):
