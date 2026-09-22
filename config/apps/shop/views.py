@@ -126,15 +126,6 @@ class ShopIndexView(ListView):
         if self.request.GET.get("discount") == "1":
             queryset = queryset.filter(listed_compare_price__gt=F("listed_price"))
 
-        if self.request.GET.get("available") == "1":
-            queryset = queryset.filter(
-                Exists(ProductVariant.objects.filter(
-                    product_id=OuterRef("pk"),
-                    is_active=True,
-                    stock_quantity__gt=0,
-                ))
-            )
-
         sort = self.request.GET.get("sort", "featured")
         sort_map = {
             "featured": ("-is_featured", "-created_at"),
@@ -157,7 +148,6 @@ class ShopIndexView(ListView):
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
-        context["filter_available"] = self.request.GET.get("available") == "1"
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
         context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
