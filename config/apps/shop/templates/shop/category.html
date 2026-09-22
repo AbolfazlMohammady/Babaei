@@ -75,12 +75,11 @@
                 <section class="shop-reference__filter-section">
                     <h2>سایز</h2>
                     <div class="shop-reference__sizes" role="radiogroup" aria-label="انتخاب سایز">
-                        {% for size in filter_sizes %}
-                        <label class="{% if filter_size == size.slug %}is-active{% endif %}">
-                            <input type="radio" name="size" value="{{ size.slug }}" {% if filter_size == size.slug %}checked{% endif %}>
-                            <span>{{ size.name }}</span>
-                        </label>
-                        {% endfor %}
+                        <label class="{% if filter_size == "s" %}is-active{% endif %}"><input type="radio" name="size" value="s" {% if filter_size == "s" %}checked{% endif %}><span>S</span></label>
+                        <label class="{% if filter_size == "m" %}is-active{% endif %}"><input type="radio" name="size" value="m" {% if filter_size == "m" %}checked{% endif %}><span>M</span></label>
+                        <label class="{% if filter_size == "l" %}is-active{% endif %}"><input type="radio" name="size" value="l" {% if filter_size == "l" %}checked{% endif %}><span>L</span></label>
+                        <label class="{% if filter_size == "xl" %}is-active{% endif %}"><input type="radio" name="size" value="xl" {% if filter_size == "xl" %}checked{% endif %}><span>XL</span></label>
+                        <label class="{% if filter_size == "xxl" %}is-active{% endif %}"><input type="radio" name="size" value="xxl" {% if filter_size == "xxl" %}checked{% endif %}><span>XXL</span></label>
                     </div>
                 </section>
 
