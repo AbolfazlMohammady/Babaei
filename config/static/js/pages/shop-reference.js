@@ -110,7 +110,6 @@
             window.dispatchEvent(new CustomEvent("shop:catalog-updated"));
         } catch (error) {
             console.error("[BABAEI] Shop filter update failed:", error);
-            window.location.assign(url.toString());
         } finally {
             setLoading(false);
         }
