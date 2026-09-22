@@ -15,7 +15,7 @@
 {% block site_optional_css %}
 <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
 <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=5">
-<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=5">
 {% endblock %}
 
 {% block extra_js %}
@@ -86,27 +86,17 @@
                     <input type="hidden" name="min_price" value="{{ filter_min_price }}" data-min-price-input>
                     <input type="hidden" name="max_price" value="{{ filter_max_price }}" data-max-price-input>
                 </section>
-
-                {% if filter_colors %}
                 <section class="shop-reference__filter-section">
-                    <h2>رنگ</h2>
-                    <div class="shop-reference__swatches">
-                        {% for color in filter_colors %}
-                        <label class="{% if filter_color == color.slug %}is-active{% endif %}" title="{{ color.name }}">
-                            <input type="radio" name="color" value="{{ color.slug }}" {% if filter_color == color.slug %}checked{% endif %}>
-                            <span style="--swatch: {{ color.hex_code }}"></span>
+                    <h2>سایز</h2>
+                    <div class="shop-reference__sizes" role="radiogroup" aria-label="انتخاب سایز">
+                        {% for size in filter_sizes %}
+                        <label class="{% if filter_size == size.slug %}is-active{% endif %}">
+                            <input type="radio" name="size" value="{{ size.slug }}" {% if filter_size == size.slug %}checked{% endif %}>
+                            <span>{{ size.name }}</span>
                         </label>
                         {% endfor %}
                     </div>
-                </section>
-                {% endif %}
-
-                {% if filter_sizes %}
-                <section class="shop-reference__filter-section">
-                    <h2>سایز</h2>
-                    <div class="shop-reference__sizes">
-                        {% for size in filter_sizes %}
-                        <label class="{% if filter_size == size.slug %}is-active{% endif %}">
+                </section>">
                             <input type="radio" name="size" value="{{ size.slug }}" {% if filter_size == size.slug %}checked{% endif %}>
                             <span>{{ size.name }}</span>
                         </label>
@@ -115,9 +105,12 @@
                 </section>
                 {% endif %}
 
+                
                 <section class="shop-reference__filter-section shop-reference__filter-section--checks">
-                    <label><input type="checkbox" name="available" value="1" {% if filter_available %}checked{% endif %}><span>فقط کالاهای موجود</span></label>
-                    <label><input type="checkbox" name="discount" value="1" {% if filter_discount %}checked{% endif %}><span>فقط تخفیف‌دارها</span></label>
+                    <label class="shop-reference__discount-check">
+                        <input type="checkbox" name="discount" value="1" {% if filter_discount %}checked{% endif %}>
+                        <span>فقط کالاهای تخفیف‌دار</span>
+                    </label>
                 </section>
 
                 <section class="shop-reference__filter-section shop-reference__filter-section--sort">
