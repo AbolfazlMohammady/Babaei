@@ -99,31 +99,22 @@
             const thumbs = [...gallery.querySelectorAll("[data-gallery-thumb]")];
             if (!main || !thumbs.length) return;
 
+            /* The main shot is wrapped in <picture> so AVIF/WebP can be served.
+               A matching <source> outranks img.src, so swapping only the img
+               would leave the first frame on screen. Each thumb therefore
+               carries the derivative srcsets the template already rendered
+               (data-avif / data-webp) and both are swapped together. When the
+               generator has not run those attributes are empty and only
+               img.src changes, exactly like before. */
+            const picture = main.parentElement && main.parentElement.tagName === "PICTURE"
+                ? main.parentElement
+                : null;
+            const sources = picture ? [...picture.querySelectorAll("source[data-format]")] : [];
+
             thumbs.forEach((thumb, thumbIndex) => {
                 thumb.addEventListener("click", () => {
                     const source = thumb.dataset.image;
                     if (!source) return;
                     main.style.opacity = "0";
                     window.setTimeout(() => {
-                        main.src = source;
-                        main.alt = thumb.dataset.alt || main.alt;
-                        if (index) index.textContent = String(thumbIndex + 1).padStart(2, "0");
-                        main.style.opacity = "1";
-                    }, 120);
-                    thumbs.forEach((item) => {
-                        const active = item === thumb;
-                        item.classList.toggle("is-active", active);
-                        item.setAttribute("aria-selected", String(active));
-                    });
-                });
-            });
-        });
-    };
-
-    document.addEventListener("DOMContentLoaded", () => {
-        setupReveal();
-        setupHeaderState();
-        setupLabelStory();
-        setupProductGallery();
-    });
-})();
+                      

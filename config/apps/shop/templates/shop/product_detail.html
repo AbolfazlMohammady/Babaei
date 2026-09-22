@@ -10,42 +10,103 @@
 {% block og_description %}{{ product.seo_description|default:product.short_description|default:product.name }}{% endblock %}
 {% block og_image %}{% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}">{% endif %}{% endblock %}
 {% block extra_head %}<script type="application/ld+json">{{ product_schema }}</script><script type="application/ld+json">{{ breadcrumb_schema }}</script>{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}"><link rel="stylesheet" href="{% static 'css/pages/product-quantity.css' %}?v=2"><link rel="stylesheet" href="{% static 'css/pages/shop-designer-cta.css' %}"><link rel="stylesheet" href="{% static 'css/pages/product-saved.css' %}?v=1">{% endblock %}
+
+{% comment %}
+Page CSS. shop-product.css is the only product-page stylesheet now: the four
+per-section files (pages/shop.css, pages/product-quantity.css,
+pages/shop-designer-cta.css, pages/product-saved.css) were folded into it and
+their legacy rules deleted.
+
+storefront.css stays because shared rules depend on it ([data-reveal] reveal,
+the shop-page surface). quick-actions.css is dropped the same way the shop
+index drops it: base.html suppresses the floating ring markup for the shop
+namespace, so the sheet had nothing left to style on this page.
+{% endcomment %}
+{% block extra_css %}{% endblock %}
 {% block site_optional_css %}
-<link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
-<link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=8">
+<link rel="stylesheet" href="{% static 'css/pages/shop-product.css' %}?v=1">
 {% endblock %}
 
 {% block content %}
 <div class="product-shell">
 <nav class="breadcrumbs" aria-label="مسیر صفحه">{% for item in breadcrumbs %}{% if not forloop.last %}<a href="{{ item.url }}">{{ item.name }}</a><span aria-hidden="true">/</span>{% else %}<span aria-current="page">{{ item.name }}</span>{% endif %}{% endfor %}</nav>
-<div class="product-layout" data-reveal>
+{% comment %}
+No data-reveal on the layout: the gallery shot is the LCP element and must
+paint on the first frame instead of waiting for the reveal observer.
+{% endcomment %}
+<div class="product-layout">
 <section class="product-gallery" aria-label="تصاویر {{ product.name }}" data-product-gallery>
-<div class="gallery-main">
-{% with image=product.gallery_images.0 %}{% if image %}<img id="product-gallery-main" src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" fetchpriority="high" decoding="async">{% else %}<img id="product-gallery-main" src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" fetchpriority="high" decoding="async">{% endif %}{% endwith %}
-<span class="gallery-main__index" data-gallery-index>01</span>
+<div class="gallery-main" id="product-gallery-panel" role="tabpanel" aria-label="تصویر انتخاب‌شده">
+{% with image=product.gallery_images.0 %}
+{% if image %}
+{% image_variants image as v %}
+<picture>
+{% if v.avif %}<source type="image/avif" data-format="avif" srcset="{{ v.avif }}" sizes="(max-width: 620px) calc(100vw - 56px), (max-width: 1080px) 560px, 600px">{% endif %}
+{% if v.webp %}<source type="image/webp" data-format="webp" srcset="{{ v.webp }}" sizes="(max-width: 620px) calc(100vw - 56px), (max-width: 1080px) 560px, 600px">{% endif %}
+<img id="product-gallery-main" src="{{ v.src|default:image.image.url }}" alt="{{ image.alt_text|default:product.name }}"{% if v.width %} width="{{ v.width }}" height="{{ v.height }}"{% endif %} fetchpriority="high" decoding="async">
+</picture>
+{% else %}
+<img id="product-gallery-main" src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" fetchpriority="high" decoding="async">
+{% endif %}
+{% endwith %}
+<span class="gallery-main__index" data-gallery-index aria-hidden="true">01</span>
 </div>
 <div class="product-gallery__thumbs" role="tablist" aria-label="انتخاب تصویر">
 {% for image in product.gallery_images %}
-<button type="button" class="product-gallery__thumb{% if forloop.first %} is-active{% endif %}" data-gallery-thumb data-image="{{ image.image.url }}" data-alt="{{ image.alt_text|default:product.name }}" role="tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="تصویر {{ forloop.counter }}">
-<img src="{{ image.image.url }}" alt="" loading="lazy" decoding="async">
+{% image_variants image as v %}
+<button type="button" class="product-gallery__thumb{% if forloop.first %} is-active{% endif %}" data-gallery-thumb data-image="{{ image.image.url }}" data-alt="{{ image.alt_text|default:product.name }}" data-avif="{{ v.avif }}" data-webp="{{ v.webp }}" role="tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="product-gallery-panel" aria-label="تصویر {{ forloop.counter }}">
+<picture>
+{% if v.avif %}<source type="image/avif" data-format="avif" srcset="{{ v.avif }}" sizes="68px">{% endif %}
+{% if v.webp %}<source type="image/webp" data-format="webp" srcset="{{ v.webp }}" sizes="68px">{% endif %}
+<img src="{{ v.src|default:image.image.url }}" alt="" loading="lazy" decoding="async">
+</picture>
 </button>
 {% empty %}
-<button type="button" class="product-gallery__thumb is-active" data-gallery-thumb data-image="{% static 'images/home/Tshirt.png' %}" data-alt="{{ product.name }}" role="tab" aria-selected="true" aria-label="تصویر محصول"><img src="{% static 'images/home/Tshirt.png' %}" alt="" loading="lazy"></button>
+<button type="button" class="product-gallery__thumb is-active" data-gallery-thumb data-image="{% static 'images/home/Tshirt.png' %}" data-alt="{{ product.name }}" role="tab" aria-selected="true" aria-controls="product-gallery-panel" aria-label="تصویر محصول"><img src="{% static 'images/home/Tshirt.png' %}" alt="" loading="lazy" decoding="async"></button>
 {% endfor %}
 </div>
 </section>
 <article class="product-info">
-<div class="product-eyebrow">BABAEI / PRODUCT</div><div class="product-title-row"><h1>{{ product.name }}</h1>{% saved_status request.user product as saved_state %}<div class="product-save-actions"><form method="post" action="{% url 'saved:toggle_favorite' product.id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="product-save-button{% if saved_state.favorite %} is-active{% endif %}" aria-label="{% if saved_state.favorite %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}"><span aria-hidden="true">{% if saved_state.favorite %}♥{% else %}♡{% endif %}</span></button></form><form method="post" action="{% url 'saved:toggle_saved' product.id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="product-save-button{% if saved_state.saved %} is-active{% endif %}" aria-label="{% if saved_state.saved %}حذف از ذخیره‌ها{% else %}ذخیره محصول{% endif %}"><span aria-hidden="true">{% if saved_state.saved %}🔖{% else %}🔖{% endif %}</span></button></form></div></div>{% if product.short_description %}<div class="product-short">{{ product.short_description }}</div>{% endif %}
-<div class="product-price-box" aria-live="polite"><div class="price-row"><strong id="product-price" class="price">{{ product.display_price|price }}</strong><span class="price-unit">تومان</span></div><div id="product-old-price-row" class="old-price-row{% if not product.has_discount %} is-hidden{% endif %}"><del id="product-old-price">{{ product.display_compare_price|price }}</del><span id="product-discount" class="discount-badge">{{ product.discount_percent|discount_percent }}</span></div><small class="price-note">قیمت‌ها به تومان هستند</small></div>
+<p class="product-eyebrow">BABAEI / PRODUCT</p>
+<div class="product-title-row">
+<h1>{{ product.name }}</h1>
+{% saved_status request.user product as saved_state %}
+<div class="product-save-actions">
+<form method="post" action="{% url 'saved:toggle_favorite' product.id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="product-save-button{% if saved_state.favorite %} is-active{% endif %}" aria-label="{% if saved_state.favorite %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}"><span aria-hidden="true">{% if saved_state.favorite %}♥{% else %}♡{% endif %}</span></button></form>
+<form method="post" action="{% url 'saved:toggle_saved' product.id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="product-save-button{% if saved_state.saved %} is-active{% endif %}" aria-label="{% if saved_state.saved %}حذف از ذخیره‌ها{% else %}ذخیره محصول{% endif %}"><span aria-hidden="true">{% if saved_state.saved %}🔖{% else %}🔖{% endif %}</span></button></form>
+</div>
+</div>
+{% if product.short_description %}<p class="product-short">{{ product.short_description }}</p>{% endif %}
+<div class="product-price-box" aria-live="polite">
+<div class="price-row"><strong id="product-price" class="price">{{ product.display_price|price }}</strong><span class="price-unit">تومان</span></div>
+<div id="product-old-price-row" class="old-price-row{% if not product.has_discount %} is-hidden{% endif %}"><del id="product-old-price">{{ product.display_compare_price|price }}</del><span id="product-discount" class="discount-badge">{{ product.discount_percent|discount_percent }}</span></div>
+<small class="price-note">قیمت‌ها به تومان هستند</small>
+</div>
 {% if product.active_variants %}
-<section class="product-options" aria-label="انتخاب رنگ و سایز"><div class="stock-summary"><span>موجودی کل</span><strong id="total-stock">{{ total_stock|price }} عدد</strong></div>
-<div class="option-group"><div class="option-heading"><h2>رنگ</h2><span id="selected-color-label"></span></div><div class="color-options" role="radiogroup" aria-label="رنگ محصول">{% for color in colors %}<button type="button" class="color-option" data-color-id="{{ color.id }}" aria-label="{{ color.name }}" title="{{ color.name }}"><span class="color-swatch" style="--swatch: {{ color.hex_code }}"></span><span>{{ color.name }}</span></button>{% endfor %}</div></div>
-<div class="option-group"><div class="option-heading"><h2>سایز</h2><span id="selected-size-label"></span></div><div class="size-options" role="radiogroup" aria-label="سایز محصول">{% for size in sizes %}<button type="button" class="size-option" data-size-id="{{ size.id }}">{{ size.name }}</button>{% endfor %}</div></div>
-<div id="variant-status" class="variant-status" aria-live="polite"></div></section>
+<section class="product-options" aria-label="انتخاب رنگ و سایز">
+<div class="stock-summary"><span>موجودی کل</span><strong id="total-stock">{{ total_stock|price }} عدد</strong></div>
+<div class="option-group">
+<div class="option-heading"><h2>رنگ</h2><span id="selected-color-label" aria-live="polite"></span></div>
+<div class="color-options" role="radiogroup" aria-label="رنگ محصول">{% for color in colors %}<button type="button" class="color-option" data-color-id="{{ color.id }}" aria-label="{{ color.name }}" title="{{ color.name }}"><span class="color-swatch" style="--swatch: {{ color.hex_code }}"></span><span>{{ color.name }}</span></button>{% endfor %}</div>
+</div>
+<div class="option-group">
+<div class="option-heading"><h2>سایز</h2><span id="selected-size-label" aria-live="polite"></span></div>
+<div class="size-options" role="radiogroup" aria-label="سایز محصول">{% for size in sizes %}<button type="button" class="size-option" data-size-id="{{ size.id }}">{{ size.name }}</button>{% endfor %}</div>
+</div>
+<div id="variant-status" class="variant-status" aria-live="polite"></div>
+</section>
 {% else %}<div class="stock-summary stock-summary--simple"><span>وضعیت</span><strong>موجود</strong></div>{% endif %}
 <form method="post" action="{% url 'orders:cart_add' %}" class="add-to-cart-form" id="add-to-cart-form">
-{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="variant_id" id="cart-variant-id" value=""><div class="add-to-cart-row"><div class="product-quantity" data-product-quantity-wrap><div class="product-quantity__heading"><label for="cart-quantity">تعداد</label><span data-product-quantity-stock></span></div><div class="product-quantity__control"><button type="button" data-product-quantity-button="-1" aria-label="کاهش تعداد">−</button><input id="cart-quantity" name="quantity" type="number" min="1" value="1" inputmode="numeric" aria-label="تعداد محصول"><button type="button" data-product-quantity-button="1" aria-label="افزایش تعداد">+</button></div></div><button id="add-to-cart-button" class="add-to-cart-button" type="submit"{% if product.active_variants %} disabled{% endif %}>افزودن به سبد خرید</button><a id="product-in-cart" class="product-in-cart" href="{% url 'orders:cart' %}" hidden><span>این مدل در سبد خرید است</span><strong data-product-in-cart-quantity></strong><small>مشاهده سبد خرید ←</small></a></div>
+{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="variant_id" id="cart-variant-id" value="">
+<div class="add-to-cart-row">
+<div class="product-quantity" data-product-quantity-wrap>
+<div class="product-quantity__heading"><label for="cart-quantity">تعداد</label><span data-product-quantity-stock></span></div>
+<div class="product-quantity__control"><button type="button" data-product-quantity-button="-1" aria-label="کاهش تعداد">−</button><input id="cart-quantity" name="quantity" type="number" min="1" value="1" inputmode="numeric" aria-label="تعداد محصول"><button type="button" data-product-quantity-button="1" aria-label="افزایش تعداد">+</button></div>
+</div>
+<button id="add-to-cart-button" class="add-to-cart-button" type="submit"{% if product.active_variants %} disabled{% endif %}>افزودن به سبد خرید</button>
+<a id="product-in-cart" class="product-in-cart" href="{% url 'orders:cart' %}" hidden><span>این مدل در سبد خرید است</span><strong data-product-in-cart-quantity></strong><small>مشاهده سبد خرید ←</small></a>
+</div>
 </form>
 </article></div>
 <div class="product-benefits" data-reveal>
