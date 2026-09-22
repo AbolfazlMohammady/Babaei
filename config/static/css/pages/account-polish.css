@@ -7,3 +7,157 @@
 @media(max-width:700px){.account-page{padding-top:20px!important}.account-shell-header__inner{min-height:68px!important;padding:0 14px!important;max-width:100%;box-sizing:border-box}.account-shell-header__actions{gap:7px!important}.account-shell-back,.account-logout{width:42px!important;min-width:42px!important;height:42px!important;padding:0!important;border-radius:11px!important}.account-shell-back span,.account-logout span{display:none!important}.account-shell-back svg,.account-logout svg{width:18px;height:18px}.account-shell-brand span:first-child{font-size:15px!important;letter-spacing:.2em!important}.profile-card{padding:16px!important;border-radius:15px!important}.profile-form{gap:19px!important}.profile-identity{gap:10px;padding-bottom:18px}.profile-image--large{width:58px!important;height:58px!important;flex-basis:58px}.profile-identity__info h2{font-size:13px}.profile-identity__info span{font-size:9px}.profile-file--compact{min-height:38px;padding:0 10px!important;font-size:9px!important;max-width:120px;overflow:hidden;text-overflow:ellipsis}.profile-grid{grid-template-columns:minmax(0,1fr)!important;gap:13px!important}.profile-form .form-input,.profile-form .form-select{min-height:50px}.gender-choice{gap:8px}.gender-option{height:50px}.profile-actions--clean{display:block}.profile-save{width:100%;min-height:47px}.container.account-layout,.account-layout{width:calc(100% - 20px)!important;max-width:none!important;margin-inline:auto!important}.account-sidebar{width:100%;box-sizing:border-box}.account-content{width:100%;min-width:0;box-sizing:border-box}.account-card{max-width:100%!important}.account-shell-footer{margin-top:0!important}.account-shell-footer__inner{width:calc(100% - 28px)!important;min-height:78px!important;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:13px 0!important}.account-shell-footer__brand{font-size:11px!important;letter-spacing:.24em}.account-shell-footer__links{width:100%;justify-content:center;gap:18px}.account-shell-footer__links a{font-size:9px!important}}
 @media(max-width:380px){.account-shell-header__inner{width:calc(100% - 16px);padding:0 8px!important}.account-shell-brand span:first-child{font-size:13px!important;letter-spacing:.12em!important}.profile-card{padding:13px!important}.profile-identity{gap:7px}.profile-file--compact{max-width:105px}.account-nav a{font-size:10px!important}.account-shell-footer__inner{width:calc(100% - 20px)!important}.account-shell-footer__links{gap:12px}.account-shell-footer__links a{font-size:8px!important}}
 .address-list{display:grid;gap:14px}.address-card{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:24px 26px;border:1px solid #ddd8cf;border-radius:16px;background:#f7f4ee}.address-card__main{min-width:0;flex:1}.address-card__top{display:flex;align-items:center;gap:10px;margin-bottom:9px}.address-card__top h2{font-size:15px;font-weight:700}.address-card__badge{padding:3px 8px;border-radius:999px;background:#e8e3da;color:#777066;font-size:9px}.address-card__description{margin-bottom:12px;color:#45423e;font-size:12px;line-height:2}.address-card__meta{display:flex;flex-wrap:wrap;gap:7px}.address-card__meta span{display:inline-flex;align-items:center;min-height:28px;padding:0 9px;border:1px solid #e1dbd2;border-radius:8px;color:#77736d;background:#eeeae3;font-size:10px}.address-actions{flex:0 0 auto;display:flex;align-items:center;gap:8px}.address-actions .btn{min-height:40px;padding-inline:14px;border-radius:9px;font-size:11px}.address-actions .btn-danger{color:#a43b31;border-color:#ead7d4;background:#f7f0ed}.address-empty{display:grid;place-items:center;min-height:300px;padding:40px 24px;text-align:center;border:1px dashed #d0c9bf;border-radius:16px;background:rgba(247,244,238,.8)}.address-empty__icon{width:48px;height:48px;margin-bottom:17px;display:grid;place-items:center;border-radius:50%;background:#24221f;color:#fff;font-family:Arial,sans-serif;font-size:18px}.address-empty h2{margin-bottom:17px;font-size:18px}.address-empty p{display:none}.address-form-card{padding:30px!important}.address-form{display:flex;flex-direction:column;gap:22px}.address-form__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px}.address-form .form-group{gap:8px}.address-form .form-label{font-size:11px;font-weight:650}.address-form .form-input,.address-form .form-select,.address-form .form-textarea{min-height:54px;padding:0 15px;border:1px solid #ded8cf;border-radius:12px;background:#eeeae3;outline:none}.address-form .form-textarea{min-height:130px;padding:14px 15px;resize:vertical}.address-form .form-input:focus,.address-form .form-select:focus,.address-form .form-textarea:focus{border-color:#6e685f;background:#f7f4ee;box-shadow:0 0 0 3px rgba(74,68,59,.08)}.address-form__actions{display:flex;align-items:center;gap:9px;padding-top:2px}.address-form__actions .btn{min-width:125px;min-height:46px;border-radius:10px}@media(max-width:900px){.account-page-header{align-items:stretch;flex-direction:column}.address-card{align-items:stretch;flex-direction:column}.address-actions{width:100%}.address-actions .btn,.address-actions form{flex:1}.address-actions form .btn{width:100%}}@media(max-width:600px){.profile-grid,.address-form__grid{grid-template-columns:1fr}.address-card{padding:18px;border-radius:14px}.address-card__meta{display:grid;grid-template-columns:1fr}.address-card__meta span{width:100%}.address-empty{min-height:260px;padding:28px 18px}.address-form__actions{flex-direction:column}.address-form__actions .btn{width:100%}}
+
+
+/* =========================================================
+   SHARED BABAEI STOREFRONT PALETTE
+   Keep account/profile visually aligned with Home + Shop.
+========================================================= */
+.account-body {
+    --account-bg: var(--store-bg);
+    --account-surface: var(--store-paper);
+    --account-text: var(--store-ink);
+    --account-muted: var(--store-muted);
+    --account-border: var(--store-line);
+    --account-accent: var(--store-accent);
+    --account-dark: var(--store-dark);
+    background: var(--store-bg) !important;
+    color: var(--store-ink);
+}
+
+.account-body .account-shell-header {
+    background: rgba(248, 246, 241, .94) !important;
+    border-bottom-color: var(--store-line) !important;
+}
+
+.account-body .account-shell-brand {
+    color: var(--store-ink) !important;
+}
+
+.account-body .account-shell-brand__line {
+    background: var(--store-accent) !important;
+}
+
+.account-body .account-page {
+    background: var(--store-bg) !important;
+}
+
+.account-body .account-sidebar,
+.account-body .account-card,
+.account-body .address-card {
+    background: var(--store-paper) !important;
+    border-color: var(--store-line) !important;
+    box-shadow: 0 18px 50px rgba(21, 21, 19, .045) !important;
+}
+
+.account-body .account-user,
+.account-body .profile-identity,
+.account-body .profile-photo-row {
+    border-color: var(--store-line) !important;
+}
+
+.account-body .account-user strong,
+.account-body .profile-identity__info h2,
+.account-body .account-page-title,
+.account-body .profile-page-header h1,
+.account-body .address-card__top h2 {
+    color: var(--store-ink) !important;
+}
+
+.account-body .account-user span,
+.account-body .profile-identity__info span,
+.account-body .account-page-description,
+.account-body .profile-photo-copy p,
+.account-body .address-card__description {
+    color: var(--store-muted) !important;
+}
+
+.account-body .account-nav a {
+    color: #55514b;
+}
+
+.account-body .account-nav a:hover,
+.account-body .account-nav a.is-active {
+    background: rgba(216, 168, 95, .12) !important;
+    color: var(--store-ink) !important;
+}
+
+.account-body .account-nav a.is-active span:last-child {
+    color: #9b7440 !important;
+}
+
+.account-body .profile-file--compact,
+.account-body .profile-file,
+.account-body .address-card__meta span {
+    background: var(--store-light) !important;
+    border-color: rgba(21, 21, 19, .12) !important;
+    color: #39352f !important;
+}
+
+.account-body .profile-form .form-input,
+.account-body .profile-form .form-select,
+.account-body .profile-form .form-textarea {
+    background: var(--store-light) !important;
+    border-color: rgba(21, 21, 19, .12) !important;
+    color: var(--store-ink) !important;
+}
+
+.account-body .profile-form .form-input:focus,
+.account-body .profile-form .form-select:focus,
+.account-body .profile-form .form-textarea:focus {
+    border-color: var(--store-accent) !important;
+    background: var(--store-paper) !important;
+    box-shadow: 0 0 0 3px rgba(216, 168, 95, .12) !important;
+}
+
+.account-body .gender-option {
+    background: var(--store-light) !important;
+    border-color: rgba(21, 21, 19, .12) !important;
+    color: #5f5a52 !important;
+}
+
+.account-body .gender-option:hover {
+    border-color: rgba(216, 168, 95, .65) !important;
+    background: #efe8dc !important;
+}
+
+.account-body .gender-option.is-selected {
+    background: var(--store-dark) !important;
+    border-color: var(--store-dark) !important;
+    color: #fff !important;
+    box-shadow: 0 8px 18px rgba(21, 21, 19, .12) !important;
+}
+
+.account-body .profile-save {
+    background: var(--store-dark) !important;
+    color: #fff !important;
+}
+
+.account-body .profile-save:hover {
+    background: #292a27 !important;
+}
+
+.account-body .account-shell-back {
+    border-color: rgba(216, 168, 95, .48) !important;
+    background: var(--store-paper) !important;
+    color: var(--store-ink) !important;
+}
+
+.account-body .account-shell-back:hover {
+    border-color: var(--store-accent) !important;
+    background: var(--store-light) !important;
+}
+
+.account-body .account-avatar,
+.account-body .profile-image--large {
+    background: var(--store-dark) !important;
+    border-color: rgba(21, 21, 19, .12) !important;
+}
+
+.account-body .profile-actions--clean {
+    border-top-color: var(--store-line) !important;
+}
+
+.account-body .account-shell-footer {
+    background: var(--store-dark) !important;
+}
