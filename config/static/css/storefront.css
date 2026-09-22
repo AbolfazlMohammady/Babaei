@@ -1387,3 +1387,54 @@ body.home-page .category-card {
         color: #f5f0e8 !important;
     }
 }
+
+/* Final public-shop consistency pass */
+body.shop-page .product-detail-page .product-description,
+body.shop-page .product-detail-page .product-benefits {
+    color: var(--store-ink);
+}
+
+body.shop-page .product-detail-page .product-description div {
+    color: var(--store-muted) !important;
+}
+
+body.shop-page .product-benefits {
+    background: var(--store-paper);
+    border-top-color: var(--store-line);
+    border-bottom-color: var(--store-line);
+}
+
+body.shop-page .product-benefits > div {
+    border-left-color: var(--store-line);
+}
+
+body.shop-page .product-benefits strong {
+    color: var(--store-ink) !important;
+}
+
+body.shop-page .product-benefits small {
+    color: var(--store-muted) !important;
+}
+
+body.shop-page .product-detail-page .color-option,
+body.shop-page .product-detail-page .size-option {
+    background: var(--store-paper);
+    color: var(--store-ink);
+}
+
+body.shop-page .product-detail-page .color-option.is-selected,
+body.shop-page .product-detail-page .size-option.is-selected {
+    background: var(--store-dark);
+    border-color: var(--store-dark);
+    color: #fff;
+}
+
+body.shop-page .product-detail-page .gallery-main,
+body.shop-page .product-gallery__thumb {
+    background: #e2ded5;
+}
+
+body.shop-page .product-detail-page .discount-badge {
+    background: var(--store-dark);
+    color: var(--store-light);
+}
