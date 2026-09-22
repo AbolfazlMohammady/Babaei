@@ -37,9 +37,18 @@
     The webfont is preloaded because the hero headline is the LCP candidate and
     a late swap would repaint it.
     {% endcomment %}
-    {% if request.resolver_match.namespace == 'shop' %}
+    {% comment %}
+    The webfont, site-wide.
+
+    app.css and babaei-ui.css have both asked for Vazirmatn for a long time
+    (--font-sans, --ba-font) but nothing ever shipped an @font-face outside the
+    shop namespace, so every other page — sign-in, verification, cart, account,
+    addresses, saved items — silently fell back to Tahoma. That single fact is
+    most of why those pages read as a different, older site next to the shop.
+    {% endcomment %}
     <link rel="preload" href="{% static 'fonts/vazirmatn-var.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}?v=1">
+    {% if request.resolver_match.namespace == 'shop' %}
     <link rel="stylesheet" href="{% static 'css/pages/shop-shell.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'css/pages/shop-catalog.css' %}?v=1">
     <noscript><style>
