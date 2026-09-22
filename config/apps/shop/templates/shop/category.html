@@ -58,6 +58,21 @@
                 </section>
 
                 <section class="shop-reference__filter-section">
+                    <h2>محدوده قیمت</h2>
+                    <div class="shop-reference__price-labels">
+                        <span><small>از</small> <b data-min-price-label>{{ filter_min_price|default:"۰" }}</b> تومان</span>
+                        <span><small>تا</small> <b data-max-price-label>{{ filter_max_price|default:"۵,۰۰۰,۰۰۰" }}</b> تومان</span>
+                    </div>
+                    <div class="shop-reference__range" aria-label="انتخاب بازه قیمت">
+                        <div class="shop-reference__range-track"></div>
+                        <input type="range" min="0" max="5000000" step="50000" value="{{ filter_min_price|default:0 }}" data-min-range aria-label="حداقل قیمت">
+                        <input type="range" min="0" max="5000000" step="50000" value="{{ filter_max_price|default:5000000 }}" data-max-range aria-label="حداکثر قیمت">
+                    </div>
+                    <input type="hidden" name="min_price" value="{{ filter_min_price }}" data-min-price-input>
+                    <input type="hidden" name="max_price" value="{{ filter_max_price }}" data-max-price-input>
+                </section>
+
+                <section class="shop-reference__filter-section">
                     <h2>سایز</h2>
                     <div class="shop-reference__sizes" role="radiogroup" aria-label="انتخاب سایز">
                         {% for size in filter_sizes %}
@@ -128,7 +143,7 @@
                 </article>
                 {% empty %}<div class="shop-reference__empty">در این دسته‌بندی محصول فعالی وجود ندارد.</div>{% endfor %}
             </div>
-            {% if is_paginated %}<nav class="shop-reference__pagination" aria-label="صفحه‌بندی">{% if page_obj.has_previous %}<a href="?{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_color %}color={{ filter_color }}&{% endif %}{% if filter_size %}size={{ filter_size }}&{% endif %}page={{ page_obj.previous_page_number }}">‹</a>{% endif %}<span class="is-current">{{ page_obj.number|price }}</span>{% if page_obj.has_next %}<a href="?{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_color %}color={{ filter_color }}&{% endif %}{% if filter_size %}size={{ filter_size }}&{% endif %}page={{ page_obj.next_page_number }}">›</a>{% endif %}</nav>{% endif %}
+            {% if is_paginated %}<nav class="shop-reference__pagination" aria-label="صفحه‌بندی">{% if page_obj.has_previous %}<a href="?{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_size %}size={{ filter_size }}&{% endif %}{% if filter_min_price %}min_price={{ filter_min_price }}&{% endif %}{% if filter_max_price %}max_price={{ filter_max_price }}&{% endif %}{% if filter_discount %}discount=1&{% endif %}page={{ page_obj.previous_page_number }}">‹</a>{% endif %}<span class="is-current">{{ page_obj.number|price }}</span>{% if page_obj.has_next %}<a href="?{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_size %}size={{ filter_size }}&{% endif %}{% if filter_min_price %}min_price={{ filter_min_price }}&{% endif %}{% if filter_max_price %}max_price={{ filter_max_price }}&{% endif %}{% if filter_discount %}discount=1&{% endif %}page={{ page_obj.next_page_number }}">›</a>{% endif %}</nav>{% endif %}
         </div>
     </section>
 </div>
