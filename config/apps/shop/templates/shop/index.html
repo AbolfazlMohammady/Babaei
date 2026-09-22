@@ -81,8 +81,8 @@
                     </div>
                     <div class="shop-reference__range" aria-label="انتخاب بازه قیمت">
                         <div class="shop-reference__range-track"></div>
-                        <input type="range" min="0" max="5000000" step="50000" value="{{ filter_min_price|default:0 }}" data-min-range aria-label="حداقل قیمت">
-                        <input type="range" min="0" max="5000000" step="50000" value="{{ filter_max_price|default:5000000 }}" data-max-range aria-label="حداکثر قیمت">
+                        <input type="range" min="0" max="{{ price_max|default:5000000 }}" step="50000" value="{{ filter_min_price|default:0 }}" data-min-range aria-label="حداقل قیمت">
+                        <input type="range" min="0" max="{{ price_max|default:5000000 }}" step="50000" value="{{ filter_max_price|default:price_max }}" data-max-range aria-label="حداکثر قیمت">
                     </div>
                     <input type="hidden" name="min_price" value="{{ filter_min_price }}" data-min-price-input>
                     <input type="hidden" name="max_price" value="{{ filter_max_price }}" data-max-price-input>
@@ -197,7 +197,7 @@
             </div>
 
             {% if is_paginated %}
-            <nav class="shop-reference__pagination" aria-label="صفحه‌بندی محصولات">
+            <nav class="shop-reference__pagination" aria-label="صفحه‌بندی محصولات" data-shop-pagination>
                 {% if page_obj.has_previous %}<a href="?{% if filter_category %}category={{ filter_category }}&{% endif %}{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_size %}size={{ filter_size }}&{% endif %}{% if filter_min_price %}min_price={{ filter_min_price }}&{% endif %}{% if filter_max_price %}max_price={{ filter_max_price }}&{% endif %}{% if filter_discount %}discount=1&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="صفحه قبل">‹</a>{% endif %}
                 {% for number in paginator.page_range %}
                     {% if number == page_obj.number %}<span class="is-current">{{ number|price }}</span>
