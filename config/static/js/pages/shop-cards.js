@@ -23,7 +23,24 @@
 
     if (!cards.length) return;
 
+    const visibleCards = new WeakSet();
+    const cardObserver = 'IntersectionObserver' in window
+        ? new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    visibleCards.add(entry.target);
+                    entry.target.dispatchEvent(new CustomEvent('card:visible'));
+                } else {
+                    visibleCards.delete(entry.target);
+                    entry.target.dispatchEvent(new CustomEvent('card:hidden'));
+                }
+            });
+        }, { rootMargin: '200px 0px', threshold: 0.01 })
+        : null;
+
     cards.forEach((card) => {
+        cardObserver?.observe(card);
+
         const slides = Array.from(card.querySelectorAll('[data-card-slide]'));
         const dots = Array.from(card.querySelectorAll('[data-card-dot]'));
         const favorite = card.querySelector('[data-favorite-button]');
@@ -56,12 +73,19 @@
             };
 
             const start = () => {
+                if (!visibleCards.has(card) || document.hidden) return;
                 stop();
                 timer = setInterval(next, 4200);
             };
 
             media?.addEventListener('mouseenter', stop);
             media?.addEventListener('mouseleave', start);
+            card.addEventListener('card:visible', start);
+            card.addEventListener('card:hidden', stop);
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) stop();
+                else start();
+            });
             media?.addEventListener('touchstart', (event) => {
                 startX = event.touches[0].clientX;
                 stop();
