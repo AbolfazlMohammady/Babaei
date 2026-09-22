@@ -7,7 +7,6 @@
     const close = root.querySelector("[data-shop-filter-close]");
     const form = root.querySelector("[data-shop-filter-form]");
     const count = root.querySelector("[data-filter-count]");
-    const products = root.querySelector("[data-shop-products]");
     const params = new URLSearchParams(window.location.search);
 
     const openFilters = () => {
@@ -65,8 +64,44 @@
     maxRange?.addEventListener("input", () => syncRange("max"));
     if (minRange && maxRange) syncRange();
 
-    // Keep radio/chip states visually synchronized with the actual form values.
-    root.querySelectorAll(".shop-reference__sort-options label, .shop-reference__sizes label, .shop-reference__discount-check").forEach((label) => {
+    // Sort is a compact dropdown above the product grid. Selecting an option applies immediately.
+    const sortDropdown = root.querySelector("[data-sort-dropdown]");
+    const sortTrigger = root.querySelector("[data-sort-trigger]");
+    const sortOptions = root.querySelectorAll("[data-sort-option]");
+
+    const closeSort = () => {
+        if (!sortDropdown) return;
+        sortDropdown.classList.remove("is-open");
+        sortTrigger?.setAttribute("aria-expanded", "false");
+    };
+
+    const openSort = () => {
+        if (!sortDropdown) return;
+        sortDropdown.classList.add("is-open");
+        sortTrigger?.setAttribute("aria-expanded", "true");
+    };
+
+    sortTrigger?.addEventListener("click", (event) => {
+        event.stopPropagation();
+        sortDropdown.classList.contains("is-open") ? closeSort() : openSort();
+    });
+
+    sortOptions.forEach((option) => {
+        option.addEventListener("click", () => {
+            const value = option.dataset.value;
+            if (!value) return;
+            const url = new URL(window.location.href);
+            url.searchParams.set("sort", value);
+            url.searchParams.delete("page");
+            window.location.assign(url.toString());
+        });
+    });
+
+    document.addEventListener("click", (event) => {
+        if (sortDropdown && !sortDropdown.contains(event.target)) closeSort();
+    });
+
+    root.querySelectorAll(".shop-reference__sizes label, .shop-reference__discount-check").forEach((label) => {
         const input = label.querySelector("input");
         if (!input) return;
         const sync = () => {
@@ -78,14 +113,6 @@
             }
         };
         input.addEventListener("change", sync);
-        if (input.closest(".shop-reference__sort-options")) {
-            input.addEventListener("change", () => {
-                const url = new URL(window.location.href);
-                url.searchParams.set("sort", input.value);
-                url.searchParams.delete("page");
-                window.location.assign(url.toString());
-            });
-        }
         sync();
     });
 
