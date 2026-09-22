@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 from django.views.generic import DetailView, ListView
 
-from .models import Category, Product , ProductImage, ProductSize, ProductVariant
+from .models import Category, Product, ProductImage, ProductVariant
 from apps.saved.models import FavoriteProduct
 
 AUTH_USER_SESSION_KEY = "_auth_user_id"
