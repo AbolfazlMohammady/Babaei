@@ -147,10 +147,12 @@
                 currentSentinel.classList.remove("is-done");
             }
 
+            const stateUrl = new URL(nextLink.href, window.location.href);
+            stateUrl.searchParams.delete("page");
             window.history.replaceState(
                 {shopCatalog: true},
                 "",
-                nextLink.href
+                stateUrl.toString()
             );
 
             window.dispatchEvent(new CustomEvent("shop:catalog-updated"));
