@@ -10,7 +10,7 @@
 {% block og_description %}خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی.{% endblock %}
 {% block og_image %}{% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}">{% endif %}{% endblock %}
 {% block extra_head %}<script type="application/ld+json">{{ website_schema }}</script>{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}">{% endblock %}
+{% block extra_css %}{% endblock %}
 
 {% block site_optional_css %}
 <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
@@ -37,7 +37,7 @@
             <p>بیش از یک لباس، داستان خودت را بپوش</p>
         </div>
         <div class="shop-reference__hero-visual" aria-hidden="true">
-            <img src="{% static 'images/shop/shop-hero.webp' %}" alt="" fetchpriority="high" decoding="async">
+            <img src="{% static 'images/shop/shop-hero.svg' %}" alt="" fetchpriority="high" decoding="async">
             <div class="shop-reference__hero-mark">MORE<br>THAN<br>CLOTHES<span></span></div>
         </div>
     </section>
