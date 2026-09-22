@@ -26,7 +26,8 @@
         const offset = base.right - item.right - (parseFloat(getComputedStyle(dock).paddingInlineEnd) || 0) + 6;
 
         pill.style.insetInlineStart = `${offset}px`;
-        pill.style.inlineSize = `${item.width}px`;
+        // Height, not width: the indicator has to stay circular.
+        pill.style.inlineSize = `${item.height}px`;
 
         if (animate) dock.setAttribute("data-ready", "");
     };
