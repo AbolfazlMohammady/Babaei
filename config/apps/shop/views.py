@@ -104,7 +104,7 @@ def card_annotations(request):
 class ShopIndexView(ListView):
     template_name = "shop/index.html"
     context_object_name = "products"
-    paginate_by = 18
+    paginate_by = 12
 
     def get_queryset(self):
         variant_price, variant_compare_price, variant_max_price = price_annotations()
@@ -181,6 +181,11 @@ class ShopIndexView(ListView):
         # Which row of the shared filter rail is current: the filtered slug here,
         # self.category.slug on CategoryDetailView.
         context["current_category_slug"] = context["filter_category"]
+        # Only this view renders the dark .sh-hero, so only here may the nav
+        # start transparent. See templates/includes/shop_header.html.
+        context["has_dark_hero"] = True
+        # Category clicks refine THIS page instead of navigating away.
+        context["catalog_in_page_filter"] = True
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
@@ -207,7 +212,7 @@ class ShopIndexView(ListView):
 class CategoryDetailView(ListView):
     template_name = "shop/category.html"
     context_object_name = "products"
-    paginate_by = 18
+    paginate_by = 12
 
     def get_queryset(self):
         self.category = get_object_or_404(Category.objects.only("id", "name", "slug", "description", "seo_title", "seo_description", "image"), slug=self.kwargs["slug"], is_active=True)
@@ -268,6 +273,9 @@ class CategoryDetailView(ListView):
         # empty and no "remove category" chip is offered for the page you are on.
         context["filter_category"] = ""
         context["current_category_slug"] = self.category.slug
+        context["has_dark_hero"] = False
+        # Here the category is the page path, so its rail links stay canonical.
+        context["catalog_in_page_filter"] = False
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"

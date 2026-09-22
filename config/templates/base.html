@@ -54,6 +54,13 @@
         .sh-nav.is-top .sh-icon__badge{border-color:#f4f1ea}
     </style></noscript>
     {% endif %}
+    {% comment %}
+    The mobile dock. Deliberately absent from the home page, which carries no
+    global navigation of its own.
+    {% endcomment %}
+    {% if request.resolver_match.namespace != 'home' %}
+    <link rel="stylesheet" href="{% static 'css/mobile-dock.css' %}?v=1">
+    {% endif %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
     {% include "includes/header.html" %}
@@ -113,6 +120,10 @@
     </nav>
     {% endif %}
 
+    {% if request.resolver_match.namespace != 'home' %}
+    {% include "includes/mobile_dock.html" %}
+    {% endif %}
+
     <script src="{% static 'js/app.js' %}" defer></script>
     <script src="{% static 'js/components.js' %}" defer></script>
     {% block site_optional_js %}
@@ -121,6 +132,9 @@
     {% endblock %}
     {% if request.resolver_match.namespace == 'shop' %}
     <script src="{% static 'js/pages/shop-shell.js' %}?v=1" defer></script>
+    {% endif %}
+    {% if request.resolver_match.namespace != 'home' %}
+    <script src="{% static 'js/mobile-dock.js' %}?v=1" defer></script>
     {% endif %}
     {% block extra_js %}{% endblock %}
 </body>

@@ -22,7 +22,14 @@
 
     const nav = document.querySelector("[data-sh-nav]");
 
-    if (nav) {
+    /* The transparent state exists only so the bar can sit over the shop's dark
+       hero photo. On pages without that hero (category, product detail) a
+       transparent bar would put cream text on a cream background — which is
+       exactly what happened on the category page. So the state is only managed
+       where a .sh-hero is actually on the page. */
+    const overHero = document.querySelector(".sh-hero");
+
+    if (nav && overHero) {
         /* The handler only reads scrollY and flips two classes, and it returns
            immediately when the state has not changed. There is no layout read,
            so no reflow is forced and batching into requestAnimationFrame is
@@ -44,6 +51,10 @@
         window.addEventListener("resize", syncNav, { passive: true });
         window.addEventListener("pageshow", syncNav);
         window.addEventListener("hashchange", syncNav);
+    } else if (nav) {
+        // No dark hero here: never transparent.
+        nav.classList.remove("is-top");
+        nav.classList.add("is-scrolled");
     }
 
     /* ======================================================================
