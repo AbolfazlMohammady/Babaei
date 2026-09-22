@@ -10,73 +10,78 @@
 {% block og_description %}{{ category.seo_description|default:category.description|default:category.name|truncatechars:160 }}{% endblock %}
 {% block og_image %}{% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}">{% endif %}{% endblock %}
 {% block extra_head %}<script type="application/ld+json">{{ category_schema }}</script>{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}"><script src="{% static 'js/pages/shop-cards.js' %}?v=1" defer></script>
-{% endblock %}
-
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}">{% endblock %}
 {% block site_optional_css %}
 <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
-<link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=5">
+<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=1">
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/pages/shop-cards.js' %}?v=2" defer></script>
+<script src="{% static 'js/pages/shop-reference.js' %}?v=1" defer></script>
 {% endblock %}
 
 {% block content %}
-<div class="category-shell">
-    <nav class="breadcrumbs" aria-label="مسیر صفحه">
-        <a href="{% url 'shop:index' %}">فروشگاه</a>
-        <span aria-hidden="true">/</span>
-        <span aria-current="page">{{ category.name }}</span>
-    </nav>
-
-    <header class="category-intro" data-reveal>
-        <div class="shop-kicker">BABAEI / CATEGORY</div>
+<div class="shop-reference shop-reference--category">
+    <header class="shop-reference__category-hero">
+        <nav class="shop-reference__crumbs" aria-label="مسیر صفحه">
+            <a href="{% url 'shop:index' %}">فروشگاه</a><span>‹</span><span aria-current="page">{{ category.name }}</span>
+        </nav>
+        <span class="shop-reference__eyebrow">BABAEI / CATEGORY</span>
         <h1>{{ category.name }}</h1>
         {% if category.description %}<p>{{ category.description }}</p>{% endif %}
     </header>
 
-    <div class="products" aria-label="محصولات {{ category.name }}">
-        {% for product in products %}
-            <article class="product-card{% if forloop.first %} product-card--featured{% endif %}" data-product-card data-reveal>
-                <div class="product-card__media">
-                    <a class="product-card__gallery" href="{% url 'shop:product' product.slug %}" aria-label="{{ product.name }}">
-                        <div class="product-card__slides">
-                            {% for image in product.card_images %}
-                                <div class="product-card__slide{% if forloop.first %} is-active{% endif %}" data-card-slide><img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async"></div>
-                            {% empty %}
-                                <div class="product-card__slide is-active" data-card-slide><img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" width="1000" height="1000" loading="lazy" decoding="async"></div>
-                            {% endfor %}
-                        </div>
-                    </a>
-                    <form method="post" action="{% url 'saved:toggle_favorite' product.id %}" class="product-card__favorite-form">
-                        {% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
-                        <button type="submit" class="product-card__favorite{% if product.is_favorite %} is-active{% endif %}" data-favorite-button aria-label="{% if product.is_favorite %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.7c0 5.4-8.8 10.1-8.8 10.1S3.2 14.1 3.2 8.7A4.7 4.7 0 0 1 12 6.1a4.7 4.7 0 0 1 8.8 2.6Z"></path></svg>
-                        </button>
-                    </form>
-                    {% if product.has_discount %}<span class="product-card__discount">{{ product.discount_percent|discount_percent }}</span>{% endif %}
-                    {% if product.card_images|length > 1 %}<div class="product-card__dots" aria-hidden="true">{% for image in product.card_images %}<span class="product-card__dot{% if forloop.first %} is-active{% endif %}" data-card-dot></span>{% endfor %}</div>{% endif %}
-                </div>
-                <div class="product-card__body">
-                    <a href="{% url 'shop:product' product.slug %}" class="product-card__info">
-                        <div class="product-card__name">{{ product.name }}</div>
-                        <div class="product-card__price-row"><div class="product-card__price">{{ product.display_price|price }} <span>تومان</span></div>{% if product.has_discount %}<del>{{ product.display_compare_price|price }} تومان</del>{% endif %}</div>
-                    </a>
-                    {% if product.has_variants %}<a class="product-card__cart" href="{% url 'shop:product' product.slug %}">انتخاب و افزودن</a>{% else %}
-                    <form method="post" action="{% url 'orders:cart_add' %}" class="product-card__cart-form">{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="quantity" value="1"><button type="submit" class="product-card__cart">افزودن به سبد خرید</button></form>
-                    {% endif %}
-                </div>
-            </article>
-        {% empty %}
-            <p class="empty-state">در این دسته‌بندی محصول فعالی وجود ندارد.</p>
-        {% endfor %}
-    </div>
+    <section class="shop-reference__catalog" id="products" aria-label="محصولات {{ category.name }}">
+        <button type="button" class="shop-reference__mobile-filter" data-shop-filter-toggle aria-expanded="false" aria-controls="shop-reference-sidebar">
+            <span class="shop-reference__mobile-filter-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path><circle cx="8" cy="6" r="1.5"></circle><circle cx="15" cy="12" r="1.5"></circle><circle cx="12" cy="18" r="1.5"></circle></svg></span>
+            فیلتر
+            <span data-filter-count></span>
+        </button>
+        <aside class="shop-reference__sidebar" id="shop-reference-sidebar" data-shop-filter-panel>
+            <div class="shop-reference__sidebar-head"><strong>فیلتر محصولات</strong><button type="button" class="shop-reference__sidebar-close" data-shop-filter-close aria-label="بستن فیلتر">×</button></div>
+            <form method="get" class="shop-reference__filter-form" data-shop-filter-form>
+                <section class="shop-reference__filter-section">
+                    <h2>دسته‌بندی‌ها</h2>
+                    <div class="shop-reference__category-list">
+                        <a href="{% url 'shop:index' %}"><span>همه محصولات</span></a>
+                        {% for item in categories %}<a href="{{ item.get_absolute_url }}" class="{% if item.slug == category.slug %}is-active{% endif %}"><span>{{ item.name }}</span></a>{% endfor %}
+                    </div>
+                </section>
+                {% if filter_colors %}<section class="shop-reference__filter-section"><h2>رنگ</h2><div class="shop-reference__swatches">{% for color in filter_colors %}<label class="{% if filter_color == color.slug %}is-active{% endif %}"><input type="radio" name="color" value="{{ color.slug }}" {% if filter_color == color.slug %}checked{% endif %}><span style="--swatch:{{ color.hex_code }}"></span></label>{% endfor %}</div></section>{% endif %}
+                {% if filter_sizes %}<section class="shop-reference__filter-section"><h2>سایز</h2><div class="shop-reference__sizes">{% for size in filter_sizes %}<label class="{% if filter_size == size.slug %}is-active{% endif %}"><input type="radio" name="size" value="{{ size.slug }}" {% if filter_size == size.slug %}checked{% endif %}><span>{{ size.name }}</span></label>{% endfor %}</div></section>{% endif %}
+                <button class="shop-reference__apply" type="submit">اعمال فیلترها <span>↗</span></button>
+                <a class="shop-reference__clear" href="{{ request.path }}">پاک کردن فیلترها ↻</a>
+            </form>
+        </aside>
 
-    {% if is_paginated %}
-    <nav class="pager" aria-label="صفحه‌بندی">
-        {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" rel="prev">قبلی</a>{% endif %}
-        <span>صفحه {{ page_obj.number|price }} از {{ page_obj.paginator.num_pages|price }}</span>
-        {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" rel="next">بعدی</a>{% endif %}
-    </nav>
-    {% endif %}
+        <div class="shop-reference__results">
+            <header class="shop-reference__toolbar">
+                <div class="shop-reference__toolbar-title"><div><span class="shop-reference__toolbar-label">CATEGORY</span><h2>{{ category.name }}</h2></div><span class="shop-reference__count">{{ paginator.count|price }} محصول</span></div>
+                <label class="shop-reference__sort"><span>مرتب‌سازی:</span><select name="sort" data-shop-sort aria-label="مرتب‌سازی محصولات"><option value="featured">پیشنهاد شده</option><option value="newest">جدیدترین</option><option value="price_asc">ارزان‌ترین</option><option value="price_desc">گران‌ترین</option></select></label>
+            </header>
+            <div class="shop-reference__products" data-shop-products>
+                {% for product in products %}
+                <article class="shop-reference__card" data-product-card>
+                    <div class="shop-reference__media">
+                        <a class="shop-reference__media-link" href="{% url 'shop:product' product.slug %}" aria-label="{{ product.name }}">
+                            <div class="product-card__slides">
+                                {% for image in product.card_images %}<div class="product-card__slide{% if forloop.first %} is-active{% endif %}" data-card-slide><img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async"></div>
+                                {% empty %}<div class="product-card__slide is-active" data-card-slide><img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async"></div>{% endfor %}
+                            </div>
+                        </a>
+                        {% if product.is_featured %}<span class="shop-reference__badge shop-reference__badge--new">ویژه</span>{% endif %}
+                        <form method="post" action="{% url 'saved:toggle_favorite' product.id %}" class="shop-reference__favorite-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="shop-reference__favorite{% if product.is_favorite %} is-active{% endif %}" data-favorite-button aria-label="افزودن به علاقه‌مندی‌ها"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.7c0 5.4-8.8 10.1-8.8 10.1S3.2 14.1 3.2 8.7A4.7 4.7 0 0 1 12 6.1a4.7 4.7 0 0 1 8.8 2.6Z"></path></svg></button></form>
+                    </div>
+                    <div class="shop-reference__card-body">
+                        <a href="{% url 'shop:product' product.slug %}" class="shop-reference__card-info"><h3>{{ product.name }}</h3><div class="shop-reference__price-row"><strong>{{ product.display_price|price }}</strong><span>تومان</span>{% if product.has_discount %}<del>{{ product.display_compare_price|price }}</del>{% endif %}</div></a>
+                        {% if product.has_variants %}<a class="shop-reference__cart" href="{% url 'shop:product' product.slug %}" aria-label="انتخاب {{ product.name }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h2l1.5 9.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 1.9-1.5L20 9H7"></path><path d="M9 19.5h.01M18 19.5h.01"></path></svg></a>{% else %}<form method="post" action="{% url 'orders:cart_add' %}" class="shop-reference__cart-form">{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="quantity" value="1"><button type="submit" class="shop-reference__cart" aria-label="افزودن {{ product.name }} به سبد"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h2l1.5 9.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 1.9-1.5L20 9H7"></path><path d="M9 19.5h.01M18 19.5h.01"></path></svg></button></form>{% endif %}
+                    </div>
+                </article>
+                {% empty %}<div class="shop-reference__empty">در این دسته‌بندی محصول فعالی وجود ندارد.</div>{% endfor %}
+            </div>
+            {% if is_paginated %}<nav class="shop-reference__pagination" aria-label="صفحه‌بندی">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">‹</a>{% endif %}<span class="is-current">{{ page_obj.number|price }}</span>{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">›</a>{% endif %}</nav>{% endif %}
+        </div>
+    </section>
 </div>
 {% endblock %}
