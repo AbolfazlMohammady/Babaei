@@ -83,16 +83,8 @@
         });
     });
 
-    try {
-        const savedView = localStorage.getItem("babaei-shop-view");
-        if (savedView === "list" && products) {
-            products.classList.add("is-list-view");
-            root.querySelectorAll("[data-view]").forEach((button) => {
-                button.classList.toggle("is-active", button.dataset.view === "list");
-            });
-        }
-    } catch (_) {}
-
+    // Grid is always the initial catalog view, matching the reference design.
+    // The list toggle remains available for the current session only.
     const mobileMedia = window.matchMedia("(max-width: 820px)");
     const closeOnDesktop = () => {
         if (!mobileMedia.matches) closeFilters();
