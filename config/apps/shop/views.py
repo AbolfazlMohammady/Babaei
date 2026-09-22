@@ -4,7 +4,7 @@ import json
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Case, CharField, Exists, F, IntegerField, OuterRef, Prefetch, Subquery, Value, When
+from django.db.models import Case, CharField, Count, Exists, F, IntegerField, OuterRef, Prefetch, Q, Subquery, Value, When
 from django.db.models.functions import Concat
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404
@@ -24,6 +24,7 @@ def get_active_categories():
     if categories is None:
         categories = list(
             Category.objects.filter(is_active=True)
+            .annotate(product_count=Count("products", filter=Q(products__is_active=True)))
             .only("id", "name", "slug", "image")
             .order_by("sort_order", "name")
         )
@@ -163,18 +164,25 @@ class ShopIndexView(ListView):
         context["filter_max_price"] = self.request.GET.get("max_price", "")
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_sort"] = self.request.GET.get("sort", "featured")
-        context["filter_color"] = self.request.GET.get("color", "")
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
+        context["filter_discount"] = self.request.GET.get("discount") == "1"
         context["filter_available"] = self.request.GET.get("available") == "1"
-        context["filter_colors"] = list(ProductColor.objects.filter(
-            is_active=True,
-            variants__is_active=True,
-        ).distinct().order_by("name"))
         context["filter_sizes"] = list(ProductSize.objects.filter(
             is_active=True,
+            slug__in=("s", "m", "l", "xl", "xxl"),
             variants__is_active=True,
-        ).distinct().order_by("sort_order", "name"))
+        ).distinct().annotate(
+            size_priority=Case(
+                When(slug="s", then=1),
+                When(slug="m", then=2),
+                When(slug="l", then=3),
+                When(slug="xl", then=4),
+                When(slug="xxl", then=5),
+                default=99,
+                output_field=IntegerField(),
+            )
+        ).order_by("size_priority", "name"))
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
         context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
@@ -238,8 +246,19 @@ class CategoryDetailView(ListView):
         ).distinct().order_by("name"))
         context["filter_sizes"] = list(ProductSize.objects.filter(
             is_active=True,
+            slug__in=("s", "m", "l", "xl", "xxl"),
             variants__is_active=True,
-        ).distinct().order_by("sort_order", "name"))
+        ).distinct().annotate(
+            size_priority=Case(
+                When(slug="s", then=1),
+                When(slug="m", then=2),
+                When(slug="l", then=3),
+                When(slug="xl", then=4),
+                When(slug="xxl", then=5),
+                default=99,
+                output_field=IntegerField(),
+            )
+        ).order_by("size_priority", "name"))
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = self.category.seo_title or self.category.name
         context["og_description"] = self.category.seo_description or self.category.description or self.category.name
