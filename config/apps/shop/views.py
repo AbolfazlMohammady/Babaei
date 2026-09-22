@@ -125,35 +125,33 @@ class ShopIndexView(ListView):
             queryset = queryset.filter(category__slug=category)
 
         size = self.request.GET.get("size")
-        if size:
-            queryset = queryset.filter(
-                variants__is_active=True,
-                variants__size__is_active=True,
-                variants__size__slug=size,
-            ).distinct()
+        variant_filters = {"variants__is_active": True}
 
-        if self.request.GET.get("discount") == "1":
-            queryset = queryset.filter(listed_compare_price__gt=F("listed_price"))
+        if size:
+            variant_filters.update({
+                "variants__size__is_active": True,
+                "variants__size__slug": size,
+            })
 
         min_price = self.request.GET.get("min_price")
         if min_price:
             try:
-                queryset = queryset.filter(
-                    variants__is_active=True,
-                    variants__price__gte=int(min_price),
-                ).distinct()
+                variant_filters["variants__price__gte"] = int(min_price)
             except (TypeError, ValueError):
                 pass
 
         max_price = self.request.GET.get("max_price")
         if max_price:
             try:
-                queryset = queryset.filter(
-                    variants__is_active=True,
-                    variants__price__lte=int(max_price),
-                ).distinct()
+                variant_filters["variants__price__lte"] = int(max_price)
             except (TypeError, ValueError):
                 pass
+
+        if variant_filters:
+            queryset = queryset.filter(**variant_filters).distinct()
+
+        if self.request.GET.get("discount") == "1":
+            queryset = queryset.filter(listed_compare_price__gt=F("listed_price"))
 
         sort = self.request.GET.get("sort", "featured")
         sort_map = {
@@ -205,29 +203,33 @@ class CategoryDetailView(ListView):
         queryset = Product.objects.filter(category_id=self.category.id, is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, listed_max_price=variant_max_price, **annotations).prefetch_related(Prefetch("images", queryset=card_images, to_attr="card_images"))
 
         size = self.request.GET.get("size")
-        if size:
-            queryset = queryset.filter(
-                variants__is_active=True,
-                variants__size__is_active=True,
-                variants__size__slug=size,
-            ).distinct()
+        variant_filters = {"variants__is_active": True}
 
-        if self.request.GET.get("discount") == "1":
-            queryset = queryset.filter(listed_compare_price__gt=F("listed_price"))
+        if size:
+            variant_filters.update({
+                "variants__size__is_active": True,
+                "variants__size__slug": size,
+            })
 
         min_price = self.request.GET.get("min_price")
         if min_price:
             try:
-                queryset = queryset.filter(variants__is_active=True, variants__price__gte=int(min_price)).distinct()
+                variant_filters["variants__price__gte"] = int(min_price)
             except (TypeError, ValueError):
                 pass
 
         max_price = self.request.GET.get("max_price")
         if max_price:
             try:
-                queryset = queryset.filter(variants__is_active=True, variants__price__lte=int(max_price)).distinct()
+                variant_filters["variants__price__lte"] = int(max_price)
             except (TypeError, ValueError):
                 pass
+
+        if variant_filters:
+            queryset = queryset.filter(**variant_filters).distinct()
+
+        if self.request.GET.get("discount") == "1":
+            queryset = queryset.filter(listed_compare_price__gt=F("listed_price"))
 
         sort = self.request.GET.get("sort", "featured")
         sort_map = {
