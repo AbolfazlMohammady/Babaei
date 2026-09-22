@@ -189,7 +189,7 @@ class ShopIndexView(ListView):
 class CategoryDetailView(ListView):
     template_name = "shop/category.html"
     context_object_name = "products"
-    paginate_by = 24
+    paginate_by = 18
 
     def get_queryset(self):
         self.category = get_object_or_404(Category.objects.only("id", "name", "slug", "description", "seo_title", "seo_description", "image"), slug=self.kwargs["slug"], is_active=True)
