@@ -4,7 +4,7 @@ import json
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Case, CharField, Count, Exists, F, IntegerField, Max, OuterRef, Prefetch, Q, Subquery, Value, When
+from django.db.models import Case, CharField, Count, Exists, F, IntegerField, Max, Min, OuterRef, Prefetch, Q, Subquery, Value, When
 from django.db.models.functions import Concat
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404
@@ -56,23 +56,24 @@ def price_annotations():
     )
 
 
-def catalog_max_price(queryset):
+def catalog_price_bounds(queryset):
     product_ids = queryset.values("pk")
-    max_variant_price = (
-        ProductVariant.objects
-        .filter(product_id__in=product_ids, is_active=True)
-        .aggregate(max_price=Max("price"))
-        .get("max_price")
+    variant_prices = ProductVariant.objects.filter(
+        product_id__in=product_ids,
+        is_active=True,
+    ).aggregate(
+        min_price=Min("price"),
+        max_price=Max("price"),
     )
-    if max_variant_price:
-        return max_variant_price
 
-    return (
-        queryset
-        .aggregate(max_price=Max("base_price"))
-        .get("max_price")
-        or 0
+    if variant_prices["min_price"] is not None:
+        return variant_prices["min_price"], variant_prices["max_price"] or variant_prices["min_price"]
+
+    base_prices = queryset.aggregate(
+        min_price=Min("base_price"),
+        max_price=Max("base_price"),
     )
+    return base_prices["min_price"] or 0, base_prices["max_price"] or 0
 
 
 def primary_image_annotations():
@@ -180,7 +181,7 @@ class ShopIndexView(ListView):
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
-        context["price_max"] = catalog_max_price(self.get_queryset().model.objects.filter(is_active=True, category__is_active=True))
+        context["price_min"], context["price_max"] = catalog_price_bounds(Product.objects.filter(is_active=True, category__is_active=True))
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
@@ -258,7 +259,7 @@ class CategoryDetailView(ListView):
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
         base_price_queryset = Product.objects.filter(category_id=self.category.id, is_active=True)
-        context["price_max"] = catalog_max_price(base_price_queryset)
+        context["price_min"], context["price_max"] = catalog_price_bounds(base_price_queryset)
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = self.category.seo_title or self.category.name
         context["og_description"] = self.category.seo_description or self.category.description or self.category.name
