@@ -206,6 +206,7 @@ class CategoryDetailView(ListView):
         context = super().get_context_data(**kwargs)
         context["category"] = self.category
         context["categories"] = get_active_categories()
+        context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
         context["filter_min_price"] = self.request.GET.get("min_price", "")
