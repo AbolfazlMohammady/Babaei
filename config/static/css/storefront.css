@@ -850,15 +850,6 @@ body.shop-page {
     transition: opacity .2s ease, transform .7s cubic-bezier(.2, .7, .2, 1);
 }
 
-.product-detail-page .gallery-main__index {
-    position: absolute;
-    right: 20px;
-    bottom: 18px;
-    color: rgba(255, 255, 255, .78);
-    font-size: 11px;
-    letter-spacing: .15em;
-}
-
 .product-gallery__thumbs {
     display: flex;
     gap: 10px;
