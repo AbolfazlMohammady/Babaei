@@ -182,13 +182,15 @@ class ShopIndexView(ListView):
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
         context["price_min"], context["price_max"] = catalog_price_bounds(Product.objects.filter(is_active=True, category__is_active=True))
-        context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
         context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
-        context["og_image_url"] = absolute_url(self.request, "/static/images/home/Tshirt.png")
+        # Was /static/images/home/Tshirt.png: a 1.9 MB product shot at 0.75:1, so
+        # link previews both pulled far too much data and cropped badly. Now a
+        # purpose-built 1200x630 card (~80 KB).
+        context["og_image_url"] = absolute_url(self.request, "/static/images/shop/shop-og.jpg")
         context["website_schema"] = schema_json({"@context": "https://schema.org", "@type": "WebSite", "name": "BABAEI", "url": settings.SITE_URL, "inLanguage": "fa-IR"})
         return context
 

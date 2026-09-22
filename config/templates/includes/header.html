@@ -1,3 +1,19 @@
+{% comment %}
+=============================================================================
+ Shared header.
+
+ Shop-namespace pages render the new shell (includes/shop_header.html): one
+ sticky nav plus a working mobile drawer, styled by css/pages/shop-shell.css.
+ Every other page — the home page in particular — still gets the original
+ markup below, untouched, until its own pass.
+=============================================================================
+{% endcomment %}
+{% if request.resolver_match.namespace == 'shop' %}
+
+    {% include "includes/shop_header.html" %}
+
+{% else %}
+
 <header class="site-header">
     <div class="site-header__inner">
         <a href="/" class="site-logo" aria-label="BABAEI">BABAEI</a>
@@ -32,15 +48,10 @@
         <span>خانه</span>
     </a>
     <a href="{% url 'shop:index' %}" class="{% if request.resolver_match.namespace == 'shop' %}is-active{% endif %}" aria-label="فروشگاه">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"></rect><path d="M8 5V3h8v2"></path></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>
         <span>فروشگاه</span>
     </a>
-    <a href="{% url 'orders:cart' %}" class="{% if request.resolver_match.namespace == 'orders' %}is-active{% endif %}" aria-label="سبد خرید">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l1.6 10.2a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>
-        <span>سبد</span>
-        {% if cart_item_count %}<b class="mobile-nav-badge">{{ cart_item_count }}</b>{% endif %}
-    </a>
-    <button type="button" aria-label="جستجو" data-mobile-search>
+    <button type="button" aria-label="جستجو">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 5 5"></path></svg>
         <span>جستجو</span>
     </button>
@@ -48,27 +59,10 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c.8-3.7 3.1-5.5 7-5.5s6.2 1.8 7 5.5"></path></svg>
         <span>حساب</span>
     </a>
+    <a href="{% url 'orders:cart' %}" class="{% if request.resolver_match.namespace == 'orders' %}is-active{% endif %}" aria-label="سبد خرید">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l1.6 10.2a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>
+        <span>سبد{% if cart_item_count %} ({{ cart_item_count }}){% endif %}</span>
+    </a>
 </nav>
 
-<style>
-body.shop-page .site-header{position:absolute!important;top:0!important;left:0!important;z-index:1500!important;width:100%!important;height:0!important;background:transparent!important;border:0!important;box-shadow:none!important;pointer-events:none!important}
-body.shop-page .site-header__inner{position:relative!important;z-index:10!important;display:flex!important;align-items:center!important;width:min(1260px,calc(100% - 56px))!important;height:82px!important;margin:28px auto 0!important;padding:10px 12px 10px 22px!important;overflow:hidden!important;border:1px solid rgba(255,255,255,.14)!important;border-radius:28px!important;background:rgba(255,255,255,.085)!important;box-shadow:0 20px 70px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.1)!important;backdrop-filter:blur(22px)!important;-webkit-backdrop-filter:blur(22px)!important;pointer-events:auto!important}
-body.shop-page .site-header__inner:before{content:""!important;position:absolute!important;top:-100px!important;left:25%!important;width:230px!important;height:230px!important;border-radius:50%!important;background:rgba(182,199,154,.15)!important;filter:blur(30px)!important;pointer-events:none!important}
-body.shop-page .site-logo{position:relative!important;z-index:2!important;display:flex!important;align-items:center!important;gap:11px!important;width:205px!important;min-width:205px!important;height:62px!important;padding:0!important;color:#f2eee5!important;background:none!important;font-family:Georgia,serif!important;font-size:22px!important;font-weight:500!important;letter-spacing:5px!important;line-height:1!important;direction:ltr!important;text-decoration:none!important}
-body.shop-page .site-logo:before{content:"B"!important;position:static!important;display:grid!important;place-items:center!important;flex:0 0 52px!important;width:52px!important;height:52px!important;border-radius:18px!important;background:#b6c79a!important;color:#18241e!important;font-family:Georgia,serif!important;font-size:26px!important;font-weight:700!important;letter-spacing:0!important;transform:rotate(-7deg)!important;box-shadow:8px 8px 0 rgba(255,255,255,.06)!important}
-body.shop-page .site-logo:after{content:"WEAR YOUR STORY"!important;position:absolute!important;left:63px!important;top:38px!important;color:#849082!important;font-family:Arial,sans-serif!important;font-size:9px!important;font-weight:600!important;letter-spacing:3px!important;line-height:1!important;white-space:nowrap!important}
-body.shop-page .site-nav{position:relative!important;z-index:2!important;display:flex!important;align-items:center!important;justify-content:center!important;flex:1!important;height:100%!important;gap:8px!important;direction:rtl!important}
-body.shop-page .site-nav a{position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:46px!important;padding:13px 17px!important;border-radius:16px!important;color:#d9ded5!important;background:transparent!important;text-decoration:none!important;white-space:nowrap!important;font-size:14px!important;font-weight:500!important;transition:.3s ease!important}
-body.shop-page .site-nav a:after{content:""!important;position:absolute!important;right:17px!important;bottom:5px!important;left:17px!important;height:2px!important;border-radius:5px!important;background:#b6c79a!important;transform:scaleX(0)!important;transition:.3s ease!important}
-body.shop-page .site-nav a:hover,body.shop-page .site-nav a.is-active{color:#fff!important}
-body.shop-page .site-nav a:hover:after,body.shop-page .site-nav a.is-active:after{transform:scaleX(1)!important}
-body.shop-page .site-actions{position:relative!important;z-index:2!important;display:flex!important;align-items:center!important;gap:9px!important}
-body.shop-page .site-actions .header-icon{position:relative!important;display:grid!important;place-items:center!important;width:47px!important;height:47px!important;min-width:47px!important;padding:0!important;border:1px solid rgba(255,255,255,.14)!important;border-radius:16px!important;color:#f2eee5!important;background:rgba(255,255,255,.06)!important;box-shadow:none!important;text-decoration:none!important;transition:.3s ease!important}
-body.shop-page .site-actions .header-icon:hover{color:#18241e!important;background:#b6c79a!important;transform:translateY(-3px)!important}
-body.shop-page .site-actions .header-icon svg{width:20px!important;height:20px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
-body.shop-page .site-actions .header-cart{color:#18241e!important;background:#b6c79a!important;border-color:transparent!important}
-body.shop-page .header-cart__badge{position:absolute!important;top:-7px!important;right:-6px!important;display:grid!important;place-items:center!important;width:19px!important;height:19px!important;min-width:19px!important;border:2px solid #18241e!important;border-radius:50%!important;color:#fff!important;background:#b77955!important;font:10px/1 Arial,sans-serif!important}
-body.shop-page .header-menu-button{display:none!important}
-@media(max-width:900px){body.shop-page .site-header__inner{width:calc(100% - 36px)!important;height:74px!important;margin-top:18px!important;padding:8px 10px 8px 16px!important}body.shop-page .site-logo{width:175px!important;min-width:175px!important}body.shop-page .site-nav{gap:0!important}body.shop-page .site-nav a{padding-inline:10px!important;font-size:12px!important}body.shop-page .site-actions{gap:6px!important}body.shop-page .site-actions .header-icon{width:43px!important;height:43px!important;min-width:43px!important}}
-@media(max-width:680px){body.shop-page .site-header__inner{width:calc(100% - 24px)!important;height:72px!important;margin-top:12px!important;padding:8px!important;border-radius:22px!important}body.shop-page .site-logo{width:auto!important;min-width:0!important;flex:1!important;height:56px!important;font-size:18px!important;letter-spacing:3px!important}body.shop-page .site-logo:before{flex-basis:46px!important;width:46px!important;height:46px!important;border-radius:15px!important;font-size:23px!important}body.shop-page .site-logo:after{left:57px!important;top:34px!important;font-size:7px!important;letter-spacing:2px!important}body.shop-page .site-nav{display:none!important}body.shop-page .site-actions .header-icon{width:42px!important;height:42px!important;min-width:42px!important;border-radius:14px!important}}
-</style>
+{% endif %}

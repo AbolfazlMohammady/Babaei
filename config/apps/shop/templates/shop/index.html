@@ -12,10 +12,17 @@
 {% block extra_head %}<script type="application/ld+json">{{ website_schema }}</script>{% endblock %}
 {% block extra_css %}{% endblock %}
 
+{% comment %}
+storefront.css still owns the product-card and product-detail rules, so it
+stays. css/fonts.css and css/pages/shop-shell.css are injected by base.html
+for the whole shop namespace (this page, category and product detail), so they
+are not repeated here.
+quick-actions.css was dropped: the floating actions ring is retired on shop
+pages (the drawer carries those links) and it loaded on top of the cart.
+{% endcomment %}
 {% block site_optional_css %}
-<link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
 <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=8">
-<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=8">
+<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=9">
 {% endblock %}
 
 {% block extra_js %}
@@ -25,20 +32,128 @@
 
 {% block content %}
 <div class="shop-reference">
-    <section class="shop-reference__hero" aria-labelledby="shop-title">
-        <div class="shop-reference__hero-copy">
-            <nav class="shop-reference__crumbs" aria-label="مسیر صفحه">
-                <a href="{% url 'home:index' %}">خانه</a>
-                <span>‹</span>
-                <span aria-current="page">فروشگاه</span>
-            </nav>
-            <span class="shop-reference__eyebrow">BABAEI / STORE</span>
-            <h1 id="shop-title">فروشگاه</h1>
-            <p>بیش از یک لباس، داستان خودت را بپوش</p>
+    {% comment %}
+    Hero.
+
+    Performance: the photo is delivered as AVIF + WebP with a 4:5 portrait
+    crop for phones and a 2.95:1 wide set above 700px. The source PNG was
+    1,570 KB; the largest wide candidate is now 33 KB and the phone crop is
+    15 KB, so a 360px device downloads ~46x less for the LCP image.
+
+    Layout: text sits on the RTL start edge (right) where the photo is darkest
+    (measured mean luminance: left 44, centre 26, right 23), so the cream
+    headline stays legible and the lit left third of the photo stays visible.
+
+    No width/height on the <img> by design: the box is owned by .sh-hero's
+    definite min-height and the image is object-fit:cover inside it, so there
+    is no layout shift to reserve space for.
+    {% endcomment %}
+    <section class="sh-hero" aria-labelledby="shop-title">
+        <div class="sh-hero__media">
+            <picture>
+                <source type="image/avif"
+                        media="(max-width: 700px)"
+                        sizes="100vw"
+                        srcset="{% static 'images/shop/hero-portrait-420.avif' %} 420w,
+                                {% static 'images/shop/hero-portrait-640.avif' %} 640w,
+                                {% static 'images/shop/hero-portrait-828.avif' %} 828w">
+                <source type="image/webp"
+                        media="(max-width: 700px)"
+                        sizes="100vw"
+                        srcset="{% static 'images/shop/hero-portrait-420.webp' %} 420w,
+                                {% static 'images/shop/hero-portrait-640.webp' %} 640w,
+                                {% static 'images/shop/hero-portrait-828.webp' %} 828w">
+                <source type="image/avif"
+                        sizes="100vw"
+                        srcset="{% static 'images/shop/hero-480.avif' %} 480w,
+                                {% static 'images/shop/hero-960.avif' %} 960w,
+                                {% static 'images/shop/hero-1440.avif' %} 1440w,
+                                {% static 'images/shop/hero-2153.avif' %} 2153w">
+                <source type="image/webp"
+                        sizes="100vw"
+                        srcset="{% static 'images/shop/hero-480.webp' %} 480w,
+                                {% static 'images/shop/hero-960.webp' %} 960w,
+                                {% static 'images/shop/hero-1440.webp' %} 1440w,
+                                {% static 'images/shop/hero-2153.webp' %} 2153w">
+                <img src="{% static 'images/shop/hero-1440.webp' %}"
+                     alt=""
+                     fetchpriority="high"
+                     decoding="async">
+            </picture>
         </div>
-        <div class="shop-reference__hero-visual" aria-hidden="true">
-            <img src="{% static 'images/shop/shop-hero.png' %}" alt="" fetchpriority="high" decoding="async" onerror="this.style.display='none'">
-            <div class="shop-reference__hero-mark">MORE<br>THAN<br>CLOTHES<span></span></div>
+
+        <div class="sh-hero__inner">
+            <div class="sh-hero__copy">
+                <nav class="shop-reference__crumbs" aria-label="مسیر صفحه">
+                    <a href="{% url 'home:index' %}">خانه</a>
+                    <span>‹</span>
+                    <span aria-current="page">فروشگاه</span>
+                </nav>
+                <span class="sh-hero__eyebrow">BABAEI / STORE</span>
+                <h1 class="sh-hero__title" id="shop-title">
+                    فروشگاه لباس و تی‌شرت
+                    <em>داستان خودت را بپوش</em>
+                </h1>
+                <p class="sh-hero__lead">
+                    مدل، رنگ و سایز را انتخاب کن و اگر خواستی طرح خودت را روی آن بنشان.
+                </p>
+                <div class="sh-hero__actions">
+                    <a class="sh-btn sh-btn--solid" href="#products">
+                        دیدن محصولات
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"></path></svg>
+                    </a>
+                    {% if hero_product %}
+                        <a class="sh-btn sh-btn--ghost" href="{% url 'customizer:designer' hero_product.slug %}">
+                            طراحی اختصاصی
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <dl class="sh-hero__meta">
+                <div class="sh-hero__meta-row">
+                    <dt>محصولات</dt>
+                    <dd>{{ paginator.count|price }}</dd>
+                </div>
+                {% if categories %}
+                    <div class="sh-hero__meta-row">
+                        <dt>دسته‌بندی‌ها</dt>
+                        <dd>{{ categories|length|price }}</dd>
+                    </div>
+                {% endif %}
+                <div class="sh-hero__meta-row">
+                    <dt>شخصی‌سازی</dt>
+                    <dd>فعال</dd>
+                </div>
+            </dl>
+        </div>
+    </section>
+
+    {% comment %}
+    Category rail.
+
+    Real shop:category links. Those pages already ship their own canonical,
+    CollectionPage schema and sitemap entry, but no markup linked to them, so
+    they were orphaned from the crawl graph. This is the crawl path.
+    {% endcomment %}
+    <section class="sh-rail" aria-label="دسته‌بندی محصولات">
+        <div class="sh-rail__inner">
+            <ul class="sh-rail__list">
+                <li class="sh-rail__item">
+                    <a class="sh-rail__link sh-rail__link--all" href="{% url 'shop:index' %}">
+                        همه محصولات
+                        <span class="sh-rail__count">{{ paginator.count|price }}</span>
+                    </a>
+                </li>
+                {% for category in categories %}
+                    <li class="sh-rail__item">
+                        <a class="sh-rail__link" href="{% url 'shop:category' category.slug %}">
+                            {{ category.name }}
+                            <span class="sh-rail__count">{{ category.product_count|price }}</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
     </section>
 
