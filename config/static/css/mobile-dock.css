@@ -20,7 +20,7 @@
     --dock-ink: #2b3035;
     --dock-muted: #6d7278;
     --dock-line: rgba(20, 22, 26, .10);
-    --dock-size: 48px;
+    --dock-size: 52px;
     --dock-h: 64px;
     --dock-ease: cubic-bezier(.34, 1.35, .42, 1);
 }
@@ -39,9 +39,9 @@
         display: flex;
         align-items: center;
         gap: 2px;
-        justify-content: space-between;
+        justify-content: space-evenly;
 
-        inline-size: min(420px, calc(100% - 24px));
+        inline-size: min(340px, calc(100% - 20px));
         block-size: var(--dock-h);
         margin-inline: auto;
         padding: 4px 6px;
@@ -57,18 +57,24 @@
     }
 
     /* The moving indicator: one green capsule that slides under the active row. */
+    /* Design 03's distinguishing move: the active item is a filled CIRCLE, not a
+       sliding pill, and it lifts clear of the capsule's top edge. Square
+       dimensions plus border-radius: 50% is what makes it a circle — the first
+       attempt sized it to the item's width, which produced a wide lozenge. */
     .sh-dock__pill {
         position: absolute;
         inset-block-start: 50%;
         inset-inline-start: 6px;
         z-index: 0;
-        translate: 0 -50%;
+        translate: 0 calc(-50% - 8px);
 
         inline-size: var(--dock-size);
         block-size: var(--dock-size);
-        border-radius: 999px;
-        background: linear-gradient(145deg, var(--dock-forest-soft), var(--dock-forest));
-        box-shadow: 0 6px 16px rgba(20, 82, 60, .34);
+        border-radius: 50%;
+        background: linear-gradient(150deg, var(--dock-forest-soft), var(--dock-forest));
+        box-shadow:
+            0 8px 20px rgba(20, 82, 60, .38),
+            0 2px 6px rgba(9, 28, 20, .22);
     }
 
     /* Only animate once the first measurement has landed, so the pill does not
@@ -84,22 +90,28 @@
         z-index: 1;
 
         display: grid;
+        grid-template-rows: auto auto;
         place-items: center;
-        flex: 1 1 0;
+        align-content: center;
+        row-gap: 1px;
+        flex: 0 0 auto;
 
+        inline-size: var(--dock-size);
         block-size: var(--dock-size);
-        min-inline-size: var(--dock-size);
-        padding: 0 2px;
 
-        border-radius: 999px;
+        border-radius: 50%;
         color: var(--dock-muted);
         text-decoration: none;
         -webkit-tap-highlight-color: transparent;
         transition: color .28s var(--dock-ease);
     }
 
+    /* The active row rides up with the circle, so the icon and label stay
+       concentric with it and the whole thing clears the capsule's top edge.
+       Only the indicator moves; the other rows stay put. */
     .sh-dock__item[aria-current="page"] {
         color: var(--dock-cream);
+        translate: 0 -8px;
     }
 
     .sh-dock__icon {
@@ -112,33 +124,13 @@
         block-size: 21px;
     }
 
+    /* Every row shows its label, as in the reference — only the active one is
+       cream on the green circle, the rest muted on the glass. */
     .sh-dock__label {
-        /* The capsule carries icons only; the label exists for screen readers
-           and for the active row, where it sits under the icon. */
-        position: absolute;
-        inline-size: 1px;
-        block-size: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-    }
-
-    .sh-dock__item[aria-current="page"] .sh-dock__label {
-        position: static;
-        inline-size: auto;
-        block-size: auto;
-        overflow: visible;
-        clip-path: none;
-        margin-block-start: 1px;
-        font-size: 9.5px;
+        font-size: 9px;
         font-weight: 600;
         line-height: 1;
-    }
-
-    .sh-dock__item[aria-current="page"] {
-        grid-template-rows: auto auto;
-        align-content: center;
-        row-gap: 1px;
+        white-space: nowrap;
     }
 
     .sh-dock__badge {
