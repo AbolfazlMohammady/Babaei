@@ -2,9 +2,12 @@
     const root = document.querySelector(".shop-reference");
     if (!root) return;
 
+    let catalogLoading = false;
+    let nextPageLoading = false;
+    let infiniteObserver = null;
+
     const getPanel = () => root.querySelector("[data-shop-filter-panel]");
     const getToggle = () => root.querySelector("[data-shop-filter-toggle]");
-    const getForm = () => root.querySelector("[data-shop-filter-form]");
 
     const formatPrice = (value) => Number(value || 0).toLocaleString("fa-IR");
 
@@ -18,8 +21,9 @@
 
         if (!minRange || !maxRange) return;
 
-        let min = Number(minRange.value);
-        let max = Number(maxRange.value);
+        const ceiling = Number(maxRange.max || 0);
+        let min = Number(minRange.value || 0);
+        let max = Number(maxRange.value || ceiling);
 
         if (min > max) {
             if (source === "min") max = min;
@@ -29,7 +33,7 @@
         }
 
         if (minInput) minInput.value = min > 0 ? String(min) : "";
-        if (maxInput) maxInput.value = max < 5000000 ? String(max) : "";
+        if (maxInput) maxInput.value = max < ceiling ? String(max) : "";
         if (minLabel) minLabel.textContent = formatPrice(min);
         if (maxLabel) maxLabel.textContent = formatPrice(max);
     };
@@ -66,12 +70,105 @@
         trigger?.setAttribute("aria-expanded", "false");
     };
 
+    const updateUrl = (url, push = true) => {
+        if (push) window.history.pushState({shopCatalog: true}, "", url.toString());
+    };
+
+    const initializeInfiniteScroll = () => {
+        if (infiniteObserver) infiniteObserver.disconnect();
+
+        const sentinel = root.querySelector("[data-shop-infinite-sentinel]");
+        if (!sentinel) return;
+
+        infiniteObserver = "IntersectionObserver" in window
+            ? new IntersectionObserver((entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) loadNextPage();
+            }, {rootMargin: "700px 0px 700px", threshold: 0})
+            : null;
+
+        if (infiniteObserver) {
+            infiniteObserver.observe(sentinel);
+        } else {
+            sentinel.addEventListener("click", loadNextPage, {once: true});
+        }
+    };
+
+    const loadNextPage = async () => {
+        if (nextPageLoading || catalogLoading) return;
+
+        const pagination = root.querySelector("[data-shop-pagination]");
+        const nextLink = pagination?.querySelector('a[aria-label="صفحه بعد"]');
+        if (!nextLink) {
+            root.querySelector("[data-shop-infinite-sentinel]")?.classList.add("is-done");
+            return;
+        }
+
+        nextPageLoading = true;
+        root.classList.add("is-loading-more");
+
+        try {
+            const response = await fetch(nextLink.href, {
+                method: "GET",
+                credentials: "same-origin",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "text/html"
+                }
+            });
+
+            if (!response.ok) throw new Error("Next page request failed");
+
+            const html = await response.text();
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            const nextCatalog = doc.querySelector(".shop-reference__catalog");
+            const currentProducts = root.querySelector("[data-shop-products]");
+            const nextProducts = nextCatalog?.querySelector("[data-shop-products]");
+
+            if (!currentProducts || !nextProducts) {
+                throw new Error("Next product grid not found");
+            }
+
+            nextProducts.querySelectorAll("[data-product-card]").forEach((card) => {
+                currentProducts.appendChild(card);
+            });
+
+            const currentPagination = root.querySelector("[data-shop-pagination]");
+            const nextPagination = nextCatalog.querySelector("[data-shop-pagination]");
+
+            if (currentPagination && nextPagination) {
+                currentPagination.replaceWith(nextPagination);
+            }
+
+            const currentSentinel = root.querySelector("[data-shop-infinite-sentinel]");
+            const nextSentinel = nextCatalog.querySelector("[data-shop-infinite-sentinel]");
+            if (!nextPagination?.querySelector('a[aria-label="صفحه بعد"]') && currentSentinel) {
+                currentSentinel.classList.add("is-done");
+            } else if (currentSentinel) {
+                currentSentinel.classList.remove("is-done");
+            }
+
+            window.history.replaceState(
+                {shopCatalog: true},
+                "",
+                nextLink.href
+            );
+
+            window.dispatchEvent(new CustomEvent("shop:catalog-updated"));
+            initializeInfiniteScroll();
+        } catch (error) {
+            console.error("[BABAEI] Infinite shop pagination failed:", error);
+        } finally {
+            nextPageLoading = false;
+            root.classList.remove("is-loading-more");
+        }
+    };
+
     const fetchCatalog = async (targetUrl, {push = true, preservePage = false} = {}) => {
         const url = new URL(targetUrl, window.location.href);
         if (!preservePage) url.searchParams.delete("page");
 
-        if (root.classList.contains("is-filter-loading")) return;
-
+        if (catalogLoading) return;
+        catalogLoading = true;
         setLoading(true);
 
         try {
@@ -97,20 +194,20 @@
 
             currentCatalog.replaceWith(nextCatalog);
 
-            if (push) {
-                window.history.pushState({shopCatalog: true}, "", url.toString());
-            }
+            if (push) updateUrl(url, true);
 
             if (doc.title) document.title = doc.title;
             syncFilterCount(url.toString());
             closeFilters();
             closeSort();
 
-            // Re-initialize card image observers after replacing the product grid.
             window.dispatchEvent(new CustomEvent("shop:catalog-updated"));
+            initializeInfiniteScroll();
+            syncRange();
         } catch (error) {
             console.error("[BABAEI] Shop filter update failed:", error);
         } finally {
+            catalogLoading = false;
             setLoading(false);
         }
     };
@@ -119,8 +216,6 @@
         const url = new URL(window.location.href);
         const formData = new FormData(form);
 
-        // Keep category/sort already present in the URL, while replacing
-        // only the actual filter fields.
         ["size", "min_price", "max_price", "discount"].forEach((key) => {
             url.searchParams.delete(key);
         });
@@ -189,16 +284,6 @@
                 return;
             }
         }
-
-        const paginationLink = event.target.closest(".shop-reference__pagination a");
-        if (paginationLink) {
-            const url = new URL(paginationLink.href, window.location.href);
-            if (url.pathname === window.location.pathname) {
-                event.preventDefault();
-                fetchCatalog(url, {preservePage: true});
-                return;
-            }
-        }
     });
 
     root.addEventListener("submit", (event) => {
@@ -246,4 +331,5 @@
 
     syncRange();
     syncFilterCount();
+    initializeInfiniteScroll();
 })();
