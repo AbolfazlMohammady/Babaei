@@ -2,85 +2,108 @@
 {% load static %}
 
 {% block title %}تأیید شماره | BABAEI{% endblock %}
-{% block meta_description %}تأیید شماره موبایل و ورود به حساب کاربری BABAEI.{% endblock %}
+{% block meta_description %}تأیید شماره موبایل و ورود یا ساخت حساب کاربری BABAEI.{% endblock %}
 {% block body_class %}auth-body{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/auth.css?v=2' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=3">
 {% endblock %}
 
 {% block site_optional_css %}
 <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
-<link rel="stylesheet" href="{% static 'css/storefront.css?v=10' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=10">
 {% endblock %}
 
 {% block content %}
+{% comment %}
+The second step of the same object. It carries the identical shell, stage and
+field so the two screens read as one thing, but it is a single state: the only
+move from here is a real link back to the phone step (users:login), which is
+exactly what the switch does on the sign-in page. No state machine, no faked
+control — the same element that carries the invitation on login.html carries a
+real anchor here.
+{% endcomment %}
 <section class="auth-page">
-    <div class="auth-shell">
+    <div class="auth-shell" data-auth-shell data-auth-state="signin">
         <span class="auth-shell__selvedge" aria-hidden="true"></span>
 
-        <div class="auth-card">
-            <div class="auth-card__top">
-                <a href="/" class="auth-brand" aria-label="BABAEI">
-                    <span class="auth-brand__mark" aria-hidden="true">B</span>
-                    <span class="auth-brand__word">BABAEI</span>
-                </a>
-                <span class="auth-brand__tagline">Wear Your Story.</span>
-            </div>
-
-            <div class="auth-header">
-                <span class="auth-eyebrow">Verification</span>
-                <h1 class="auth-title">کد تأیید</h1>
-                <p class="auth-lead">
-                    کد ارسال‌شده به <strong dir="ltr">{{ phone }}</strong> را وارد کنید.
-                </p>
-            </div>
-
-            <form method="post" class="auth-form" novalidate>
-                {% csrf_token %}
-
-                <div class="auth-field">
-                    <label class="auth-label" for="code">کد تأیید</label>
-                    <div class="auth-code">
-                        <input
-                            class="auth-code__input otp-input"
-                            id="code"
-                            name="code"
-                            type="text"
-                            inputmode="numeric"
-                            autocomplete="one-time-code"
-                            maxlength="6"
-                            pattern="[0-9]{6}"
-                            placeholder="۱۲۳۴۵۶"
-                            aria-describedby="code-hint"
-                            required
-                            autofocus
-                        >
-                    </div>
-                    <small id="code-hint" class="auth-hint">۶ رقم؛ کد پیامک‌شده تا ۲ دقیقه اعتبار دارد.</small>
-                </div>
-
-                <button class="auth-submit" type="submit">
-                    <span>ورود به حساب</span>
-                    <span class="auth-submit__arrow" aria-hidden="true">←</span>
-                </button>
-            </form>
-
-            <div class="auth-meta">
-                <p class="auth-recovery">
-                    <span>کد را دریافت نکردید؟</span>
-                    <a href="{% url 'users:login' %}" class="auth-resend">ارسال دوباره کد</a>
-                </p>
-                <a href="{% url 'users:login' %}" class="auth-back-link">تغییر شماره موبایل</a>
-            </div>
+        <div class="auth-shell__top">
+            <a href="/" class="auth-brand" aria-label="BABAEI">
+                <span class="auth-brand__mark" aria-hidden="true">B</span>
+                <span class="auth-brand__word">BABAEI</span>
+            </a>
+            <span class="auth-brand__tagline" dir="ltr">Wear Your Story.</span>
         </div>
 
-        <aside class="auth-aside" aria-hidden="true">
-            <span class="auth-kicker">BABAEI STUDIO</span>
-            <p class="auth-quote">داستان خودت را <em>بپوش</em>.</p>
-            <p class="auth-note">کد روی همان شماره‌ای پیامک شده که وارد کردید.</p>
-            <span class="auth-aside__foot">Wear Your Story.</span>
-        </aside>
+        <div class="auth-swap">
+            <div class="auth-stage">
+                <section class="auth-pane" data-auth-pane data-auth-for="signin"
+                         id="auth-pane-code" aria-labelledby="auth-title-code"
+                         tabindex="-1">
+                    <div class="auth-header">
+                        <span class="auth-eyebrow" dir="ltr">Verification</span>
+                        <h1 class="auth-title" id="auth-title-code">کد تأیید</h1>
+                        <p class="auth-lead">
+                            کد ارسال‌شده به <strong dir="ltr">{{ phone }}</strong> را وارد کنید.
+                        </p>
+                    </div>
+
+                    <form method="post" class="auth-form" novalidate>
+                        {% csrf_token %}
+
+                        <div class="auth-row">
+                            <label class="auth-label" for="code">کد تأیید</label>
+                            <div class="auth-code">
+                                <input
+                                    class="auth-code__input otp-input"
+                                    id="code"
+                                    name="code"
+                                    type="text"
+                                    inputmode="numeric"
+                                    autocomplete="one-time-code"
+                                    maxlength="6"
+                                    pattern="[0-9]{6}"
+                                    placeholder="۱۲۳۴۵۶"
+                                    aria-describedby="code-hint"
+                                    required
+                                    autofocus
+                                >
+                            </div>
+                            <small id="code-hint" class="auth-hint">۶ رقم؛ کد پیامک‌شده تا ۲ دقیقه اعتبار دارد.</small>
+                        </div>
+
+                        <button class="auth-submit" type="submit">
+                            <span>ورود به حساب</span>
+                            <span class="auth-submit__arrow" aria-hidden="true">←</span>
+                        </button>
+                    </form>
+                </section>
+
+                <div class="auth-meta">
+                    <p class="auth-recovery">
+                        <span>کد را دریافت نکردید؟</span>
+                        <a href="{% url 'users:login' %}" class="auth-resend">ارسال دوباره کد</a>
+                    </p>
+                    <a href="{% url 'users:login' %}" class="auth-back-link">تغییر شماره موبایل</a>
+                </div>
+            </div>
+
+            <aside class="auth-field">
+                <div class="auth-invite" data-auth-for="signin">
+                    <span class="auth-kicker" dir="ltr">Wrong number?</span>
+                    <p class="auth-quote">شماره را عوض می‌کنید؟</p>
+                    <p class="auth-note">
+                        کد روی همان شماره‌ای پیامک شده که وارد کرده‌اید. اگر اشتباه است،
+                        برگردید و شماره را درست وارد کنید.
+                    </p>
+                    <a class="auth-invite__action" href="{% url 'users:login' %}">
+                        <span>تغییر شماره موبایل</span>
+                        <span class="auth-invite__arrow" aria-hidden="true">←</span>
+                    </a>
+                    <span class="auth-field__foot" dir="ltr">Wear Your Story.</span>
+                </div>
+            </aside>
+        </div>
     </div>
 </section>
 {% endblock %}

@@ -1,37 +1,63 @@
 /* ==========================================================================
-   BABAEI — Sign-in and verification
+   BABAEI — sign-in / sign-up (one object, two states) and verification
    --------------------------------------------------------------------------
-   Reference: the shop shell. Forest green on cream, 1px hairlines (--sh-line),
-   radii between 16 and 20px, motion that stays quiet, and one loud element per
-   screen — here, the submit button.
+   The brief: rebuild the sign-in and register screens around a sliding-panel
+   switcher, in the house language. The reference was a React component with
+   two forms stacked in one grid cell, two invitation panels, and a 2000x2000
+   pseudo-element that swept across to invert the two halves — blue, inline
+   styles, a 1.8s transition, a fixed 550px height.
 
-   This is a redesign of the two auth templates, not a repaint. The previous
-   composition was the stock "green slab + big Latin word + form" split, and it
-   had three faults that were visible on screen:
+   Taken from it: the mechanism (two states in one object, an invitation panel
+   that performs the switch) and the feel (the coloured half slides across the
+   object, the contents cross-fade, the thing reads as one solid object turning
+   over). Dropped: the colour, the inline styles, the fixed height, the 1.8s
+   transition, the 2000px element, and every fabricated control.
 
-     1. includes/messages.html renders inside <body> and no stylesheet on these
-        pages ever styled it, so the Django message "شماره موبایل را وارد کنید."
-        came out as bare text at the very top of the document, outside the card.
-        It is a contained, centred alert now (.auth-body .messages / .toast),
-        laid out to the shell's own column width so it can never read as stray.
-     2. the green panel carried its own 620px min-height while the card grew
-        with its content, so the halves did not share a box and the panel was
-        clipped at the bottom by the shell's overflow. The shell is one grid
-        with align-items: stretch now, so the halves are equal by construction
-        and nothing has a height of its own to clip.
-     3. under 560px the shell was forced edge-to-edge with padding: 0. There is
-        a real gutter and a real card at every width.
+   WHAT IS REAL HERE
+   Authentication on this site is phone number + OTP code. There is no register
+   route (see apps/users/urls.py), no email/password sign-in and no social
+   login, so the "sign up" side is not a second form: it is the honest framing
+   of the same action — enter your number, confirm the code, and the account is
+   created on the first successful verification (User.objects.get_or_create in
+   verify_otp_view). The sign-up state therefore routes into the one real flow
+   instead of inventing fields the backend cannot read.
 
-   Composition: one shell, two columns, split by a hairline. The form is the
-   first column (the reading-start side in RTL) and the brand note is the
-   second, pinned top and bottom so it fills its half rather than floating in
-   it. A forest "selvedge" seam caps the shell — the one piece of decoration,
-   and the signature the verification page shares.
+   HOW THE SWAP IS BUILT
+     .auth-swap is a two-column grid of exactly equal halves.
+       .auth-stage  (cream, carries the form)   column 1 — the reading start
+       .auth-field  (forest, carries the invite) column 2
+     The state lives in one attribute on the shell, data-auth-state. On signup
+     the stage translates a full -100% and the field a full +100%, so the two
+     halves exchange places exactly; because the halves are equal, the swap is
+     seamless with no keyframes, no FLIP and no measuring. The field paints
+     above the stage, so mid-transition it sweeps across the object the way the
+     reference's pseudo-element did — one transform per element, both
+     compositor-only, 520ms on the house easing.
+     The stage's two panes and the field's two invitations never move: they are
+     stacked in the same cell and cross-fade (opacity + an 18-20px settle in
+     the direction the composition is travelling).
 
-   Constraints honoured: not one priority override anywhere in this file, no
-   font-family declaration anywhere
-   (base.html loads the webfont; this file does not replace the stack), RTL
-   throughout, logical properties so the hairline stays on the correct edge.
+   WHY THE HEIGHT IS NOT 550px
+     The shell is content-sized. It carries a min-block-size so a short form
+     still reads as one solid object, and its grid hands any spare height to
+     the swap row, so the halves stay equal at every width without a magic
+     number anywhere.
+
+   MOBILE — THE EXPLICIT DECISION
+     Under 900px the object becomes a single column: the field turns into a
+     full-width invitation bar above the stage (kicker, the invitation in the
+     display face, and one 52px button — a segmented control would mean two
+     44px targets plus a label in the same space, and one large target is the
+     better phone control). The halves still exchange places in the DOM sense
+     (both panes cross-fade, the ARIA state still flips), but nothing translates
+     horizontally: one column cannot slide sideways without either overflowing
+     or shrinking the target. The vertical settle is kept, the horizontal sweep
+     is not.
+
+   Constraints honoured: not one priority override in this file; no font-family
+   declaration; logical properties throughout so the hairlines stay on the
+   correct edge in RTL; transform/opacity only for motion; reduced motion
+   honoured by collapsing the shared duration token.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -39,18 +65,23 @@
    -------------------------------------------------------------------------- */
 
 .auth-body {
-    /* The shell width and the gutter are named once: the message banner is a
-       sibling of <main>, so it has to reproduce the shell's column exactly. */
+    /* Named once: the message banner is a sibling of <main>, so it has to
+       reproduce the shell's column exactly. */
     --auth-shell: 1040px;
     --auth-gutter: clamp(18px, 4.5vw, 56px);
 
-    /* Chrome the page has to share the viewport with. The sticky .site-header is
-       suppressed on these two pages by css/components/quick-actions.css, which
-       the templates load themselves — measured, the header's box is 0px tall
-       here — so the only chrome left is the mobile dock, which pads <body>
-       itself (css/mobile-dock.css). */
+    /* Chrome the page shares the viewport with. The sticky .site-header is
+       suppressed on these pages by css/components/quick-actions.css, so the
+       only chrome left is the mobile dock, which pads <body> itself. */
     --auth-chrome: 0px;
     --auth-dock: 0px;
+
+    /* The swap: one duration token drives the sweep of the field, the slide of
+       the stage, both cross-fades and the delayed hand-off of visibility, so
+       prefers-reduced-motion can collapse the whole swap in one place. */
+    --auth-swap-dur: 520ms;
+    --auth-swap: var(--auth-swap-dur) var(--sh-ease);
+    --auth-swap-hide: 0s linear var(--auth-swap-dur);
 
     background: var(--sh-cream);
 }
@@ -75,17 +106,24 @@
         var(--sh-cream);
 }
 
-/* One grid, two columns, and the halves are equal because they stretch to the
-   same row. Nothing inside has a height of its own. */
+/* --------------------------------------------------------------------------
+   The shell — one object
+   -------------------------------------------------------------------------- */
+
 .auth-shell {
+    /* The sweep needs a positioning context and a hard clip: the two halves
+       translate past each other inside it. */
+    position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1.06fr) minmax(0, .94fr);
-    grid-template-rows: 6px auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 6px auto minmax(0, 1fr);
 
     width: min(var(--auth-shell), 100%);
-    /* auto margins centre the shell when there is room and simply collapse to
-       the padding when there is not, so a tall shell can never be pushed off
-       the top of the viewport the way place-items: center does. */
+    /* Content-sized with a floor. The third row is the 1fr, so the swap — not
+       an empty void under the form — absorbs every extra pixel of that floor. */
+    min-block-size: clamp(470px, 64vh, 660px);
+    /* auto margins centre the shell when there is room and collapse to the
+       padding when there is not, so a tall shell is never pushed off the top. */
     margin: auto;
 
     border: 1px solid var(--sh-line);
@@ -113,28 +151,19 @@
             var(--sh-forest-deep) 100%);
 }
 
-/* --------------------------------------------------------------------------
-   Form column
-   -------------------------------------------------------------------------- */
-
-.auth-card {
-    grid-column: 1;
+.auth-shell__top {
+    grid-column: 1 / -1;
     grid-row: 2;
 
-    display: flex;
-    flex-direction: column;
-    gap: clamp(20px, 2.6vw, 34px);
-
-    min-width: 0;
-    padding: clamp(26px, 3.6vw, 50px) clamp(22px, 3.4vw, 48px) clamp(24px, 3.2vw, 44px);
-}
-
-.auth-card__top {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 12px 18px;
+    gap: 10px 18px;
+
+    padding: clamp(15px, 2vw, 20px) clamp(20px, 3.2vw, 44px);
+
+    border-block-end: 1px solid var(--sh-line);
 }
 
 .auth-brand {
@@ -150,13 +179,13 @@
     display: grid;
     place-items: center;
 
-    inline-size: 40px;
-    block-size: 40px;
-    border-radius: 13px;
+    inline-size: 38px;
+    block-size: 38px;
+    border-radius: 12px;
     background: var(--sh-forest);
     color: var(--sh-cream-2);
 
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 700;
     line-height: 1;
 }
@@ -165,6 +194,7 @@
     font-size: 15px;
     font-weight: 700;
     letter-spacing: .3em;
+
     direction: ltr;
     unicode-bidi: isolate;
 }
@@ -173,8 +203,250 @@
     color: var(--sh-muted);
     font-size: 10px;
     letter-spacing: .18em;
+
     direction: ltr;
     unicode-bidi: isolate;
+}
+
+/* --------------------------------------------------------------------------
+   The swap — two exact halves that exchange places
+   --------------------------------------------------------------------------
+   Equal columns, no gap: a full-width translate on either half lands it
+   precisely on the other one. That is the whole trick. Do not introduce a gap
+   or unequal tracks here without re-measuring the swap.
+   -------------------------------------------------------------------------- */
+
+.auth-swap {
+    grid-column: 1 / -1;
+    grid-row: 3;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+
+    min-width: 0;
+}
+
+/* The cream half: the form. Column 1 is the reading-start side in RTL. */
+.auth-stage {
+    grid-column: 1;
+    grid-row: 1;
+    z-index: 1;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    /* Row 1 is the state; row 2 is the quiet footer, pinned to the bottom edge
+       so the two halves of the object end together. */
+    grid-template-rows: minmax(0, 1fr) auto;
+
+    min-width: 0;
+    background: var(--sh-cream-2);
+
+    transform: translateX(0);
+    transition: transform var(--auth-swap);
+}
+
+/* The forest half: the invitation, and the switch. It paints above the stage,
+   so while it travels it sweeps over the form — the reference's big moving
+   panel, at half the object's width instead of 2000px. */
+.auth-field {
+    grid-column: 2;
+    grid-row: 1;
+    z-index: 2;
+
+    display: grid;
+    min-width: 0;
+
+    background:
+        repeating-linear-gradient(115deg,
+            rgba(251, 250, 247, .10) 0 1px,
+            rgba(251, 250, 247, 0) 1px 7px),
+        linear-gradient(150deg,
+            var(--sh-forest) 0%,
+            var(--sh-forest-soft) 62%,
+            var(--sh-forest-deep) 100%);
+    color: var(--sh-cream-2);
+
+    transform: translateX(0);
+    transition: transform var(--auth-swap);
+}
+
+/* The state change: one attribute, two transforms, and the halves swap. */
+.auth-shell[data-auth-state="signup"] .auth-stage {
+    transform: translateX(-100%);
+}
+
+.auth-shell[data-auth-state="signup"] .auth-field {
+    transform: translateX(100%);
+}
+
+/* --------------------------------------------------------------------------
+   The invitation (both states stacked, cross-fading)
+   -------------------------------------------------------------------------- */
+
+.auth-invite {
+    grid-area: 1 / 1;
+
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    min-width: 0;
+    padding: clamp(26px, 3.4vw, 48px) clamp(24px, 3.2vw, 46px) clamp(24px, 3vw, 42px);
+
+    /* Off: invisible, and only after the fade has finished so the outgoing
+       invitation is still painted while the field is travelling. */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-18px);
+    transition: opacity var(--auth-swap), transform var(--auth-swap),
+                visibility var(--auth-swap-hide);
+}
+
+.auth-shell[data-auth-state="signin"] .auth-invite[data-auth-for="signin"],
+.auth-shell[data-auth-state="signup"] .auth-invite[data-auth-for="signup"] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: opacity var(--auth-swap), transform var(--auth-swap),
+                visibility 0s;
+}
+
+/* Tuned for the forest surface rather than the page: the tick in front of the
+   kicker is drawn in the current colour here. */
+.auth-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
+    color: rgba(251, 250, 247, .62);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .22em;
+
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+.auth-kicker::before {
+    content: "";
+    inline-size: 26px;
+    block-size: 1px;
+    background: currentColor;
+}
+
+/* The typographic moment: the invitation itself, in the display face. */
+.auth-quote {
+    margin: 0;
+    color: var(--sh-cream-2);
+    font-size: clamp(26px, 3vw, 38px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1.5;
+}
+
+.auth-note {
+    max-width: 34ch;
+    margin: 0;
+    color: rgba(251, 250, 247, .72);
+    font-size: 13px;
+    line-height: 2.05;
+}
+
+/* The switch itself. A real button on the forest surface: the one loud control
+   on this half, at the bottom, directly above the foot. */
+.auth-invite__action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+
+    margin-block-start: auto;
+    min-height: 52px;
+    padding-inline: 20px;
+
+    border: 1px solid rgba(251, 250, 247, .34);
+    border-radius: 16px;
+    background: var(--sh-cream-2);
+    color: var(--sh-forest-deep);
+
+    font-size: 14.5px;
+    font-weight: 700;
+    text-align: start;
+    text-decoration: none;
+
+    cursor: pointer;
+    transition: background var(--sh-fast), box-shadow var(--sh-fast),
+                transform var(--sh-fast);
+}
+
+.auth-invite__action:hover {
+    background: #fff;
+    box-shadow: 0 14px 30px rgba(9, 28, 20, .28);
+    transform: translateY(-1px);
+}
+
+.auth-invite__action:active {
+    transform: translateY(0);
+}
+
+.auth-invite__action:focus-visible {
+    outline: 2px solid var(--sh-cream-2);
+    outline-offset: 3px;
+}
+
+.auth-invite__arrow {
+    font-size: 17px;
+    line-height: 1;
+    transition: transform var(--sh-fast);
+}
+
+.auth-invite__action:hover .auth-invite__arrow {
+    transform: translateX(-3px);
+}
+
+.auth-field__foot {
+    padding-block-start: 18px;
+
+    border-block-start: 1px solid rgba(251, 250, 247, .20);
+    color: rgba(251, 250, 247, .58);
+    font-size: 10px;
+    letter-spacing: .22em;
+
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+/* --------------------------------------------------------------------------
+   The stage: two states stacked in one cell
+   -------------------------------------------------------------------------- */
+
+.auth-pane {
+    grid-area: 1 / 1;
+
+    display: flex;
+    flex-direction: column;
+    gap: clamp(18px, 2.4vw, 26px);
+
+    min-width: 0;
+    padding: clamp(26px, 3.4vw, 46px) clamp(22px, 3.2vw, 44px) clamp(18px, 2.6vw, 32px);
+
+    /* Off: out of the paint, out of hit-testing, out of the accessibility tree
+       (inert and aria-hidden come from the markup and the script). */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(20px);
+    transition: opacity var(--auth-swap), transform var(--auth-swap),
+                visibility var(--auth-swap-hide);
+}
+
+.auth-shell[data-auth-state="signin"] .auth-pane[data-auth-for="signin"],
+.auth-shell[data-auth-state="signup"] .auth-pane[data-auth-for="signup"] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: opacity var(--auth-swap), transform var(--auth-swap),
+                visibility 0s;
 }
 
 .auth-header {
@@ -193,6 +465,7 @@
     font-weight: 700;
     letter-spacing: .22em;
     text-transform: uppercase;
+
     direction: ltr;
     unicode-bidi: isolate;
 }
@@ -217,9 +490,44 @@
 
 .auth-lead {
     max-width: 42ch;
+    margin: 0;
     color: var(--sh-muted);
     font-size: 13.5px;
     line-height: 2.05;
+}
+
+/* The sign-up state's honest summary of what signing up means here. */
+.auth-facts {
+    display: grid;
+    gap: 10px;
+
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.auth-facts__item {
+    position: relative;
+
+    padding-inline-start: 22px;
+
+    color: var(--sh-muted);
+    font-size: 12.5px;
+    line-height: 1.95;
+}
+
+.auth-facts__item::before {
+    content: "";
+
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: .66em;
+
+    inline-size: 9px;
+    block-size: 9px;
+    border-radius: 50%;
+    background: var(--sh-forest);
+    opacity: .32;
 }
 
 /* --------------------------------------------------------------------------
@@ -232,7 +540,7 @@
     gap: 18px;
 }
 
-.auth-field {
+.auth-row {
     display: flex;
     flex-direction: column;
     gap: 9px;
@@ -322,7 +630,8 @@
     line-height: 1.9;
 }
 
-/* The submit is the only loud element on the page. */
+/* The submit is the only loud element on the page. Also used for the real
+   button that routes the sign-up state back to the phone entry. */
 .auth-submit {
     display: flex;
     align-items: center;
@@ -375,21 +684,67 @@
 }
 
 /* --------------------------------------------------------------------------
-   Quiet footer of the form column
+   Verification: the code field
    -------------------------------------------------------------------------- */
 
-/* Pushed to the bottom of the column so both halves of the shell end together
-   and the card fills its box instead of floating in the middle of it. */
+.auth-code {
+    display: flex;
+    align-items: stretch;
+
+    min-height: 64px;
+    overflow: hidden;
+
+    border: 1px solid var(--sh-line);
+    border-radius: 16px;
+    background: #fff;
+    transition: border-color var(--sh-fast), box-shadow var(--sh-fast);
+}
+
+/* Six tracked digits in one hairline frame. The input is still a single field
+   named `code`; only its presentation changed. The inline-start padding is the
+   letter-spacing once over, which recentres the run the tracking pushes left. */
+.auth-code__input,
+.otp-input {
+    flex: 1 1 auto;
+
+    min-width: 0;
+    min-block-size: 62px;
+    padding-inline: calc(.46em + 12px) 12px;
+
+    border: 0;
+    background: transparent;
+    color: var(--sh-ink);
+
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: .46em;
+    text-align: center;
+    direction: ltr;
+}
+
+.auth-code__input::placeholder {
+    color: var(--sh-sand);
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Quiet footer of the stage
+   -------------------------------------------------------------------------- */
+
 .auth-meta {
+    grid-area: 2 / 1;
+
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 
-    margin-block-start: auto;
-    padding-block-start: clamp(16px, 2.2vw, 26px);
+    padding: 16px clamp(22px, 3.2vw, 44px) clamp(22px, 3vw, 32px);
+
+    border-block-start: 1px solid var(--sh-line);
 }
 
 .auth-policy {
+    margin: 0;
     color: var(--sh-muted);
     font-size: 11.5px;
     line-height: 2;
@@ -432,60 +787,13 @@
     border-radius: 6px;
 }
 
-/* --------------------------------------------------------------------------
-   Verification: the code field and the resend row
-   -------------------------------------------------------------------------- */
-
-.auth-code {
-    display: flex;
-    align-items: stretch;
-
-    min-height: 64px;
-    overflow: hidden;
-
-    border: 1px solid var(--sh-line);
-    border-radius: 16px;
-    background: #fff;
-    transition: border-color var(--sh-fast), box-shadow var(--sh-fast);
-}
-
-/* Six tracked digits in one hairline frame. The input is still a single field
-   named `code`; only its presentation changed. The inline-start padding is the
-   letter-spacing once over, which recentres the run the tracking pushes left. */
-.auth-code__input,
-.otp-input {
-    flex: 1 1 auto;
-
-    min-width: 0;
-    min-block-size: 62px;
-    /* letter-spacing leaves one trailing space after the last digit, which
-       pushes a centred run half a letter-space to the left. The extra
-       inline-start padding is exactly that half, twice over, so the digits land
-       dead centre; both sides then keep the same 12px of breathing room. */
-    padding-inline: calc(.46em + 12px) 12px;
-
-    border: 0;
-    background: transparent;
-    color: var(--sh-ink);
-
-    font-size: 23px;
-    font-weight: 700;
-    letter-spacing: .46em;
-    text-align: center;
-    direction: ltr;
-}
-
-.auth-code__input::placeholder {
-    color: var(--sh-sand);
-    font-weight: 600;
-}
-
 .auth-recovery {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 6px 10px;
 
+    margin: 0;
     color: var(--sh-muted);
     font-size: 12px;
     line-height: 1.9;
@@ -506,83 +814,6 @@
 
 .auth-resend:hover {
     text-decoration-color: currentColor;
-}
-
-/* --------------------------------------------------------------------------
-   Brand note column
-   -------------------------------------------------------------------------- */
-
-.auth-aside {
-    grid-column: 2;
-    grid-row: 2;
-
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-
-    min-width: 0;
-    /* Column 1 is to the right in RTL, so the divider is on this side's start. */
-    border-inline-start: 1px solid var(--sh-line);
-    background:
-        linear-gradient(180deg, rgba(20, 82, 60, .05), rgba(20, 82, 60, 0) 58%),
-        var(--sh-paper);
-    padding: clamp(26px, 3.6vw, 50px) clamp(22px, 3.4vw, 48px) clamp(24px, 3.2vw, 44px);
-}
-
-.auth-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-
-    color: var(--sh-muted);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .22em;
-    direction: ltr;
-    unicode-bidi: isolate;
-}
-
-.auth-kicker::before {
-    content: "";
-    inline-size: 26px;
-    block-size: 1px;
-    background: var(--sh-forest);
-    opacity: .5;
-}
-
-/* The typographic moment: the shop's own line, with the verb in forest. */
-.auth-quote {
-    color: var(--sh-ink);
-    font-size: clamp(27px, 3.1vw, 40px);
-    font-weight: 800;
-    letter-spacing: -.02em;
-    line-height: 1.5;
-}
-
-.auth-quote em {
-    color: var(--sh-forest);
-    font-style: normal;
-    font-weight: 800;
-}
-
-.auth-note {
-    max-width: 30ch;
-    color: var(--sh-muted);
-    font-size: 13px;
-    line-height: 2.05;
-}
-
-/* Pinned to the bottom edge of the panel: the note column fills its half. */
-.auth-aside__foot {
-    margin-block-start: auto;
-    padding-block-start: 20px;
-
-    border-block-start: 1px solid var(--sh-line);
-    color: var(--sh-muted);
-    font-size: 10px;
-    letter-spacing: .22em;
-    direction: ltr;
-    unicode-bidi: isolate;
 }
 
 /* --------------------------------------------------------------------------
@@ -639,49 +870,59 @@
 /* --------------------------------------------------------------------------
    Responsive
    --------------------------------------------------------------------------
-   One column from 880px down. The aside is placed explicitly in the row above
-   the card, so the order in the DOM does not have to change and the note still
-   reads above the form on a phone.
+   900px: one column. The field stops being a half and becomes the invitation
+   bar above the stage, and the swap stops translating horizontally — a single
+   column has nowhere sideways to go that does not shrink a target or push past
+   an edge. The cross-fade stays, the settle becomes vertical. The halves are
+   still halves in the ARIA sense: both panes still swap, one inert at a time.
    -------------------------------------------------------------------------- */
 
-@media (max-width: 880px) {
-    /* The shell caps at 560px once it stacks. Narrowing the shared token rather
-       than the shell alone keeps the message banner exactly as wide as the
-       card it sits above. */
+@media (max-width: 900px) {
     .auth-body {
+        /* Narrowing the shared token rather than the shell alone keeps the
+           message banner exactly as wide as the object it sits above. */
         --auth-shell: 560px;
     }
 
-    .auth-shell {
+    .auth-swap {
         grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: 6px auto auto;
+        grid-template-rows: auto minmax(0, 1fr);
     }
 
-    .auth-card {
-        grid-column: 1;
-        grid-row: 3;
-    }
-
-    .auth-aside {
+    .auth-stage {
         grid-column: 1;
         grid-row: 2;
+    }
 
+    .auth-field {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    /* The sweep is a desktop gesture; here the halves simply cross-fade with a
+       short vertical settle. Kept at equal specificity to the state rules,
+       later in the file, so it wins where it should and nothing else moves. */
+    .auth-shell .auth-pane,
+    .auth-shell .auth-invite {
+        transform: translateY(12px);
+    }
+
+    .auth-shell[data-auth-state] .auth-stage,
+    .auth-shell[data-auth-state] .auth-field {
+        transform: none;
+    }
+
+    .auth-invite {
         gap: 10px;
-        padding-block: 26px 22px;
-
-        border-inline-start: 0;
-        border-block-end: 1px solid var(--sh-line);
-        background:
-            linear-gradient(180deg, rgba(20, 82, 60, .05), rgba(20, 82, 60, 0) 78%),
-            var(--sh-cream-2);
+        padding-block: 22px 20px;
     }
 
     .auth-quote {
-        font-size: clamp(22px, 5.4vw, 30px);
+        font-size: clamp(21px, 5.4vw, 27px);
     }
 
     .auth-note,
-    .auth-aside__foot {
+    .auth-field__foot {
         display: none;
     }
 }
@@ -691,25 +932,24 @@
         border-radius: 18px;
     }
 
-    .auth-card {
-        gap: 22px;
-        padding-block: 24px 22px;
-    }
-
-    .auth-card__top {
-        gap: 10px 14px;
-    }
-
     .auth-brand__tagline {
         display: none;
+    }
+
+    .auth-pane {
+        gap: 20px;
+        padding-block: 24px 18px;
+    }
+
+    .auth-shell__top {
+        padding-block: 13px;
     }
 
     .auth-title {
         font-size: 25px;
     }
 
-    .auth-phone__input,
-    .auth-code__input {
+    .auth-phone__input {
         font-size: 16px;
     }
 
@@ -719,18 +959,28 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    /* One token collapses the whole swap — the sweep, the slide, both
+       cross-fades and the delayed visibility hand-off. */
+    .auth-body {
+        --auth-swap-dur: 1ms;
+    }
+
     .auth-submit,
     .auth-submit__arrow,
     .auth-phone,
     .auth-code,
     .auth-back-link,
     .auth-policy a,
-    .auth-resend {
+    .auth-resend,
+    .auth-invite__action,
+    .auth-invite__arrow {
         transition: none;
     }
 
     .auth-submit:hover,
-    .auth-submit:hover .auth-submit__arrow {
+    .auth-submit:hover .auth-submit__arrow,
+    .auth-invite__action:hover,
+    .auth-invite__action:hover .auth-invite__arrow {
         transform: none;
     }
 }

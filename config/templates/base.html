@@ -16,16 +16,16 @@
     <meta property="og:description" content="{% block og_description %}BABAEI — Wear Your Story.{% endblock %}">
     {% block og_image %}{% endblock %}
     {% block extra_head %}{% endblock %}
-    <link rel="stylesheet" href="{% static 'css/app.css?v=2' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}?v=2">
     {% block site_components_css %}
-    <link rel="stylesheet" href="{% static 'css/components.css?v=2' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}?v=2">
     {% endblock %}
     {% block common_page_css %}{% endblock %}
     {% block extra_css %}{% endblock %}
     {% block site_optional_css %}
     <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
     <link rel="stylesheet" href="{% static 'css/babaei-ui.css' %}?v=1">
-    <link rel="stylesheet" href="{% static 'css/storefront.css?v=10' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=10">
     {% endblock %}
     {% comment %}
     Shop shell.
@@ -47,10 +47,10 @@
     most of why those pages read as a different, older site next to the shop.
     {% endcomment %}
     <link rel="preload" href="{% static 'fonts/vazirmatn-var.woff2' %}" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="{% static 'css/fonts.css?v=3' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/fonts.css' %}?v=3">
     {% if request.resolver_match.namespace == 'shop' %}
-    <link rel="stylesheet" href="{% static 'css/pages/shop-shell.css?v=3' %}?v=1">
-    <link rel="stylesheet" href="{% static 'css/pages/shop-catalog.css?v=2' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/pages/shop-shell.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'css/pages/shop-catalog.css' %}?v=2">
     <noscript><style>
         /* Without JS the nav cannot leave its transparent-over-hero state, so
            pin it to the solid cream surface instead. */
@@ -68,7 +68,7 @@
     global navigation of its own.
     {% endcomment %}
     {% if request.resolver_match.namespace != 'home' %}
-    <link rel="stylesheet" href="{% static 'css/mobile-dock.css?v=2' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/mobile-dock.css' %}?v=2">
     {% endif %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -137,13 +137,13 @@
     <script src="{% static 'js/components.js' %}" defer></script>
     {% block site_optional_js %}
     <script src="{% static 'js/components/quick-actions.js' %}?v=4" defer></script>
-    <script src="{% static 'js/storefront.js?v=3' %}?v=2" defer></script>
+    <script src="{% static 'js/storefront.js' %}?v=3" defer></script>
     {% endblock %}
     {% if request.resolver_match.namespace == 'shop' %}
-    <script src="{% static 'js/pages/shop-shell.js?v=2' %}?v=1" defer></script>
+    <script src="{% static 'js/pages/shop-shell.js' %}?v=2" defer></script>
     {% endif %}
     {% if request.resolver_match.namespace != 'home' %}
-    <script src="{% static 'js/mobile-dock.js?v=2' %}?v=1" defer></script>
+    <script src="{% static 'js/mobile-dock.js' %}?v=2" defer></script>
     {% endif %}
     {% block extra_js %}{% endblock %}
 </body>
