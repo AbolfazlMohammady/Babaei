@@ -3018,3 +3018,135 @@ body.shop-page .header-cart__badge{
         display:none!important;
     }
 }
+
+
+/* =========================================================
+   MOBILE NAVIGATION #3 — force desktop header off
+========================================================= */
+@media (max-width:820px){
+    body.shop-page .site-header{
+        display:none!important;
+        visibility:hidden!important;
+        pointer-events:none!important;
+    }
+
+    body.shop-page .mobile-bottom-nav{
+        position:fixed!important;
+        display:grid!important;
+        visibility:visible!important;
+        opacity:1!important;
+        left:50%!important;
+        right:auto!important;
+        bottom:12px!important;
+        top:auto!important;
+        z-index:2147483000!important;
+        width:min(390px,calc(100% - 24px))!important;
+        height:66px!important;
+        min-height:66px!important;
+        margin:0!important;
+        padding:6px!important;
+        transform:translateX(-50%)!important;
+        grid-template-columns:repeat(5,minmax(0,1fr))!important;
+        align-items:center!important;
+        gap:2px!important;
+        overflow:visible!important;
+        border:1px solid rgba(255,255,255,.86)!important;
+        border-radius:33px!important;
+        background:rgba(244,241,234,.86)!important;
+        box-shadow:0 12px 36px rgba(20,31,25,.20),inset 0 1px 0 rgba(255,255,255,.96)!important;
+        backdrop-filter:blur(20px) saturate(125%)!important;
+        -webkit-backdrop-filter:blur(20px) saturate(125%)!important;
+    }
+
+    body.shop-page .mobile-bottom-nav>a,
+    body.shop-page .mobile-bottom-nav>button{
+        display:flex!important;
+        position:relative!important;
+        align-items:center!important;
+        justify-content:center!important;
+        justify-self:center!important;
+        flex-direction:column!important;
+        gap:3px!important;
+        width:52px!important;
+        height:52px!important;
+        min-width:52px!important;
+        min-height:52px!important;
+        margin:0!important;
+        padding:0!important;
+        border:0!important;
+        border-radius:50%!important;
+        color:#526058!important;
+        background:transparent!important;
+        box-shadow:none!important;
+        text-decoration:none!important;
+    }
+
+    body.shop-page .mobile-bottom-nav>a.is-active{
+        color:#fff!important;
+        background:#14523C!important;
+        box-shadow:0 6px 16px rgba(20,82,60,.30)!important;
+    }
+
+    body.shop-page .mobile-bottom-nav>a:hover,
+    body.shop-page .mobile-bottom-nav>button:hover{
+        color:#14523C!important;
+        background:rgba(20,82,60,.08)!important;
+        transform:none!important;
+    }
+
+    body.shop-page .mobile-bottom-nav>a.is-active:hover{
+        color:#fff!important;
+        background:#14523C!important;
+    }
+
+    body.shop-page .mobile-bottom-nav svg{
+        display:block!important;
+        width:19px!important;
+        height:19px!important;
+        margin:0!important;
+        fill:none!important;
+        stroke:currentColor!important;
+        stroke-width:1.7!important;
+        stroke-linecap:round!important;
+        stroke-linejoin:round!important;
+    }
+
+    body.shop-page .mobile-bottom-nav span{
+        display:block!important;
+        max-width:46px!important;
+        overflow:hidden!important;
+        white-space:nowrap!important;
+        text-overflow:ellipsis!important;
+        color:currentColor!important;
+        font-size:8px!important;
+        font-weight:600!important;
+        line-height:1!important;
+    }
+
+    body.shop-page .mobile-bottom-nav .header-cart__badge{
+        position:absolute!important;
+        top:0!important;
+        right:1px!important;
+        display:grid!important;
+        place-items:center!important;
+        width:15px!important;
+        min-width:15px!important;
+        height:15px!important;
+        padding:0!important;
+        border:2px solid #f4f1ea!important;
+        border-radius:50%!important;
+        color:#fff!important;
+        background:#c79d68!important;
+        font:7px/1 Arial,sans-serif!important;
+    }
+
+    body.shop-page{
+        padding-bottom:94px!important;
+    }
+}
+
+@media (min-width:821px){
+    body.shop-page .mobile-bottom-nav{
+        display:none!important;
+    }
+}
