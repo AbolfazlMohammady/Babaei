@@ -27,7 +27,7 @@
     });
     close?.addEventListener("click", closeFilters);
 
-    const activeFilters = ["category", "color", "size", "min_price", "max_price", "available", "discount"]
+    const activeFilters = ["category", "size", "min_price", "max_price", "discount"]
         .filter((key) => params.get(key));
     if (count) {
         if (activeFilters.length) {
@@ -66,7 +66,7 @@
     if (minRange && maxRange) syncRange();
 
     // Keep radio/chip states visually synchronized with the actual form values.
-    root.querySelectorAll(".shop-reference__sort-options label, .shop-reference__sizes label, .shop-reference__swatches label").forEach((label) => {
+    root.querySelectorAll(".shop-reference__sort-options label, .shop-reference__sizes label, .shop-reference__discount-check").forEach((label) => {
         const input = label.querySelector("input");
         if (!input) return;
         const sync = () => {
@@ -78,6 +78,14 @@
             }
         };
         input.addEventListener("change", sync);
+        if (input.closest(".shop-reference__sort-options")) {
+            input.addEventListener("change", () => {
+                const url = new URL(window.location.href);
+                url.searchParams.set("sort", input.value);
+                url.searchParams.delete("page");
+                window.location.assign(url.toString());
+            });
+        }
         sync();
     });
 
