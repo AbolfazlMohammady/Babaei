@@ -181,6 +181,9 @@ class ShopIndexView(ListView):
         # Which row of the shared filter rail is current: the filtered slug here,
         # self.category.slug on CategoryDetailView.
         context["current_category_slug"] = context["filter_category"]
+        # Only this view renders the dark .sh-hero, so only here may the nav
+        # start transparent. See templates/includes/shop_header.html.
+        context["has_dark_hero"] = True
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
@@ -268,6 +271,7 @@ class CategoryDetailView(ListView):
         # empty and no "remove category" chip is offered for the page you are on.
         context["filter_category"] = ""
         context["current_category_slug"] = self.category.slug
+        context["has_dark_hero"] = False
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"

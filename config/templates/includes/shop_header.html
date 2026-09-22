@@ -23,7 +23,7 @@
 
 <a class="sh-skip" href="#products">رفتن به محصولات</a>
 
-<header class="sh-nav is-top" data-sh-nav>
+<header class="sh-nav{% if has_dark_hero %} is-top{% endif %}" data-sh-nav>
     <div class="sh-nav__inner">
 
         <a class="sh-brand" href="{% url 'home:index' %}" aria-label="BABAEI — صفحه اصلی">
@@ -39,13 +39,6 @@
             <a class="sh-nav__link"
                href="{% url 'shop:index' %}"
                {% if request.resolver_match.url_name == 'index' %}aria-current="page"{% endif %}>فروشگاه</a>
-            {% if categories %}
-                {% for category in categories|slice:":3" %}
-                    <a class="sh-nav__link"
-                       href="{% url 'shop:category' category.slug %}"
-                       {% if request.resolver_match.url_name == 'category' and request.resolver_match.kwargs.slug == category.slug %}aria-current="page"{% endif %}>{{ category.name }}</a>
-                {% endfor %}
-            {% endif %}
             {% if hero_product %}
                 <a class="sh-nav__link" href="{% url 'customizer:designer' hero_product.slug %}">طراحی اختصاصی</a>
             {% endif %}
