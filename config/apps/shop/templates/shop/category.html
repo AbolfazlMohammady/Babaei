@@ -14,7 +14,7 @@
 {% block site_optional_css %}
 <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
 <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=5">
-<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=3">
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'js/pages/shop-cards.js' %}?v=2" defer></script>
@@ -50,6 +50,27 @@
                 </section>
                 {% if filter_colors %}<section class="shop-reference__filter-section"><h2>رنگ</h2><div class="shop-reference__swatches">{% for color in filter_colors %}<label class="{% if filter_color == color.slug %}is-active{% endif %}"><input type="radio" name="color" value="{{ color.slug }}" {% if filter_color == color.slug %}checked{% endif %}><span style="--swatch:{{ color.hex_code }}"></span></label>{% endfor %}</div></section>{% endif %}
                 {% if filter_sizes %}<section class="shop-reference__filter-section"><h2>سایز</h2><div class="shop-reference__sizes">{% for size in filter_sizes %}<label class="{% if filter_size == size.slug %}is-active{% endif %}"><input type="radio" name="size" value="{{ size.slug }}" {% if filter_size == size.slug %}checked{% endif %}><span>{{ size.name }}</span></label>{% endfor %}</div></section>{% endif %}
+                <section class="shop-reference__filter-section shop-reference__filter-section--sort">
+                    <h2>مرتب‌سازی</h2>
+                    <div class="shop-reference__sort-options">
+                        <label class="{% if filter_sort == "featured" %}is-active{% endif %}">
+                            <input type="radio" name="sort" value="featured" {% if filter_sort == "featured" %}checked{% endif %}>
+                            <span>پیشنهاد شده</span>
+                        </label>
+                        <label class="{% if filter_sort == "newest" %}is-active{% endif %}">
+                            <input type="radio" name="sort" value="newest" {% if filter_sort == "newest" %}checked{% endif %}>
+                            <span>جدیدترین</span>
+                        </label>
+                        <label class="{% if filter_sort == "price_asc" %}is-active{% endif %}">
+                            <input type="radio" name="sort" value="price_asc" {% if filter_sort == "price_asc" %}checked{% endif %}>
+                            <span>ارزان‌ترین</span>
+                        </label>
+                        <label class="{% if filter_sort == "price_desc" %}is-active{% endif %}">
+                            <input type="radio" name="sort" value="price_desc" {% if filter_sort == "price_desc" %}checked{% endif %}>
+                            <span>گران‌ترین</span>
+                        </label>
+                    </div>
+                </section>
                 <button class="shop-reference__apply" type="submit">اعمال فیلترها <span>↗</span></button>
                 <a class="shop-reference__clear" href="{{ request.path }}">پاک کردن فیلترها ↻</a>
             </form>
@@ -58,7 +79,7 @@
         <div class="shop-reference__results">
             <header class="shop-reference__toolbar">
                 <div class="shop-reference__toolbar-title"><div><span class="shop-reference__toolbar-label">CATEGORY</span><h2>{{ category.name }}</h2></div><span class="shop-reference__count">{{ paginator.count|price }} محصول</span></div>
-                <label class="shop-reference__sort"><span>مرتب‌سازی:</span><select name="sort" data-shop-sort aria-label="مرتب‌سازی محصولات"><option value="featured" {% if filter_sort == "featured" %}selected{% endif %}>پیشنهاد شده</option><option value="newest" {% if filter_sort == "newest" %}selected{% endif %}>جدیدترین</option><option value="price_asc" {% if filter_sort == "price_asc" %}selected{% endif %}>ارزان‌ترین</option><option value="price_desc" {% if filter_sort == "price_desc" %}selected{% endif %}>گران‌ترین</option></select></label>
+
             </header>
             <div class="shop-reference__products" data-shop-products>
                 {% for product in products %}
