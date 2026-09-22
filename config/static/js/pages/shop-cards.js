@@ -1,75 +1,49 @@
 (() => {
-    const cards = document.querySelectorAll('[data-product-card]');
-
-    const filterTrigger = document.getElementById('shop-filter-trigger');
-    const filterPanel = document.getElementById('shop-filter-panel');
-    const filterCount = document.getElementById('shop-filter-count');
-
-    if (filterTrigger && filterPanel) {
-        filterTrigger.addEventListener('click', () => {
-            const open = filterPanel.hidden;
-            filterPanel.hidden = !open;
-            filterTrigger.setAttribute('aria-expanded', String(open));
-        });
-
-        const params = new URLSearchParams(window.location.search);
-        const activeFilters = ['category', 'min_price', 'max_price', 'discount', 'available']
-            .filter((key) => params.get(key));
-        if (filterCount && activeFilters.length) {
-            filterCount.textContent = String(activeFilters.length);
-            filterCount.classList.add('is-visible');
-        }
-    }
-
-    if (!cards.length) return;
-
+    const initializedCards = new WeakSet();
     const visibleCards = new WeakSet();
-    const cardObserver = 'IntersectionObserver' in window
+
+    const cardObserver = "IntersectionObserver" in window
         ? new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
                     visibleCards.add(entry.target);
-                    entry.target.dispatchEvent(new CustomEvent('card:visible'));
+                    entry.target.dispatchEvent(new CustomEvent("card:visible"));
                 } else {
                     visibleCards.delete(entry.target);
-                    entry.target.dispatchEvent(new CustomEvent('card:hidden'));
+                    entry.target.dispatchEvent(new CustomEvent("card:hidden"));
                 }
             });
-        }, { rootMargin: '200px 0px', threshold: 0.01 })
+        }, { rootMargin: "200px 0px", threshold: 0.01 })
         : null;
 
-    document.addEventListener('visibilitychange', () => {
-        cards.forEach((card) => {
-            if (document.hidden) {
-                card.dispatchEvent(new CustomEvent('card:hidden'));
-            } else {
-                card.dispatchEvent(new CustomEvent('card:visible'));
-            }
-        });
-    });
+    const initializeCard = (card) => {
+        if (initializedCards.has(card)) return;
+        initializedCards.add(card);
 
-    cards.forEach((card) => {
         cardObserver?.observe(card);
 
-        const slides = Array.from(card.querySelectorAll('[data-card-slide]'));
-        const dots = Array.from(card.querySelectorAll('[data-card-dot]'));
-        const favorite = card.querySelector('[data-favorite-button]');
-        const media = card.querySelector('.product-card__media');
+        const slides = Array.from(card.querySelectorAll("[data-card-slide]"));
+        const dots = Array.from(card.querySelectorAll("[data-card-dot]"));
+        const favorite = card.querySelector("[data-favorite-button]");
+        const media = card.querySelector(".product-card__media, .shop-reference__media");
 
         if (slides.length > 1) {
-            let current = 0;
+            let current = Math.max(0, slides.findIndex((slide) => slide.classList.contains("is-active")));
             let timer = null;
             let startX = null;
 
             const show = (index, animate = true) => {
                 current = (index + slides.length) % slides.length;
                 slides.forEach((slide, i) => {
-                    slide.classList.toggle('is-active', i === current);
-                    if (!animate) slide.style.transition = 'none';
+                    slide.classList.toggle("is-active", i === current);
+                    if (!animate) slide.style.transition = "none";
                 });
-                dots.forEach((dot, i) => dot.classList.toggle('is-active', i === current));
+                dots.forEach((dot, i) => dot.classList.toggle("is-active", i === current));
+
                 if (!animate) {
-                    requestAnimationFrame(() => slides.forEach((slide) => { slide.style.transition = ''; }));
+                    requestAnimationFrame(() => {
+                        slides.forEach((slide) => { slide.style.transition = ""; });
+                    });
                 }
             };
 
@@ -88,15 +62,17 @@
                 timer = setInterval(next, 4200);
             };
 
-            media?.addEventListener('mouseenter', stop);
-            media?.addEventListener('mouseleave', start);
-            card.addEventListener('card:visible', start);
-            card.addEventListener('card:hidden', stop);
-            media?.addEventListener('touchstart', (event) => {
+            media?.addEventListener("mouseenter", stop);
+            media?.addEventListener("mouseleave", start);
+            card.addEventListener("card:visible", start);
+            card.addEventListener("card:hidden", stop);
+
+            media?.addEventListener("touchstart", (event) => {
                 startX = event.touches[0].clientX;
                 stop();
             }, { passive: true });
-            media?.addEventListener('touchend', (event) => {
+
+            media?.addEventListener("touchend", (event) => {
                 if (startX !== null) {
                     const delta = event.changedTouches[0].clientX - startX;
                     if (Math.abs(delta) > 35) show(current + (delta < 0 ? 1 : -1));
@@ -106,7 +82,7 @@
             }, { passive: true });
 
             dots.forEach((dot, i) => {
-                dot.addEventListener('click', (event) => {
+                dot.addEventListener("click", (event) => {
                     event.preventDefault();
                     event.stopPropagation();
                     show(i);
@@ -117,57 +93,74 @@
             start();
         }
 
-        favorite?.addEventListener('click', async (event) => {
+        favorite?.addEventListener("click", async (event) => {
             event.preventDefault();
             event.stopPropagation();
 
-            if (favorite.dataset.loading === '1') return;
-            const form = favorite.closest('form');
+            if (favorite.dataset.loading === "1") return;
+            const form = favorite.closest("form");
             if (!form) return;
 
-            favorite.dataset.loading = '1';
+            favorite.dataset.loading = "1";
             favorite.disabled = true;
-            favorite.classList.remove('is-popping');
+            favorite.classList.remove("is-popping");
             void favorite.offsetWidth;
-            favorite.classList.add('is-popping');
+            favorite.classList.add("is-popping");
 
             try {
                 const response = await fetch(form.action, {
-                    method: 'POST',
+                    method: "POST",
                     headers: {
-                        'X-CSRFToken': form.querySelector('[name="csrfmiddlewaretoken"]')?.value || '',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
+                        "X-CSRFToken": form.querySelector("[name='csrfmiddlewaretoken']")?.value || "",
+                        "X-Requested-With": "XMLHttpRequest",
+                        "Accept": "application/json",
                     },
-                    credentials: 'same-origin',
+                    credentials: "same-origin",
                     body: new FormData(form),
                 });
 
                 const result = await response.json();
+
                 if (response.status === 401 || result.login_required) {
-                    window.location.href = result.login_url || '/account/login/';
+                    window.location.href = result.login_url || "/account/login/";
                     return;
                 }
-                if (!response.ok || !result.ok) throw new Error(result.error || 'عملیات انجام نشد.');
 
-                favorite.classList.toggle('is-active', !!result.is_favorite);
+                if (!response.ok || !result.ok) {
+                    throw new Error(result.error || "عملیات انجام نشد.");
+                }
+
+                favorite.classList.toggle("is-active", !!result.is_favorite);
                 favorite.setAttribute(
-                    'aria-label',
-                    result.is_favorite ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'
+                    "aria-label",
+                    result.is_favorite ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"
                 );
             } catch (error) {
-                // The card stays unchanged if the request fails.
-                console.error('Favorite toggle failed:', error);
+                console.error("Favorite toggle failed:", error);
             } finally {
                 favorite.disabled = false;
-                favorite.dataset.loading = '0';
+                favorite.dataset.loading = "0";
             }
         });
 
-        card.querySelectorAll('.product-card__cart').forEach((button) => {
-            button.addEventListener('click', (event) => {
-                event.stopPropagation();
-            });
+        card.querySelectorAll(".product-card__cart").forEach((button) => {
+            button.addEventListener("click", (event) => event.stopPropagation());
+        });
+    };
+
+    const initializeCards = (scope = document) => {
+        scope.querySelectorAll?.("[data-product-card]").forEach(initializeCard);
+    };
+
+    document.addEventListener("visibilitychange", () => {
+        document.querySelectorAll("[data-product-card]").forEach((card) => {
+            card.dispatchEvent(new CustomEvent(document.hidden ? "card:hidden" : "card:visible"));
         });
     });
+
+    window.addEventListener("shop:catalog-updated", () => {
+        initializeCards(document.querySelector(".shop-reference__catalog") || document);
+    });
+
+    initializeCards();
 })();
