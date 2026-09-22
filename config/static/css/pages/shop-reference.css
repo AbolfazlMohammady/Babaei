@@ -1979,3 +1979,114 @@ body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__h
         font-size:12px!important;
     }
 }
+
+
+/* =========================================================
+   SHOP FINAL FIX — full hero image, real price floor, sticky header
+========================================================= */
+body.shop-page .site-header{
+    display:block!important;
+    position:sticky!important;
+    top:0!important;
+    z-index:1500!important;
+    width:100%!important;
+    background:rgba(12,23,16,.96)!important;
+    color:#f7f3ea!important;
+    border-bottom:1px solid rgba(255,255,255,.10)!important;
+    box-shadow:0 8px 24px rgba(0,0,0,.10)!important;
+}
+
+body.shop-page .site-header__inner{
+    min-height:78px!important;
+}
+
+body.shop-page .site-header a,
+body.shop-page .site-header button,
+body.shop-page .site-header .site-logo,
+body.shop-page .site-header .site-nav{
+    color:#f7f3ea!important;
+}
+
+body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero{
+    position:relative!important;
+    display:block!important;
+    min-height:clamp(360px,30vw,430px)!important;
+    height:clamp(360px,30vw,430px)!important;
+    overflow:hidden!important;
+    background:#07120c!important;
+}
+
+body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero-visual{
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    z-index:0!important;
+    background:#07120c!important;
+}
+
+body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero-visual img{
+    width:100%!important;
+    height:100%!important;
+    display:block!important;
+    object-fit:cover!important;
+    object-position:center center!important;
+    transform:none!important;
+    opacity:1!important;
+}
+
+body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero-visual::after{
+    background:
+        linear-gradient(
+            90deg,
+            rgba(4,10,7,.06) 0%,
+            rgba(4,10,7,.02) 45%,
+            rgba(4,10,7,.16) 100%
+        )!important;
+}
+
+body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero-copy{
+    position:relative!important;
+    z-index:5!important;
+    width:min(1180px,calc(100% - 56px))!important;
+    height:100%!important;
+    margin:0 auto!important;
+    padding:72px 0 42px!important;
+    background:transparent!important;
+    align-items:flex-start!important;
+    justify-content:flex-start!important;
+    direction:rtl!important;
+    text-align:right!important;
+}
+
+body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero-copy .shop-reference__crumbs{
+    align-self:flex-start!important;
+    margin:4px 0 52px!important;
+}
+
+body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero-copy .shop-reference__eyebrow,
+body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero h1,
+body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero-copy p{
+    align-self:flex-start!important;
+    text-align:right!important;
+}
+
+body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero h1{
+    margin:0!important;
+}
+
+@media (max-width:820px){
+    body.shop-page .site-header{
+        position:sticky!important;
+        top:0!important;
+    }
+    body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero{
+        min-height:330px!important;
+        height:330px!important;
+    }
+    body.shop-page .shop-reference:not(.shop-reference--category) .shop-reference__hero-copy{
+        width:calc(100% - 28px)!important;
+        padding:58px 0 28px!important;
+    }
+}
