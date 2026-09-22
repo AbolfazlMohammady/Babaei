@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 from django.views.generic import DetailView, ListView
 
-from .models import Category, Product, ProductImage, ProductVariant
+from .models import Category, Product, ProductColor, ProductImage, ProductSize, ProductVariant
 from apps.saved.models import FavoriteProduct
 
 AUTH_USER_SESSION_KEY = "_auth_user_id"
@@ -106,6 +106,22 @@ class ShopIndexView(ListView):
         if category:
             queryset = queryset.filter(category__slug=category)
 
+        color = self.request.GET.get("color")
+        if color:
+            queryset = queryset.filter(
+                variants__is_active=True,
+                variants__color__is_active=True,
+                variants__color__slug=color,
+            ).distinct()
+
+        size = self.request.GET.get("size")
+        if size:
+            queryset = queryset.filter(
+                variants__is_active=True,
+                variants__size__is_active=True,
+                variants__size__slug=size,
+            ).distinct()
+
         for key, lookup in (("min_price", "listed_price__gte"), ("max_price", "listed_price__lte")):
             value = self.request.GET.get(key)
             if value:
@@ -145,8 +161,18 @@ class ShopIndexView(ListView):
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
+        context["filter_color"] = self.request.GET.get("color", "")
+        context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
         context["filter_available"] = self.request.GET.get("available") == "1"
+        context["filter_colors"] = list(ProductColor.objects.filter(
+            is_active=True,
+            variants__is_active=True,
+        ).distinct().order_by("name"))
+        context["filter_sizes"] = list(ProductSize.objects.filter(
+            is_active=True,
+            variants__is_active=True,
+        ).distinct().order_by("sort_order", "name"))
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
         context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
@@ -171,12 +197,40 @@ class CategoryDetailView(ListView):
                 output_field=IntegerField(),
             )
         ).order_by("type_priority", "sort_order", "id")[:2]
-        return Product.objects.filter(category_id=self.category.id, is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, **annotations).prefetch_related(Prefetch("images", queryset=card_images, to_attr="card_images"))
+        queryset = Product.objects.filter(category_id=self.category.id, is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, **annotations).prefetch_related(Prefetch("images", queryset=card_images, to_attr="card_images"))
+
+        color = self.request.GET.get("color")
+        if color:
+            queryset = queryset.filter(
+                variants__is_active=True,
+                variants__color__is_active=True,
+                variants__color__slug=color,
+            ).distinct()
+
+        size = self.request.GET.get("size")
+        if size:
+            queryset = queryset.filter(
+                variants__is_active=True,
+                variants__size__is_active=True,
+                variants__size__slug=size,
+            ).distinct()
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["category"] = self.category
         context["categories"] = get_active_categories()
+        context["filter_color"] = self.request.GET.get("color", "")
+        context["filter_size"] = self.request.GET.get("size", "")
+        context["filter_colors"] = list(ProductColor.objects.filter(
+            is_active=True,
+            variants__is_active=True,
+        ).distinct().order_by("name"))
+        context["filter_sizes"] = list(ProductSize.objects.filter(
+            is_active=True,
+            variants__is_active=True,
+        ).distinct().order_by("sort_order", "name"))
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = self.category.seo_title or self.category.name
         context["og_description"] = self.category.seo_description or self.category.description or self.category.name
