@@ -15,7 +15,7 @@
 {% block site_optional_css %}
 <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
 <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=5">
-<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=4">
 {% endblock %}
 
 {% block extra_js %}
@@ -120,7 +120,28 @@
                     <label><input type="checkbox" name="discount" value="1" {% if filter_discount %}checked{% endif %}><span>فقط تخفیف‌دارها</span></label>
                 </section>
 
-                <input type="hidden" name="sort" value="{{ filter_sort }}">
+                <section class="shop-reference__filter-section shop-reference__filter-section--sort">
+                    <h2>مرتب‌سازی</h2>
+                    <div class="shop-reference__sort-options">
+                        <label class="{% if filter_sort == "featured" %}is-active{% endif %}">
+                            <input type="radio" name="sort" value="featured" {% if filter_sort == "featured" %}checked{% endif %}>
+                            <span>پیشنهاد شده</span>
+                        </label>
+                        <label class="{% if filter_sort == "newest" %}is-active{% endif %}">
+                            <input type="radio" name="sort" value="newest" {% if filter_sort == "newest" %}checked{% endif %}>
+                            <span>جدیدترین</span>
+                        </label>
+                        <label class="{% if filter_sort == "price_asc" %}is-active{% endif %}">
+                            <input type="radio" name="sort" value="price_asc" {% if filter_sort == "price_asc" %}checked{% endif %}>
+                            <span>ارزان‌ترین</span>
+                        </label>
+                        <label class="{% if filter_sort == "price_desc" %}is-active{% endif %}">
+                            <input type="radio" name="sort" value="price_desc" {% if filter_sort == "price_desc" %}checked{% endif %}>
+                            <span>گران‌ترین</span>
+                        </label>
+                    </div>
+                </section>
+
                 <button class="shop-reference__apply" type="submit">اعمال فیلترها <span>↗</span></button>
                 <a class="shop-reference__clear" href="{{ request.path }}">پاک کردن فیلترها ↻</a>
             </form>
@@ -135,22 +156,7 @@
                     </div>
                     <span class="shop-reference__count">{{ paginator.count|price }} محصول</span>
                 </div>
-                <div class="shop-reference__toolbar-actions">
-                    <label class="shop-reference__sort">
-                        <span>مرتب‌سازی:</span>
-                        <select name="sort" data-shop-sort aria-label="مرتب‌سازی محصولات">
-                            <option value="featured" {% if filter_sort == "featured" %}selected{% endif %}>پیشنهاد شده</option>
-                            <option value="newest" {% if filter_sort == "newest" %}selected{% endif %}>جدیدترین</option>
-                            <option value="price_asc" {% if filter_sort == "price_asc" %}selected{% endif %}>ارزان‌ترین</option>
-                            <option value="price_desc" {% if filter_sort == "price_desc" %}selected{% endif %}>گران‌ترین</option>
-                        </select>
-                    </label>
-                    <div class="shop-reference__view-toggle" role="group" aria-label="نوع نمایش">
-                        <button type="button" class="is-active" data-view="grid" aria-label="نمایش شبکه‌ای">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>
-                        </button>
-                    </div>
-                </div>
+
             </header>
 
             <div class="shop-reference__products" data-shop-products>
