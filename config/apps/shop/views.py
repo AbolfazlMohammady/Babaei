@@ -107,14 +107,6 @@ class ShopIndexView(ListView):
         if category:
             queryset = queryset.filter(category__slug=category)
 
-        color = self.request.GET.get("color")
-        if color:
-            queryset = queryset.filter(
-                variants__is_active=True,
-                variants__color__is_active=True,
-                variants__color__slug=color,
-            ).distinct()
-
         size = self.request.GET.get("size")
         if size:
             queryset = queryset.filter(
@@ -163,26 +155,9 @@ class ShopIndexView(ListView):
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
         context["filter_sort"] = self.request.GET.get("sort", "featured")
-        context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
-        context["filter_discount"] = self.request.GET.get("discount") == "1"
         context["filter_available"] = self.request.GET.get("available") == "1"
-        context["filter_sizes"] = list(ProductSize.objects.filter(
-            is_active=True,
-            slug__in=("s", "m", "l", "xl", "xxl"),
-            variants__is_active=True,
-        ).distinct().annotate(
-            size_priority=Case(
-                When(slug="s", then=1),
-                When(slug="m", then=2),
-                When(slug="l", then=3),
-                When(slug="xl", then=4),
-                When(slug="xxl", then=5),
-                default=99,
-                output_field=IntegerField(),
-            )
-        ).order_by("size_priority", "name"))
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
         context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
@@ -245,21 +220,6 @@ class CategoryDetailView(ListView):
         context["filter_discount"] = self.request.GET.get("discount") == "1"
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
-        context["filter_sizes"] = list(ProductSize.objects.filter(
-            is_active=True,
-            slug__in=("s", "m", "l", "xl", "xxl"),
-            variants__is_active=True,
-        ).distinct().annotate(
-            size_priority=Case(
-                When(slug="s", then=1),
-                When(slug="m", then=2),
-                When(slug="l", then=3),
-                When(slug="xl", then=4),
-                When(slug="xxl", then=5),
-                default=99,
-                output_field=IntegerField(),
-            )
-        ).order_by("size_priority", "name"))
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = self.category.seo_title or self.category.name
         context["og_description"] = self.category.seo_description or self.category.description or self.category.name
