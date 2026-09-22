@@ -8,8 +8,6 @@
     const form = root.querySelector("[data-shop-filter-form]");
     const count = root.querySelector("[data-filter-count]");
     const products = root.querySelector("[data-shop-products]");
-    const sort = root.querySelector("[data-shop-sort]");
-
     const params = new URLSearchParams(window.location.search);
 
     const openFilters = () => {
@@ -67,20 +65,20 @@
     maxRange?.addEventListener("input", () => syncRange("max"));
     if (minRange && maxRange) syncRange();
 
-    sort?.addEventListener("change", () => {
-        const next = new URL(window.location.href);
-        next.searchParams.set("sort", sort.value);
-        next.searchParams.delete("page");
-        window.location.assign(next.toString());
-    });
-
-    root.querySelectorAll("[data-view]").forEach((button) => {
-        button.addEventListener("click", () => {
-            const view = button.dataset.view;
-            root.querySelectorAll("[data-view]").forEach((item) => item.classList.toggle("is-active", item === button));
-            products?.classList.toggle("is-list-view", view === "list");
-            try { localStorage.setItem("babaei-shop-view", view); } catch (_) {}
-        });
+    // Keep radio/chip states visually synchronized with the actual form values.
+    root.querySelectorAll(".shop-reference__sort-options label, .shop-reference__sizes label, .shop-reference__swatches label").forEach((label) => {
+        const input = label.querySelector("input");
+        if (!input) return;
+        const sync = () => {
+            if (input.type === "radio") {
+                const group = root.querySelectorAll('input[name="' + input.name + '"]');
+                group.forEach((item) => item.closest("label")?.classList.toggle("is-active", item.checked));
+            } else {
+                label.classList.toggle("is-active", input.checked);
+            }
+        };
+        input.addEventListener("change", sync);
+        sync();
     });
 
     // Grid is always the initial catalog view, matching the reference design.
