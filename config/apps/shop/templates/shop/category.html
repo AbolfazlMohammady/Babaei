@@ -41,9 +41,9 @@
                     <a class="product-card__gallery" href="{% url 'shop:product' product.slug %}" aria-label="{{ product.name }}">
                         <div class="product-card__slides">
                             {% for image in product.card_images %}
-                                <div class="product-card__slide{% if forloop.first %} is-active{% endif %}" data-card-slide><img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async"></div>
+                                <div class="product-card__slide{% if forloop.first %} is-active{% endif %}" data-card-slide><img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" width="{{ image.image.width }}" height="{{ image.image.height }}" loading="lazy" decoding="async"></div>
                             {% empty %}
-                                <div class="product-card__slide is-active" data-card-slide><img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async"></div>
+                                <div class="product-card__slide is-active" data-card-slide><img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" width="1000" height="1000" loading="lazy" decoding="async"></div>
                             {% endfor %}
                         </div>
                     </a>
