@@ -862,7 +862,6 @@ body.shop-page {
     border: 1px solid rgba(21, 21, 19, .16);
     background: rgba(248, 246, 241, .78);
     color: var(--store-ink);
-    backdrop-filter: blur(12px);
 }
 
 .shop-page .product-card__discount {
