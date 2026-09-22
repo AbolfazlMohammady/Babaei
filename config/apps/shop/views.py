@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 from django.views.generic import DetailView, ListView
 
-from .models import Category, Product, ProductColor, ProductImage, ProductSize, ProductVariant
+from .models import Category, Product , ProductImage, ProductSize, ProductVariant
 from apps.saved.models import FavoriteProduct
 
 AUTH_USER_SESSION_KEY = "_auth_user_id"
@@ -220,6 +220,14 @@ class CategoryDetailView(ListView):
         if self.request.GET.get("discount") == "1":
             queryset = queryset.filter(listed_compare_price__gt=F("listed_price"))
 
+        for key, lookup in (("min_price", "listed_price__gte"), ("max_price", "listed_price__lte")):
+            value = self.request.GET.get(key)
+            if value:
+                try:
+                    queryset = queryset.filter(**{lookup: int(value)})
+                except (TypeError, ValueError):
+                    pass
+
         sort = self.request.GET.get("sort", "featured")
         sort_map = {
             "featured": ("-is_featured", "-created_at"),
@@ -235,6 +243,8 @@ class CategoryDetailView(ListView):
         context["categories"] = get_active_categories()
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
+        context["filter_min_price"] = self.request.GET.get("min_price", "")
+        context["filter_max_price"] = self.request.GET.get("max_price", "")
         context["filter_sizes"] = list(ProductSize.objects.filter(
             is_active=True,
             slug__in=("s", "m", "l", "xl", "xxl"),
