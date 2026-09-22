@@ -6,7 +6,7 @@
 {% block body_class %}auth-body{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=2">
 {% endblock %}
 
 {% block site_optional_css %}
@@ -16,53 +16,71 @@
 
 {% block content %}
 <section class="auth-page">
-    <div class="auth-shell auth-shell--verify">
-        <div class="auth-visual" aria-hidden="true">
-            <div class="auth-visual__content">
-                <span class="auth-kicker">BABAEI STUDIO</span>
-                <h1>Almost<br>There.</h1>
-                <p>یک قدم دیگر تا ورود به حساب و ادامه تجربه شخصی‌سازی BABAEI.</p>
-            </div>
-            <span class="auth-visual__mark">BABAEI</span>
-        </div>
+    <div class="auth-shell">
+        <span class="auth-shell__selvedge" aria-hidden="true"></span>
 
         <div class="auth-card">
-            <a href="/" class="auth-brand" aria-label="BABAEI">BABAEI</a>
+            <div class="auth-card__top">
+                <a href="/" class="auth-brand" aria-label="BABAEI">
+                    <span class="auth-brand__mark" aria-hidden="true">B</span>
+                    <span class="auth-brand__word">BABAEI</span>
+                </a>
+                <span class="auth-brand__tagline">Wear Your Story.</span>
+            </div>
 
             <div class="auth-header">
-                <span class="auth-eyebrow">VERIFICATION</span>
-                <h2>کد تأیید</h2>
-                <p>کد ارسال‌شده به <strong>{{ phone }}</strong> را وارد کنید.</p>
+                <span class="auth-eyebrow">Verification</span>
+                <h1 class="auth-title">کد تأیید</h1>
+                <p class="auth-lead">
+                    کد ارسال‌شده به <strong dir="ltr">{{ phone }}</strong> را وارد کنید.
+                </p>
             </div>
 
             <form method="post" class="auth-form" novalidate>
                 {% csrf_token %}
 
-                <div class="form-group">
-                    <label class="form-label" for="code">کد تأیید</label>
-                    <input
-                        class="form-input auth-phone-input otp-input"
-                        id="code"
-                        name="code"
-                        type="text"
-                        inputmode="numeric"
-                        autocomplete="one-time-code"
-                        maxlength="6"
-                        pattern="[0-9]{6}"
-                        placeholder="۱۲۳۴۵۶"
-                        required
-                        autofocus
-                    >
+                <div class="auth-field">
+                    <label class="auth-label" for="code">کد تأیید</label>
+                    <div class="auth-code">
+                        <input
+                            class="auth-code__input otp-input"
+                            id="code"
+                            name="code"
+                            type="text"
+                            inputmode="numeric"
+                            autocomplete="one-time-code"
+                            maxlength="6"
+                            pattern="[0-9]{6}"
+                            placeholder="۱۲۳۴۵۶"
+                            aria-describedby="code-hint"
+                            required
+                            autofocus
+                        >
+                    </div>
+                    <small id="code-hint" class="auth-hint">۶ رقم؛ کد پیامک‌شده تا ۲ دقیقه اعتبار دارد.</small>
                 </div>
 
-                <button class="btn btn-primary auth-submit" type="submit">
+                <button class="auth-submit" type="submit">
                     <span>ورود به حساب</span>
-                    <span aria-hidden="true">←</span>
+                    <span class="auth-submit__arrow" aria-hidden="true">←</span>
                 </button>
             </form>
 
-            <a href="{% url 'users:login' %}" class="auth-back-link">← تغییر شماره موبایل</a>
+            <div class="auth-meta">
+                <p class="auth-recovery">
+                    <span>کد را دریافت نکردید؟</span>
+                    <a href="{% url 'users:login' %}" class="auth-resend">ارسال دوباره کد</a>
+                </p>
+                <a href="{% url 'users:login' %}" class="auth-back-link">تغییر شماره موبایل</a>
+            </div>
         </div>
+
+        <aside class="auth-aside" aria-hidden="true">
+            <span class="auth-kicker">BABAEI STUDIO</span>
+            <p class="auth-quote">داستان خودت را <em>بپوش</em>.</p>
+            <p class="auth-note">کد روی همان شماره‌ای پیامک شده که وارد کردید.</p>
+            <span class="auth-aside__foot">Wear Your Story.</span>
+        </aside>
     </div>
 </section>
 {% endblock %}

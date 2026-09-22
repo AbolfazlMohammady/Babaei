@@ -5,7 +5,8 @@
 {% block body_class %}cart-page{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/cart.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/pages/account.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/pages/cart.css' %}?v=3">
 {% endblock %}
 
 {% block site_optional_css %}
@@ -16,14 +17,18 @@
 {% block content %}
 <div class="cart-shell" data-cart-page>
     <header class="cart-heading">
-        <div>
+        <div class="cart-heading__copy">
             <span class="cart-eyebrow">BAG / <span data-cart-heading-count>{{ item_count }}</span></span>
-            <h1>سبد خرید</h1>
+            <h1 class="cart-title">سبد خرید</h1>
+            <p class="cart-heading__note">تعداد و موجودی کالاها پیش از پرداخت دوباره بررسی می‌شود.</p>
         </div>
         {% if items %}
         <form method="post" action="{% url 'orders:cart_clear' %}" data-cart-action="clear">
             {% csrf_token %}
-            <button class="cart-clear" type="submit">خالی کردن سبد</button>
+            <button class="cart-clear" type="submit">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M9 7V5.5h6V7M7.5 7l.8 12h7.4l.8-12"></path></svg>
+                <span>خالی کردن سبد</span>
+            </button>
         </form>
         {% endif %}
     </header>
@@ -37,21 +42,23 @@
                 </a>
                 <div class="cart-item__body">
                     <div class="cart-item__top">
-                        <div>
+                        <div class="cart-item__info">
                             <span class="cart-item__category">{{ item.product.category.name }}</span>
-                            <h2><a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a></h2>
+                            <h2 class="cart-item__name"><a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a></h2>
                         </div>
                         <form method="post" action="{% url 'orders:cart_remove' item.id %}" data-cart-action="remove">
                             {% csrf_token %}
-                            <button class="cart-item__remove" type="submit" aria-label="حذف {{ item.product.name }}">×</button>
+                            <button class="cart-item__remove" type="submit" aria-label="حذف {{ item.product.name }}">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg><span>حذف</span>
+                            </button>
                         </form>
                     </div>
 
                     {% if item.variant %}
                     <div class="cart-item__variant">
-                        {% if item.variant.color %}<span>{{ item.variant.color.name }}</span>{% endif %}
-                        {% if item.variant.size %}<span>{{ item.variant.size.name }}</span>{% endif %}
-                        {% if item.variant.sku %}<span>{{ item.variant.sku }}</span>{% endif %}
+                        {% if item.variant.color %}<span class="cart-item__chip">{{ item.variant.color.name }}</span>{% endif %}
+                        {% if item.variant.size %}<span class="cart-item__chip">{{ item.variant.size.name }}</span>{% endif %}
+                        {% if item.variant.sku %}<span class="cart-item__chip cart-item__chip--muted" dir="ltr">{{ item.variant.sku }}</span>{% endif %}
                     </div>
                     {% endif %}
 
@@ -64,6 +71,7 @@
                             <button type="submit" data-quantity-button="1" data-quantity-plus aria-label="افزایش تعداد" {% if item.variant and item.quantity >= item.variant.stock_quantity %}disabled{% endif %}>+</button>
                         </form>
                         <div class="cart-item__price">
+                            <span class="cart-item__price-label">جمع این کالا</span>
                             <strong data-line-total>{{ item.line_total|price }} تومان</strong>
                         </div>
                     </div>
@@ -78,15 +86,20 @@
             <div class="cart-summary__row cart-summary__row--muted"><span>هزینه ارسال</span><span>در مرحله بعد</span></div>
             <div class="cart-summary__total"><span>مبلغ کالاها</span><strong data-cart-subtotal>{{ subtotal|price }} <small>تومان</small></strong></div>
             <button class="cart-checkout" type="button" disabled>ادامه ثبت سفارش</button>
+            <a class="cart-summary__link" href="{% url 'shop:index' %}">ادامه خرید از فروشگاه</a>
             <p class="cart-summary__note">قیمت و موجودی هنگام ثبت سفارش دوباره بررسی می‌شود.</p>
         </aside>
     </div>
 
-    <section class="cart-empty" data-cart-empty{% if items %} hidden{% endif %}>
-        <div class="cart-empty__mark">B</div>
-        <span>YOUR BAG IS EMPTY</span>
+    <section class="ac-empty cart-empty" data-cart-empty{% if items %} hidden{% endif %}>
+        <div class="ac-empty__art" aria-hidden="true">
+            <span class="ac-empty__bag"></span>
+            <span class="ac-empty__bag-handle"></span>
+        </div>
+        <span class="ac-empty__eyebrow">YOUR BAG IS EMPTY</span>
         <h2>سبد خریدت خالیه</h2>
-        <a href="{% url 'shop:index' %}">مشاهده محصولات</a>
+        <p>محصولات مورد علاقه‌ات را از فروشگاه انتخاب کن تا اینجا کنار هم جمع شوند.</p>
+        <a href="{% url 'shop:index' %}" class="ac-btn ac-btn--primary">مشاهده محصولات</a>
     </section>
 </div>
 {% endblock %}

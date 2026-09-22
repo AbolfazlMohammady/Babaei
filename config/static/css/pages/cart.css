@@ -1,724 +1,697 @@
 /* ==========================================================================
    BABAEI — Cart
    --------------------------------------------------------------------------
-   WHY THIS FILE EXISTS
-   The cart shipped with a one-line stylesheet that painted the page in a
-   grey-brown (#ebe8e1 / #1d1b18) that appears nowhere else on the site, sat on
-   a black "continue" button, and needed an !important to keep the header badge
-   hidden once the bag emptied.
+   The bag was almost unstyled: line items, quantity and summary all fell back
+   to browser defaults. This file is the cart half of the account design system
+   — orders/cart.html loads pages/account.css first (same --sh-* / --ac-*
+   tokens, same .ac-card / .ac-btn / .ac-empty primitives), then this file for
+   the cart-specific blocks.
 
-   There is now one file, in the shop's palette — forest green on cream — with
-   zero !important. The markup is deliberately unchanged: every class here
-   already existed, only the values moved onto the shared tokens.
+   js: js/pages/cart.js talks to [data-cart-page], [data-cart-item],
+   [data-cart-action], [data-quantity-*], [data-cart-summary], [data-cart-empty]
+   and the .cart-toast it creates. It hides the summary and the empty state
+   with the `hidden` attribute and marks the shell .is-empty, so both of those
+   have to be honoured here.
 
-   TOKENS
-   --sh-forest / --sh-cream / --sh-line … live on :root in fonts.css. The shop
-   shell also defines a few aliases (--sh-radius-sm, --sh-line-strong, --sh-tap,
-   --sh-on-dark) that only exist inside the shop namespace, so this page — which
-   is not a shop page — re-declares the handful it shares.
-
-   CASCADE NOTE
-   Everything is scoped to body.cart-page, so it outranks the shared .btn /
-   .form-* leftovers in components.css without ever needing !important.
-
-   JS CONTRACT (js/pages/cart.js)
-     [data-cart-page] [data-cart-item] [data-cart-action] [data-cart-summary]
-     [data-cart-empty] [data-cart-count] [data-cart-subtotal]
-     [data-quantity-value] [data-quantity-button] [data-line-total]
-     state classes: .is-removing .is-empty .cart-toast .cart-toast--error
-                    .is-visible .header-cart__badge.is-hidden
+   Zero !important declarations.
    ========================================================================== */
 
-body.cart-page {
-    --sh-radius-sm: 12px;
-    --sh-line-strong: rgba(20, 22, 26, .16);
-    --sh-tap: 44px;
-    --sh-on-dark: #f6f3ec;
-    --sh-on-dark-soft: rgba(246, 243, 236, .72);
+/* ==========================================================================
+   01 — FRAME
+   ========================================================================== */
 
-    min-height: 100svh;
+.cart-page {
     background: var(--sh-cream);
     color: var(--sh-ink);
 }
 
-/* ==========================================================================
-   01 — HEADER BADGE (JS CONTRACT)
-   cart.js toggles .is-hidden on the badge when the count reaches zero.
-   components.css sets display: grid on the bare class; two classes simply
-   outrank one, so the toggle keeps working without !important.
-   ========================================================================== */
-
-.header-cart__badge.is-hidden {
-    display: none;
-}
-
-/* ==========================================================================
-   02 — SHELL
-   The fixed mobile dock adds its own body padding-bottom below 941px, so the
-   page never compensates for it here.
-   ========================================================================== */
-
-body.cart-page .cart-shell {
-    width: 100%;
-    max-width: 1240px;
+.cart-shell {
+    width: min(var(--ac-shell), 100% - (var(--ac-gutter) * 2));
     margin-inline: auto;
-    padding-inline: clamp(16px, 4vw, 44px);
-    padding-block: clamp(26px, 4vw, 54px) clamp(46px, 6vw, 76px);
+    padding-block: clamp(18px, 3vw, 34px) clamp(28px, 4vw, 52px);
 }
 
 /* ==========================================================================
-   03 — HEADING
+   02 — HEADING
    ========================================================================== */
 
-body.cart-page .cart-heading {
+.cart-heading {
     display: flex;
-    flex-wrap: wrap;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 14px 18px;
-    margin-block-end: clamp(18px, 3vw, 30px);
+    gap: 18px;
+    flex-wrap: wrap;
+
+    padding-block-end: 18px;
+    border-block-end: 1px solid var(--ac-line);
 }
 
-body.cart-page .cart-heading form {
-    margin: 0;
+.cart-heading__copy {
+    min-width: 0;
 }
 
-/* Latin display label: Arial, exactly as .auth-eyebrow and .product-eyebrow
-   do it. The count that lands inside it stays on the shared family. */
-body.cart-page .cart-eyebrow {
+.cart-eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-block-end: 10px;
-    color: var(--sh-muted);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .2em;
-    line-height: 1;
-    direction: ltr;
-    unicode-bidi: isolate;
-}
 
-body.cart-page .cart-eyebrow::before {
-    content: "";
-    inline-size: 20px;
-    block-size: 1px;
-    background: var(--sh-moss);
-}
-
-body.cart-page .cart-heading h1 {
-    margin: 0;
-    color: var(--sh-ink);
-    font-size: clamp(27px, 4vw, 44px);
+    color: var(--sh-forest);
+    font-size: 10.5px;
     font-weight: 800;
-    line-height: 1.25;
-    letter-spacing: -.6px;
+    letter-spacing: .22em;
+    line-height: 1;
 }
 
-/* Destructive, not primary: a muted brick that matches .account-logout rather
-   than the forest the one true action (.cart-checkout) uses. */
-body.cart-page .cart-clear {
+.cart-eyebrow::before {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--sh-gold);
+}
+
+.cart-title {
+    margin-block-start: 9px;
+    color: var(--sh-ink);
+    font-size: 23px;
+    font-weight: 900;
+    line-height: 1.35;
+}
+
+.cart-heading__note {
+    max-width: 56ch;
+    margin-block-start: 6px;
+    color: var(--sh-muted);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+/* Destructive, but quiet: a hairline chip, not a filled red button. */
+.cart-clear {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 42px;
+
+    min-height: 44px;
     padding-inline: 16px;
-    border: 1px solid rgba(143, 68, 56, .28);
-    border-radius: var(--sh-radius-sm);
-    background: rgba(143, 68, 56, .06);
-    color: #8f4438;
-    font: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background var(--sh-fast), border-color var(--sh-fast),
-                transform var(--sh-fast);
-}
 
-body.cart-page .cart-clear::before {
-    content: "\00d7";
-    display: grid;
-    place-items: center;
-    inline-size: 18px;
-    block-size: 18px;
-    border: 1px solid currentColor;
-    border-radius: 50%;
-    font-size: 13px;
-    line-height: 1;
-}
-
-body.cart-page .cart-clear:hover {
-    border-color: rgba(143, 68, 56, .5);
-    background: rgba(143, 68, 56, .12);
-    transform: translateY(-1px);
-}
-
-/* ==========================================================================
-   04 — LAYOUT
-   ========================================================================== */
-
-body.cart-page .cart-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.62fr) minmax(0, .88fr);
-    gap: clamp(16px, 2.4vw, 26px);
-    align-items: start;
-}
-
-/* Empty bag: the items column has nothing to hold, so the state gets the
-   full width instead of leaving a dead gutter beside it. */
-body.cart-page .cart-layout.is-empty {
-    grid-template-columns: minmax(0, 1fr);
-}
-
-body.cart-page .cart-items {
-    display: grid;
-    gap: 12px;
-    align-content: start;
-}
-
-/* ==========================================================================
-   05 — ITEM CARD
-   ========================================================================== */
-
-body.cart-page .cart-item {
-    display: grid;
-    grid-template-columns: 122px minmax(0, 1fr);
-    gap: clamp(12px, 1.6vw, 18px);
-    padding: clamp(12px, 1.6vw, 16px);
-    border: 1px solid var(--sh-line);
-    border-radius: var(--sh-radius);
-    background: var(--sh-cream-2);
-    transition: opacity var(--sh-fast), transform var(--sh-fast),
-                border-color var(--sh-fast), box-shadow var(--sh-fast);
-}
-
-body.cart-page .cart-item:hover {
-    border-color: var(--sh-sand);
-    box-shadow: var(--sh-shadow);
-}
-
-/* The row the script fades out before removing it from the DOM. */
-body.cart-page .cart-item.is-removing {
-    opacity: 0;
-    transform: translateY(-6px);
-}
-
-body.cart-page .cart-item__image {
-    display: block;
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
-    border-radius: var(--sh-radius-sm);
-    background: var(--sh-sand);
-}
-
-body.cart-page .cart-item__image img {
-    inline-size: 100%;
-    block-size: 100%;
-    object-fit: cover;
-}
-
-body.cart-page .cart-item__body {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-body.cart-page .cart-item__top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-body.cart-page .cart-item__top > div {
-    min-width: 0;
-}
-
-body.cart-page .cart-item__category {
-    display: block;
-    margin-block-end: 4px;
-    color: var(--sh-muted);
-    font-size: 10.5px;
-    font-weight: 700;
-}
-
-body.cart-page .cart-item h2 {
-    margin: 0;
-    color: var(--sh-ink);
-    font-size: clamp(14px, 1.5vw, 16px);
-    font-weight: 700;
-    line-height: 1.6;
-    overflow-wrap: anywhere;
-}
-
-body.cart-page .cart-item h2 a {
-    color: var(--sh-ink);
-    text-decoration: none;
-    transition: color var(--sh-fast);
-}
-
-body.cart-page .cart-item h2 a:hover {
-    color: var(--sh-forest);
-}
-
-body.cart-page .cart-item__remove {
-    flex: 0 0 auto;
-    inline-size: 34px;
-    block-size: 34px;
-    display: grid;
-    place-items: center;
-    padding: 0;
-    border: 1px solid var(--sh-line);
-    border-radius: 10px;
-    background: var(--sh-cream);
+    border: 1px solid var(--ac-line-2);
+    border-radius: 999px;
+    background: var(--ac-surface);
     color: var(--sh-ink-2);
-    font: inherit;
-    font-size: 18px;
-    line-height: 1;
+
+    font-size: 12.5px;
+    font-weight: 800;
     cursor: pointer;
-    transition: background var(--sh-fast), border-color var(--sh-fast),
+
+    transition: border-color var(--sh-fast), background-color var(--sh-fast),
                 color var(--sh-fast);
 }
 
-body.cart-page .cart-item__remove:hover {
-    border-color: rgba(143, 68, 56, .45);
-    background: rgba(143, 68, 56, .1);
-    color: #8f4438;
+.cart-clear svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
-body.cart-page .cart-item__variant {
+.cart-clear:hover {
+    border-color: rgba(156, 59, 46, .38);
+    background: rgba(156, 59, 46, .06);
+    color: var(--ac-brick, #9c3b2e);
+}
+
+/* ==========================================================================
+   03 — LAYOUT
+   ========================================================================== */
+
+.cart-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 368px;
+    gap: 20px;
+    align-items: start;
+
+    margin-block-start: 22px;
+}
+
+.cart-layout.is-empty {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.cart-items {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
 }
 
-body.cart-page .cart-item__variant span {
-    display: inline-flex;
-    align-items: center;
-    min-height: 26px;
-    padding-inline: 9px;
-    border: 1px solid var(--sh-line);
-    border-radius: 8px;
-    background: var(--sh-cream);
-    color: var(--sh-muted);
-    font-size: 10.5px;
-    font-weight: 600;
+/* ==========================================================================
+   04 — LINE ITEM
+   ========================================================================== */
+
+.cart-item {
+    display: grid;
+    grid-template-columns: 108px minmax(0, 1fr);
+    gap: 16px;
+
+    padding: 15px;
+    border: 1px solid var(--ac-line);
+    border-radius: var(--ac-radius);
+    background: var(--ac-surface);
+
+    transition: border-color var(--sh-fast), opacity 180ms ease;
 }
 
-body.cart-page .cart-item__bottom {
+.cart-item:hover {
+    border-color: var(--ac-line-3);
+}
+
+.cart-item.is-removing {
+    opacity: 0;
+}
+
+.cart-item__image {
+    display: block;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+
+    border-radius: var(--ac-radius-sm);
+    background: var(--sh-paper);
+}
+
+.cart-item__image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cart-item__body {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.cart-item__top {
+    display: flex;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
 }
 
-/* ==========================================================================
-   06 — QUANTITY AND LINE PRICE
-   ========================================================================== */
-
-body.cart-page .cart-quantity {
-    display: inline-flex;
-    align-items: center;
-    overflow: hidden;
-    border: 1px solid var(--sh-line-strong);
-    border-radius: var(--sh-radius-sm);
-    background: var(--sh-cream);
+.cart-item__info {
+    min-width: 0;
 }
 
-body.cart-page .cart-quantity button {
-    inline-size: 38px;
-    block-size: 38px;
-    display: grid;
-    place-items: center;
-    padding: 0;
-    border: 0;
-    background: transparent;
+.cart-item__category {
+    display: block;
+    color: var(--sh-muted);
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .12em;
+}
+
+.cart-item__name {
+    margin-block-start: 4px;
     color: var(--sh-ink);
-    font: inherit;
-    font-size: 17px;
-    line-height: 1;
-    cursor: pointer;
-    transition: background var(--sh-fast), color var(--sh-fast);
+    font-size: 14.5px;
+    font-weight: 800;
+    line-height: 1.6;
 }
 
-body.cart-page .cart-quantity button:hover:not(:disabled) {
-    background: var(--sh-sand);
+.cart-item__name a:hover {
     color: var(--sh-forest);
 }
 
-body.cart-page .cart-quantity button:disabled {
-    opacity: .32;
-    cursor: not-allowed;
-}
-
-body.cart-page .cart-quantity__value {
-    min-inline-size: 34px;
-    padding-inline: 2px;
-    color: var(--sh-ink);
-    font-size: 13px;
-    font-weight: 800;
-    text-align: center;
-    font-variant-numeric: tabular-nums;
-}
-
-body.cart-page .cart-item__price {
+.cart-item__top form {
     display: flex;
-    align-items: baseline;
-    gap: 5px;
+    flex: 0 0 auto;
+    margin: 0;
 }
 
-body.cart-page .cart-item__price strong {
-    color: var(--sh-ink);
-    font-size: clamp(14px, 1.6vw, 16px);
-    font-weight: 800;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-}
-
-/* ==========================================================================
-   07 — ORDER SUMMARY
-   ========================================================================== */
-
-body.cart-page .cart-summary {
-    position: sticky;
-    inset-block-start: 20px;
-    padding: clamp(18px, 2vw, 24px);
-    border: 1px solid var(--sh-line);
-    border-radius: 22px;
-    background: var(--sh-paper);
-    box-shadow: var(--sh-shadow);
-}
-
-/* cart.js hides the summary with the hidden attribute once the bag empties. */
-body.cart-page .cart-summary[hidden] {
-    display: none;
-}
-
-body.cart-page .cart-summary__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    padding-block-end: 16px;
-    border-block-end: 1px solid var(--sh-line);
-    color: var(--sh-muted);
-    font-size: 10.5px;
-    font-weight: 700;
-}
-
-body.cart-page .cart-summary__head span:first-child {
-    font-family: Arial, Helvetica, sans-serif;
-    letter-spacing: .18em;
-    direction: ltr;
-    unicode-bidi: isolate;
-}
-
-body.cart-page .cart-summary__row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    padding-block: 14px;
-    border-block-end: 1px solid var(--sh-line);
-    color: var(--sh-ink-2);
-    font-size: 12.5px;
-}
-
-body.cart-page .cart-summary__row strong {
-    color: var(--sh-ink);
-    font-size: 13px;
-    font-weight: 800;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-}
-
-body.cart-page .cart-summary__row--muted {
-    color: var(--sh-muted);
-}
-
-body.cart-page .cart-summary__total {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 14px;
-    padding-block: 18px;
-    color: var(--sh-ink);
-    font-size: 13px;
-    font-weight: 700;
-}
-
-body.cart-page .cart-summary__total strong {
-    color: var(--sh-ink);
-    font-size: clamp(20px, 2.4vw, 24px);
-    font-weight: 900;
-    font-variant-numeric: tabular-nums;
-}
-
-body.cart-page .cart-summary__total small {
-    color: var(--sh-muted);
-    font-size: 11px;
-    font-weight: 600;
-}
-
-/* The one primary action on the page — forest green, never black. */
-body.cart-page .cart-checkout {
-    inline-size: 100%;
-    min-height: 52px;
-    margin-block-start: 4px;
-    padding-inline: 20px;
-    border: 1px solid var(--sh-forest);
-    border-radius: var(--sh-radius-sm);
-    background: var(--sh-forest);
-    color: var(--sh-cream-2);
-    font: inherit;
-    font-size: 14px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: background var(--sh-fast), border-color var(--sh-fast),
-                transform var(--sh-fast), opacity var(--sh-fast);
-}
-
-body.cart-page .cart-checkout:hover:not(:disabled) {
-    border-color: var(--sh-forest-soft);
-    background: var(--sh-forest-soft);
-    transform: translateY(-1px);
-}
-
-body.cart-page .cart-checkout:disabled {
-    opacity: .55;
-    cursor: not-allowed;
-}
-
-body.cart-page .cart-summary__note {
-    margin: 12px 0 0;
-    color: var(--sh-muted);
-    font-size: 10.5px;
-    line-height: 1.9;
-    text-align: center;
-}
-
-/* ==========================================================================
-   08 — EMPTY STATE
-   ========================================================================== */
-
-body.cart-page .cart-empty {
-    display: grid;
-    place-items: center;
-    align-content: center;
-    gap: 8px;
-    min-height: clamp(300px, 46vh, 440px);
-    padding: 40px 24px;
-    border: 1px dashed var(--sh-sand);
-    border-radius: var(--sh-radius);
-    background: var(--sh-cream-2);
-    text-align: center;
-}
-
-/* cart.js reveals it with the hidden attribute. */
-body.cart-page .cart-empty[hidden] {
-    display: none;
-}
-
-body.cart-page .cart-empty__mark {
-    inline-size: 58px;
-    block-size: 58px;
-    display: grid;
-    place-items: center;
-    margin-block-end: 6px;
-    border-radius: 50%;
-    background: var(--sh-forest);
-    color: var(--sh-cream-2);
-    font-size: 22px;
-    font-weight: 800;
-}
-
-body.cart-page .cart-empty > span {
-    color: var(--sh-muted);
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .2em;
-    direction: ltr;
-    unicode-bidi: isolate;
-}
-
-body.cart-page .cart-empty h2 {
-    margin: 2px 0 14px;
-    color: var(--sh-ink);
-    font-size: clamp(20px, 2.4vw, 24px);
-    font-weight: 800;
-}
-
-body.cart-page .cart-empty a {
+.cart-item__remove {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 46px;
-    padding-inline: 22px;
-    border-radius: var(--sh-radius-sm);
+    gap: 6px;
+
+    min-height: 40px;
+    padding-inline: 12px;
+
+    border: 1px solid var(--ac-line-2);
+    border-radius: 999px;
+    background: var(--ac-surface);
+    color: var(--sh-ink-2);
+
+    font-size: 11.5px;
+    font-weight: 800;
+    cursor: pointer;
+
+    transition: border-color var(--sh-fast), background-color var(--sh-fast),
+                color var(--sh-fast);
+}
+
+.cart-item__remove svg {
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.cart-item__remove:hover {
+    border-color: rgba(156, 59, 46, .38);
+    background: rgba(156, 59, 46, .06);
+    color: var(--ac-brick, #9c3b2e);
+}
+
+.cart-item__variant {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+.cart-item__chip {
+    padding: 4px 11px;
+
+    border: 1px solid var(--ac-line);
+    border-radius: 999px;
+    background: var(--sh-cream);
+    color: var(--sh-ink-2);
+
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.cart-item__chip--muted {
+    color: var(--sh-muted);
+    letter-spacing: .04em;
+}
+
+.cart-item__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+
+    margin-block-start: auto;
+    padding-block-start: 12px;
+    border-block-start: 1px solid var(--ac-line);
+}
+
+/* ==========================================================================
+   05 — QUANTITY
+   ========================================================================== */
+
+.cart-quantity {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+
+    padding: 3px;
+    border: 1px solid var(--ac-line-2);
+    border-radius: var(--ac-radius-xs);
+    background: var(--ac-surface);
+}
+
+.cart-quantity button {
+    display: grid;
+    place-items: center;
+
+    width: 40px;
+    height: 40px;
+
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--sh-forest);
+
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+
+    transition: background-color var(--sh-fast), color var(--sh-fast);
+}
+
+.cart-quantity button:hover:not(:disabled) {
+    background: rgba(20, 82, 60, .08);
+}
+
+.cart-quantity button:disabled {
+    color: var(--sh-muted);
+    cursor: not-allowed;
+    opacity: .5;
+}
+
+.cart-quantity__value {
+    min-width: 34px;
+    color: var(--sh-ink);
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.cart-item__price {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    text-align: end;
+}
+
+.cart-item__price-label {
+    color: var(--sh-muted);
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .1em;
+}
+
+.cart-item__price strong {
+    color: var(--sh-forest);
+    font-size: 15px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   06 — SUMMARY
+   ========================================================================== */
+
+.cart-summary {
+    position: sticky;
+    inset-block-start: 88px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    padding: 18px;
+    border: 1px solid var(--ac-line);
+    border-radius: var(--ac-radius);
+    background: var(--ac-surface);
+}
+
+.cart-summary[hidden] {
+    display: none;
+}
+
+.cart-summary__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    padding-block-end: 12px;
+    border-block-end: 1px solid var(--ac-line);
+
+    color: var(--sh-forest);
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .18em;
+}
+
+.cart-summary__head span:last-child {
+    color: var(--sh-muted);
+    letter-spacing: 0;
+}
+
+.cart-summary__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    color: var(--sh-ink-2);
+    font-size: 13px;
+}
+
+.cart-summary__row strong {
+    font-weight: 800;
+}
+
+.cart-summary__row--muted {
+    color: var(--sh-muted);
+}
+
+.cart-summary__total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+
+    margin-block-start: 2px;
+    padding-block-start: 14px;
+    border-block-start: 1px solid var(--ac-line);
+
+    color: var(--sh-ink);
+    font-size: 13.5px;
+    font-weight: 800;
+}
+
+.cart-summary__total strong {
+    color: var(--sh-forest);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.cart-summary__total small {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* The one primary action on the page — forest, never black. */
+.cart-checkout {
+    min-height: 56px;
+    margin-block-start: 4px;
+
+    border: 0;
+    border-radius: var(--ac-radius-sm);
     background: var(--sh-forest);
     color: var(--sh-cream-2);
-    font-size: 13px;
+
+    font-size: 14px;
     font-weight: 800;
-    text-decoration: none;
-    transition: background var(--sh-fast), transform var(--sh-fast);
+    cursor: pointer;
+
+    transition: background-color var(--sh-fast);
 }
 
-body.cart-page .cart-empty a:hover {
-    background: var(--sh-forest-soft);
-    transform: translateY(-1px);
-}
-
-/* ==========================================================================
-   09 — TOAST
-   Built by js/pages/cart.js and appended to <body>, so it is scoped to the
-   page rather than to .cart-shell.
-   ========================================================================== */
-
-body.cart-page .cart-toast {
-    position: fixed;
-    inset-block-start: 22px;
-    inset-inline: 24px;
-    z-index: 1400;
-    max-inline-size: min(330px, calc(100vw - 32px));
-    margin-inline: auto;
-    padding: 13px 18px;
-    border: 1px solid rgba(246, 243, 236, .16);
-    border-radius: var(--sh-radius-sm);
+.cart-checkout:hover:not(:disabled) {
     background: var(--sh-forest-deep);
-    color: var(--sh-on-dark);
-    box-shadow: var(--sh-shadow);
-    font-size: 12px;
-    font-weight: 600;
+}
+
+.cart-checkout:disabled {
+    cursor: not-allowed;
+    opacity: .5;
+}
+
+.cart-summary__link {
+    color: var(--sh-forest);
+    font-size: 12.5px;
+    font-weight: 800;
     text-align: center;
-    opacity: 0;
-    transform: translateY(-8px);
-    transition: opacity var(--sh-fast), transform var(--sh-fast);
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
-body.cart-page .cart-toast.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-body.cart-page .cart-toast--error {
-    border-color: rgba(246, 243, 236, .2);
-    background: #7d342d;
+.cart-summary__note {
+    margin: 0;
+    color: var(--sh-muted);
+    font-size: 11.5px;
+    line-height: 1.8;
 }
 
 /* ==========================================================================
-   10 — FOCUS
-   One visible forest ring for every interactive control on the page.
+   07 — EMPTY BAG
    ========================================================================== */
 
-body.cart-page .cart-clear:focus-visible,
-body.cart-page .cart-item h2 a:focus-visible,
-body.cart-page .cart-item__remove:focus-visible,
-body.cart-page .cart-quantity button:focus-visible,
-body.cart-page .cart-checkout:focus-visible,
-body.cart-page .cart-empty a:focus-visible {
-    outline: 3px solid var(--sh-forest);
-    outline-offset: 2px;
+.cart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    min-height: clamp(300px, 38vw, 380px);
+    margin-block-start: 22px;
+    padding: clamp(28px, 4vw, 46px) clamp(18px, 3vw, 40px);
+
+    border: 1px solid var(--ac-line);
+    border-radius: var(--ac-radius);
+    background: var(--ac-surface);
+    text-align: center;
 }
 
-body.cart-page .cart-clear:focus-visible,
-body.cart-page .cart-item__remove:focus-visible,
-body.cart-page .cart-toast:focus-visible {
-    outline-color: var(--sh-ink-2);
+.cart-empty[hidden],
+.cart-layout.is-empty .cart-items {
+    display: none;
+}
+
+/* A bag drawn from two hairlines, framed like the other empty states. */
+.cart-empty .ac-empty__art {
+    position: relative;
+    display: grid;
+    place-items: center;
+}
+
+.cart-empty .ac-empty__art::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--ac-line-2);
+    border-radius: 26px;
+    background: var(--sh-cream-2);
+}
+
+.ac-empty__bag {
+    position: relative;
+    z-index: 1;
+    width: 46px;
+    height: 40px;
+    border: 2px solid var(--sh-forest);
+    border-radius: 8px 8px 12px 12px;
+    background: rgba(20, 82, 60, .06);
+}
+
+.ac-empty__bag-handle {
+    position: absolute;
+    z-index: 2;
+    inset-block-start: 20px;
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--sh-forest);
+    border-block-end: 0;
+    border-radius: 14px 14px 0 0;
 }
 
 /* ==========================================================================
-   11 — RESPONSIVE
-   Three steps: the summary drops below the list under 1081px, the row tightens
-   under 701px, and under 561px the row genuinely stacks into a card — shot on
-   top, copy underneath. Nothing is allowed to overflow at 360px.
+   08 — TOAST (created by js/pages/cart.js)
+   ========================================================================== */
+
+.cart-toast {
+    position: fixed;
+    z-index: 1300;
+    inset-block-end: 24px;
+    inset-inline-start: 50%;
+    translate: 50% 12px;
+
+    max-width: min(360px, calc(100% - 32px));
+    padding: 12px 18px;
+
+    border: 1px solid var(--ac-line-2);
+    border-radius: var(--ac-radius-xs);
+    background: var(--sh-cream-2);
+    color: var(--sh-ink);
+
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 22px 50px -26px rgba(9, 28, 20, .55);
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease, translate 180ms ease;
+}
+
+.cart-toast.is-visible {
+    opacity: 1;
+    translate: 50% 0;
+}
+
+.cart-toast--error {
+    border-color: rgba(156, 59, 46, .35);
+    background: #fbeeea;
+    color: #7d2c22;
+}
+
+/* ==========================================================================
+   09 — RESPONSIVE
    ========================================================================== */
 
 @media (max-width: 1080px) {
-    body.cart-page .cart-layout {
+    .cart-layout {
+        grid-template-columns: minmax(0, 1fr) 320px;
+    }
+}
+
+@media (max-width: 940px) {
+    .cart-layout,
+    .cart-layout.is-empty {
         grid-template-columns: minmax(0, 1fr);
     }
 
-    body.cart-page .cart-summary {
+    .cart-summary {
         position: static;
     }
 }
 
-@media (max-width: 700px) {
-    body.cart-page .cart-item {
-        grid-template-columns: 104px minmax(0, 1fr);
+@media (min-width: 901px) {
+    .cart-shell {
+        padding-block-end: 132px;
     }
 }
 
-@media (max-width: 560px) {
-    body.cart-page .cart-heading {
+@media (max-width: 640px) {
+    .cart-heading {
         align-items: flex-start;
     }
 
-    body.cart-page .cart-heading h1 {
-        font-size: 28px;
+    .cart-clear {
+        width: 100%;
     }
 
-    body.cart-page .cart-item {
-        grid-template-columns: minmax(0, 1fr);
+    .cart-item {
+        grid-template-columns: 84px minmax(0, 1fr);
+        gap: 12px;
+        padding: 12px;
     }
 
-    body.cart-page .cart-item__image {
-        aspect-ratio: 16 / 10;
+    .cart-item__remove span {
+        display: none;
     }
 
-    body.cart-page .cart-toast {
-        inset-inline: 14px;
-        max-inline-size: none;
-    }
-}
-
-@media (max-width: 380px) {
-    body.cart-page .cart-shell {
-        padding-inline: 14px;
+    .cart-item__remove {
+        padding-inline: 0;
+        min-width: 40px;
     }
 
-    body.cart-page .cart-item__image {
-        aspect-ratio: 3 / 2;
-    }
-
-    body.cart-page .cart-quantity button {
-        inline-size: 34px;
-        block-size: 34px;
-    }
-
-    body.cart-page .cart-summary__total strong {
-        font-size: 19px;
+    .cart-item__bottom {
+        align-items: flex-start;
     }
 }
 
-/* ==========================================================================
-   12 — MOTION PREFERENCE
-   ========================================================================== */
+@media (max-width: 420px) {
+    .cart-title {
+        font-size: 20px;
+    }
+
+    .cart-item__price strong {
+        font-size: 14px;
+    }
+
+    .cart-checkout {
+        min-height: 52px;
+    }
+}
 
 @media (prefers-reduced-motion: reduce) {
-    body.cart-page .cart-item,
-    body.cart-page .cart-item h2 a,
-    body.cart-page .cart-item__remove,
-    body.cart-page .cart-clear,
-    body.cart-page .cart-quantity button,
-    body.cart-page .cart-checkout,
-    body.cart-page .cart-empty a,
-    body.cart-page .cart-toast {
-        transition-duration: 1ms;
-    }
-
-    body.cart-page .cart-item:hover {
-        box-shadow: none;
-    }
-
-    body.cart-page .cart-clear:hover,
-    body.cart-page .cart-checkout:hover:not(:disabled),
-    body.cart-page .cart-empty a:hover {
+    .cart-item,
+    .cart-clear,
+    .cart-item__remove,
+    .cart-quantity button,
+    .cart-checkout,
+    .cart-toast {
+        transition: none;
+        translate: none;
         transform: none;
     }
 }

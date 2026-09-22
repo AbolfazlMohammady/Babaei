@@ -24,6 +24,12 @@
     --sh-ink-2: #2b3035;
     --sh-muted: #6d7278;
     --sh-line: rgba(20, 22, 26, .10);
+    /* These two were consumed by css/pages/shop-shell.css but defined
+       nowhere, so every border and radius that used them computed to
+       nothing — that is what turned the product page's save button into a
+       bare green square and left the variant chips looking unstyled. */
+    --sh-line-strong: rgba(20, 22, 26, .18);
+    --sh-radius-sm: 12px;
     --sh-shadow: 0 18px 44px rgba(9, 28, 20, .10);
     --sh-radius: 18px;
     --sh-ease: cubic-bezier(.22, .61, .36, 1);

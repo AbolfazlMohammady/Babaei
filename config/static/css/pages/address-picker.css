@@ -1,178 +1,75 @@
 /* ==========================================================================
-   BABAEI — Address form and location picker
+   BABAEI — Location picker (province / city)
    --------------------------------------------------------------------------
-   WHY THIS FILE EXISTS
-   This page shipped with four minified lines that spent ten !important
-   declarations forcing a grey-brown field (#eeeae3 / #302c27) past the shared
-   .form-input rules, plus a near-black selected option. Nothing about it read
-   as the same site as the shop.
+   The custom listbox used by the address form. It reads the same --sh-* tokens
+   and the same --ac-* primitives as the rest of the account area
+   (pages/account.css is loaded before this file), so a picker trigger is
+   indistinguishable from a text field until it is opened.
 
-   There is now one file, in the shop's palette — forest green on cream — with
-   zero !important. The markup is deliberately unchanged: every class here
-   already existed, only the values moved onto the shared tokens.
+   js: the picker script lives inline in users/account/address_form.html and
+   drives this markup through .location-picker.is-open, the `hidden` attribute
+   and aria-selected. Those four hooks are the whole contract.
 
-   TOKENS
-   --sh-forest / --sh-cream / --sh-line … live on :root in fonts.css. The shop
-   shell also defines a few aliases (--sh-radius-sm, --sh-line-strong, --sh-tap)
-   that only exist inside the shop namespace, so this page — which is not a shop
-   page — re-declares the handful it shares.
-
-   CASCADE NOTE
-   account.css loads before this file and styles the very same fields
-   (.address-form .form-input …). Nothing here needs !important: the rules are
-   restated at the same specificity, so source order settles it. The single
-   exception is .address-form-card's padding, which account.css declares once and
-   this file leaves alone rather than restating.
-
-   JS CONTRACT (inline script in address_form.html)
-     [data-picker] .location-picker.is-open .location-picker__value
-     .location-picker__menu[hidden] .location-picker__search
-     .location-picker__option[hidden] .location-picker__empty[hidden]
-     [aria-selected="true"] :disabled
-   ========================================================================== */
-
-body.account-body {
-    --sh-radius-sm: 12px;
-    --sh-line-strong: rgba(20, 22, 26, .16);
-    --sh-tap: 44px;
-}
-
-/* ==========================================================================
-   01 — FORM SHELL
-   The card itself is painted by account.css (its padding and radius included),
-   so this file only owns the bones of the form inside it.
-   ========================================================================== */
-
-.address-form {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-}
-
-.address-form__grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px 20px;
-}
-
-/* ==========================================================================
-   02 — FIELDS
-   ========================================================================== */
-
-.address-form .form-group {
-    min-width: 0;
-    gap: 8px;
-}
-
-.address-form .form-label {
-    color: var(--sh-ink-2);
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.address-form .form-input,
-.address-form .form-textarea {
-    inline-size: 100%;
-    min-height: 54px;
-    padding: 0 15px;
-    border: 1px solid var(--sh-sand);
-    border-radius: var(--sh-radius-sm);
-    background: var(--sh-cream);
-    color: var(--sh-ink);
-    font: inherit;
-    font-size: 13px;
-    outline: none;
-    transition: border-color var(--sh-fast), background var(--sh-fast),
-                box-shadow var(--sh-fast);
-}
-
-.address-form .form-textarea {
-    min-height: 130px;
-    padding: 14px 15px;
-    line-height: 2;
-    resize: vertical;
-}
-
-.address-form .form-input::placeholder,
-.address-form .form-textarea::placeholder {
-    color: var(--sh-muted);
-}
-
-.address-form .form-input:hover,
-.address-form .form-textarea:hover {
-    border-color: rgba(20, 22, 26, .24);
-    background: var(--sh-cream-2);
-}
-
-/* The focus state is the page's active state, so it is forest green. The ring
-   is the same 3px forest wash account.css gives the profile form. */
-.address-form .form-input:focus,
-.address-form .form-textarea:focus {
-    border-color: var(--sh-forest);
-    background: var(--sh-cream-2);
-    box-shadow: 0 0 0 3px rgba(20, 82, 60, .12);
-}
-
-/* ==========================================================================
-   03 — PICKER: TRIGGER
+   Zero !important declarations.
    ========================================================================== */
 
 .location-picker {
     position: relative;
-    inline-size: 100%;
+    display: block;
+    min-width: 0;
 }
 
-.location-picker.is-open {
-    z-index: 40;
-}
+/* --- trigger: a field ------------------------------------------------ */
 
 .location-picker__trigger {
-    inline-size: 100%;
-    min-height: 54px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding-inline: 15px;
-    border: 1px solid var(--sh-sand);
-    border-radius: var(--sh-radius-sm);
-    background: var(--sh-cream);
+    gap: 10px;
+
+    width: 100%;
+    min-height: var(--ac-field-h, 54px);
+    padding: 14px 15px;
+
+    border: 1px solid var(--ac-line-2, rgba(20, 22, 26, .16));
+    border-radius: var(--ac-radius-sm, 14px);
+    background: var(--ac-field-bg, #fff);
     color: var(--sh-ink);
+
     font: inherit;
-    font-size: 13px;
+    font-size: 14.5px;
     text-align: start;
     cursor: pointer;
-    transition: border-color var(--sh-fast), background var(--sh-fast),
-                box-shadow var(--sh-fast);
+
+    transition: border-color var(--sh-fast), box-shadow var(--sh-fast),
+                background-color var(--sh-fast);
 }
 
 .location-picker__trigger:hover:not(:disabled) {
-    border-color: rgba(20, 22, 26, .24);
-    background: var(--sh-cream-2);
+    border-color: var(--ac-line-3, rgba(20, 22, 26, .26));
 }
 
 .location-picker__trigger:focus-visible {
-    outline: none;
     border-color: var(--sh-forest);
-    box-shadow: 0 0 0 3px rgba(20, 82, 60, .12);
+    outline: none;
+    box-shadow: var(--ac-ring, 0 0 0 3px rgba(20, 82, 60, .16));
 }
 
 .location-picker.is-open .location-picker__trigger {
     border-color: var(--sh-forest);
-    background: var(--sh-cream-2);
-    box-shadow: 0 0 0 3px rgba(20, 82, 60, .12);
+    box-shadow: var(--ac-ring, 0 0 0 3px rgba(20, 82, 60, .16));
 }
 
 .location-picker__trigger:disabled {
+    border-color: var(--ac-line, rgba(20, 22, 26, .10));
     background: var(--sh-cream);
-    opacity: .6;
+    color: var(--sh-muted);
     cursor: not-allowed;
 }
 
 .location-picker__value {
-    min-width: 0;
     overflow: hidden;
-    color: var(--sh-ink);
+    min-width: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -182,211 +79,191 @@ body.account-body {
 }
 
 .location-picker__trigger svg {
-    flex: 0 0 16px;
-    inline-size: 16px;
-    block-size: 16px;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+
     fill: none;
-    stroke: var(--sh-muted);
-    stroke-width: 1.7;
-    transition: transform var(--sh-fast), stroke var(--sh-fast);
+    stroke: var(--sh-forest);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    transition: rotate var(--sh-fast);
 }
 
 .location-picker.is-open .location-picker__trigger svg {
-    stroke: var(--sh-forest);
-    transform: rotate(180deg);
+    rotate: 180deg;
 }
 
-/* ==========================================================================
-   04 — PICKER: MENU
-   Pinned to both inline edges of the field, so it can never spill sideways.
-   ========================================================================== */
+.location-picker__trigger:disabled svg {
+    stroke: var(--sh-muted);
+}
+
+/* --- menu: a popover ------------------------------------------------- */
 
 .location-picker__menu {
     position: absolute;
+    z-index: 60;
     inset-block-start: calc(100% + 8px);
     inset-inline: 0;
-    z-index: 40;
-    max-block-size: min(340px, 52vh);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding: 8px;
-    border: 1px solid var(--sh-sand);
-    border-radius: var(--sh-radius);
-    background: var(--sh-cream-2);
-    box-shadow: var(--sh-shadow);
+
+    overflow: hidden;
+    max-width: 100%;
+
+    border: 1px solid var(--ac-line-2, rgba(20, 22, 26, .16));
+    border-radius: var(--ac-radius, 18px);
+    background: var(--ac-surface, #fbfaf7);
+    box-shadow: 0 26px 60px -32px rgba(9, 28, 20, .55);
 }
 
-/* The script opens and closes the menu with the hidden attribute. */
 .location-picker__menu[hidden] {
     display: none;
 }
 
 .location-picker.is-open .location-picker__menu {
-    animation: locationPickerIn 160ms var(--sh-ease) both;
+    animation: location-menu-in 160ms var(--sh-ease) both;
 }
 
-@keyframes locationPickerIn {
-    from {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
+@keyframes location-menu-in {
+    from { opacity: 0; translate: 0 -6px; }
+    to { opacity: 1; translate: 0 0; }
 }
-
-/* The city list runs to hundreds of rows where the country has 31 provinces,
-   so it packs a few pixels tighter than the province list. */
-.location-picker--city .location-picker__option {
-    min-height: 40px;
-}
-
-/* ==========================================================================
-   05 — PICKER: SEARCH
-   ========================================================================== */
 
 .location-picker__search-wrap {
-    position: sticky;
-    inset-block-start: 0;
-    z-index: 1;
     display: flex;
     align-items: center;
-    gap: 8px;
-    block-size: 40px;
-    margin-block-end: 6px;
-    padding-inline: 10px;
-    border: 1px solid var(--sh-line);
-    border-radius: 10px;
-    background: var(--sh-cream);
-    transition: border-color var(--sh-fast), box-shadow var(--sh-fast);
+    gap: 9px;
+
+    padding: 10px 12px;
+    border-block-end: 1px solid var(--ac-line, rgba(20, 22, 26, .10));
 }
 
-.location-picker__search-wrap:focus-within {
-    border-color: var(--sh-forest);
-    background: var(--sh-cream-2);
-    box-shadow: 0 0 0 3px rgba(20, 82, 60, .12);
+.location-picker__search-wrap:focus-within svg {
+    stroke: var(--sh-forest);
 }
 
 .location-picker__search-wrap svg {
-    flex: 0 0 14px;
-    inline-size: 14px;
-    block-size: 14px;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
     fill: none;
     stroke: var(--sh-muted);
-    stroke-width: 1.7;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
-/* A bare <input type="search">: every reset the old file needed !important for
-   is just a normal declaration here — nothing else targets this field. */
 .location-picker__search {
-    inline-size: 100%;
-    min-inline-size: 0;
-    block-size: 100%;
-    padding: 0;
+    width: 100%;
+    min-width: 0;
+    padding: 6px 2px;
+
     border: 0;
-    outline: 0;
     background: transparent;
     color: var(--sh-ink);
+
     font: inherit;
-    font-size: 12.5px;
+    font-size: 13.5px;
 }
 
 .location-picker__search::placeholder {
-    color: var(--sh-muted);
+    color: #9aa0a6;
 }
 
-/* The wrapper already shows focus; stop the global input ring drawing a second
-   one inside it. */
+/* The wrapper shows the focus; the global currentColor ring would double it. */
+.location-picker__search:focus,
 .location-picker__search:focus-visible {
     outline: none;
 }
 
-/* ==========================================================================
-   06 — PICKER: OPTIONS
-   ========================================================================== */
-
 .location-picker__options {
-    display: block;
+    max-height: 264px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 6px;
+
+    scrollbar-width: thin;
+}
+
+.location-picker__options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.location-picker__options::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: var(--ac-sunken, #e7e1d5);
 }
 
 .location-picker__option {
     position: relative;
-    inline-size: 100%;
-    min-height: var(--sh-tap);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
+
+    width: 100%;
+    min-height: 44px;
+    padding-block: 10px;
     padding-inline: 12px;
-    border: 1px solid transparent;
-    border-radius: 10px;
+
+    border: 0;
+    border-radius: var(--ac-radius-xs, 12px);
     background: transparent;
     color: var(--sh-ink-2);
+
     font: inherit;
-    font-size: 12.5px;
+    font-size: 13.5px;
+    font-weight: 600;
     text-align: start;
     cursor: pointer;
-    transition: background var(--sh-fast), border-color var(--sh-fast),
-                color var(--sh-fast);
+
+    transition: background-color var(--sh-fast), color var(--sh-fast);
 }
 
-.location-picker__option + .location-picker__option {
-    margin-block-start: 2px;
-}
-
-/* The script filters by toggling the hidden attribute on each option; two
-   selectors outrank the display: flex above without !important. */
+/* The script filters the list by toggling `hidden` on each option. */
 .location-picker__option[hidden] {
     display: none;
 }
 
 .location-picker__option:hover:not([aria-selected="true"]) {
-    border-color: var(--sh-line);
     background: var(--sh-cream);
-    color: var(--sh-ink);
+    color: var(--sh-forest);
 }
 
-/* The chosen option is the page's active state: forest green, gold marker. */
 .location-picker__option[aria-selected="true"] {
-    border-color: var(--sh-forest);
-    background: var(--sh-forest);
-    color: var(--sh-cream-2);
+    background: rgba(20, 82, 60, .08);
+    color: var(--sh-forest);
+    font-weight: 800;
 }
 
-.location-picker__option[aria-selected="true"]::before {
-    content: "";
-    position: absolute;
-    inset-block-start: 50%;
-    inset-inline-start: 5px;
-    inline-size: 3px;
-    block-size: 18px;
-    border-radius: 99px;
-    background: var(--sh-gold);
-    transform: translateY(-50%);
-}
+/* The tick sits at the inline-end, opposite the label. */
 
 .location-picker__option svg {
-    flex: 0 0 15px;
-    inline-size: 15px;
-    block-size: 15px;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
     fill: none;
-    stroke: currentColor;
-    stroke-width: 1.9;
+    stroke: var(--sh-forest);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
     opacity: 0;
-    transform: scale(.75);
-    transition: opacity var(--sh-fast), transform var(--sh-fast);
 }
 
 .location-picker__option[aria-selected="true"] svg {
     opacity: 1;
-    transform: scale(1);
 }
 
-/* ==========================================================================
-   07 — PICKER: EMPTY
-   ========================================================================== */
+.location-picker__option:focus-visible {
+    outline: 2px solid var(--sh-forest);
+    outline-offset: -2px;
+}
 
 .location-picker__empty {
-    padding: 20px 10px;
+    padding: 14px 12px;
     color: var(--sh-muted);
-    font-size: 12px;
+    font-size: 12.5px;
     text-align: center;
 }
 
@@ -394,148 +271,37 @@ body.account-body {
     display: none;
 }
 
-/* ==========================================================================
-   08 — ACTIONS
-   .btn-primary is black out of the box in components.css; on this page the one
-   primary action is forest green.
-   ========================================================================== */
+/* --- address form specifics ------------------------------------------ */
+
+.address-form .ac-fieldset + .ac-fieldset {
+    margin-block-start: 2px;
+}
 
 .address-form__actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-block-start: 4px;
+    margin-block-start: 2px;
 }
 
-.address-form__actions .btn {
-    min-width: 132px;
-    min-height: 50px;
-    border-radius: var(--sh-radius-sm);
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.address-form__actions .btn-primary {
-    border: 1px solid var(--sh-forest);
-    background: var(--sh-forest);
-    color: var(--sh-cream-2);
-    transition: background var(--sh-fast), border-color var(--sh-fast),
-                transform var(--sh-fast);
-}
-
-.address-form__actions .btn-primary:hover {
-    border-color: var(--sh-forest-soft);
-    background: var(--sh-forest-soft);
-    transform: translateY(-1px);
-}
-
-.address-form__actions .btn-secondary {
-    border: 1px solid var(--sh-sand);
-    background: var(--sh-cream);
-    color: var(--sh-ink-2);
-    text-decoration: none;
-    transition: border-color var(--sh-fast), background var(--sh-fast),
-                color var(--sh-fast);
-}
-
-.address-form__actions .btn-secondary:hover {
-    border-color: var(--sh-moss);
-    background: var(--sh-cream-2);
-    color: var(--sh-forest);
-}
-
-/* ==========================================================================
-   09 — FOCUS
-   The text fields carry their ring as a border + forest wash; the buttons take
-   an explicit outline. Both are visible without ever needing !important.
-   ========================================================================== */
-
-.address-form .form-input:focus-visible,
-.address-form .form-textarea:focus-visible {
-    outline: none;
-}
-
-.address-form__actions .btn:focus-visible,
-.location-picker__option:focus-visible {
-    outline: 3px solid var(--sh-forest);
-    outline-offset: 2px;
-}
-
-/* ==========================================================================
-   10 — RESPONSIVE
-   The account grid collapses to one column on its own, but the form is told to
-   do so earlier so the fields stay legible on a small tablet. Nothing is
-   allowed to overflow at 360px.
-   ========================================================================== */
-
-@media (max-width: 700px) {
-    .address-form__grid {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 14px;
-    }
-}
-
-@media (max-width: 600px) {
-    .address-form__actions {
-        flex-direction: column;
-        align-items: stretch;
+@media (max-width: 560px) {
+    .location-picker__menu {
+        inset-inline: 0;
+        max-height: 60vh;
     }
 
-    .address-form__actions .btn {
+    .location-picker__options {
+        max-height: 46vh;
+    }
+
+    .address-form__actions .ac-btn {
         width: 100%;
     }
-
-    .location-picker__trigger {
-        min-height: 52px;
-        padding-inline: 14px;
-    }
-
-    .location-picker__menu {
-        max-block-size: min(320px, 50vh);
-        padding: 6px;
-        border-radius: 16px;
-    }
 }
-
-@media (max-width: 380px) {
-    .location-picker__trigger {
-        min-height: 50px;
-        font-size: 12.5px;
-    }
-
-    .location-picker__menu {
-        max-block-size: 46vh;
-        padding: 5px;
-    }
-
-    .location-picker__option {
-        min-height: 42px;
-        font-size: 12px;
-    }
-}
-
-/* ==========================================================================
-   11 — MOTION PREFERENCE
-   ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
-    .address-form .form-input,
-    .address-form .form-textarea,
-    .address-form__actions .btn,
     .location-picker__trigger,
     .location-picker__trigger svg,
-    .location-picker__search-wrap,
-    .location-picker__option,
-    .location-picker__option svg {
-        transition-duration: 1ms;
-    }
-
     .location-picker.is-open .location-picker__menu {
         animation: none;
-    }
-
-    .address-form__actions .btn-primary:hover,
-    .address-form__actions .btn-secondary:hover {
-        transform: none;
+        transition: none;
+        rotate: none;
     }
 }

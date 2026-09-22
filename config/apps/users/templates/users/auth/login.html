@@ -6,7 +6,7 @@
 {% block body_class %}auth-body{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=2">
 {% endblock %}
 
 {% block site_optional_css %}
@@ -17,64 +17,75 @@
 {% block content %}
 <section class="auth-page">
     <div class="auth-shell">
-        <div class="auth-visual" aria-hidden="true">
-            <div class="auth-visual__content">
-                <span class="auth-kicker">BABAEI STUDIO</span>
-                <h1>Wear<br>Your Story.</h1>
-                <p>برای ادامه، وارد حساب BABAEI شوید و تجربه شخصی خودتان را ادامه دهید.</p>
-            </div>
-            <span class="auth-visual__mark">BABAEI</span>
-        </div>
+        <span class="auth-shell__selvedge" aria-hidden="true"></span>
 
+        {% comment %}
+        The form column. First in the DOM, which is the reading-start side in
+        RTL, and the only column that carries a control.
+        {% endcomment %}
         <div class="auth-card">
-            <a href="/" class="auth-brand" aria-label="BABAEI">BABAEI</a>
+            <div class="auth-card__top">
+                <a href="/" class="auth-brand" aria-label="BABAEI">
+                    <span class="auth-brand__mark" aria-hidden="true">B</span>
+                    <span class="auth-brand__word">BABAEI</span>
+                </a>
+                <span class="auth-brand__tagline">Wear Your Story.</span>
+            </div>
 
             <div class="auth-header">
-                <span class="auth-eyebrow">ACCOUNT</span>
-                <h2>ورود به حساب</h2>
-                <p>شماره موبایل خود را وارد کنید تا کد تأیید برای شما ارسال شود.</p>
+                <span class="auth-eyebrow">Sign in</span>
+                <h1 class="auth-title">ورود به حساب</h1>
+                <p class="auth-lead">شماره موبایل خود را وارد کنید تا کد تأیید برای شما پیامک شود.</p>
             </div>
 
             <form method="post" class="auth-form" novalidate>
                 {% csrf_token %}
 
-                <div class="form-group">
-                    <label class="form-label" for="phone">شماره موبایل</label>
-                    <div class="auth-input-wrap">
-                        <span class="auth-input-prefix" aria-hidden="true">+98</span>
+                <div class="auth-field">
+                    <label class="auth-label" for="phone">شماره موبایل</label>
+                    <div class="auth-phone">
+                        <span class="auth-phone__prefix" aria-hidden="true">+98</span>
                         <input
-                            class="form-input auth-phone-input"
+                            class="auth-phone__input"
                             id="phone"
                             name="phone"
                             type="tel"
                             inputmode="numeric"
                             autocomplete="tel"
                             maxlength="11"
-                            placeholder="0912 345 6789"
+                            placeholder="912 345 6789"
                             value="{{ phone|default:'' }}"
                             aria-describedby="phone-hint"
                             required
                         >
                     </div>
-                    <small id="phone-hint" class="auth-hint">شماره را بدون فاصله وارد کنید.</small>
+                    <small id="phone-hint" class="auth-hint">شماره را بدون صفر ابتدایی و بدون فاصله وارد کنید.</small>
                 </div>
 
-                <button class="btn btn-primary auth-submit" type="submit">
+                <button class="auth-submit" type="submit">
                     <span>دریافت کد تأیید</span>
-                    <span aria-hidden="true">←</span>
+                    <span class="auth-submit__arrow" aria-hidden="true">←</span>
                 </button>
             </form>
 
-            <div class="auth-policy">
-                <span>با ادامه،</span>
-                <a href="#">شرایط استفاده</a>
-                <span>و</span>
-                <a href="#">حریم خصوصی</a>
-                <span>را می‌پذیرید.</span>
+            <div class="auth-meta">
+                <p class="auth-policy">
+                    با ادامه، <a href="#">شرایط استفاده</a> و <a href="#">حریم خصوصی</a> را می‌پذیرید.
+                </p>
+                <a href="/" class="auth-back-link">بازگشت به فروشگاه</a>
             </div>
-
-            <a href="/" class="auth-back-link">← بازگشت به فروشگاه</a>
         </div>
+
+        {% comment %}
+        The brand note. Decorative echo of the shop hero — every functional line
+        and every control lives in the card above, so it is not announced twice.
+        {% endcomment %}
+        <aside class="auth-aside" aria-hidden="true">
+            <span class="auth-kicker">BABAEI STUDIO</span>
+            <p class="auth-quote">داستان خودت را <em>بپوش</em>.</p>
+            <p class="auth-note">نیازی به رمز عبور نیست؛ ورود فقط با شماره موبایل انجام می‌شود.</p>
+            <span class="auth-aside__foot">Wear Your Story.</span>
+        </aside>
     </div>
 </section>
 {% endblock %}
