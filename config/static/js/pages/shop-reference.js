@@ -36,6 +36,16 @@
         if (maxInput) maxInput.value = max < ceiling ? String(max) : "";
         if (minLabel) minLabel.textContent = formatPrice(min);
         if (maxLabel) maxLabel.textContent = formatPrice(max);
+
+        // Drive the filled segment of the track from the two handles. The old
+        // markup drew a fixed pseudo-element that never moved, so it always
+        // looked like the whole range was selected.
+        const range = root.querySelector(".shop-reference__range");
+        if (range) {
+            const span = ceiling > 0 ? ceiling : 1;
+            range.style.setProperty("--sh-range-lower", `${(min / span) * 100}%`);
+            range.style.setProperty("--sh-range-upper", `${(max / span) * 100}%`);
+        }
     };
 
     const syncFilterCount = (url = window.location.href) => {
@@ -326,9 +336,33 @@
         });
     });
 
-    const mobileMedia = window.matchMedia("(max-width: 820px)");
+    /* Must match the breakpoint where css/pages/shop-catalog.css turns the rail
+       into a full-screen sheet, otherwise the class is left behind on resize. */
+    const mobileMedia = window.matchMedia("(max-width: 940px)");
     mobileMedia.addEventListener?.("change", () => {
         if (!mobileMedia.matches) closeFilters();
+    });
+
+    /* Escape closes whichever overlay is open. Neither the filter sheet nor the
+       sort menu could be dismissed from the keyboard before, which left the
+       full-screen sheet on a phone with only its × button as an exit. */
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+
+        let handled = false;
+        const panel = getPanel();
+        if (panel?.classList.contains("is-open")) {
+            closeFilters();
+            getToggle()?.focus({ preventScroll: true });
+            handled = true;
+        }
+        const dropdown = root.querySelector("[data-sort-dropdown]");
+        if (dropdown?.classList.contains("is-open")) {
+            closeSort();
+            root.querySelector("[data-sort-trigger]")?.focus({ preventScroll: true });
+            handled = true;
+        }
+        if (handled) event.preventDefault();
     });
 
     syncRange();

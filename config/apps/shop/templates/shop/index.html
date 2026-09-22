@@ -12,10 +12,17 @@
 {% block extra_head %}<script type="application/ld+json">{{ website_schema }}</script>{% endblock %}
 {% block extra_css %}{% endblock %}
 
+{% comment %}
+storefront.css still owns the product-card and product-detail rules, so it
+stays. css/fonts.css and css/pages/shop-shell.css are injected by base.html
+for the whole shop namespace (this page, category and product detail), so they
+are not repeated here.
+quick-actions.css was dropped: the floating actions ring is retired on shop
+pages (the drawer carries those links) and it loaded on top of the cart.
+{% endcomment %}
 {% block site_optional_css %}
-<link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
 <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=8">
-<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=8">
+<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=9">
 {% endblock %}
 
 {% block extra_js %}
@@ -25,190 +32,131 @@
 
 {% block content %}
 <div class="shop-reference">
-    <section class="shop-reference__hero" aria-labelledby="shop-title">
-        <div class="shop-reference__hero-copy">
-            <nav class="shop-reference__crumbs" aria-label="مسیر صفحه">
-                <a href="{% url 'home:index' %}">خانه</a>
-                <span>‹</span>
-                <span aria-current="page">فروشگاه</span>
-            </nav>
-            <span class="shop-reference__eyebrow">BABAEI / STORE</span>
-            <h1 id="shop-title">فروشگاه</h1>
-            <p>بیش از یک لباس، داستان خودت را بپوش</p>
+    {% comment %}
+    Hero.
+
+    Performance: the photo is delivered as AVIF + WebP with a 4:5 portrait
+    crop for phones and a 2.95:1 wide set above 700px. The source PNG was
+    1,570 KB; the largest wide candidate is now 33 KB and the phone crop is
+    15 KB, so a 360px device downloads ~46x less for the LCP image.
+
+    Layout: text sits on the RTL start edge (right) where the photo is darkest
+    (measured mean luminance: left 44, centre 26, right 23), so the cream
+    headline stays legible and the lit left third of the photo stays visible.
+
+    No width/height on the <img> by design: the box is owned by .sh-hero's
+    definite min-height and the image is object-fit:cover inside it, so there
+    is no layout shift to reserve space for.
+    {% endcomment %}
+    <section class="sh-hero" aria-labelledby="shop-title">
+        <div class="sh-hero__media">
+            <picture>
+                <source type="image/avif"
+                        media="(max-width: 700px)"
+                        sizes="100vw"
+                        srcset="{% static 'images/shop/hero-portrait-420.avif' %} 420w,
+                                {% static 'images/shop/hero-portrait-640.avif' %} 640w,
+                                {% static 'images/shop/hero-portrait-828.avif' %} 828w">
+                <source type="image/webp"
+                        media="(max-width: 700px)"
+                        sizes="100vw"
+                        srcset="{% static 'images/shop/hero-portrait-420.webp' %} 420w,
+                                {% static 'images/shop/hero-portrait-640.webp' %} 640w,
+                                {% static 'images/shop/hero-portrait-828.webp' %} 828w">
+                <source type="image/avif"
+                        sizes="100vw"
+                        srcset="{% static 'images/shop/hero-480.avif' %} 480w,
+                                {% static 'images/shop/hero-960.avif' %} 960w,
+                                {% static 'images/shop/hero-1440.avif' %} 1440w,
+                                {% static 'images/shop/hero-2153.avif' %} 2153w">
+                <source type="image/webp"
+                        sizes="100vw"
+                        srcset="{% static 'images/shop/hero-480.webp' %} 480w,
+                                {% static 'images/shop/hero-960.webp' %} 960w,
+                                {% static 'images/shop/hero-1440.webp' %} 1440w,
+                                {% static 'images/shop/hero-2153.webp' %} 2153w">
+                <img src="{% static 'images/shop/hero-1440.webp' %}"
+                     alt=""
+                     fetchpriority="high"
+                     decoding="async">
+            </picture>
         </div>
-        <div class="shop-reference__hero-visual" aria-hidden="true">
-            <img src="{% static 'images/shop/shop-hero.png' %}" alt="" fetchpriority="high" decoding="async" onerror="this.style.display='none'">
-            <div class="shop-reference__hero-mark">MORE<br>THAN<br>CLOTHES<span></span></div>
-        </div>
-    </section>
 
-    <section class="shop-reference__catalog" id="products" aria-labelledby="products-title">
-        <button type="button" class="shop-reference__mobile-filter" data-shop-filter-toggle aria-expanded="false" aria-controls="shop-reference-sidebar">
-            <span class="shop-reference__mobile-filter-icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path><circle cx="8" cy="6" r="1.5"></circle><circle cx="15" cy="12" r="1.5"></circle><circle cx="12" cy="18" r="1.5"></circle></svg>
-            </span>
-            فیلتر و مرتب‌سازی
-            <span data-filter-count></span>
-        </button>
-
-
-        <aside class="shop-reference__sidebar" id="shop-reference-sidebar" data-shop-filter-panel>
-            <div class="shop-reference__sidebar-head">
-                <strong>فیلتر محصولات</strong>
-                <button type="button" class="shop-reference__sidebar-close" data-shop-filter-close aria-label="بستن فیلتر">×</button>
-            </div>
-
-            <form method="get" class="shop-reference__filter-form" data-shop-filter-form>
-                <section class="shop-reference__filter-section">
-                    <h2>دسته‌بندی‌ها</h2>
-                    <div class="shop-reference__category-list">
-                        <a href="{{ request.path }}" class="{% if not filter_category %}is-active{% endif %}">
-                            <span>همه محصولات</span><small>{{ paginator.count }}</small>
+        <div class="sh-hero__inner">
+            <div class="sh-hero__copy">
+                <nav class="shop-reference__crumbs" aria-label="مسیر صفحه">
+                    <a href="{% url 'home:index' %}">خانه</a>
+                    <span>‹</span>
+                    <span aria-current="page">فروشگاه</span>
+                </nav>
+                <span class="sh-hero__eyebrow">BABAEI / STORE</span>
+                <h1 class="sh-hero__title" id="shop-title">
+                    فروشگاه لباس و تی‌شرت
+                    <em>داستان خودت را بپوش</em>
+                </h1>
+                <p class="sh-hero__lead">
+                    مدل، رنگ و سایز را انتخاب کن و اگر خواستی طرح خودت را روی آن بنشان.
+                </p>
+                <div class="sh-hero__actions">
+                    <a class="sh-btn sh-btn--solid" href="#products">
+                        دیدن محصولات
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"></path></svg>
+                    </a>
+                    {% if hero_product %}
+                        <a class="sh-btn sh-btn--ghost" href="{% url 'customizer:designer' hero_product.slug %}">
+                            طراحی اختصاصی
                         </a>
-                        {% for category in categories %}
-                        <a href="?category={{ category.slug }}" class="{% if filter_category == category.slug %}is-active{% endif %}">
-                            <span>{{ category.name }}</span><small>{{ category.product_count }}</small>
-                        </a>
-                        {% endfor %}
-                    </div>
-                </section>
-
-                <section class="shop-reference__filter-section">
-                    <h2>محدوده قیمت</h2>
-                    <div class="shop-reference__price-labels">
-                        <span><small>از</small> <b data-min-price-label>{{ filter_min_price|default:price_min }}</b> تومان</span>
-                        <span><small>تا</small> <b data-max-price-label>{{ filter_max_price|default:"۵,۰۰۰,۰۰۰" }}</b> تومان</span>
-                    </div>
-                    <div class="shop-reference__range" aria-label="انتخاب بازه قیمت">
-                        <div class="shop-reference__range-track"></div>
-                        <input type="range" min="{{ price_min|default:0 }}" max="{{ price_max|default:5000000 }}" step="50000" value="{{ filter_min_price|default:price_min }}" data-min-range aria-label="حداقل قیمت">
-                        <input type="range" min="{{ price_min|default:0 }}" max="{{ price_max|default:5000000 }}" step="50000" value="{{ filter_max_price|default:price_max }}" data-max-range aria-label="حداکثر قیمت">
-                    </div>
-                    <input type="hidden" name="min_price" value="{{ filter_min_price }}" data-min-price-input>
-                    <input type="hidden" name="max_price" value="{{ filter_max_price }}" data-max-price-input>
-                </section>
-
-                <section class="shop-reference__filter-section">
-                    <h2>سایز</h2>
-                    <div class="shop-reference__sizes" role="radiogroup" aria-label="انتخاب سایز">
-                        <label class="{% if filter_size == "s" %}is-active{% endif %}"><input type="radio" name="size" value="s" {% if filter_size == "s" %}checked{% endif %}><span>S</span></label>
-                        <label class="{% if filter_size == "m" %}is-active{% endif %}"><input type="radio" name="size" value="m" {% if filter_size == "m" %}checked{% endif %}><span>M</span></label>
-                        <label class="{% if filter_size == "l" %}is-active{% endif %}"><input type="radio" name="size" value="l" {% if filter_size == "l" %}checked{% endif %}><span>L</span></label>
-                        <label class="{% if filter_size == "xl" %}is-active{% endif %}"><input type="radio" name="size" value="xl" {% if filter_size == "xl" %}checked{% endif %}><span>XL</span></label>
-                        <label class="{% if filter_size == "xxl" %}is-active{% endif %}"><input type="radio" name="size" value="xxl" {% if filter_size == "xxl" %}checked{% endif %}><span>XXL</span></label>
-                    </div>
-                </section>
-
-                <section class="shop-reference__filter-section shop-reference__filter-section--checks">
-                    <label class="shop-reference__discount-check">
-                        <input type="checkbox" name="discount" value="1" {% if filter_discount %}checked{% endif %}>
-                        <span>فقط کالاهای تخفیف‌دار</span>
-                    </label>
-                </section>
-
-                <button class="shop-reference__apply" type="submit">اعمال فیلترها <span>↗</span></button>
-                <a class="shop-reference__clear" href="{{ request.path }}">پاک کردن فیلترها ↻</a>
-            </form>
-        </aside>
-
-        <div class="shop-reference__results">
-            <header class="shop-reference__toolbar">
-                
-<section class="shop-reference__sort-section" data-sort-dropdown>
-    <button type="button" class="shop-reference__sort-trigger" data-sort-trigger aria-expanded="false" aria-haspopup="listbox">
-        <span class="shop-reference__sort-trigger-label">مرتب‌سازی</span>
-        <strong data-sort-current>
-            {% if filter_sort == "newest" %}جدیدترین{% elif filter_sort == "price_asc" %}ارزان‌ترین{% elif filter_sort == "price_desc" %}گران‌ترین{% else %}پیشنهاد شده{% endif %}
-        </strong>
-        <span class="shop-reference__sort-chevron" aria-hidden="true">⌄</span>
-    </button>
-    <div class="shop-reference__sort-menu" data-sort-menu role="listbox" aria-label="مرتب‌سازی محصولات">
-        <button type="button" role="option" data-sort-option data-value="featured" class="{% if filter_sort == "featured" %}is-active{% endif %}" aria-selected="{% if filter_sort == "featured" %}true{% else %}false{% endif %}">
-            <span>پیشنهاد شده</span>{% if filter_sort == "featured" %}<b>✓</b>{% endif %}
-        </button>
-        <button type="button" role="option" data-sort-option data-value="newest" class="{% if filter_sort == "newest" %}is-active{% endif %}" aria-selected="{% if filter_sort == "newest" %}true{% else %}false{% endif %}">
-            <span>جدیدترین</span>{% if filter_sort == "newest" %}<b>✓</b>{% endif %}
-        </button>
-        <button type="button" role="option" data-sort-option data-value="price_asc" class="{% if filter_sort == "price_asc" %}is-active{% endif %}" aria-selected="{% if filter_sort == "price_asc" %}true{% else %}false{% endif %}">
-            <span>ارزان‌ترین</span>{% if filter_sort == "price_asc" %}<b>✓</b>{% endif %}
-        </button>
-        <button type="button" role="option" data-sort-option data-value="price_desc" class="{% if filter_sort == "price_desc" %}is-active{% endif %}" aria-selected="{% if filter_sort == "price_desc" %}true{% else %}false{% endif %}">
-            <span>گران‌ترین</span>{% if filter_sort == "price_desc" %}<b>✓</b>{% endif %}
-        </button>
-    </div>
-</section>
-            </header>
-
-            <div class="shop-reference__products" data-shop-products>
-                {% for product in products %}
-                <article class="shop-reference__card" data-product-card>
-                    <div class="shop-reference__media">
-                        <a class="shop-reference__media-link" href="{% url 'shop:product' product.slug %}" aria-label="{{ product.name }}">
-                            <div class="product-card__slides">
-                                {% for image in product.card_images %}
-                                <div class="product-card__slide{% if forloop.first %} is-active{% endif %}" data-card-slide>
-                                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async">
-                                </div>
-                                {% empty %}
-                                <div class="product-card__slide is-active" data-card-slide>
-                                    <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" loading="lazy" decoding="async">
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </a>
-
-                        {% if product.is_featured %}<span class="shop-reference__badge shop-reference__badge--new">ویژه</span>{% endif %}
-                        {% if product.has_discount %}<span class="shop-reference__badge shop-reference__badge--discount">{{ product.discount_percent|discount_percent }}</span>{% endif %}
-
-                        <form method="post" action="{% url 'saved:toggle_favorite' product.id %}" class="shop-reference__favorite-form">
-                            {% csrf_token %}
-                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                            <button type="submit" class="shop-reference__favorite{% if product.is_favorite %} is-active{% endif %}" data-favorite-button aria-label="{% if product.is_favorite %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.7c0 5.4-8.8 10.1-8.8 10.1S3.2 14.1 3.2 8.7A4.7 4.7 0 0 1 12 6.1a4.7 4.7 0 0 1 8.8 2.6Z"></path></svg>
-                            </button>
-                        </form>
-                    </div>
-
-                    <div class="shop-reference__card-body">
-                        <a href="{% url 'shop:product' product.slug %}" class="shop-reference__card-info">
-                            <h3>{{ product.name }}</h3>
-                            <div class="shop-reference__price-row">
-                                <strong>{{ product.display_price|price }}</strong>
-                                <span>تومان</span>
-                                {% if product.has_discount %}<del>{{ product.display_compare_price|price }}</del>{% endif %}
-                            </div>
-                        </a>
-                        {% if product.has_variants %}
-                        <a class="shop-reference__cart" href="{% url 'shop:product' product.slug %}" aria-label="انتخاب {{ product.name }}">
-                        {% else %}
-                        <form method="post" action="{% url 'orders:cart_add' %}" class="shop-reference__cart-form">
-                            {% csrf_token %}
-                            <input type="hidden" name="product_id" value="{{ product.id }}">
-                            <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="shop-reference__cart" aria-label="افزودن {{ product.name }} به سبد">
-                        {% endif %}
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h2l1.5 9.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 1.9-1.5L20 9H7"></path><path d="M9 19.5h.01M18 19.5h.01"></path></svg>
-                        {% if product.has_variants %}</a>{% else %}</button></form>{% endif %}
-                    </div>
-                </article>
-                {% empty %}
-                <div class="shop-reference__empty">هنوز محصولی برای نمایش وجود ندارد.</div>
-                {% endfor %}
-            </div>
-
-            {% if is_paginated %}
-            <nav class="shop-reference__pagination" aria-label="صفحه‌بندی محصولات" data-shop-pagination>
-                {% if page_obj.has_previous %}<a href="?{% if filter_category %}category={{ filter_category }}&{% endif %}{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_size %}size={{ filter_size }}&{% endif %}{% if filter_min_price %}min_price={{ filter_min_price }}&{% endif %}{% if filter_max_price %}max_price={{ filter_max_price }}&{% endif %}{% if filter_discount %}discount=1&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="صفحه قبل">‹</a>{% endif %}
-                {% for number in paginator.page_range %}
-                    {% if number == page_obj.number %}<span class="is-current">{{ number|price }}</span>
-                    {% elif number <= 4 or number == paginator.num_pages %}<a href="?{% if filter_category %}category={{ filter_category }}&{% endif %}{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_size %}size={{ filter_size }}&{% endif %}{% if filter_min_price %}min_price={{ filter_min_price }}&{% endif %}{% if filter_max_price %}max_price={{ filter_max_price }}&{% endif %}{% if filter_discount %}discount=1&{% endif %}page={{ number }}">{{ number|price }}</a>
                     {% endif %}
-                {% endfor %}
-                {% if page_obj.has_next %}<a href="?{% if filter_category %}category={{ filter_category }}&{% endif %}{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_size %}size={{ filter_size }}&{% endif %}{% if filter_min_price %}min_price={{ filter_min_price }}&{% endif %}{% if filter_max_price %}max_price={{ filter_max_price }}&{% endif %}{% if filter_discount %}discount=1&{% endif %}page={{ page_obj.next_page_number }}" aria-label="صفحه بعد">›</a>{% endif %}
-            </nav>
-            <div class="shop-reference__infinite-sentinel" data-shop-infinite-sentinel aria-hidden="true"></div>
-            {% endif %}
+                </div>
+            </div>
+
+            <dl class="sh-hero__meta">
+                <div class="sh-hero__meta-row">
+                    <dt>محصولات</dt>
+                    <dd>{{ paginator.count|price }}</dd>
+                </div>
+                {% if categories %}
+                    <div class="sh-hero__meta-row">
+                        <dt>دسته‌بندی‌ها</dt>
+                        <dd>{{ categories|length|price }}</dd>
+                    </div>
+                {% endif %}
+                <div class="sh-hero__meta-row">
+                    <dt>شخصی‌سازی</dt>
+                    <dd>فعال</dd>
+                </div>
+            </dl>
         </div>
     </section>
+
+    {% comment %}
+    Category rail.
+
+    Real shop:category links. Those pages already ship their own canonical,
+    CollectionPage schema and sitemap entry, but no markup linked to them, so
+    they were orphaned from the crawl graph. This is the crawl path.
+    {% endcomment %}
+    <section class="sh-rail" aria-label="دسته‌بندی محصولات">
+        <div class="sh-rail__inner">
+            <ul class="sh-rail__list">
+                <li class="sh-rail__item">
+                    <a class="sh-rail__link sh-rail__link--all" href="{% url 'shop:index' %}">
+                        همه محصولات
+                        <span class="sh-rail__count">{{ paginator.count|price }}</span>
+                    </a>
+                </li>
+                {% for category in categories %}
+                    <li class="sh-rail__item">
+                        <a class="sh-rail__link" href="{% url 'shop:category' category.slug %}">
+                            {{ category.name }}
+                            <span class="sh-rail__count">{{ category.product_count|price }}</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+
+    {% include "shop/includes/_catalog.html" %}
 </div>
 {% endblock %}

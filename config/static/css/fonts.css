@@ -1,0 +1,31 @@
+/* ==========================================================================
+   BABAEI — Webfont
+   --------------------------------------------------------------------------
+   Vazirmatn is the reference Persian UI typeface. Until now the project asked
+   for it in three different font stacks (app.css, babaei-ui.css,
+   shop-reference.css) while never actually shipping a @font-face, so every
+   Persian glyph fell back to Tahoma / the Android default.
+
+   This file is the single source of truth for the webfont.
+
+   Loaded on: shop pages (via base.html, namespace-guarded).
+   Promote it site-wide by moving the <link> into base.html's global head.
+
+   Verified: 811 cmap entries, full Persian + Arabic + Latin coverage,
+   variable wght axis 100-900, Arabic joining features init/medi/fina present.
+   ========================================================================== */
+
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("../fonts/vazirmatn-var.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* The whole shop shell reads from these two custom properties so a future
+   typeface swap is a one-line change. */
+body.shop-page {
+    --sh-font: "Vazirmatn", "IRANSansX", Tahoma, Arial, sans-serif;
+    --sh-font-latin: "Vazirmatn", "Helvetica Neue", Arial, sans-serif;
+}
