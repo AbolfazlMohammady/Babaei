@@ -8,6 +8,11 @@
 <link rel="stylesheet" href="{% static 'css/pages/cart.css' %}?v=2">
 {% endblock %}
 
+{% block site_optional_css %}
+<link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
+<link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=4">
+{% endblock %}
+
 {% block content %}
 <div class="cart-shell" data-cart-page>
     <header class="cart-heading">
