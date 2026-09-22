@@ -15,7 +15,7 @@ from .models import Category, Product, ProductImage, ProductVariant
 from apps.saved.models import FavoriteProduct
 
 AUTH_USER_SESSION_KEY = "_auth_user_id"
-CATEGORY_NAV_CACHE_KEY = "babaei:shop:active-categories:v1"
+CATEGORY_NAV_CACHE_KEY = "babaei:shop:active-categories:v2"
 CATEGORY_NAV_CACHE_TTL = 300
 
 
