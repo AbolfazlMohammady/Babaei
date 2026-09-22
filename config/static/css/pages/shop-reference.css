@@ -2898,3 +2898,123 @@ body.shop-page .header-cart__badge{
         min-width:29px!important;
     }
 }
+
+
+/* =========================================================
+   MOBILE NAV — #03 Glass Capsule Dock
+   Shop only; desktop navbar remains unchanged.
+========================================================= */
+@media(max-width:680px){
+    body.shop-page{
+        padding-bottom:92px!important;
+    }
+
+    body.shop-page .mobile-bottom-nav{
+        position:fixed!important;
+        left:50%!important;
+        bottom:14px!important;
+        z-index:10000!important;
+        display:grid!important;
+        grid-template-columns:repeat(5,1fr)!important;
+        align-items:center!important;
+        width:min(380px,calc(100% - 24px))!important;
+        height:68px!important;
+        padding:7px!important;
+        transform:translateX(-50%)!important;
+        border:1px solid rgba(255,255,255,.78)!important;
+        border-radius:34px!important;
+        background:rgba(244,241,234,.78)!important;
+        box-shadow:
+            0 14px 40px rgba(20,31,25,.18),
+            inset 0 1px 0 rgba(255,255,255,.95)!important;
+        backdrop-filter:blur(20px) saturate(125%)!important;
+        -webkit-backdrop-filter:blur(20px) saturate(125%)!important;
+    }
+
+    body.shop-page .mobile-bottom-nav a,
+    body.shop-page .mobile-bottom-nav button{
+        position:relative!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        flex-direction:column!important;
+        gap:2px!important;
+        width:54px!important;
+        height:54px!important;
+        justify-self:center!important;
+        padding:0!important;
+        border:0!important;
+        border-radius:50%!important;
+        color:#526058!important;
+        background:transparent!important;
+        text-decoration:none!important;
+        font:inherit!important;
+        cursor:pointer!important;
+        transition:
+            color .2s ease,
+            background .2s ease,
+            transform .2s ease!important;
+    }
+
+    body.shop-page .mobile-bottom-nav svg{
+        width:19px!important;
+        height:19px!important;
+        flex:none!important;
+        fill:none!important;
+        stroke:currentColor!important;
+        stroke-width:1.7!important;
+        stroke-linecap:round!important;
+        stroke-linejoin:round!important;
+    }
+
+    body.shop-page .mobile-bottom-nav span{
+        max-width:48px!important;
+        overflow:hidden!important;
+        white-space:nowrap!important;
+        text-overflow:ellipsis!important;
+        font-size:8px!important;
+        font-weight:600!important;
+        line-height:1!important;
+    }
+
+    body.shop-page .mobile-bottom-nav a:hover,
+    body.shop-page .mobile-bottom-nav button:hover{
+        color:#14523C!important;
+        transform:none!important;
+    }
+
+    body.shop-page .mobile-bottom-nav a.is-active{
+        color:#fff!important;
+        background:#14523C!important;
+        box-shadow:
+            0 7px 18px rgba(20,82,60,.28),
+            inset 0 1px 0 rgba(255,255,255,.16)!important;
+    }
+
+    body.shop-page .mobile-bottom-nav a.is-active svg{
+        stroke-width:1.8!important;
+    }
+
+    body.shop-page .mobile-bottom-nav .header-cart__badge{
+        position:absolute!important;
+        top:0!important;
+        right:2px!important;
+        display:grid!important;
+        place-items:center!important;
+        min-width:15px!important;
+        width:15px!important;
+        height:15px!important;
+        padding:0!important;
+        border:2px solid #f4f1ea!important;
+        border-radius:50%!important;
+        color:#fff!important;
+        background:#c79d68!important;
+        font-size:7px!important;
+    }
+}
+
+@media(min-width:681px){
+    body.shop-page .mobile-bottom-nav{
+        display:none!important;
+    }
+}
