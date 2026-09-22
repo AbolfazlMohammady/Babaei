@@ -1,0 +1,1090 @@
+/* ==========================================================================
+   BABAEI — Shop product detail
+   --------------------------------------------------------------------------
+   Single source of truth for the product page. Every token comes from
+   shop-shell.css (--sh-*), so the page reads as the same surface as the
+   catalogue card: 26px card radius, --sh-radius for the inner blocks,
+   --sh-line borders, --sh-fast/--sh-slow motion, forest + cream palette.
+
+   WHY THIS FILE EXISTS
+   The product page used to pull four page stylesheets (pages/shop.css,
+   pages/product-quantity.css, pages/shop-designer-cta.css,
+   pages/product-saved.css) plus a "Product detail" block inside
+   storefront.css. Those layers disagreed: storefront.css painted cream text
+   on what is a light page and used !important to win, product-quantity.css
+   carried a one-line minified single-line file, and shop.css still held a
+   whole retired card grid. All of it is gone; this file is the only place
+   that styles the product page, and it uses zero !important.
+
+   CASCADE NOTE
+   Everything is scoped to body.product-detail-page so it always outranks the
+   shared `.shop-page …` / `.product-*` rules left in storefront.css without
+   ever needing !important.
+
+   JS CONTRACT (unchanged — js/pages/shop-product.js and js/storefront.js)
+     [data-product-gallery]  #product-gallery-main  [data-gallery-index]
+     [data-gallery-thumb] (+ data-image / data-alt / data-avif / data-webp)
+     #product-price  #product-old-price  #product-old-price-row  #product-discount
+     #total-stock  #variant-status  #selected-color-label  #selected-size-label
+     #add-to-cart-form  #cart-variant-id  [data-product-quantity-wrap]
+     #cart-quantity  [data-product-quantity-button]  [data-product-quantity-stock]
+     #add-to-cart-button  #product-in-cart  [data-product-in-cart-quantity]
+     .color-option  .size-option  .product-save-button
+     state classes: .is-selected .is-unavailable .is-in-cart .is-hidden
+                    .is-loading .is-active .product-toast .is-visible
+   ========================================================================== */
+
+/* ==========================================================================
+   01 — SHELL AND BREADCRUMBS
+   ========================================================================== */
+
+body.product-detail-page .product-shell {
+    width: min(var(--sh-shell), 100% - (var(--sh-gutter) * 2));
+    margin: 0 auto;
+    /* The fixed dock sits at the bottom edge below 941px, so the page keeps
+       a wide bottom pad rather than ending under it. */
+    padding: clamp(14px, 2.4vw, 26px) 0 clamp(72px, 9vw, 110px);
+}
+
+body.product-detail-page .breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    margin: 0 2px 14px;
+    color: var(--sh-muted);
+    font-size: 12px;
+    line-height: 1.9;
+}
+
+body.product-detail-page .breadcrumbs a {
+    color: var(--sh-muted);
+    text-decoration: none;
+    transition: color var(--sh-fast);
+}
+
+body.product-detail-page .breadcrumbs a:hover {
+    color: var(--sh-forest);
+}
+
+body.product-detail-page .breadcrumbs > span[aria-hidden] {
+    color: var(--sh-moss);
+}
+
+body.product-detail-page .breadcrumbs [aria-current="page"] {
+    color: var(--sh-ink);
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   02 — LAYOUT
+   The card shell mirrors .shop-reference__catalog on the catalogue page, so
+   the two pages share one silhouette.
+   ========================================================================== */
+
+body.product-detail-page .product-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr);
+    gap: clamp(18px, 3vw, 44px);
+    align-items: start;
+    padding: clamp(14px, 2vw, 22px);
+    border: 1px solid var(--sh-line);
+    border-radius: 26px;
+    background: var(--sh-cream-2);
+    box-shadow: var(--sh-shadow-2);
+}
+
+body.product-detail-page .product-gallery {
+    position: sticky;
+    top: calc(var(--sh-nav-h) + 18px);
+    min-width: 0;
+}
+
+body.product-detail-page .product-info {
+    position: sticky;
+    top: calc(var(--sh-nav-h) + 18px);
+    min-width: 0;
+}
+
+/* ==========================================================================
+   03 — GALLERY
+   The media box carries a definite aspect-ratio, so the page reserves its
+   height before a single byte of image arrives (CLS 0). The <picture> layers
+   AVIF → WebP → original; when the derivatives have not been generated the
+   tag returns empty strings and only the plain <img src> ships.
+   ========================================================================== */
+
+body.product-detail-page .gallery-main {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border: 1px solid var(--sh-line);
+    border-radius: var(--sh-radius);
+    background: var(--sh-paper);
+}
+
+body.product-detail-page .gallery-main picture {
+    display: contents;
+}
+
+/* object-fit: contain, never cover — the garment must not be cropped. inset:0
+   plus box-sizing keeps the padding inside the fixed box. The main shot is the
+   LCP candidate: it is never lazy and always drains at high priority. */
+body.product-detail-page .gallery-main img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: clamp(8px, 2vw, 20px);
+    box-sizing: border-box;
+    object-fit: contain;
+    transition: opacity var(--sh-fast);
+}
+
+body.product-detail-page .gallery-main__index {
+    position: absolute;
+    inset-block-end: 12px;
+    inset-inline-start: 12px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(11, 48, 37, .8);
+    color: var(--sh-on-dark);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+body.product-detail-page .product-gallery__thumbs {
+    display: flex;
+    gap: 8px;
+    margin-top: 9px;
+    padding: 2px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+}
+
+body.product-detail-page .product-gallery__thumbs::-webkit-scrollbar {
+    display: none;
+}
+
+body.product-detail-page .product-gallery__thumb {
+    flex: 0 0 68px;
+    width: 68px;
+    height: 84px;
+    padding: 0;
+    overflow: hidden;
+    scroll-snap-align: start;
+    border: 1px solid var(--sh-line);
+    border-radius: var(--sh-radius-sm);
+    background: var(--sh-paper);
+    opacity: .6;
+    cursor: pointer;
+    transition: opacity var(--sh-fast), border-color var(--sh-fast),
+                box-shadow var(--sh-fast);
+}
+
+body.product-detail-page .product-gallery__thumb picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+body.product-detail-page .product-gallery__thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+body.product-detail-page .product-gallery__thumb:hover,
+body.product-detail-page .product-gallery__thumb.is-active {
+    opacity: 1;
+}
+
+body.product-detail-page .product-gallery__thumb.is-active {
+    border-color: var(--sh-forest);
+    box-shadow: 0 0 0 2px rgba(20, 82, 60, .2);
+}
+
+/* ==========================================================================
+   04 — HEADING, FAVOURITE / SAVE CONTROLS
+   ========================================================================== */
+
+body.product-detail-page .product-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sh-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .2em;
+    line-height: 1;
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+body.product-detail-page .product-eyebrow::before {
+    content: "";
+    width: 20px;
+    height: 1px;
+    background: var(--sh-moss);
+}
+
+body.product-detail-page .product-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 12px 0 10px;
+}
+
+body.product-detail-page .product-title-row h1 {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    color: var(--sh-ink);
+    font-size: clamp(25px, 3.2vw, 40px);
+    font-weight: 800;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+body.product-detail-page .product-save-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 6px;
+    padding-top: 2px;
+}
+
+body.product-detail-page .product-save-actions form {
+    margin: 0;
+}
+
+body.product-detail-page .product-save-button {
+    display: grid;
+    place-items: center;
+    width: var(--sh-tap);
+    height: var(--sh-tap);
+    padding: 0;
+    border: 1px solid var(--sh-line-strong);
+    border-radius: var(--sh-radius-sm);
+    background: var(--sh-cream-2);
+    color: var(--sh-ink-2);
+    font-size: 19px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--sh-fast), color var(--sh-fast),
+                border-color var(--sh-fast), transform var(--sh-fast);
+}
+
+body.product-detail-page .product-save-button:hover {
+    border-color: var(--sh-forest);
+    color: var(--sh-forest);
+    transform: translateY(-2px);
+}
+
+body.product-detail-page .product-save-button.is-active {
+    border-color: var(--sh-forest);
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+}
+
+body.product-detail-page .product-save-button span {
+    display: block;
+    transform: translateY(-1px);
+}
+
+body.product-detail-page .product-short {
+    max-width: 52ch;
+    margin: 0;
+    color: var(--sh-muted);
+    font-size: 14px;
+    line-height: 2;
+    overflow-wrap: anywhere;
+}
+
+/* ==========================================================================
+   05 — PRICE
+   ========================================================================== */
+
+body.product-detail-page .product-price-box {
+    margin: 16px 0 0;
+    padding: 14px 16px;
+    border: 1px solid var(--sh-line);
+    border-radius: var(--sh-radius);
+    background: var(--sh-paper);
+}
+
+body.product-detail-page .price-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 7px;
+}
+
+body.product-detail-page .price {
+    color: var(--sh-ink);
+    font-size: clamp(22px, 2.5vw, 29px);
+    font-weight: 900;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+
+body.product-detail-page .price-unit {
+    color: var(--sh-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+body.product-detail-page .old-price-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+body.product-detail-page .old-price-row del {
+    color: var(--sh-muted);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+}
+
+body.product-detail-page .discount-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+    font-size: 10.5px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+body.product-detail-page .price-note {
+    display: block;
+    margin-top: 8px;
+    color: var(--sh-muted);
+    font-size: 10.5px;
+}
+
+/* The view toggles this on #product-old-price-row. A dedicated
+   .old-price-row.is-hidden rule outranks the display:flex above without
+   reaching for !important. */
+body.product-detail-page .old-price-row.is-hidden {
+    display: none;
+}
+
+/* ==========================================================================
+   06 — OPTIONS (COLOUR, SIZE, STOCK)
+   ========================================================================== */
+
+body.product-detail-page .product-options {
+    margin-top: 18px;
+}
+
+body.product-detail-page .stock-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    border: 1px solid var(--sh-line);
+    border-radius: var(--sh-radius-sm);
+    background: var(--sh-cream);
+    color: var(--sh-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+body.product-detail-page .stock-summary strong {
+    color: var(--sh-ink);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+body.product-detail-page .option-group + .option-group {
+    margin-top: 16px;
+}
+
+body.product-detail-page .option-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 9px;
+}
+
+body.product-detail-page .option-heading h2 {
+    margin: 0;
+    color: var(--sh-ink);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+/* Filled in by the variant script with the chosen colour / size name. */
+body.product-detail-page .option-heading span {
+    color: var(--sh-forest);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+body.product-detail-page .color-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.product-detail-page .color-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--sh-tap);
+    padding: 4px 13px;
+    border: 1px solid var(--sh-line-strong);
+    border-radius: 999px;
+    background: var(--sh-cream-2);
+    color: var(--sh-ink-2);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--sh-fast), background var(--sh-fast),
+                color var(--sh-fast);
+}
+
+body.product-detail-page .color-swatch {
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--sh-line-strong);
+    border-radius: 50%;
+    background: var(--swatch);
+}
+
+body.product-detail-page .color-option:hover:not(:disabled) {
+    border-color: var(--sh-forest);
+}
+
+body.product-detail-page .color-option.is-selected {
+    border-color: var(--sh-forest);
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+}
+
+body.product-detail-page .color-option.is-selected .color-swatch {
+    border-color: rgba(251, 250, 247, .55);
+}
+
+body.product-detail-page .size-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.product-detail-page .size-option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 54px;
+    min-height: var(--sh-tap);
+    padding: 6px 13px;
+    border: 1px solid var(--sh-line-strong);
+    border-radius: var(--sh-radius-sm);
+    background: var(--sh-cream-2);
+    color: var(--sh-ink-2);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color var(--sh-fast), background var(--sh-fast),
+                color var(--sh-fast);
+}
+
+body.product-detail-page .size-option:hover:not(:disabled) {
+    border-color: var(--sh-forest);
+}
+
+body.product-detail-page .size-option.is-selected {
+    border-color: var(--sh-forest);
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+}
+
+body.product-detail-page .color-option:disabled,
+body.product-detail-page .color-option.is-unavailable,
+body.product-detail-page .size-option:disabled,
+body.product-detail-page .size-option.is-unavailable {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+body.product-detail-page .variant-status {
+    min-height: 20px;
+    margin-top: 10px;
+    color: var(--sh-muted);
+    font-size: 11.5px;
+    line-height: 1.8;
+}
+
+body.product-detail-page .variant-status strong {
+    color: var(--sh-forest);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   07 — QUANTITY AND ADD TO CART
+   ========================================================================== */
+
+body.product-detail-page .add-to-cart-form {
+    margin: 0;
+}
+
+body.product-detail-page .add-to-cart-row {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 10px;
+    align-items: stretch;
+    margin-top: 18px;
+}
+
+body.product-detail-page .product-quantity {
+    min-width: 0;
+    padding: 9px 11px;
+    border: 1px solid var(--sh-line-strong);
+    border-radius: var(--sh-radius-sm);
+    background: var(--sh-cream);
+    transition: background var(--sh-fast), border-color var(--sh-fast);
+}
+
+body.product-detail-page .product-quantity.is-in-cart {
+    border-color: var(--sh-sand);
+    background: var(--sh-sand);
+}
+
+body.product-detail-page .product-quantity__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin: 0 2px 7px;
+}
+
+body.product-detail-page .product-quantity__heading label {
+    color: var(--sh-ink-2);
+    font-size: 10.5px;
+    font-weight: 800;
+}
+
+body.product-detail-page .product-quantity__heading span {
+    color: var(--sh-muted);
+    font-size: 9.5px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+body.product-detail-page .product-quantity__control {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) 34px;
+    align-items: center;
+    height: 38px;
+    overflow: hidden;
+    border: 1px solid var(--sh-line);
+    border-radius: 9px;
+    background: var(--sh-cream-2);
+}
+
+body.product-detail-page .product-quantity__control button {
+    width: 34px;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--sh-ink);
+    font: inherit;
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--sh-fast), color var(--sh-fast);
+}
+
+body.product-detail-page .product-quantity__control button:hover:not(:disabled) {
+    background: var(--sh-sand);
+    color: var(--sh-forest);
+}
+
+body.product-detail-page .product-quantity__control button:disabled {
+    opacity: .3;
+    cursor: not-allowed;
+}
+
+body.product-detail-page .product-quantity__control input {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--sh-ink);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    -moz-appearance: textfield;
+}
+
+body.product-detail-page .product-quantity__control input::-webkit-outer-spin-button,
+body.product-detail-page .product-quantity__control input::-webkit-inner-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+}
+
+body.product-detail-page .product-quantity.is-in-cart .product-quantity__control button,
+body.product-detail-page .product-quantity.is-in-cart .product-quantity__control input {
+    opacity: .45;
+}
+
+/* The button and the "already in the cart" link share one cell: the script
+   swaps them with the hidden attribute, so the row never reflows. */
+body.product-detail-page .add-to-cart-button,
+body.product-detail-page .product-in-cart {
+    grid-row: 1;
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 62px;
+    margin: 0;
+    padding: 9px 16px;
+    border: 0;
+    border-radius: var(--sh-radius-sm);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--sh-fast), color var(--sh-fast),
+                border-color var(--sh-fast), transform var(--sh-fast);
+}
+
+body.product-detail-page .add-to-cart-button {
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+}
+
+body.product-detail-page .add-to-cart-button:hover:not(:disabled) {
+    background: var(--sh-forest-soft);
+    transform: translateY(-2px);
+}
+
+body.product-detail-page .add-to-cart-button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+body.product-detail-page .add-to-cart-button.is-loading {
+    cursor: progress;
+}
+
+body.product-detail-page .product-in-cart {
+    border: 1px solid var(--sh-line-strong);
+    background: var(--sh-cream);
+    color: var(--sh-ink);
+}
+
+body.product-detail-page .product-in-cart:hover {
+    border-color: var(--sh-forest);
+}
+
+body.product-detail-page .product-in-cart span {
+    font-size: 12px;
+    font-weight: 800;
+}
+
+body.product-detail-page .product-in-cart strong {
+    color: var(--sh-forest);
+    font-size: 11px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+body.product-detail-page .product-in-cart small {
+    margin-top: 2px;
+    color: var(--sh-muted);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* .is-hidden covers the script's own toggles; the attribute selectors cover
+   the two elements the script hides with `hidden`. Both are listed so the
+   flex display above can never resurrect a hidden element. */
+body.product-detail-page .add-to-cart-button[hidden],
+body.product-detail-page .product-in-cart[hidden] {
+    display: none;
+}
+
+/* ==========================================================================
+   08 — BENEFITS, DESCRIPTION, DESIGNER CTA
+   Both big text blocks stay below the fold, so they opt into
+   content-visibility with a reserved size instead of painting eagerly.
+   ========================================================================== */
+
+body.product-detail-page .product-benefits {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: clamp(32px, 4.6vw, 54px);
+    content-visibility: auto;
+    contain-intrinsic-size: 300px;
+}
+
+body.product-detail-page .product-benefits > div {
+    padding: 18px 16px;
+    border: 1px solid var(--sh-line);
+    border-radius: var(--sh-radius);
+    background: var(--sh-cream-2);
+}
+
+body.product-detail-page .product-benefits__number {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--sh-moss);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+body.product-detail-page .product-benefits strong {
+    display: block;
+    color: var(--sh-ink);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+body.product-detail-page .product-benefits small {
+    display: block;
+    margin-top: 6px;
+    color: var(--sh-muted);
+    font-size: 11.5px;
+    line-height: 1.85;
+}
+
+body.product-detail-page .product-description {
+    max-width: 78ch;
+    margin-top: clamp(30px, 4.4vw, 52px);
+    padding-top: 22px;
+    border-top: 1px solid var(--sh-line);
+    content-visibility: auto;
+    contain-intrinsic-size: 340px;
+}
+
+body.product-detail-page .product-description h2 {
+    margin: 0 0 12px;
+    color: var(--sh-ink);
+    font-size: clamp(19px, 2.1vw, 24px);
+    font-weight: 800;
+}
+
+body.product-detail-page .product-description p {
+    margin: 0 0 12px;
+    color: var(--sh-ink-2);
+    font-size: 14px;
+    line-height: 2.1;
+    overflow-wrap: anywhere;
+}
+
+body.product-detail-page .product-description p:last-child {
+    margin-bottom: 0;
+}
+
+body.product-detail-page .next-step-card {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: clamp(30px, 4.4vw, 52px);
+    padding: clamp(20px, 3vw, 32px);
+    overflow: hidden;
+    border-radius: 26px;
+    background: var(--sh-forest);
+    color: var(--sh-on-dark);
+}
+
+body.product-detail-page .next-step-card::after {
+    content: "";
+    position: absolute;
+    inset-block-start: -110px;
+    inset-inline-start: -80px;
+    width: 260px;
+    height: 260px;
+    border: 1px solid rgba(143, 174, 156, .3);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+body.product-detail-page .next-step-card > div {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 22ch;
+    min-width: 0;
+}
+
+body.product-detail-page .next-step-card .product-eyebrow {
+    color: var(--sh-on-dark-soft);
+}
+
+body.product-detail-page .next-step-card h2 {
+    margin: 8px 0 8px;
+    color: var(--sh-on-dark);
+    font-size: clamp(20px, 2.6vw, 32px);
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+body.product-detail-page .next-step-card p {
+    max-width: 62ch;
+    margin: 0;
+    color: var(--sh-on-dark-soft);
+    font-size: 13px;
+    line-height: 2;
+}
+
+body.product-detail-page .next-step-card__cta {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-height: 48px;
+    padding-inline: 24px;
+    border: 1px solid transparent;
+    border-radius: var(--sh-radius-sm);
+    background: var(--sh-cream);
+    color: var(--sh-forest-deep);
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: background var(--sh-fast), transform var(--sh-fast);
+}
+
+body.product-detail-page .next-step-card__cta:hover {
+    background: #fff;
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   09 — TOAST
+   Built by js/pages/shop-product.js and appended to <body>, so it is scoped
+   to the page rather than to .product-shell.
+   ========================================================================== */
+
+body.product-detail-page .product-toast {
+    position: fixed;
+    inset-block-start: calc(var(--sh-nav-h) + 16px);
+    inset-inline-start: 24px;
+    inset-inline-end: 24px;
+    z-index: 300;
+    max-width: min(330px, calc(100vw - 32px));
+    margin-inline: auto;
+    padding: 13px 18px;
+    border: 1px solid rgba(246, 243, 236, .16);
+    border-radius: var(--sh-radius-sm);
+    background: var(--sh-forest-deep);
+    color: var(--sh-on-dark);
+    box-shadow: var(--sh-shadow-2);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity var(--sh-fast), transform var(--sh-fast);
+}
+
+body.product-detail-page .product-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+body.product-detail-page .product-toast--error {
+    border-color: rgba(246, 243, 236, .2);
+    background: #7d342d;
+}
+
+/* ==========================================================================
+   10 — FOCUS
+   One visible focus ring for every interactive control on the page.
+   ========================================================================== */
+
+body.product-detail-page .breadcrumbs a:focus-visible,
+body.product-detail-page .product-gallery__thumb:focus-visible,
+body.product-detail-page .product-save-button:focus-visible,
+body.product-detail-page .color-option:focus-visible,
+body.product-detail-page .size-option:focus-visible,
+body.product-detail-page .product-quantity__control button:focus-visible,
+body.product-detail-page .product-quantity__control input:focus-visible,
+body.product-detail-page .add-to-cart-button:focus-visible,
+body.product-detail-page .product-in-cart:focus-visible,
+body.product-detail-page .next-step-card__cta:focus-visible {
+    outline: 3px solid var(--sh-forest);
+    outline-offset: 2px;
+}
+
+body.product-detail-page .next-step-card__cta:focus-visible,
+body.product-detail-page .next-step-card .product-eyebrow:focus-visible {
+    outline-color: var(--sh-moss);
+    outline-offset: 3px;
+}
+
+/* ==========================================================================
+   11 — RESPONSIVE
+   Two steps: the two-column card collapses below 1081px, and the tight phone
+   layout starts at 561px. Nothing is allowed to overflow at 360px.
+   ========================================================================== */
+
+@media (max-width: 1080px) {
+    body.product-detail-page .product-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+        padding: 14px;
+        border-radius: 20px;
+    }
+
+    /* One column: the gallery stops following the scroll and caps its width,
+       so a 4/5 frame never grows taller than the viewport. */
+    body.product-detail-page .product-gallery {
+        position: static;
+        max-width: 560px;
+        width: 100%;
+        margin-inline: auto;
+    }
+
+    body.product-detail-page .product-info {
+        position: static;
+    }
+}
+
+@media (max-width: 700px) {
+    body.product-detail-page .product-layout {
+        padding: 12px;
+        border-radius: 18px;
+    }
+
+    body.product-detail-page .product-gallery__thumb {
+        flex-basis: 60px;
+        width: 60px;
+        height: 74px;
+    }
+
+    body.product-detail-page .product-benefits {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    body.product-detail-page .product-title-row h1 {
+        font-size: clamp(22px, 6.4vw, 30px);
+    }
+
+    body.product-detail-page .next-step-card {
+        border-radius: 20px;
+    }
+}
+
+@media (max-width: 560px) {
+    body.product-detail-page .add-to-cart-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    body.product-detail-page .product-quantity {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    body.product-detail-page .product-quantity__heading {
+        margin: 0;
+    }
+
+    body.product-detail-page .product-quantity__control {
+        flex: 0 0 150px;
+        width: 150px;
+    }
+
+    body.product-detail-page .add-to-cart-button,
+    body.product-detail-page .product-in-cart {
+        grid-row: 2;
+        grid-column: 1;
+        min-height: 56px;
+    }
+
+    body.product-detail-page .next-step-card__cta {
+        width: 100%;
+    }
+
+    body.product-detail-page .product-toast {
+        inset-inline: 14px;
+        inset-block-start: calc(var(--sh-nav-h) + 10px);
+        max-width: none;
+    }
+}
+
+@media (max-width: 380px) {
+    body.product-detail-page .product-gallery__thumb {
+        flex-basis: 54px;
+        width: 54px;
+        height: 68px;
+    }
+
+    body.product-detail-page .color-option,
+    body.product-detail-page .size-option {
+        font-size: 12px;
+    }
+}
+
+/* ==========================================================================
+   12 — MOTION PREFERENCE
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    body.product-detail-page .product-gallery__thumb,
+    body.product-detail-page .product-save-button,
+    body.product-detail-page .color-option,
+    body.product-detail-page .size-option,
+    body.product-detail-page .product-quantity,
+    body.product-detail-page .product-quantity__control button,
+    body.product-detail-page .add-to-cart-button,
+    body.product-detail-page .product-in-cart,
+    body.product-detail-page .next-step-card__cta,
+    body.product-detail-page .product-toast,
+    body.product-detail-page .gallery-main img {
+        transition-duration: 1ms;
+    }
+
+    body.product-detail-page .product-save-button:hover,
+    body.product-detail-page .add-to-cart-button:hover:not(:disabled),
+    body.product-detail-page .next-step-card__cta:hover {
+        transform: none;
+    }
+}
