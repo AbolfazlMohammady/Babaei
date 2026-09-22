@@ -1656,7 +1656,7 @@ body.shop-page .shop-reference__sort{
 ========================================================= */
 body.shop-page .shop-reference__hero-visual{
     background:
-        #07120c url("/static/images/shop/shop-hero.webp") center center / cover no-repeat!important;
+        #07120c url("/static/images/shop/shop-hero.png") center center / cover no-repeat!important;
 }
 body.shop-page .shop-reference__hero-visual img{
     position:relative!important;
