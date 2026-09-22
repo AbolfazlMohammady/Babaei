@@ -52,8 +52,9 @@
 <style>
 /* Shop reference navbar — scoped to storefront only. */
 body.shop-page .site-header{
-    position:sticky!important;
+    position:fixed!important;
     top:0!important;
+    left:0!important;
     z-index:1500!important;
     width:100%!important;
     height:0!important;
@@ -106,12 +107,12 @@ body.shop-page .site-logo::before{
     content:""!important;
     position:absolute!important;
     z-index:-1!important;
-    left:-22px!important;
-    top:-1px!important;
-    width:286px!important;
-    height:88px!important;
+    left:-18px!important;
+    top:-5px!important;
+    width:292px!important;
+    height:84px!important;
     background:#394835!important;
-    border-radius:0 0 62% 34% / 0 0 82% 72%!important;
+    border-radius:0 0 64% 42% / 0 0 78% 66%!important;
     transform:rotate(-1deg)!important;
     pointer-events:none!important;
 }
@@ -176,6 +177,17 @@ body.shop-page .site-nav a.is-active::after{
     border-radius:50%!important;
     background:#b59668!important;
     transform:translateX(-50%)!important;
+}
+
+/* The Design Studio link also points to /shop/; only the real active item gets active styling. */
+body.shop-page .site-nav a:not(.is-active){
+    color:#252923!important;
+    background:transparent!important;
+}
+
+body.shop-page .site-nav a:not(.is-active)::after{
+    content:none!important;
+    transform:none!important;
 }
 
 body.shop-page .site-actions{
