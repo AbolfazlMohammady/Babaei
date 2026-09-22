@@ -12,6 +12,11 @@
 {% block extra_head %}<script type="application/ld+json">{{ website_schema }}</script>{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/shop.css' %}"><script src="{% static 'js/pages/shop-cards.js' %}?v=1" defer></script>{% endblock %}
 
+{% block site_optional_css %}
+<link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
+<link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=3">
+{% endblock %}
+
 {% block content %}
 <div class="shop-shell">
     <section class="shop-hero" aria-labelledby="shop-title" data-reveal>
