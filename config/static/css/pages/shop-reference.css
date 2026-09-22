@@ -1211,3 +1211,19 @@ body.shop-page .shop-reference__apply{
         overflow:visible!important;
     }
 }
+
+body.shop-page .shop-reference__card-info h3{
+    display:-webkit-box!important;
+    -webkit-box-orient:vertical!important;
+    -webkit-line-clamp:2!important;
+    overflow:hidden!important;
+    min-height:42px!important;
+}
+body.shop-page .shop-reference__card-body{
+    min-height:84px!important;
+    align-items:end!important;
+}
+body.shop-page .shop-reference__price-row{
+    min-height:20px!important;
+    align-items:baseline!important;
+}
