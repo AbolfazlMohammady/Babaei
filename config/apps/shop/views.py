@@ -209,14 +209,6 @@ class CategoryDetailView(ListView):
         ).order_by("type_priority", "sort_order", "id")[:2]
         queryset = Product.objects.filter(category_id=self.category.id, is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, **annotations).prefetch_related(Prefetch("images", queryset=card_images, to_attr="card_images"))
 
-        color = self.request.GET.get("color")
-        if color:
-            queryset = queryset.filter(
-                variants__is_active=True,
-                variants__color__is_active=True,
-                variants__color__slug=color,
-            ).distinct()
-
         size = self.request.GET.get("size")
         if size:
             queryset = queryset.filter(
@@ -224,6 +216,9 @@ class CategoryDetailView(ListView):
                 variants__size__is_active=True,
                 variants__size__slug=size,
             ).distinct()
+
+        if self.request.GET.get("discount") == "1":
+            queryset = queryset.filter(listed_compare_price__gt=F("listed_price"))
 
         sort = self.request.GET.get("sort", "featured")
         sort_map = {
@@ -238,12 +233,8 @@ class CategoryDetailView(ListView):
         context = super().get_context_data(**kwargs)
         context["category"] = self.category
         context["categories"] = get_active_categories()
-        context["filter_color"] = self.request.GET.get("color", "")
         context["filter_size"] = self.request.GET.get("size", "")
-        context["filter_colors"] = list(ProductColor.objects.filter(
-            is_active=True,
-            variants__is_active=True,
-        ).distinct().order_by("name"))
+        context["filter_discount"] = self.request.GET.get("discount") == "1"
         context["filter_sizes"] = list(ProductSize.objects.filter(
             is_active=True,
             slug__in=("s", "m", "l", "xl", "xxl"),
