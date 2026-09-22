@@ -206,6 +206,7 @@
                 {% endfor %}
                 {% if page_obj.has_next %}<a href="?{% if filter_category %}category={{ filter_category }}&{% endif %}{% if filter_sort %}sort={{ filter_sort }}&{% endif %}{% if filter_size %}size={{ filter_size }}&{% endif %}{% if filter_min_price %}min_price={{ filter_min_price }}&{% endif %}{% if filter_max_price %}max_price={{ filter_max_price }}&{% endif %}{% if filter_discount %}discount=1&{% endif %}page={{ page_obj.next_page_number }}" aria-label="صفحه بعد">›</a>{% endif %}
             </nav>
+            <div class="shop-reference__infinite-sentinel" data-shop-infinite-sentinel aria-hidden="true"></div>
             {% endif %}
         </div>
     </section>
