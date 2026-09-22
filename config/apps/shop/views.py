@@ -4,7 +4,7 @@ import json
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Case, CharField, Count, Exists, F, IntegerField, OuterRef, Prefetch, Q, Subquery, Value, When
+from django.db.models import Case, CharField, Count, Exists, F, IntegerField, Max, OuterRef, Prefetch, Q, Subquery, Value, When
 from django.db.models.functions import Concat
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404
@@ -48,7 +48,23 @@ def toman_to_irr(value):
 
 def price_annotations():
     variants = ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True).order_by("price", "id")
-    return Subquery(variants.values("price")[:1], output_field=IntegerField()), Subquery(variants.values("compare_at_price")[:1], output_field=IntegerField())
+    max_variants = ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True).order_by("-price", "id")
+    return (
+        Subquery(variants.values("price")[:1], output_field=IntegerField()),
+        Subquery(variants.values("compare_at_price")[:1], output_field=IntegerField()),
+        Subquery(max_variants.values("price")[:1], output_field=IntegerField()),
+    )
+
+
+def catalog_max_price(queryset):
+    product_ids = queryset.values("pk")
+    return (
+        ProductVariant.objects
+        .filter(product_id__in=product_ids, is_active=True)
+        .aggregate(max_price=Max("price"))
+        .get("max_price")
+        or 0
+    )
 
 
 def primary_image_annotations():
@@ -79,10 +95,10 @@ def card_annotations(request):
 class ShopIndexView(ListView):
     template_name = "shop/index.html"
     context_object_name = "products"
-    paginate_by = 24
+    paginate_by = 18
 
     def get_queryset(self):
-        variant_price, variant_compare_price = price_annotations()
+        variant_price, variant_compare_price, variant_max_price = price_annotations()
         annotations = card_annotations(self.request)
         card_images = ProductImage.objects.annotate(
             type_priority=Case(
@@ -98,6 +114,7 @@ class ShopIndexView(ListView):
         ).select_related("category").annotate(
             listed_price=variant_price,
             listed_compare_price=variant_compare_price,
+            listed_max_price=variant_max_price,
             **annotations,
         ).prefetch_related(
             Prefetch("images", queryset=card_images, to_attr="card_images")
@@ -115,16 +132,28 @@ class ShopIndexView(ListView):
                 variants__size__slug=size,
             ).distinct()
 
-        for key, lookup in (("min_price", "listed_price__gte"), ("max_price", "listed_price__lte")):
-            value = self.request.GET.get(key)
-            if value:
-                try:
-                    queryset = queryset.filter(**{lookup: int(value)})
-                except (TypeError, ValueError):
-                    pass
-
         if self.request.GET.get("discount") == "1":
             queryset = queryset.filter(listed_compare_price__gt=F("listed_price"))
+
+        min_price = self.request.GET.get("min_price")
+        if min_price:
+            try:
+                queryset = queryset.filter(
+                    variants__is_active=True,
+                    variants__price__gte=int(min_price),
+                ).distinct()
+            except (TypeError, ValueError):
+                pass
+
+        max_price = self.request.GET.get("max_price")
+        if max_price:
+            try:
+                queryset = queryset.filter(
+                    variants__is_active=True,
+                    variants__price__lte=int(max_price),
+                ).distinct()
+            except (TypeError, ValueError):
+                pass
 
         sort = self.request.GET.get("sort", "featured")
         sort_map = {
@@ -145,6 +174,7 @@ class ShopIndexView(ListView):
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
+        context["price_max"] = catalog_max_price(self.get_queryset().model.objects.filter(is_active=True, category__is_active=True))
         context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
@@ -163,7 +193,7 @@ class CategoryDetailView(ListView):
 
     def get_queryset(self):
         self.category = get_object_or_404(Category.objects.only("id", "name", "slug", "description", "seo_title", "seo_description", "image"), slug=self.kwargs["slug"], is_active=True)
-        variant_price, variant_compare_price = price_annotations()
+        variant_price, variant_compare_price, variant_max_price = price_annotations()
         annotations = card_annotations(self.request)
         card_images = ProductImage.objects.annotate(
             type_priority=Case(
@@ -172,7 +202,7 @@ class CategoryDetailView(ListView):
                 output_field=IntegerField(),
             )
         ).order_by("type_priority", "sort_order", "id")[:2]
-        queryset = Product.objects.filter(category_id=self.category.id, is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, **annotations).prefetch_related(Prefetch("images", queryset=card_images, to_attr="card_images"))
+        queryset = Product.objects.filter(category_id=self.category.id, is_active=True).select_related("category").annotate(listed_price=variant_price, listed_compare_price=variant_compare_price, listed_max_price=variant_max_price, **annotations).prefetch_related(Prefetch("images", queryset=card_images, to_attr="card_images"))
 
         size = self.request.GET.get("size")
         if size:
@@ -185,13 +215,19 @@ class CategoryDetailView(ListView):
         if self.request.GET.get("discount") == "1":
             queryset = queryset.filter(listed_compare_price__gt=F("listed_price"))
 
-        for key, lookup in (("min_price", "listed_price__gte"), ("max_price", "listed_price__lte")):
-            value = self.request.GET.get(key)
-            if value:
-                try:
-                    queryset = queryset.filter(**{lookup: int(value)})
-                except (TypeError, ValueError):
-                    pass
+        min_price = self.request.GET.get("min_price")
+        if min_price:
+            try:
+                queryset = queryset.filter(variants__is_active=True, variants__price__gte=int(min_price)).distinct()
+            except (TypeError, ValueError):
+                pass
+
+        max_price = self.request.GET.get("max_price")
+        if max_price:
+            try:
+                queryset = queryset.filter(variants__is_active=True, variants__price__lte=int(max_price)).distinct()
+            except (TypeError, ValueError):
+                pass
 
         sort = self.request.GET.get("sort", "featured")
         sort_map = {
@@ -211,6 +247,8 @@ class CategoryDetailView(ListView):
         context["filter_discount"] = self.request.GET.get("discount") == "1"
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
+        base_price_queryset = Product.objects.filter(category_id=self.category.id, is_active=True)
+        context["price_max"] = catalog_max_price(base_price_queryset)
         context["canonical_url"] = absolute_url(self.request, self.request.path)
         context["og_title"] = self.category.seo_title or self.category.name
         context["og_description"] = self.category.seo_description or self.category.description or self.category.name
