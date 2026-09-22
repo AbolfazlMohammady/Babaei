@@ -3,7 +3,37 @@
    --------------------------------------------------------------------------
    Vazirmatn is the reference Persian UI typeface. Until now the project asked
    for it in three different font stacks (app.css, babaei-ui.css,
-   shop-reference.css) while never actually shipping a @font-face, so every
+   shop-reference.css) while never actually shipping a /* --------------------------------------------------------------------------
+   Shared palette.
+
+   These lived on body.shop-page, which meant only the shop namespace could use
+   them. Every page now loads this file, so they move to :root and the shop
+   shell keeps whatever is genuinely shop-specific (nav height, gutters).
+   -------------------------------------------------------------------------- */
+:root {
+    --sh-forest: #14523c;
+    --sh-forest-deep: #0e3d2d;
+    --sh-forest-soft: #1d6b4e;
+    --sh-moss: #8fae9c;
+    --sh-gold: #d8a85f;
+    --sh-cream: #f4f1ea;
+    --sh-cream-2: #fbfaf7;
+    --sh-paper: #f8f5ee;
+    --sh-sand: #e7e1d5;
+    --sh-ink: #14161a;
+    --sh-ink-2: #2b3035;
+    --sh-muted: #6d7278;
+    --sh-line: rgba(20, 22, 26, .10);
+    --sh-shadow: 0 18px 44px rgba(9, 28, 20, .10);
+    --sh-radius: 18px;
+    --sh-ease: cubic-bezier(.22, .61, .36, 1);
+    --sh-dur-fast: 180ms;
+    --sh-dur: 320ms;
+    --sh-fast: var(--sh-dur-fast) var(--sh-ease);
+    --sh-slow: var(--sh-dur) var(--sh-ease);
+}
+
+@font-face, so every
    Persian glyph fell back to Tahoma / the Android default.
 
    This file is the single source of truth for the webfont.
