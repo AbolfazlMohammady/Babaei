@@ -38,6 +38,16 @@
         }, { rootMargin: '200px 0px', threshold: 0.01 })
         : null;
 
+    document.addEventListener('visibilitychange', () => {
+        cards.forEach((card) => {
+            if (document.hidden) {
+                card.dispatchEvent(new CustomEvent('card:hidden'));
+            } else {
+                card.dispatchEvent(new CustomEvent('card:visible'));
+            }
+        });
+    });
+
     cards.forEach((card) => {
         cardObserver?.observe(card);
 
@@ -73,7 +83,7 @@
             };
 
             const start = () => {
-                if (!visibleCards.has(card) || document.hidden) return;
+                if ((cardObserver && !visibleCards.has(card)) || document.hidden) return;
                 stop();
                 timer = setInterval(next, 4200);
             };
@@ -82,10 +92,6 @@
             media?.addEventListener('mouseleave', start);
             card.addEventListener('card:visible', start);
             card.addEventListener('card:hidden', stop);
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) stop();
-                else start();
-            });
             media?.addEventListener('touchstart', (event) => {
                 startX = event.touches[0].clientX;
                 stop();
