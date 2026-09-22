@@ -32,8 +32,12 @@
         <span>خانه</span>
     </a>
     <a href="{% url 'shop:index' %}" class="{% if request.resolver_match.namespace == 'shop' %}is-active{% endif %}" aria-label="فروشگاه">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16l-1.5 10h-13L4 10Z"></path><path d="M7 10V7a5 5 0 0 1 10 0v3"></path></svg>
         <span>فروشگاه</span>
+    </a>
+    <a href="{% url 'orders:cart' %}" class="{% if request.resolver_match.namespace == 'orders' %}is-active{% endif %}" aria-label="سبد خرید">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l1.6 10.2a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>
+        <span>سبد{% if cart_item_count %} {{ cart_item_count }}{% endif %}</span>
     </a>
     <button type="button" aria-label="جستجو">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 5 5"></path></svg>
@@ -42,10 +46,6 @@
     <a href="{% url 'users:profile' %}" class="{% if request.resolver_match.namespace == 'users' %}is-active{% endif %}" aria-label="حساب کاربری">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c.8-3.7 3.1-5.5 7-5.5s6.2 1.8 7 5.5"></path></svg>
         <span>حساب</span>
-    </a>
-    <a href="{% url 'orders:cart' %}" class="{% if request.resolver_match.namespace == 'orders' %}is-active{% endif %}" aria-label="سبد خرید">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l1.6 10.2a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg>
-        <span>سبد{% if cart_item_count %} ({{ cart_item_count }}){% endif %}</span>
     </a>
 </nav>
 
