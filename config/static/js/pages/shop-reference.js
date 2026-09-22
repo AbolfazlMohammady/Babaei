@@ -66,9 +66,9 @@
         trigger?.setAttribute("aria-expanded", "false");
     };
 
-    const fetchCatalog = async (targetUrl, {push = true} = {}) => {
+    const fetchCatalog = async (targetUrl, {push = true, preservePage = false} = {}) => {
         const url = new URL(targetUrl, window.location.href);
-        url.searchParams.delete("page");
+        if (!preservePage) url.searchParams.delete("page");
 
         if (root.classList.contains("is-filter-loading")) return;
 
@@ -195,7 +195,7 @@
             const url = new URL(paginationLink.href, window.location.href);
             if (url.pathname === window.location.pathname) {
                 event.preventDefault();
-                fetchCatalog(url);
+                fetchCatalog(url, {preservePage: true});
                 return;
             }
         }
@@ -233,7 +233,10 @@
     });
 
     window.addEventListener("popstate", () => {
-        fetchCatalog(window.location.href, {push: false});
+        fetchCatalog(window.location.href, {
+            push: false,
+            preservePage: new URL(window.location.href).searchParams.has("page")
+        });
     });
 
     const mobileMedia = window.matchMedia("(max-width: 820px)");
