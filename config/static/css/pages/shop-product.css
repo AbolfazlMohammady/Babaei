@@ -1,25 +1,37 @@
 /* ==========================================================================
    BABAEI — Shop product detail
    --------------------------------------------------------------------------
-   Single source of truth for the product page. Every token comes from
-   shop-shell.css (--sh-*), so the page reads as the same surface as the
-   catalogue card: 26px card radius, --sh-radius for the inner blocks,
-   --sh-line borders, --sh-fast/--sh-slow motion, forest + cream palette.
+   One stylesheet, one namespace, mobile first, and not a single override
+   flag anywhere in the file.
 
-   WHY THIS FILE EXISTS
-   The product page used to pull four page stylesheets (pages/shop.css,
-   pages/product-quantity.css, pages/shop-designer-cta.css,
-   pages/product-saved.css) plus a "Product detail" block inside
-   storefront.css. Those layers disagreed: storefront.css painted cream text
-   on what is a light page and used !important to win, product-quantity.css
-   carried a one-line minified single-line file, and shop.css still held a
-   whole retired card grid. All of it is gone; this file is the only place
-   that styles the product page, and it uses zero !important.
+   WHY THE NAMESPACE CHANGED
+   This file used to style the old `.product-*` layout, which storefront.css
+   still declares a retired "Product detail" block against (`.product-layout`,
+   `.product-gallery__thumb`, `.product-price-box`, `.color-option.is-selected`
+   …). Those selectors keep matching anything they can still name, and three of
+   the defects on this page came from exactly that collision:
 
-   CASCADE NOTE
-   Everything is scoped to body.product-detail-page so it always outranks the
-   shared `.shop-page …` / `.product-*` rules left in storefront.css without
-   ever needing !important.
+     1. `--sh-line-strong` / `--sh-radius-sm` are consumed by shop-shell.css but
+        never defined on the shop shell (only cart.css / address-picker.css
+        define them). Every `border: 1px solid var(--sh-line-strong)` and every
+        `border-radius: var(--sh-radius-sm)` on this page computed to *nothing*:
+        the save button rendered as a borderless, square 44x44 block (solid
+        green once the item was favourited) and the swatches / size buttons read
+        as raw slabs.
+     2. `.gallery-main__index` was pinned at `bottom` + `inset-inline-start`,
+        while the retired storefront.css rule pins the same element at
+        `right: 20px`. The element also declares `direction: ltr`, so Chrome
+        resolved `inset-inline-start` to the *left* edge — both horizontal insets
+        ended up set and the 24px counter stretched to 564px: the green bar
+        across the foot of the photo.
+     3. `.product-info` inherited `padding-top: 22px` from storefront.css, under
+        a card that was already taller than its content.
+
+   So the layout moved to `pd-*`. The scroll, thumb rail, option group and the
+   whole info column are new compositions rather than patches. The names that
+   JavaScript binds by class are kept verbatim: `.color-option`, `.size-option`,
+   the `is-selected` / `is-unavailable` / `is-hidden` / `is-active` / `is-in-cart`
+   / `is-loading` state classes, and the `[data-*]` / `#id` hooks listed below.
 
    JS CONTRACT (unchanged — js/pages/shop-product.js and js/storefront.js)
      [data-product-gallery]  #product-gallery-main  [data-gallery-index]
@@ -30,196 +42,233 @@
      #cart-quantity  [data-product-quantity-button]  [data-product-quantity-stock]
      #add-to-cart-button  #product-in-cart  [data-product-in-cart-quantity]
      .color-option  .size-option  .product-save-button
-     state classes: .is-selected .is-unavailable .is-in-cart .is-hidden
-                    .is-loading .is-active .product-toast .is-visible
+
+   TOKENS: everything comes from the shell (--sh-* on :root in fonts.css and on
+   body.shop-page in shop-shell.css). The two missing shell tokens are supplied
+   below so the nav, drawer and this page resolve the same geometry the rest of
+   the design system was written against — without touching another file and
+   without an override flag.
    ========================================================================== */
+
+body.product-detail-page {
+    /* Consumed by shop-shell.css (nav icons, drawer CTAs) but never defined on
+       the shop shell itself. Undefined, they silently cancel the whole
+       shorthand that uses them. */
+    --sh-radius-sm: 12px;
+    --sh-line-strong: rgba(20, 22, 26, .16);
+
+    /* Page-local geometry. */
+    --pd-radius: 20px;
+    --pd-radius-sm: 14px;
+    --pd-line: rgba(20, 22, 26, .10);
+    --pd-shadow: 0 1px 2px rgba(20, 22, 26, .03),
+                 0 22px 46px -36px rgba(9, 28, 20, .45);
+}
 
 /* ==========================================================================
    01 — SHELL AND BREADCRUMBS
    ========================================================================== */
 
-body.product-detail-page .product-shell {
+body.product-detail-page .pd {
     width: min(var(--sh-shell), 100% - (var(--sh-gutter) * 2));
-    margin: 0 auto;
-    /* The fixed dock sits at the bottom edge below 941px, so the page keeps
-       a wide bottom pad rather than ending under it. */
-    padding: clamp(14px, 2.4vw, 26px) 0 clamp(72px, 9vw, 110px);
+    margin-inline: auto;
+    padding-block: clamp(14px, 2.4vw, 30px) clamp(104px, 13vw, 132px);
 }
 
-body.product-detail-page .breadcrumbs {
+/* The fixed dock owns the bottom 76px below 941px, so the page keeps a deep
+   bottom pad rather than ending under it. */
+body.product-detail-page .pd-crumbs {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 7px;
-    margin: 0 2px 14px;
+    margin: 0 2px clamp(14px, 2vw, 22px);
     color: var(--sh-muted);
     font-size: 12px;
     line-height: 1.9;
 }
 
-body.product-detail-page .breadcrumbs a {
+body.product-detail-page .pd-crumbs a {
     color: var(--sh-muted);
     text-decoration: none;
     transition: color var(--sh-fast);
 }
 
-body.product-detail-page .breadcrumbs a:hover {
+body.product-detail-page .pd-crumbs a:hover {
     color: var(--sh-forest);
 }
 
-body.product-detail-page .breadcrumbs > span[aria-hidden] {
+body.product-detail-page .pd-crumbs > span[aria-hidden] {
     color: var(--sh-moss);
 }
 
-body.product-detail-page .breadcrumbs [aria-current="page"] {
+body.product-detail-page .pd-crumbs [aria-current="page"] {
     color: var(--sh-ink);
     font-weight: 700;
 }
 
 /* ==========================================================================
-   02 — LAYOUT
-   The card shell mirrors .shop-reference__catalog on the catalogue page, so
-   the two pages share one silhouette.
+   02 — COMPOSITION
+   One column on phones (gallery first, then the info card), two surfaces side
+   by side from 1081px. Both columns keep the same width share at 1440px, where
+   the shell caps at 1240px: the gallery column lands at 600px of content.
    ========================================================================== */
 
-body.product-detail-page .product-layout {
+body.product-detail-page .pd-stage {
     display: grid;
-    grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr);
-    gap: clamp(18px, 3vw, 44px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(18px, 2.6vw, 34px);
     align-items: start;
-    padding: clamp(14px, 2vw, 22px);
-    border: 1px solid var(--sh-line);
-    border-radius: 26px;
+}
+
+body.product-detail-page .pd-gallery,
+body.product-detail-page .pd-info {
+    min-width: 0;
+    border: 1px solid var(--pd-line);
+    border-radius: var(--pd-radius);
     background: var(--sh-cream-2);
-    box-shadow: var(--sh-shadow-2);
-}
-
-body.product-detail-page .product-gallery {
-    position: sticky;
-    top: calc(var(--sh-nav-h) + 18px);
-    min-width: 0;
-}
-
-body.product-detail-page .product-info {
-    position: sticky;
-    top: calc(var(--sh-nav-h) + 18px);
-    min-width: 0;
+    box-shadow: var(--pd-shadow);
 }
 
 /* ==========================================================================
    03 — GALLERY
-   The media box carries a definite aspect-ratio, so the page reserves its
-   height before a single byte of image arrives (CLS 0). The <picture> layers
-   AVIF → WebP → original; when the derivatives have not been generated the
-   tag returns empty strings and only the plain <img src> ships.
+   The rail lives *inside* the same card as the frame (it used to sit under the
+   image on the bare page surface, which is what made a thumbnail look stranded
+   outside the panel). The frame reserves its height with aspect-ratio before a
+   single byte arrives, and the main shot is never lazy and always high
+   priority, because it is the LCP element.
    ========================================================================== */
 
-body.product-detail-page .gallery-main {
+body.product-detail-page .pd-gallery {
+    padding: clamp(10px, 1.4vw, 16px);
+}
+
+body.product-detail-page .pd-gallery__frame {
     position: relative;
     aspect-ratio: 4 / 5;
     overflow: hidden;
-    border: 1px solid var(--sh-line);
-    border-radius: var(--sh-radius);
+    border-radius: var(--pd-radius-sm);
     background: var(--sh-paper);
 }
 
-body.product-detail-page .gallery-main picture {
+body.product-detail-page .pd-gallery__frame picture {
     display: contents;
 }
 
-/* object-fit: contain, never cover — the garment must not be cropped. inset:0
-   plus box-sizing keeps the padding inside the fixed box. The main shot is the
-   LCP candidate: it is never lazy and always drains at high priority. */
-body.product-detail-page .gallery-main img {
+body.product-detail-page .pd-gallery__frame img {
     position: absolute;
     inset: 0;
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
-    padding: clamp(8px, 2vw, 20px);
-    box-sizing: border-box;
+    padding: clamp(10px, 2.4vw, 22px);
+    /* contain, never cover: the garment is never cropped out of its frame. */
     object-fit: contain;
     transition: opacity var(--sh-fast);
 }
 
-body.product-detail-page .gallery-main__index {
-    position: absolute;
-    inset-block-end: 12px;
-    inset-inline-start: 12px;
-    display: inline-flex;
+body.product-detail-page .pd-gallery__bar {
+    display: flex;
     align-items: center;
-    min-height: 24px;
-    padding: 0 10px;
-    border-radius: 999px;
-    background: rgba(11, 48, 37, .8);
-    color: var(--sh-on-dark);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: .1em;
-    font-variant-numeric: tabular-nums;
-    direction: ltr;
-    unicode-bidi: isolate;
+    gap: 10px;
+    margin-top: clamp(8px, 1.2vw, 12px);
 }
 
-body.product-detail-page .product-gallery__thumbs {
+body.product-detail-page .pd-thumbs {
     display: flex;
+    flex: 1 1 auto;
     gap: 8px;
-    margin-top: 9px;
+    min-width: 0;
     padding: 2px;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
-    scrollbar-width: none;
     scroll-snap-type: x proximity;
+    scrollbar-width: none;
 }
 
-body.product-detail-page .product-gallery__thumbs::-webkit-scrollbar {
+body.product-detail-page .pd-thumbs::-webkit-scrollbar {
     display: none;
 }
 
-body.product-detail-page .product-gallery__thumb {
-    flex: 0 0 68px;
-    width: 68px;
-    height: 84px;
+body.product-detail-page .pd-thumb {
+    flex: 0 0 56px;
+    width: 56px;
+    aspect-ratio: 4 / 5;
     padding: 0;
     overflow: hidden;
     scroll-snap-align: start;
-    border: 1px solid var(--sh-line);
-    border-radius: var(--sh-radius-sm);
+    border: 1px solid var(--pd-line);
+    border-radius: 10px;
     background: var(--sh-paper);
-    opacity: .6;
+    opacity: .62;
     cursor: pointer;
     transition: opacity var(--sh-fast), border-color var(--sh-fast),
                 box-shadow var(--sh-fast);
 }
 
-body.product-detail-page .product-gallery__thumb picture {
+body.product-detail-page .pd-thumb picture {
     display: block;
     width: 100%;
     height: 100%;
 }
 
-body.product-detail-page .product-gallery__thumb img {
+body.product-detail-page .pd-thumb img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-body.product-detail-page .product-gallery__thumb:hover,
-body.product-detail-page .product-gallery__thumb.is-active {
+body.product-detail-page .pd-thumb:hover,
+body.product-detail-page .pd-thumb.is-active {
     opacity: 1;
 }
 
-body.product-detail-page .product-gallery__thumb.is-active {
+body.product-detail-page .pd-thumb.is-active {
     border-color: var(--sh-forest);
-    box-shadow: 0 0 0 2px rgba(20, 82, 60, .2);
+    box-shadow: 0 0 0 2px rgba(20, 82, 60, .18);
+}
+
+/* The position counter, as type in the card's own bar. It is a normal flow
+   item now: no absolute insets to contradict, so it cannot stretch. */
+body.product-detail-page .pd-gallery__count {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: baseline;
+    gap: 3px;
+    color: var(--sh-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+body.product-detail-page .pd-gallery__count b {
+    color: var(--sh-ink);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+body.product-detail-page .pd-gallery__count-sep {
+    color: var(--sh-moss);
 }
 
 /* ==========================================================================
-   04 — HEADING, FAVOURITE / SAVE CONTROLS
+   04 — INFO COLUMN
+   Identity, price, availability, one option group, buy row. No padding-top
+   carry-over, no equal-weight boxes: rhythm comes from scale and two hairlines.
    ========================================================================== */
 
-body.product-detail-page .product-eyebrow {
-    display: inline-flex;
+body.product-detail-page .pd-info {
+    padding: clamp(16px, 2.2vw, 28px);
+}
+
+/* Block-level, not inline-flex: as an inline-level box it sits on the text
+   baseline and drags the parent's line-height in as leading above the h1. */
+body.product-detail-page .pd-eyebrow {
+    display: flex;
     align-items: center;
     gap: 8px;
     color: var(--sh-muted);
@@ -231,295 +280,300 @@ body.product-detail-page .product-eyebrow {
     unicode-bidi: isolate;
 }
 
-body.product-detail-page .product-eyebrow::before {
+body.product-detail-page .pd-eyebrow::before {
     content: "";
-    width: 20px;
+    width: 18px;
     height: 1px;
     background: var(--sh-moss);
 }
 
-body.product-detail-page .product-title-row {
+body.product-detail-page .pd-head {
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
     gap: 12px;
-    margin: 12px 0 10px;
+    margin-top: 10px;
 }
 
-body.product-detail-page .product-title-row h1 {
+body.product-detail-page .pd-head h1 {
     flex: 1 1 auto;
     min-width: 0;
     margin: 0;
     color: var(--sh-ink);
-    font-size: clamp(25px, 3.2vw, 40px);
+    font-size: clamp(23px, 4.6vw, 34px);
     font-weight: 800;
     line-height: 1.3;
+    letter-spacing: -.01em;
     overflow-wrap: anywhere;
 }
 
-body.product-detail-page .product-save-actions {
+body.product-detail-page .pd-save {
     display: flex;
     flex: 0 0 auto;
-    gap: 6px;
+    gap: 8px;
     padding-top: 2px;
 }
 
-body.product-detail-page .product-save-actions form {
+body.product-detail-page .pd-save form {
     margin: 0;
 }
 
-body.product-detail-page .product-save-button {
-    display: grid;
-    place-items: center;
-    width: var(--sh-tap);
-    height: var(--sh-tap);
+body.product-detail-page .pd-save .product-save-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border: 1px solid var(--sh-line-strong);
-    border-radius: var(--sh-radius-sm);
-    background: var(--sh-cream-2);
+    border-radius: var(--pd-radius-sm);
+    background: transparent;
     color: var(--sh-ink-2);
-    font-size: 19px;
-    line-height: 1;
     cursor: pointer;
     transition: background var(--sh-fast), color var(--sh-fast),
                 border-color var(--sh-fast), transform var(--sh-fast);
 }
 
-body.product-detail-page .product-save-button:hover {
+body.product-detail-page .pd-save .product-save-button svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+body.product-detail-page .pd-save .product-save-button:hover {
     border-color: var(--sh-forest);
     color: var(--sh-forest);
     transform: translateY(-2px);
 }
 
-body.product-detail-page .product-save-button.is-active {
+body.product-detail-page .pd-save .product-save-button.is-active {
     border-color: var(--sh-forest);
     background: var(--sh-forest);
     color: var(--sh-cream-2);
 }
 
-body.product-detail-page .product-save-button span {
-    display: block;
-    transform: translateY(-1px);
+body.product-detail-page .pd-save .product-save-button.is-active svg {
+    fill: currentColor;
 }
 
-body.product-detail-page .product-short {
+body.product-detail-page .pd-lede {
     max-width: 52ch;
-    margin: 0;
+    margin: 12px 0 0;
     color: var(--sh-muted);
-    font-size: 14px;
+    font-size: 13.5px;
     line-height: 2;
     overflow-wrap: anywhere;
 }
 
 /* ==========================================================================
-   05 — PRICE
+   05 — PRICE AND AVAILABILITY
+   Loudest thing on the page, then a quiet line under a hairline.
    ========================================================================== */
 
-body.product-detail-page .product-price-box {
-    margin: 16px 0 0;
-    padding: 14px 16px;
-    border: 1px solid var(--sh-line);
-    border-radius: var(--sh-radius);
-    background: var(--sh-paper);
+body.product-detail-page .pd-price {
+    margin-top: clamp(18px, 2.6vw, 26px);
+    padding-top: clamp(16px, 2.2vw, 20px);
+    border-top: 1px solid var(--pd-line);
 }
 
-body.product-detail-page .price-row {
+body.product-detail-page .pd-price__row {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 7px;
+    gap: 8px;
 }
 
-body.product-detail-page .price {
+body.product-detail-page .pd-price__value {
     color: var(--sh-ink);
-    font-size: clamp(22px, 2.5vw, 29px);
+    font-size: clamp(28px, 6vw, 40px);
     font-weight: 900;
-    line-height: 1.2;
+    line-height: 1.15;
+    letter-spacing: -.02em;
     font-variant-numeric: tabular-nums;
 }
 
-body.product-detail-page .price-unit {
+body.product-detail-page .pd-price__unit {
     color: var(--sh-muted);
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 600;
 }
 
-body.product-detail-page .old-price-row {
+body.product-detail-page .pd-price__meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
-    margin-top: 6px;
+    gap: 9px;
+    margin-top: 8px;
 }
 
-body.product-detail-page .old-price-row del {
+body.product-detail-page .pd-price__meta del {
     color: var(--sh-muted);
     font-size: 12.5px;
     font-variant-numeric: tabular-nums;
 }
 
-body.product-detail-page .discount-badge {
+/* The variant script toggles this class on #product-old-price-row. */
+body.product-detail-page .pd-price__meta.is-hidden {
+    display: none;
+}
+
+body.product-detail-page .pd-discount {
     display: inline-flex;
     align-items: center;
     min-height: 24px;
-    padding: 0 9px;
+    padding-inline: 10px;
     border-radius: 999px;
     background: var(--sh-forest);
     color: var(--sh-cream-2);
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
 }
 
-body.product-detail-page .price-note {
+body.product-detail-page .pd-price__note {
     display: block;
     margin-top: 8px;
     color: var(--sh-muted);
     font-size: 10.5px;
 }
 
-/* The view toggles this on #product-old-price-row. A dedicated
-   .old-price-row.is-hidden rule outranks the display:flex above without
-   reaching for !important. */
-body.product-detail-page .old-price-row.is-hidden {
-    display: none;
-}
-
-/* ==========================================================================
-   06 — OPTIONS (COLOUR, SIZE, STOCK)
-   ========================================================================== */
-
-body.product-detail-page .product-options {
-    margin-top: 18px;
-}
-
-body.product-detail-page .stock-summary {
+body.product-detail-page .pd-stock {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 0 0 16px;
-    padding: 10px 14px;
-    border: 1px solid var(--sh-line);
-    border-radius: var(--sh-radius-sm);
-    background: var(--sh-cream);
+    gap: 8px;
+    margin-top: 14px;
     color: var(--sh-muted);
     font-size: 12px;
     font-weight: 600;
 }
 
-body.product-detail-page .stock-summary strong {
+body.product-detail-page .pd-stock strong {
+    margin-inline-start: 2px;
     color: var(--sh-ink);
+    font-size: 13px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
 }
 
-body.product-detail-page .option-group + .option-group {
-    margin-top: 16px;
+body.product-detail-page .pd-dot {
+    flex: 0 0 7px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--sh-forest);
+    box-shadow: 0 0 0 3px rgba(20, 82, 60, .12);
 }
 
-body.product-detail-page .option-heading {
+/* ==========================================================================
+   06 — OPTION CONTROL GROUP
+   Colour and size share one panel, one pill geometry, one hairline between the
+   rows and one forest fill for the selected state, so the two rows read as one
+   control instead of four unrelated boxes.
+   ========================================================================== */
+
+body.product-detail-page .pd-options {
+    margin-top: clamp(18px, 2.6vw, 24px);
+    padding-inline: clamp(12px, 1.6vw, 16px);
+    border: 1px solid var(--pd-line);
+    border-radius: 16px;
+    background: var(--sh-paper);
+}
+
+body.product-detail-page .pd-option {
+    padding-block: clamp(12px, 1.8vw, 16px);
+}
+
+body.product-detail-page .pd-option + .pd-option {
+    border-top: 1px solid var(--pd-line);
+}
+
+body.product-detail-page .pd-option__head {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
+    justify-content: space-between;
     gap: 8px;
-    margin-bottom: 9px;
+    margin-bottom: 10px;
 }
 
-body.product-detail-page .option-heading h2 {
+body.product-detail-page .pd-option__head h2 {
     margin: 0;
     color: var(--sh-ink);
-    font-size: 14px;
+    font-size: 12.5px;
     font-weight: 800;
 }
 
 /* Filled in by the variant script with the chosen colour / size name. */
-body.product-detail-page .option-heading span {
+body.product-detail-page .pd-option__head span {
     color: var(--sh-forest);
     font-size: 12px;
     font-weight: 700;
 }
 
-body.product-detail-page .color-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-body.product-detail-page .color-option {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: var(--sh-tap);
-    padding: 4px 13px;
-    border: 1px solid var(--sh-line-strong);
-    border-radius: 999px;
-    background: var(--sh-cream-2);
-    color: var(--sh-ink-2);
-    font: inherit;
-    font-size: 12.5px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: border-color var(--sh-fast), background var(--sh-fast),
-                color var(--sh-fast);
-}
-
-body.product-detail-page .color-swatch {
-    flex: 0 0 22px;
-    width: 22px;
-    height: 22px;
-    border: 1px solid var(--sh-line-strong);
-    border-radius: 50%;
-    background: var(--swatch);
-}
-
-body.product-detail-page .color-option:hover:not(:disabled) {
-    border-color: var(--sh-forest);
-}
-
-body.product-detail-page .color-option.is-selected {
-    border-color: var(--sh-forest);
-    background: var(--sh-forest);
-    color: var(--sh-cream-2);
-}
-
-body.product-detail-page .color-option.is-selected .color-swatch {
-    border-color: rgba(251, 250, 247, .55);
-}
-
+body.product-detail-page .color-options,
 body.product-detail-page .size-options {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
 }
 
+body.product-detail-page .color-option,
 body.product-detail-page .size-option {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 54px;
-    min-height: var(--sh-tap);
-    padding: 6px 13px;
+    min-height: 42px;
+    padding-block: 4px;
+    padding-inline: 14px;
     border: 1px solid var(--sh-line-strong);
-    border-radius: var(--sh-radius-sm);
+    border-radius: 999px;
     background: var(--sh-cream-2);
     color: var(--sh-ink-2);
     font: inherit;
     font-size: 12.5px;
-    font-weight: 700;
     cursor: pointer;
-    transition: border-color var(--sh-fast), background var(--sh-fast),
-                color var(--sh-fast);
+    transition: background var(--sh-fast), color var(--sh-fast),
+                border-color var(--sh-fast);
 }
 
+body.product-detail-page .color-option {
+    gap: 8px;
+    padding-inline: 8px 14px;
+    font-weight: 600;
+}
+
+body.product-detail-page .size-option {
+    min-width: 56px;
+    font-weight: 700;
+}
+
+body.product-detail-page .color-swatch {
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--sh-line-strong);
+    border-radius: 50%;
+    background: var(--swatch, var(--sh-sand));
+}
+
+body.product-detail-page .color-option:hover:not(:disabled),
 body.product-detail-page .size-option:hover:not(:disabled) {
     border-color: var(--sh-forest);
 }
 
+body.product-detail-page .color-option.is-selected,
 body.product-detail-page .size-option.is-selected {
     border-color: var(--sh-forest);
     background: var(--sh-forest);
     color: var(--sh-cream-2);
+}
+
+body.product-detail-page .color-option.is-selected .color-swatch {
+    border-color: rgba(251, 250, 247, .6);
 }
 
 body.product-detail-page .color-option:disabled,
@@ -530,107 +584,114 @@ body.product-detail-page .size-option.is-unavailable {
     cursor: not-allowed;
 }
 
-body.product-detail-page .variant-status {
-    min-height: 20px;
-    margin-top: 10px;
+/* The live region is only in the DOM when there is something to say, so the
+   panel never ships an empty row. */
+body.product-detail-page .pd-status {
+    padding-block: 2px 14px;
+    border-top: 1px solid var(--pd-line);
     color: var(--sh-muted);
     font-size: 11.5px;
-    line-height: 1.8;
+    line-height: 1.9;
 }
 
-body.product-detail-page .variant-status strong {
+body.product-detail-page .pd-status:empty {
+    display: none;
+}
+
+body.product-detail-page .pd-status strong {
     color: var(--sh-forest);
     font-weight: 800;
     font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================================================
-   07 — QUANTITY AND ADD TO CART
+   07 — BUY ROW
+   Phones: one column, and the whole row sticks above the dock once the info
+   card is in view. From 560px the stepper and the button share one row.
    ========================================================================== */
 
-body.product-detail-page .add-to-cart-form {
-    margin: 0;
-}
-
-body.product-detail-page .add-to-cart-row {
+body.product-detail-page .pd-buy {
     display: grid;
-    grid-template-columns: 150px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 10px;
-    align-items: stretch;
-    margin-top: 18px;
+    margin: 0;
+    margin-top: clamp(18px, 2.6vw, 24px);
 }
 
-body.product-detail-page .product-quantity {
-    min-width: 0;
-    padding: 9px 11px;
+body.product-detail-page .pd-qty {
+    display: grid;
+    grid-row: 1;
+    grid-column: 1;
+    gap: 6px;
+    padding: 8px 10px;
     border: 1px solid var(--sh-line-strong);
-    border-radius: var(--sh-radius-sm);
-    background: var(--sh-cream);
+    border-radius: var(--pd-radius-sm);
+    background: var(--sh-paper);
     transition: background var(--sh-fast), border-color var(--sh-fast);
 }
 
-body.product-detail-page .product-quantity.is-in-cart {
+body.product-detail-page .pd-qty.is-in-cart {
     border-color: var(--sh-sand);
     background: var(--sh-sand);
 }
 
-body.product-detail-page .product-quantity__heading {
+body.product-detail-page .pd-qty__head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
-    margin: 0 2px 7px;
+    gap: 8px;
+    margin-inline: 2px;
 }
 
-body.product-detail-page .product-quantity__heading label {
+body.product-detail-page .pd-qty__head label {
     color: var(--sh-ink-2);
     font-size: 10.5px;
     font-weight: 800;
 }
 
-body.product-detail-page .product-quantity__heading span {
+body.product-detail-page .pd-qty__head span {
     color: var(--sh-muted);
     font-size: 9.5px;
     font-weight: 600;
     white-space: nowrap;
 }
 
-body.product-detail-page .product-quantity__control {
+body.product-detail-page .pd-qty__control {
     display: grid;
-    grid-template-columns: 34px minmax(0, 1fr) 34px;
+    grid-template-columns: 36px minmax(0, 1fr) 36px;
     align-items: center;
     height: 38px;
     overflow: hidden;
-    border: 1px solid var(--sh-line);
-    border-radius: 9px;
+    border: 1px solid var(--pd-line);
+    border-radius: 10px;
     background: var(--sh-cream-2);
 }
 
-body.product-detail-page .product-quantity__control button {
-    width: 34px;
+body.product-detail-page .pd-qty__control button {
+    width: 36px;
     height: 100%;
     padding: 0;
     border: 0;
     background: transparent;
     color: var(--sh-ink);
     font: inherit;
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1;
     cursor: pointer;
     transition: background var(--sh-fast), color var(--sh-fast);
 }
 
-body.product-detail-page .product-quantity__control button:hover:not(:disabled) {
+body.product-detail-page .pd-qty__control button:hover:not(:disabled) {
     background: var(--sh-sand);
     color: var(--sh-forest);
 }
 
-body.product-detail-page .product-quantity__control button:disabled {
+body.product-detail-page .pd-qty__control button:disabled {
     opacity: .3;
     cursor: not-allowed;
 }
 
-body.product-detail-page .product-quantity__control input {
+body.product-detail-page .pd-qty__control input {
     width: 100%;
     height: 100%;
     padding: 0;
@@ -646,33 +707,33 @@ body.product-detail-page .product-quantity__control input {
     -moz-appearance: textfield;
 }
 
-body.product-detail-page .product-quantity__control input::-webkit-outer-spin-button,
-body.product-detail-page .product-quantity__control input::-webkit-inner-spin-button {
+body.product-detail-page .pd-qty__control input::-webkit-outer-spin-button,
+body.product-detail-page .pd-qty__control input::-webkit-inner-spin-button {
     margin: 0;
     -webkit-appearance: none;
 }
 
-body.product-detail-page .product-quantity.is-in-cart .product-quantity__control button,
-body.product-detail-page .product-quantity.is-in-cart .product-quantity__control input {
+body.product-detail-page .pd-qty.is-in-cart .pd-qty__control button,
+body.product-detail-page .pd-qty.is-in-cart .pd-qty__control input {
     opacity: .45;
 }
 
-/* The button and the "already in the cart" link share one cell: the script
-   swaps them with the hidden attribute, so the row never reflows. */
-body.product-detail-page .add-to-cart-button,
-body.product-detail-page .product-in-cart {
-    grid-row: 1;
-    grid-column: 2;
+/* The submit button and the "already in the cart" link trade places inside one
+   grid cell, so the row never reflows. */
+body.product-detail-page .pd-buy__button,
+body.product-detail-page .pd-incart {
     display: flex;
+    grid-row: 2;
+    grid-column: 1;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 2px;
-    min-height: 62px;
+    min-height: 58px;
     margin: 0;
     padding: 9px 16px;
     border: 0;
-    border-radius: var(--sh-radius-sm);
+    border-radius: var(--pd-radius-sm);
     font: inherit;
     font-size: 14px;
     font-weight: 800;
@@ -683,87 +744,84 @@ body.product-detail-page .product-in-cart {
                 border-color var(--sh-fast), transform var(--sh-fast);
 }
 
-body.product-detail-page .add-to-cart-button {
+body.product-detail-page .pd-buy__button {
     background: var(--sh-forest);
     color: var(--sh-cream-2);
 }
 
-body.product-detail-page .add-to-cart-button:hover:not(:disabled) {
+body.product-detail-page .pd-buy__button:hover:not(:disabled) {
     background: var(--sh-forest-soft);
     transform: translateY(-2px);
 }
 
-body.product-detail-page .add-to-cart-button:disabled {
+body.product-detail-page .pd-buy__button:disabled {
     opacity: .5;
     cursor: not-allowed;
 }
 
-body.product-detail-page .add-to-cart-button.is-loading {
+body.product-detail-page .pd-buy__button.is-loading {
     cursor: progress;
 }
 
-body.product-detail-page .product-in-cart {
+body.product-detail-page .pd-incart {
     border: 1px solid var(--sh-line-strong);
-    background: var(--sh-cream);
+    background: var(--sh-cream-2);
     color: var(--sh-ink);
 }
 
-body.product-detail-page .product-in-cart:hover {
+body.product-detail-page .pd-incart:hover {
     border-color: var(--sh-forest);
 }
 
-body.product-detail-page .product-in-cart span {
+body.product-detail-page .pd-incart span {
     font-size: 12px;
     font-weight: 800;
 }
 
-body.product-detail-page .product-in-cart strong {
+body.product-detail-page .pd-incart strong {
     color: var(--sh-forest);
     font-size: 11px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
 }
 
-body.product-detail-page .product-in-cart small {
+body.product-detail-page .pd-incart small {
     margin-top: 2px;
     color: var(--sh-muted);
     font-size: 10px;
     font-weight: 600;
 }
 
-/* .is-hidden covers the script's own toggles; the attribute selectors cover
-   the two elements the script hides with `hidden`. Both are listed so the
-   flex display above can never resurrect a hidden element. */
-body.product-detail-page .add-to-cart-button[hidden],
-body.product-detail-page .product-in-cart[hidden] {
+/* The script hides one of the two with the `hidden` attribute, and an author
+   `display: flex` outranks the UA's `[hidden]` rule — so it is stated here. */
+body.product-detail-page .pd-buy__button[hidden],
+body.product-detail-page .pd-incart[hidden] {
     display: none;
 }
 
 /* ==========================================================================
-   08 — BENEFITS, DESCRIPTION, DESIGNER CTA
-   Both big text blocks stay below the fold, so they opt into
-   content-visibility with a reserved size instead of painting eagerly.
+   08 — BELOW THE FOLD: NOTES, DESCRIPTION, DESIGN STUDIO
    ========================================================================== */
 
-body.product-detail-page .product-benefits {
+body.product-detail-page .pd-notes {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: clamp(32px, 4.6vw, 54px);
-    content-visibility: auto;
-    contain-intrinsic-size: 300px;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: clamp(30px, 4.6vw, 52px);
+    padding-top: clamp(20px, 2.8vw, 30px);
+    border-top: 1px solid var(--pd-line);
 }
 
-body.product-detail-page .product-benefits > div {
-    padding: 18px 16px;
-    border: 1px solid var(--sh-line);
-    border-radius: var(--sh-radius);
-    background: var(--sh-cream-2);
+body.product-detail-page .pd-note {
+    padding-block: 16px;
 }
 
-body.product-detail-page .product-benefits__number {
+body.product-detail-page .pd-note + .pd-note {
+    border-top: 1px solid var(--pd-line);
+}
+
+body.product-detail-page .pd-note__num {
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     color: var(--sh-moss);
     font-size: 11px;
     font-weight: 800;
@@ -773,50 +831,48 @@ body.product-detail-page .product-benefits__number {
     unicode-bidi: isolate;
 }
 
-body.product-detail-page .product-benefits strong {
+body.product-detail-page .pd-note strong {
     display: block;
     color: var(--sh-ink);
     font-size: 14px;
     font-weight: 800;
 }
 
-body.product-detail-page .product-benefits small {
+body.product-detail-page .pd-note small {
     display: block;
     margin-top: 6px;
     color: var(--sh-muted);
     font-size: 11.5px;
-    line-height: 1.85;
+    line-height: 1.9;
 }
 
-body.product-detail-page .product-description {
-    max-width: 78ch;
+body.product-detail-page .pd-story {
+    max-width: 74ch;
     margin-top: clamp(30px, 4.4vw, 52px);
     padding-top: 22px;
-    border-top: 1px solid var(--sh-line);
-    content-visibility: auto;
-    contain-intrinsic-size: 340px;
+    border-top: 1px solid var(--pd-line);
 }
 
-body.product-detail-page .product-description h2 {
+body.product-detail-page .pd-story h2 {
     margin: 0 0 12px;
     color: var(--sh-ink);
-    font-size: clamp(19px, 2.1vw, 24px);
+    font-size: clamp(18px, 2.1vw, 23px);
     font-weight: 800;
 }
 
-body.product-detail-page .product-description p {
+body.product-detail-page .pd-story__body p {
     margin: 0 0 12px;
     color: var(--sh-ink-2);
     font-size: 14px;
-    line-height: 2.1;
+    line-height: 2.15;
     overflow-wrap: anywhere;
 }
 
-body.product-detail-page .product-description p:last-child {
+body.product-detail-page .pd-story__body p:last-child {
     margin-bottom: 0;
 }
 
-body.product-detail-page .next-step-card {
+body.product-detail-page .pd-studio {
     position: relative;
     display: flex;
     flex-wrap: wrap;
@@ -824,62 +880,61 @@ body.product-detail-page .next-step-card {
     justify-content: space-between;
     gap: 18px;
     margin-top: clamp(30px, 4.4vw, 52px);
-    padding: clamp(20px, 3vw, 32px);
+    padding: clamp(20px, 3vw, 34px);
     overflow: hidden;
-    border-radius: 26px;
+    border-radius: var(--pd-radius);
     background: var(--sh-forest);
     color: var(--sh-on-dark);
 }
 
-body.product-detail-page .next-step-card::after {
+body.product-detail-page .pd-studio::after {
     content: "";
     position: absolute;
     inset-block-start: -110px;
     inset-inline-start: -80px;
-    width: 260px;
-    height: 260px;
+    width: 240px;
+    height: 240px;
     border: 1px solid rgba(143, 174, 156, .3);
     border-radius: 50%;
     pointer-events: none;
 }
 
-body.product-detail-page .next-step-card > div {
+body.product-detail-page .pd-studio__copy {
     position: relative;
     z-index: 1;
     flex: 1 1 22ch;
     min-width: 0;
 }
 
-body.product-detail-page .next-step-card .product-eyebrow {
+body.product-detail-page .pd-studio .pd-eyebrow {
     color: var(--sh-on-dark-soft);
 }
 
-body.product-detail-page .next-step-card h2 {
-    margin: 8px 0 8px;
+body.product-detail-page .pd-studio h2 {
+    margin: 8px 0;
     color: var(--sh-on-dark);
-    font-size: clamp(20px, 2.6vw, 32px);
+    font-size: clamp(19px, 2.5vw, 30px);
     font-weight: 800;
     line-height: 1.35;
 }
 
-body.product-detail-page .next-step-card p {
+body.product-detail-page .pd-studio p {
     max-width: 62ch;
     margin: 0;
     color: var(--sh-on-dark-soft);
-    font-size: 13px;
+    font-size: 13.5px;
     line-height: 2;
 }
 
-body.product-detail-page .next-step-card__cta {
+body.product-detail-page .pd-studio__cta {
     position: relative;
     z-index: 1;
     display: inline-flex;
+    flex: 0 0 auto;
     align-items: center;
     justify-content: center;
-    flex: 0 0 auto;
     min-height: 48px;
     padding-inline: 24px;
-    border: 1px solid transparent;
     border-radius: var(--sh-radius-sm);
     background: var(--sh-cream);
     color: var(--sh-forest-deep);
@@ -889,202 +944,144 @@ body.product-detail-page .next-step-card__cta {
     transition: background var(--sh-fast), transform var(--sh-fast);
 }
 
-body.product-detail-page .next-step-card__cta:hover {
+body.product-detail-page .pd-studio__cta:hover {
     background: #fff;
     transform: translateY(-2px);
 }
 
 /* ==========================================================================
-   09 — TOAST
-   Built by js/pages/shop-product.js and appended to <body>, so it is scoped
-   to the page rather than to .product-shell.
+   09 — FOCUS
+   One visible ring for every control on the page.
    ========================================================================== */
 
-body.product-detail-page .product-toast {
-    position: fixed;
-    inset-block-start: calc(var(--sh-nav-h) + 16px);
-    inset-inline-start: 24px;
-    inset-inline-end: 24px;
-    z-index: 300;
-    max-width: min(330px, calc(100vw - 32px));
-    margin-inline: auto;
-    padding: 13px 18px;
-    border: 1px solid rgba(246, 243, 236, .16);
-    border-radius: var(--sh-radius-sm);
-    background: var(--sh-forest-deep);
-    color: var(--sh-on-dark);
-    box-shadow: var(--sh-shadow-2);
-    font-size: 12px;
-    font-weight: 600;
-    text-align: center;
-    opacity: 0;
-    transform: translateY(-8px);
-    transition: opacity var(--sh-fast), transform var(--sh-fast);
-}
-
-body.product-detail-page .product-toast.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-body.product-detail-page .product-toast--error {
-    border-color: rgba(246, 243, 236, .2);
-    background: #7d342d;
-}
-
-/* ==========================================================================
-   10 — FOCUS
-   One visible focus ring for every interactive control on the page.
-   ========================================================================== */
-
-body.product-detail-page .breadcrumbs a:focus-visible,
-body.product-detail-page .product-gallery__thumb:focus-visible,
+body.product-detail-page .pd-crumbs a:focus-visible,
+body.product-detail-page .pd-thumb:focus-visible,
 body.product-detail-page .product-save-button:focus-visible,
 body.product-detail-page .color-option:focus-visible,
 body.product-detail-page .size-option:focus-visible,
-body.product-detail-page .product-quantity__control button:focus-visible,
-body.product-detail-page .product-quantity__control input:focus-visible,
-body.product-detail-page .add-to-cart-button:focus-visible,
-body.product-detail-page .product-in-cart:focus-visible,
-body.product-detail-page .next-step-card__cta:focus-visible {
+body.product-detail-page .pd-qty__control button:focus-visible,
+body.product-detail-page .pd-qty__control input:focus-visible,
+body.product-detail-page .pd-buy__button:focus-visible,
+body.product-detail-page .pd-incart:focus-visible {
     outline: 3px solid var(--sh-forest);
     outline-offset: 2px;
 }
 
-body.product-detail-page .next-step-card__cta:focus-visible,
-body.product-detail-page .next-step-card .product-eyebrow:focus-visible {
-    outline-color: var(--sh-moss);
+body.product-detail-page .pd-studio__cta:focus-visible {
+    outline: 3px solid var(--sh-moss);
     outline-offset: 3px;
 }
 
 /* ==========================================================================
-   11 — RESPONSIVE
-   Two steps: the two-column card collapses below 1081px, and the tight phone
-   layout starts at 561px. Nothing is allowed to overflow at 360px.
+   10 — RESPONSIVE
+   Widening only, so a 360px phone gets the same rules as a 500px one.
    ========================================================================== */
 
-@media (max-width: 1080px) {
-    body.product-detail-page .product-layout {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 20px;
-        padding: 14px;
-        border-radius: 20px;
+@media (min-width: 560px) {
+    body.product-detail-page .pd-buy {
+        grid-template-columns: minmax(0, 168px) minmax(0, 1fr);
+        align-items: stretch;
     }
 
-    /* One column: the gallery stops following the scroll and caps its width,
-       so a 4/5 frame never grows taller than the viewport. */
-    body.product-detail-page .product-gallery {
-        position: static;
-        max-width: 560px;
-        width: 100%;
-        margin-inline: auto;
+    body.product-detail-page .pd-buy__button,
+    body.product-detail-page .pd-incart {
+        grid-row: 1;
+        grid-column: 2;
+    }
+}
+
+@media (min-width: 720px) {
+    body.product-detail-page .pd-thumb {
+        flex-basis: 62px;
+        width: 62px;
     }
 
-    body.product-detail-page .product-info {
-        position: static;
+    body.product-detail-page .pd-notes {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    body.product-detail-page .pd-note {
+        padding-block: 0;
+    }
+
+    body.product-detail-page .pd-note + .pd-note {
+        border-top: 0;
+        border-inline-start: 1px solid var(--pd-line);
+        padding-inline-start: 20px;
     }
 }
 
 @media (max-width: 700px) {
-    body.product-detail-page .product-layout {
-        padding: 12px;
+    /* The buy row sticks above the dock (64px + its 12px offset) while the info
+       card is on screen. */
+    body.product-detail-page .pd-buy {
+        position: sticky;
+        bottom: 88px;
+        z-index: 40;
+        padding: 10px;
+        border: 1px solid var(--pd-line);
         border-radius: 18px;
+        background: rgba(251, 250, 247, .96);
+        box-shadow: 0 16px 34px -24px rgba(9, 28, 20, .6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
     }
 
-    body.product-detail-page .product-gallery__thumb {
-        flex-basis: 60px;
-        width: 60px;
-        height: 74px;
-    }
-
-    body.product-detail-page .product-benefits {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    body.product-detail-page .product-title-row h1 {
-        font-size: clamp(22px, 6.4vw, 30px);
-    }
-
-    body.product-detail-page .next-step-card {
-        border-radius: 20px;
-    }
-}
-
-@media (max-width: 560px) {
-    body.product-detail-page .add-to-cart-row {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 8px;
-    }
-
-    body.product-detail-page .product-quantity {
+    body.product-detail-page .pd-qty {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 10px;
     }
 
-    body.product-detail-page .product-quantity__heading {
+    body.product-detail-page .pd-qty__head {
         margin: 0;
     }
 
-    body.product-detail-page .product-quantity__control {
-        flex: 0 0 150px;
-        width: 150px;
+    body.product-detail-page .pd-qty__control {
+        flex: 0 0 152px;
     }
 
-    body.product-detail-page .add-to-cart-button,
-    body.product-detail-page .product-in-cart {
-        grid-row: 2;
-        grid-column: 1;
-        min-height: 56px;
-    }
-
-    body.product-detail-page .next-step-card__cta {
+    body.product-detail-page .pd-studio__cta {
         width: 100%;
-    }
-
-    body.product-detail-page .product-toast {
-        inset-inline: 14px;
-        inset-block-start: calc(var(--sh-nav-h) + 10px);
-        max-width: none;
     }
 }
 
-@media (max-width: 380px) {
-    body.product-detail-page .product-gallery__thumb {
-        flex-basis: 54px;
-        width: 54px;
-        height: 68px;
+@media (min-width: 1081px) {
+    body.product-detail-page .pd-stage {
+        grid-template-columns: minmax(0, 1.06fr) minmax(0, .94fr);
+        gap: clamp(22px, 3.2vw, 52px);
     }
 
-    body.product-detail-page .color-option,
-    body.product-detail-page .size-option {
-        font-size: 12px;
+    /* Both columns hold station while the other one scrolls. */
+    body.product-detail-page .pd-gallery,
+    body.product-detail-page .pd-info {
+        position: sticky;
+        top: calc(var(--sh-nav-h) + 20px);
     }
 }
 
 /* ==========================================================================
-   12 — MOTION PREFERENCE
+   11 — MOTION PREFERENCE
    ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
-    body.product-detail-page .product-gallery__thumb,
+    body.product-detail-page .pd-thumb,
     body.product-detail-page .product-save-button,
     body.product-detail-page .color-option,
     body.product-detail-page .size-option,
-    body.product-detail-page .product-quantity,
-    body.product-detail-page .product-quantity__control button,
-    body.product-detail-page .add-to-cart-button,
-    body.product-detail-page .product-in-cart,
-    body.product-detail-page .next-step-card__cta,
-    body.product-detail-page .product-toast,
-    body.product-detail-page .gallery-main img {
+    body.product-detail-page .pd-qty,
+    body.product-detail-page .pd-qty__control button,
+    body.product-detail-page .pd-buy__button,
+    body.product-detail-page .pd-incart,
+    body.product-detail-page .pd-studio__cta,
+    body.product-detail-page .pd-gallery__frame img {
         transition-duration: 1ms;
     }
 
     body.product-detail-page .product-save-button:hover,
-    body.product-detail-page .add-to-cart-button:hover:not(:disabled),
-    body.product-detail-page .next-step-card__cta:hover {
+    body.product-detail-page .pd-buy__button:hover:not(:disabled),
+    body.product-detail-page .pd-studio__cta:hover {
         transform: none;
     }
 }

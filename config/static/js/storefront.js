@@ -111,10 +111,51 @@
                 : null;
             const sources = picture ? [...picture.querySelectorAll("source[data-format]")] : [];
 
+            /* Selecting a thumb swaps the derivative srcsets and the plain src
+               together, moves the rail's active row and updates the position
+               counter. Both <source> elements must move with img.src, otherwise
+               the still-matching AVIF/WebP source keeps the previous frame on
+               screen. */
+            const select = (thumb, thumbIndex) => {
+                const source = thumb.dataset.image;
+                if (!source) return;
+                const avif = thumb.dataset.avif || "";
+                const webp = thumb.dataset.webp || "";
+                main.style.opacity = "0";
+                window.setTimeout(() => {
+                    sources.forEach((element) => {
+                        const next = element.dataset.format === "avif" ? avif : webp;
+                        if (next) element.setAttribute("srcset", next);
+                        else element.removeAttribute("srcset");
+                    });
+                    main.src = source;
+                    if (thumb.dataset.alt) main.alt = thumb.dataset.alt;
+                    main.style.opacity = "";
+                }, 140);
+                thumbs.forEach((item, itemIndex) => {
+                    const active = itemIndex === thumbIndex;
+                    item.classList.toggle("is-active", active);
+                    item.setAttribute("aria-selected", active ? "true" : "false");
+                });
+                if (index) index.textContent = String(thumbIndex + 1).padStart(2, "0");
+            };
+
             thumbs.forEach((thumb, thumbIndex) => {
-                thumb.addEventListener("click", () => {
-                    const source = thumb.dataset.image;
-                    if (!source) return;
-                    main.style.opacity = "0";
-                    window.setTimeout(() => {
-                      
+                thumb.addEventListener("click", () => select(thumb, thumbIndex));
+            });
+        });
+    };
+
+    const init = () => {
+        setupReveal();
+        setupHeaderState();
+        setupLabelStory();
+        setupProductGallery();
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
+})();

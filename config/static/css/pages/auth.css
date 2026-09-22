@@ -1,436 +1,736 @@
 /* ==========================================================================
    BABAEI — Sign-in and verification
    --------------------------------------------------------------------------
-   Replaces pages/users.css and pages/auth-polish.css.
+   Reference: the shop shell. Forest green on cream, 1px hairlines (--sh-line),
+   radii between 16 and 20px, motion that stays quiet, and one loud element per
+   screen — here, the submit button.
 
-   Those two files were two different designs fighting each other through
-   !important: users.css was a cool grey composition (#f4f4f1, #272727, #111,
-   #999) and auth-polish.css repainted it warm (#e9e7e1, #f8f7f3) with a black
-   submit button. They even disagreed about the footer — one hid it, the other
-   forced it back with display: block !important.
+   This is a redesign of the two auth templates, not a repaint. The previous
+   composition was the stock "green slab + big Latin word + form" split, and it
+   had three faults that were visible on screen:
 
-   There is now one file, in the shop's palette, with zero !important:
-   forest green on cream instead of black on grey.
+     1. includes/messages.html renders inside <body> and no stylesheet on these
+        pages ever styled it, so the Django message "شماره موبایل را وارد کنید."
+        came out as bare text at the very top of the document, outside the card.
+        It is a contained, centred alert now (.auth-body .messages / .toast),
+        laid out to the shell's own column width so it can never read as stray.
+     2. the green panel carried its own 620px min-height while the card grew
+        with its content, so the halves did not share a box and the panel was
+        clipped at the bottom by the shell's overflow. The shell is one grid
+        with align-items: stretch now, so the halves are equal by construction
+        and nothing has a height of its own to clip.
+     3. under 560px the shell was forced edge-to-edge with padding: 0. There is
+        a real gutter and a real card at every width.
 
-   The markup is deliberately unchanged. Every class here already existed; only
-   the values moved onto the shared tokens.
+   Composition: one shell, two columns, split by a hairline. The form is the
+   first column (the reading-start side in RTL) and the brand note is the
+   second, pinned top and bottom so it fills its half rather than floating in
+   it. A forest "selvedge" seam caps the shell — the one piece of decoration,
+   and the signature the verification page shares.
+
+   Constraints honoured: not one priority override anywhere in this file, no
+   font-family declaration anywhere
+   (base.html loads the webfont; this file does not replace the stack), RTL
+   throughout, logical properties so the hairline stays on the correct edge.
    ========================================================================== */
 
+/* --------------------------------------------------------------------------
+   Page canvas
+   -------------------------------------------------------------------------- */
+
 .auth-body {
+    /* The shell width and the gutter are named once: the message banner is a
+       sibling of <main>, so it has to reproduce the shell's column exactly. */
+    --auth-shell: 1040px;
+    --auth-gutter: clamp(18px, 4.5vw, 56px);
+
+    /* Chrome the page has to share the viewport with. The sticky .site-header is
+       suppressed on these two pages by css/components/quick-actions.css, which
+       the templates load themselves — measured, the header's box is 0px tall
+       here — so the only chrome left is the mobile dock, which pads <body>
+       itself (css/mobile-dock.css). */
+    --auth-chrome: 0px;
+    --auth-dock: 0px;
+
     background: var(--sh-cream);
 }
 
-.auth-body main {
-    min-height: calc(100svh - 68px);
+@media (max-width: 940px) {
+    .auth-body {
+        --auth-dock: 86px;
+    }
 }
 
-/* --------------------------------------------------------------------------
-   Page and shell
-   -------------------------------------------------------------------------- */
-
 .auth-page {
-    display: grid;
-    place-items: center;
-    min-height: calc(100svh - 68px);
-    padding: 44px 24px 60px;
+    display: flex;
+    flex-direction: column;
+
+    min-height: calc(100vh - var(--auth-chrome) - var(--auth-dock));
+    min-height: calc(100svh - var(--auth-chrome) - var(--auth-dock));
+    padding: clamp(22px, 4.6vw, 60px) var(--auth-gutter);
+
     background:
-        radial-gradient(circle at 82% 18%, rgba(255, 255, 255, .62), transparent 30%),
+        radial-gradient(120% 70% at 100% 0%, rgba(20, 82, 60, .045), transparent 58%),
+        radial-gradient(90% 60% at 0% 100%, rgba(216, 168, 95, .05), transparent 60%),
         var(--sh-cream);
 }
 
+/* One grid, two columns, and the halves are equal because they stretch to the
+   same row. Nothing inside has a height of its own. */
 .auth-shell {
     display: grid;
-    grid-template-columns: minmax(0, .95fr) minmax(420px, .85fr);
-    /* The panel is Latin display type and the form is Persian, so the shell runs
-       left-to-right and the card resets itself to rtl below. */
-    direction: ltr;
+    grid-template-columns: minmax(0, 1.06fr) minmax(0, .94fr);
+    grid-template-rows: 6px auto;
 
-    width: min(1080px, 100%);
-    min-height: 620px;
-    overflow: hidden;
+    width: min(var(--auth-shell), 100%);
+    /* auto margins centre the shell when there is room and simply collapse to
+       the padding when there is not, so a tall shell can never be pushed off
+       the top of the viewport the way place-items: center does. */
+    margin: auto;
 
     border: 1px solid var(--sh-line);
     border-radius: 20px;
     background: var(--sh-cream-2);
-    box-shadow: 0 28px 80px rgba(9, 28, 20, .12);
+    box-shadow: 0 24px 60px rgba(9, 28, 20, .10);
+
+    overflow: hidden;
+}
+
+/* The seam: a fine diagonal hatch over the green gradient, like the woven edge
+   of a bolt of cloth. 6px tall, capped to the shell's radius. */
+.auth-shell__selvedge {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    display: block;
+
+    background:
+        repeating-linear-gradient(115deg,
+            rgba(251, 250, 247, .40) 0 1px,
+            rgba(251, 250, 247, 0) 1px 6px),
+        linear-gradient(90deg,
+            var(--sh-forest) 0%,
+            var(--sh-forest-soft) 58%,
+            var(--sh-forest-deep) 100%);
 }
 
 /* --------------------------------------------------------------------------
-   Brand panel — forest green, where it used to be charcoal
-   -------------------------------------------------------------------------- */
-
-.auth-visual {
-    position: relative;
-    display: flex;
-    align-items: flex-end;
-    min-height: 620px;
-    padding: 52px;
-
-    direction: ltr;
-    color: var(--sh-on-dark);
-    background:
-        radial-gradient(circle at 78% 18%, rgba(255, 255, 255, .13), transparent 30%),
-        linear-gradient(145deg, var(--sh-forest-soft) 0%, var(--sh-forest) 56%, var(--sh-forest-deep) 100%);
-}
-
-.auth-visual::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, .05) 35.2%, transparent 35.6%),
-        linear-gradient(168deg, transparent 55%, rgba(255, 255, 255, .04) 55.2%, transparent 55.7%);
-}
-
-.auth-visual::after {
-    content: "";
-    position: absolute;
-    inset-block-start: 14%;
-    inset-inline-end: 15%;
-
-    inline-size: 240px;
-    block-size: 240px;
-
-    border: 1px solid rgba(255, 255, 255, .14);
-    border-radius: 50%;
-    box-shadow:
-        0 0 0 48px rgba(255, 255, 255, .03),
-        0 0 0 96px rgba(255, 255, 255, .018);
-}
-
-.auth-visual__content {
-    position: relative;
-    z-index: 1;
-    max-width: 360px;
-}
-
-.auth-kicker {
-    display: inline-block;
-    margin-block-end: 24px;
-    color: rgba(246, 243, 236, .62);
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 10px;
-    letter-spacing: 3px;
-}
-
-.auth-visual h1 {
-    margin-block-end: 20px;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: clamp(54px, 6vw, 82px);
-    font-weight: 700;
-    line-height: .92;
-    letter-spacing: -4px;
-}
-
-.auth-visual p {
-    max-width: 290px;
-    color: rgba(246, 243, 236, .7);
-    font-size: 13px;
-    line-height: 2;
-}
-
-.auth-visual__mark {
-    position: absolute;
-    inset-block-start: 44px;
-    inset-inline-start: 52px;
-
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: 5px;
-}
-
-/* --------------------------------------------------------------------------
-   Form card
+   Form column
    -------------------------------------------------------------------------- */
 
 .auth-card {
-    align-self: stretch;
+    grid-column: 1;
+    grid-row: 2;
+
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    gap: clamp(20px, 2.6vw, 34px);
 
-    padding: 56px 64px;
-    direction: rtl;
-    background: var(--sh-cream-2);
+    min-width: 0;
+    padding: clamp(26px, 3.6vw, 50px) clamp(22px, 3.4vw, 48px) clamp(24px, 3.2vw, 44px);
+}
+
+.auth-card__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 18px;
 }
 
 .auth-brand {
-    align-self: flex-start;
-    margin-block-end: 74px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+
+    min-height: 44px;
     color: var(--sh-ink);
-    font-family: Arial, Helvetica, sans-serif;
+}
+
+.auth-brand__mark {
+    display: grid;
+    place-items: center;
+
+    inline-size: 40px;
+    block-size: 40px;
+    border-radius: 13px;
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+
     font-size: 19px;
     font-weight: 700;
-    letter-spacing: 5px;
-    text-decoration: none;
+    line-height: 1;
+}
+
+.auth-brand__word {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .3em;
     direction: ltr;
+    unicode-bidi: isolate;
+}
+
+.auth-brand__tagline {
+    color: var(--sh-muted);
+    font-size: 10px;
+    letter-spacing: .18em;
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 .auth-header {
-    margin-block-end: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
 }
 
 .auth-eyebrow {
-    display: block;
-    margin-block-end: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
     color: var(--sh-forest);
-    font-family: Arial, Helvetica, sans-serif;
     font-size: 10px;
-    letter-spacing: 2.5px;
-    direction: ltr;
-}
-
-.auth-header h2 {
-    margin-block-end: 10px;
-    color: var(--sh-ink);
-    font-size: clamp(27px, 3vw, 34px);
     font-weight: 700;
-    letter-spacing: -.7px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
-.auth-header p {
-    max-width: 390px;
-    color: var(--sh-muted);
-    font-size: 13px;
-    line-height: 2;
+/* The 26px tick in front of the eyebrow, borrowed from .sh-hero__eyebrow. */
+.auth-eyebrow::before {
+    content: "";
+    inline-size: 26px;
+    block-size: 1px;
+    background: var(--sh-forest);
+    opacity: .55;
 }
+
+.auth-title {
+    margin: 0;
+    color: var(--sh-ink);
+    font-size: clamp(26px, 4.2vw, 34px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1.4;
+}
+
+.auth-lead {
+    max-width: 42ch;
+    color: var(--sh-muted);
+    font-size: 13.5px;
+    line-height: 2.05;
+}
+
+/* --------------------------------------------------------------------------
+   Form
+   -------------------------------------------------------------------------- */
 
 .auth-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 18px;
 }
 
-.auth-card .form-input {
-    border: 1px solid var(--sh-sand);
-    border-radius: 12px;
-    background: #fff;
-    color: var(--sh-ink);
+.auth-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
 }
 
-.auth-input-wrap {
-    position: relative;
+.auth-label {
+    color: var(--sh-ink-2);
+    font-size: 12.5px;
+    font-weight: 600;
 }
 
+/* The phone control is one frame with a hairline-divided +98 affix, so the
+   prefix reads as part of the field instead of as a floating label. */
+.auth-phone {
+    display: flex;
+    align-items: stretch;
 
-.auth-input-wrap .form-input {
-    padding-inline-start: 66px;
-    direction: ltr;
-    text-align: right;
-}
-
-.auth-input-prefix {
-    position: absolute;
-    inset-inline-start: 15px;
-    inset-block-start: 50%;
-    z-index: 1;
-    translate: 0 -50%;
-
-    color: var(--sh-muted);
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 12px;
-    direction: ltr;
-}
-
-.auth-phone-input {
     min-height: 58px;
-    border-radius: 12px;
-    font-size: 16px;
+    overflow: hidden;
+
+    /* The number is a Latin island: +98 then the national digits, left to
+       right, whatever the page direction is. */
+    direction: ltr;
+
+    border: 1px solid var(--sh-line);
+    border-radius: 16px;
+    background: #fff;
+    transition: border-color var(--sh-fast), box-shadow var(--sh-fast);
 }
 
-/* The focus ring was a 5%-black wash; it is a forest tint now, so the state
-   reads as part of the same identity as the button. */
-.auth-phone-input:focus,
-.auth-card .form-input:focus {
+.auth-phone__prefix {
+    display: grid;
+    place-items: center;
+
+    padding-inline: 15px;
+    border-inline-end: 1px solid var(--sh-line);
+    background: var(--sh-paper);
+    color: var(--sh-ink-2);
+
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .06em;
+}
+
+.auth-phone__input {
+    flex: 1 1 auto;
+
+    min-width: 0;
+    min-block-size: 56px;
+    padding-inline: 16px;
+
+    border: 0;
+    background: transparent;
+    color: var(--sh-ink);
+
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-align: left;
+}
+
+.auth-phone__input::placeholder {
+    color: var(--sh-muted);
+    font-weight: 400;
+}
+
+/* One focus state for the whole control, in the brand colour, on the frame
+   rather than on the bare input. */
+.auth-phone:focus-within,
+.auth-code:focus-within {
     border-color: var(--sh-forest);
     box-shadow: 0 0 0 4px rgba(20, 82, 60, .12);
+}
+
+/* The global ring in app.css would sit inside the shared frame; the frame's own
+   ring is the visible focus indicator for these two controls. */
+.auth-phone__input:focus,
+.auth-phone__input:focus-visible,
+.auth-code__input:focus,
+.auth-code__input:focus-visible {
+    outline: none;
 }
 
 .auth-hint {
     color: var(--sh-muted);
     font-size: 11px;
+    line-height: 1.9;
 }
 
+/* The submit is the only loud element on the page. */
 .auth-submit {
-    width: 100%;
-    min-height: 56px;
+    display: flex;
+    align-items: center;
     justify-content: space-between;
-    padding-inline: 20px;
+    gap: 14px;
 
-    border-radius: 12px;
+    inline-size: 100%;
+    min-height: 58px;
+    padding-inline: 22px;
+
+    border: 0;
+    border-radius: 16px;
     background: var(--sh-forest);
     color: var(--sh-cream-2);
+    box-shadow: 0 12px 26px rgba(20, 82, 60, .20);
+
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    text-align: start;
+
+    cursor: pointer;
+    transition: background var(--sh-fast), box-shadow var(--sh-fast),
+                transform var(--sh-fast);
 }
 
 .auth-submit:hover {
     background: var(--sh-forest-soft);
+    box-shadow: 0 16px 32px rgba(20, 82, 60, .26);
+    transform: translateY(-1px);
 }
 
-.auth-submit span:last-child {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 18px;
-    transition: transform var(--sh-dur-fast) var(--sh-ease);
+.auth-submit:active {
+    transform: translateY(0);
 }
 
-.auth-submit:hover span:last-child {
+.auth-submit:focus-visible {
+    outline: 2px solid var(--sh-forest);
+    outline-offset: 3px;
+}
+
+.auth-submit__arrow {
+    font-size: 17px;
+    line-height: 1;
+    transition: transform var(--sh-fast);
+}
+
+.auth-submit:hover .auth-submit__arrow {
     transform: translateX(-3px);
 }
 
-.auth-policy {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-block-start: 24px;
+/* --------------------------------------------------------------------------
+   Quiet footer of the form column
+   -------------------------------------------------------------------------- */
 
+/* Pushed to the bottom of the column so both halves of the shell end together
+   and the card fills its box instead of floating in the middle of it. */
+.auth-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    margin-block-start: auto;
+    padding-block-start: clamp(16px, 2.2vw, 26px);
+}
+
+.auth-policy {
     color: var(--sh-muted);
-    font-size: 11px;
-    line-height: 1.9;
+    font-size: 11.5px;
+    line-height: 2;
 }
 
 .auth-policy a {
     color: var(--sh-ink-2);
     text-decoration: underline;
+    text-decoration-color: var(--sh-line);
     text-underline-offset: 3px;
+    transition: color var(--sh-fast), text-decoration-color var(--sh-fast);
 }
 
 .auth-policy a:hover {
     color: var(--sh-forest);
+    text-decoration-color: currentColor;
 }
 
 .auth-back-link {
     align-self: flex-start;
-    margin-block-start: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    min-height: 44px;
     color: var(--sh-ink-2);
-    font-size: 12px;
-    text-decoration: none;
-    transition: color var(--sh-dur-fast) var(--sh-ease);
+    font-size: 12.5px;
+    font-weight: 600;
+    transition: color var(--sh-fast);
 }
 
 .auth-back-link:hover {
     color: var(--sh-forest);
 }
 
+.auth-back-link:focus-visible,
+.auth-resend:focus-visible {
+    outline: 2px solid var(--sh-forest);
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
 /* --------------------------------------------------------------------------
-   Verification
+   Verification: the code field and the resend row
    -------------------------------------------------------------------------- */
 
-/* An OTP field is a Latin/numeric island: force the direction and the tracking
-   without !important, and let the shared font handle the digits. */
+.auth-code {
+    display: flex;
+    align-items: stretch;
+
+    min-height: 64px;
+    overflow: hidden;
+
+    border: 1px solid var(--sh-line);
+    border-radius: 16px;
+    background: #fff;
+    transition: border-color var(--sh-fast), box-shadow var(--sh-fast);
+}
+
+/* Six tracked digits in one hairline frame. The input is still a single field
+   named `code`; only its presentation changed. The inline-start padding is the
+   letter-spacing once over, which recentres the run the tracking pushes left. */
+.auth-code__input,
 .otp-input {
-    direction: ltr;
-    text-align: center;
-    letter-spacing: 8px;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 20px;
-}
+    flex: 1 1 auto;
 
-.auth-shell--verify .auth-brand {
-    margin-block-end: 64px;
-}
+    min-width: 0;
+    min-block-size: 62px;
+    /* letter-spacing leaves one trailing space after the last digit, which
+       pushes a centred run half a letter-space to the left. The extra
+       inline-start padding is exactly that half, twice over, so the digits land
+       dead centre; both sides then keep the same 12px of breathing room. */
+    padding-inline: calc(.46em + 12px) 12px;
 
-.auth-shell--verify .auth-header p strong {
+    border: 0;
+    background: transparent;
     color: var(--sh-ink);
-    font-weight: 600;
+
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: .46em;
+    text-align: center;
     direction: ltr;
-    unicode-bidi: plaintext;
+}
+
+.auth-code__input::placeholder {
+    color: var(--sh-sand);
+    font-weight: 600;
+}
+
+.auth-recovery {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+
+    color: var(--sh-muted);
+    font-size: 12px;
+    line-height: 1.9;
+}
+
+.auth-resend {
+    display: inline-flex;
+    align-items: center;
+
+    min-block-size: 44px;
+    color: var(--sh-forest);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: rgba(20, 82, 60, .3);
+    transition: text-decoration-color var(--sh-fast);
+}
+
+.auth-resend:hover {
+    text-decoration-color: currentColor;
+}
+
+/* --------------------------------------------------------------------------
+   Brand note column
+   -------------------------------------------------------------------------- */
+
+.auth-aside {
+    grid-column: 2;
+    grid-row: 2;
+
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    min-width: 0;
+    /* Column 1 is to the right in RTL, so the divider is on this side's start. */
+    border-inline-start: 1px solid var(--sh-line);
+    background:
+        linear-gradient(180deg, rgba(20, 82, 60, .05), rgba(20, 82, 60, 0) 58%),
+        var(--sh-paper);
+    padding: clamp(26px, 3.6vw, 50px) clamp(22px, 3.4vw, 48px) clamp(24px, 3.2vw, 44px);
+}
+
+.auth-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
+    color: var(--sh-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .22em;
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+.auth-kicker::before {
+    content: "";
+    inline-size: 26px;
+    block-size: 1px;
+    background: var(--sh-forest);
+    opacity: .5;
+}
+
+/* The typographic moment: the shop's own line, with the verb in forest. */
+.auth-quote {
+    color: var(--sh-ink);
+    font-size: clamp(27px, 3.1vw, 40px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1.5;
+}
+
+.auth-quote em {
+    color: var(--sh-forest);
+    font-style: normal;
+    font-weight: 800;
+}
+
+.auth-note {
+    max-width: 30ch;
+    color: var(--sh-muted);
+    font-size: 13px;
+    line-height: 2.05;
+}
+
+/* Pinned to the bottom edge of the panel: the note column fills its half. */
+.auth-aside__foot {
+    margin-block-start: auto;
+    padding-block-start: 20px;
+
+    border-block-start: 1px solid var(--sh-line);
+    color: var(--sh-muted);
+    font-size: 10px;
+    letter-spacing: .22em;
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+/* --------------------------------------------------------------------------
+   Messages
+   --------------------------------------------------------------------------
+   includes/messages.html renders between the header and <main>, so this is the
+   one piece of the page that is not inside the shell. It is given the shell's
+   own column width and centred, and every toast wraps inside it: the message
+   reads as part of the composition instead of as text at the top of the page.
+   -------------------------------------------------------------------------- */
+
+.auth-body .messages {
+    display: grid;
+    gap: 10px;
+
+    width: min(var(--auth-shell), calc(100% - 2 * var(--auth-gutter)));
+    margin: 18px auto 0;
+}
+
+.auth-body .toast {
+    padding: 13px 16px;
+
+    border: 1px solid var(--sh-line);
+    border-radius: 14px;
+    background: var(--sh-cream-2);
+    box-shadow: 0 10px 26px rgba(9, 28, 20, .08);
+    color: var(--sh-ink-2);
+
+    font-size: 13px;
+    line-height: 1.9;
+    text-align: start;
+    overflow-wrap: anywhere;
+}
+
+.auth-body .toast-error {
+    border-color: rgba(217, 45, 32, .28);
+    background: rgba(217, 45, 32, .05);
+    color: var(--color-danger);
+}
+
+.auth-body .toast-success {
+    border-color: rgba(35, 134, 54, .26);
+    background: rgba(35, 134, 54, .05);
+    color: var(--color-success);
+}
+
+.auth-body .toast-warning,
+.auth-body .toast-info {
+    border-color: rgba(216, 168, 95, .38);
+    background: rgba(216, 168, 95, .07);
+    color: #7a5a24;
 }
 
 /* --------------------------------------------------------------------------
    Responsive
+   --------------------------------------------------------------------------
+   One column from 880px down. The aside is placed explicitly in the row above
+   the card, so the order in the DOM does not have to change and the note still
+   reads above the form on a phone.
    -------------------------------------------------------------------------- */
 
-@media (max-width: 900px) {
+@media (max-width: 880px) {
+    /* The shell caps at 560px once it stacks. Narrowing the shared token rather
+       than the shell alone keeps the message banner exactly as wide as the
+       card it sits above. */
+    .auth-body {
+        --auth-shell: 560px;
+    }
+
     .auth-shell {
-        grid-template-columns: 1fr;
-        min-height: auto;
-        max-width: 540px;
-    }
-
-    .auth-visual {
-        align-items: flex-end;
-        min-height: 230px;
-        padding: 34px;
-    }
-
-    .auth-visual__mark {
-        inset-block-start: 30px;
-        inset-inline-start: 34px;
-    }
-
-    .auth-visual::after {
-        inset-block-start: 11%;
-        inset-inline-end: 11%;
-        inline-size: 160px;
-        block-size: 160px;
-    }
-
-    .auth-visual h1 {
-        font-size: 46px;
-        letter-spacing: -2.5px;
-    }
-
-    .auth-visual p {
-        display: none;
-    }
-
-    .auth-brand {
-        margin-block-end: 48px;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: 6px auto auto;
     }
 
     .auth-card {
-        padding: 44px 36px 40px;
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    .auth-aside {
+        grid-column: 1;
+        grid-row: 2;
+
+        gap: 10px;
+        padding-block: 26px 22px;
+
+        border-inline-start: 0;
+        border-block-end: 1px solid var(--sh-line);
+        background:
+            linear-gradient(180deg, rgba(20, 82, 60, .05), rgba(20, 82, 60, 0) 78%),
+            var(--sh-cream-2);
+    }
+
+    .auth-quote {
+        font-size: clamp(22px, 5.4vw, 30px);
+    }
+
+    .auth-note,
+    .auth-aside__foot {
+        display: none;
     }
 }
 
 @media (max-width: 560px) {
-    .auth-page {
-        place-items: stretch;
-        padding: 0;
-        background: var(--sh-cream);
-    }
-
-    /* Full-bleed on a phone: the card no longer needs to read as a card. */
     .auth-shell {
-        width: 100%;
-        min-height: calc(100svh - 60px);
-        border: 0;
-        border-radius: 0;
-        box-shadow: none;
-    }
-
-    .auth-visual {
-        min-height: 205px;
-        padding: 26px 22px;
-    }
-
-    .auth-visual__mark {
-        inset-block-start: 24px;
-        inset-inline-start: 22px;
-        font-size: 15px;
-        letter-spacing: 4px;
-    }
-
-    .auth-visual h1 {
-        font-size: 40px;
-        letter-spacing: -2px;
+        border-radius: 18px;
     }
 
     .auth-card {
-        justify-content: flex-start;
-        padding: 34px 22px 28px;
+        gap: 22px;
+        padding-block: 24px 22px;
     }
 
-    .auth-brand {
-        margin-block-end: 58px;
-        font-size: 17px;
+    .auth-card__top {
+        gap: 10px 14px;
     }
 
-    .auth-header h2 {
-        font-size: 26px;
+    .auth-brand__tagline {
+        display: none;
     }
 
-    .auth-phone-input {
-        min-height: 54px;
+    .auth-title {
+        font-size: 25px;
+    }
+
+    .auth-phone__input,
+    .auth-code__input {
+        font-size: 16px;
+    }
+
+    .auth-code__input {
+        font-size: 21px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-submit,
+    .auth-submit__arrow,
+    .auth-phone,
+    .auth-code,
+    .auth-back-link,
+    .auth-policy a,
+    .auth-resend {
+        transition: none;
+    }
+
+    .auth-submit:hover,
+    .auth-submit:hover .auth-submit__arrow {
+        transform: none;
     }
 }

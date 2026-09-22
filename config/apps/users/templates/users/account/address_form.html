@@ -5,98 +5,113 @@
 
 {% block extra_css %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'css/pages/address-picker.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/pages/address-picker.css' %}?v=3">
 {% endblock %}
 
 {% block account_content %}
-<div class="account-page-header">
-    <div>
+<header class="account-page-header">
+    <div class="account-page-header__copy">
         <span class="account-page-header__eyebrow">DELIVERY / ADDRESS</span>
         <h1 class="account-page-title">{% if address %}ویرایش آدرس{% else %}افزودن آدرس جدید{% endif %}</h1>
+        <p class="account-page-description">نشانی دقیق، تحویل سفارش را سریع‌تر و مطمئن‌تر می‌کند.</p>
     </div>
-</div>
+</header>
 
-<div class="account-card address-form-card">
-    <form method="post" class="address-form" id="address-form">
+<article class="ac-card address-form-card">
+    <form method="post" class="ac-form address-form" id="address-form">
         {% csrf_token %}
-        <div class="address-form__grid">
-            <div class="form-group">
-                <label class="form-label" for="address-title">عنوان آدرس</label>
-                <input id="address-title" class="form-input" name="title" value="{{ address.title|default:'' }}" placeholder="مثلاً خانه" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="address-phone">شماره موبایل گیرنده</label>
-                <input id="address-phone" class="form-input" name="phone" value="{{ address.phone|default:'' }}" placeholder="09123456789" inputmode="numeric" maxlength="11" dir="ltr" required>
-            </div>
 
-            <div class="form-group">
-                <label class="form-label" for="province-picker-button">استان</label>
-                <div class="location-picker" data-picker="province">
-                    <input type="hidden" name="province" id="province-value" value="{{ selected_province_id|default:'' }}">
-                    <button type="button" class="location-picker__trigger" id="province-picker-button" aria-haspopup="listbox" aria-expanded="false">
-                        <span class="location-picker__value">{% if address %}{{ address.city.province.name }}{% else %}انتخاب استان{% endif %}</span>
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"></path></svg>
-                    </button>
-                    <div class="location-picker__menu" role="listbox" aria-label="انتخاب استان" hidden>
-                        <div class="location-picker__search-wrap">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
-                            <input class="location-picker__search" type="search" placeholder="جستجوی استان..." autocomplete="off" aria-label="جستجوی استان">
-                        </div>
-                        <div class="location-picker__options">
-                            {% for province in provinces %}
-                            <button type="button" class="location-picker__option" role="option" data-value="{{ province.id }}" data-label="{{ province.name }}" aria-selected="{% if selected_province_id == province.id %}true{% else %}false{% endif %}">
-                                <span>{{ province.name }}</span>
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
-                            </button>
-                            {% endfor %}
-                            <div class="location-picker__empty" hidden>استانی پیدا نشد.</div>
+        <fieldset class="ac-fieldset">
+            <legend class="ac-legend">مشخصات تحویل‌گیرنده</legend>
+            <div class="address-form__grid">
+                <div class="ac-field">
+                    <label class="ac-label" for="address-title">عنوان آدرس</label>
+                    <input id="address-title" class="ac-input" name="title" value="{{ address.title|default:'' }}" placeholder="مثلاً خانه" required>
+                    <span class="ac-hint">یک نام کوتاه تا در فهرست آدرس‌ها بشناسی‌اش.</span>
+                </div>
+                <div class="ac-field">
+                    <label class="ac-label" for="address-phone">شماره موبایل گیرنده</label>
+                    <input id="address-phone" class="ac-input" name="phone" value="{{ address.phone|default:'' }}" placeholder="09123456789" inputmode="numeric" maxlength="11" dir="ltr" required>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="ac-fieldset">
+            <legend class="ac-legend">موقعیت</legend>
+            <div class="address-form__grid">
+                <div class="ac-field">
+                    <label class="ac-label" for="province-picker-button">استان</label>
+                    <div class="location-picker" data-picker="province">
+                        <input type="hidden" name="province" id="province-value" value="{{ selected_province_id|default:'' }}">
+                        <button type="button" class="location-picker__trigger" id="province-picker-button" aria-haspopup="listbox" aria-expanded="false">
+                            <span class="location-picker__value">{% if address %}{{ address.city.province.name }}{% else %}انتخاب استان{% endif %}</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"></path></svg>
+                        </button>
+                        <div class="location-picker__menu" role="listbox" aria-label="انتخاب استان" hidden>
+                            <div class="location-picker__search-wrap">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+                                <input class="location-picker__search" type="search" placeholder="جستجوی استان..." autocomplete="off" aria-label="جستجوی استان">
+                            </div>
+                            <div class="location-picker__options">
+                                {% for province in provinces %}
+                                <button type="button" class="location-picker__option" role="option" data-value="{{ province.id }}" data-label="{{ province.name }}" aria-selected="{% if selected_province_id == province.id %}true{% else %}false{% endif %}">
+                                    <span>{{ province.name }}</span>
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+                                </button>
+                                {% endfor %}
+                                <div class="location-picker__empty" hidden>استانی پیدا نشد.</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label class="form-label" for="city-picker-button">شهر</label>
-                <div class="location-picker location-picker--city" data-picker="city">
-                    <input type="hidden" name="city" id="city-value" value="{% if address %}{{ address.city_id }}{% endif %}">
-                    <button type="button" class="location-picker__trigger" id="city-picker-button" aria-haspopup="listbox" aria-expanded="false" {% if not selected_province_id %}disabled{% endif %}>
-                        <span class="location-picker__value">{% if address %}{{ address.city.name }}{% else %}ابتدا استان را انتخاب کنید{% endif %}</span>
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"></path></svg>
-                    </button>
-                    <div class="location-picker__menu" role="listbox" aria-label="انتخاب شهر" hidden>
-                        <div class="location-picker__search-wrap">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
-                            <input class="location-picker__search" type="search" placeholder="جستجوی شهر..." autocomplete="off" aria-label="جستجوی شهر">
-                        </div>
-                        <div class="location-picker__options">
-                            {% for city in cities %}
-                            <button type="button" class="location-picker__option" role="option" data-value="{{ city.id }}" data-province="{{ city.province_id }}" data-label="{{ city.name }}" aria-selected="{% if address and address.city_id == city.id %}true{% else %}false{% endif %}">
-                                <span>{{ city.name }}</span>
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
-                            </button>
-                            {% endfor %}
-                            <div class="location-picker__empty" hidden>شهری برای این استان پیدا نشد.</div>
+                <div class="ac-field">
+                    <label class="ac-label" for="city-picker-button">شهر</label>
+                    <div class="location-picker location-picker--city" data-picker="city">
+                        <input type="hidden" name="city" id="city-value" value="{% if address %}{{ address.city_id }}{% endif %}">
+                        <button type="button" class="location-picker__trigger" id="city-picker-button" aria-haspopup="listbox" aria-expanded="false" {% if not selected_province_id %}disabled{% endif %}>
+                            <span class="location-picker__value">{% if address %}{{ address.city.name }}{% else %}ابتدا استان را انتخاب کنید{% endif %}</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"></path></svg>
+                        </button>
+                        <div class="location-picker__menu" role="listbox" aria-label="انتخاب شهر" hidden>
+                            <div class="location-picker__search-wrap">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+                                <input class="location-picker__search" type="search" placeholder="جستجوی شهر..." autocomplete="off" aria-label="جستجوی شهر">
+                            </div>
+                            <div class="location-picker__options">
+                                {% for city in cities %}
+                                <button type="button" class="location-picker__option" role="option" data-value="{{ city.id }}" data-province="{{ city.province_id }}" data-label="{{ city.name }}" aria-selected="{% if address and address.city_id == city.id %}true{% else %}false{% endif %}">
+                                    <span>{{ city.name }}</span>
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+                                </button>
+                                {% endfor %}
+                                <div class="location-picker__empty" hidden>شهری برای این استان پیدا نشد.</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label class="form-label" for="postal-code">کد پستی</label>
-                <input id="postal-code" class="form-input" name="postal_code" value="{{ address.postal_code|default:'' }}" placeholder="۱۰ رقم" maxlength="10" inputmode="numeric" dir="ltr" required>
+                <div class="ac-field">
+                    <label class="ac-label" for="postal-code">کد پستی</label>
+                    <input id="postal-code" class="ac-input" name="postal_code" value="{{ address.postal_code|default:'' }}" placeholder="۱۰ رقم" maxlength="10" inputmode="numeric" dir="ltr" required>
+                </div>
             </div>
-        </div>
+        </fieldset>
 
-        <div class="form-group">
-            <label class="form-label" for="address-description">نشانی کامل</label>
-            <textarea id="address-description" class="form-textarea" name="description" placeholder="خیابان، کوچه، پلاک، واحد و سایر جزئیات...">{{ address.description|default:'' }}</textarea>
-        </div>
-        <div class="address-form__actions">
-            <button class="btn btn-primary" type="submit">{% if address %}ذخیره تغییرات{% else %}ثبت آدرس{% endif %}</button>
-            <a href="{% url 'users:addresses' %}" class="btn btn-secondary">انصراف</a>
+        <fieldset class="ac-fieldset">
+            <legend class="ac-legend">نشانی کامل</legend>
+            <div class="ac-field">
+                <label class="ac-label" for="address-description">نشانی کامل</label>
+                <textarea id="address-description" class="ac-textarea" name="description" placeholder="خیابان، کوچه، پلاک، واحد و سایر جزئیات...">{{ address.description|default:'' }}</textarea>
+            </div>
+        </fieldset>
+
+        <div class="ac-form__actions address-form__actions">
+            <button class="ac-btn ac-btn--primary" type="submit">{% if address %}ذخیره تغییرات{% else %}ثبت آدرس{% endif %}</button>
+            <a href="{% url 'users:addresses' %}" class="ac-btn ac-btn--ghost">انصراف</a>
         </div>
     </form>
-</div>
+</article>
 
 <script>
 (function () {
@@ -108,7 +123,6 @@
     const cityValue = document.getElementById('city-value');
     const cityTrigger = document.getElementById('city-picker-button');
     const cityOptions = [...cityPicker.querySelectorAll('.location-picker__option')];
-    const cityEmpty = cityPicker.querySelector('.location-picker__empty');
 
     function normalize(value) {
         return String(value || '').trim().toLocaleLowerCase('fa-IR').replace(/[يى]/g, 'ی').replace(/ك/g, 'ک');

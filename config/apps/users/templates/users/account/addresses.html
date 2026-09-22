@@ -3,40 +3,54 @@
 {% block title %}آدرس‌ها | BABAEI{% endblock %}
 
 {% block account_content %}
-<div class="account-page-header">
-    <div>
+<header class="account-page-header">
+    <div class="account-page-header__copy">
         <span class="account-page-header__eyebrow">DELIVERY</span>
         <h1 class="account-page-title">آدرس‌های من</h1>
+        <p class="account-page-description">نشانی‌هایی که برای تحویل سفارش استفاده می‌شوند.</p>
     </div>
-    <a href="{% url 'users:address_create' %}" class="btn btn-primary">افزودن آدرس</a>
-</div>
+    {% if addresses %}
+    <a href="{% url 'users:address_create' %}" class="ac-btn ac-btn--primary account-page-header__action">افزودن آدرس</a>
+    {% endif %}
+</header>
 
 <div class="address-list">
     {% for address in addresses %}
-        <article class="address-card">
+        <article class="ac-card address-card">
             <div class="address-card__main">
-                <div class="address-card__top"><h2>{{ address.title }}</h2></div>
-                <div class="address-card__meta">
-                    <span>{{ address.city.province.name }}، {{ address.city.name }}</span>
-                    <span>کد پستی: {{ address.postal_code }}</span>
-                    <span>{{ address.phone }}</span>
+                <div class="address-card__top">
+                    <span class="address-card__pin" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s6.5-6.1 6.5-11a6.5 6.5 0 1 0-13 0C5.5 14.9 12 21 12 21Z"></path><circle cx="12" cy="10" r="2.4"></circle></svg></span>
+                    <h2>{{ address.title }}</h2>
+                    {% if address.is_default %}<span class="address-card__badge">پیش‌فرض</span>{% endif %}
                 </div>
+                <dl class="address-card__meta">
+                    <div><dt>استان و شهر</dt><dd>{{ address.city.province.name }}، {{ address.city.name }}</dd></div>
+                    <div><dt>کد پستی</dt><dd dir="ltr">{{ address.postal_code }}</dd></div>
+                    <div><dt>شماره تماس</dt><dd dir="ltr">{{ address.phone }}</dd></div>
+                </dl>
+                {% if address.description %}<p class="address-card__description">{{ address.description }}</p>{% endif %}
             </div>
             <div class="address-actions">
-                <a href="{% url 'users:address_update' address.pk %}" class="btn btn-secondary">ویرایش</a>
+                <a href="{% url 'users:address_update' address.pk %}" class="ac-btn ac-btn--ghost ac-btn--sm">ویرایش</a>
                 <form method="post" action="{% url 'users:address_delete' address.pk %}">
                     {% csrf_token %}
-                    <button class="btn btn-danger" type="submit">حذف</button>
+                    <button class="ac-btn ac-btn--danger ac-btn--sm" type="submit">حذف</button>
                 </form>
             </div>
         </article>
     {% empty %}
-        <div class="address-empty">
-            <div>
-                <div class="address-empty__icon">⌖</div>
-                <h2>هنوز آدرسی ثبت نکرده‌اید</h2>
-                <a href="{% url 'users:address_create' %}" class="btn btn-primary">افزودن آدرس</a>
+        <div class="ac-empty address-empty" data-probe="address-empty">
+            <div class="ac-empty__art ac-empty__art--map" aria-hidden="true">
+                <span class="ac-empty__map"></span>
+                <span class="ac-empty__line ac-empty__line--a"></span>
+                <span class="ac-empty__line ac-empty__line--b"></span>
+                <span class="ac-empty__line ac-empty__line--c"></span>
+                <span class="ac-empty__pin"></span>
             </div>
+            <span class="ac-empty__eyebrow">ADDRESS BOOK</span>
+            <h2>هنوز آدرسی ثبت نکرده‌اید</h2>
+            <p>برای ثبت سفارش به یک نشانی تحویل نیاز داریم. آدرس را یک‌بار وارد کنید تا در خریدهای بعدی آماده باشد.</p>
+            <a href="{% url 'users:address_create' %}" class="ac-btn ac-btn--primary">افزودن آدرس</a>
         </div>
     {% endfor %}
 </div>
