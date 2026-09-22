@@ -1,5 +1,5 @@
 (() => {
-    const HERO_VERSION = '1.1.1';
+    const HERO_VERSION = '1.1.2';
     const canvas = document.querySelector('[data-particle-field]');
     const hero = document.querySelector('.home-hero');
     if (!canvas || !hero) return;
@@ -353,10 +353,15 @@
             const cosT = cosTheta[i];
             const sinT = sinTheta[i];
 
-            /* Preserve a broad outer dust halo while the core gathers. */
+            /*
+             * Keep the outer field much more intact. Only the dense inner
+             * population should become the readable star; the sparse blue/
+             * contrasting particles around it must remain visibly spread out.
+             */
             const outerRadius = Math.pow(Math.max(0, r), 0.42);
-            const outerHalo = smoothstep(0.48, 0.90, outerRadius);
-            const starParticleBlend = starBlend * (1 - outerHalo * 0.72);
+            const outerHalo = smoothstep(0.34, 0.70, outerRadius);
+            const starParticleBlend =
+                starBlend * (1 - outerHalo * 0.90);
 
             const superX =
                 Math.abs(cosT) ** (2 / n) * sign(cosT);
