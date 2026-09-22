@@ -58,10 +58,18 @@ def price_annotations():
 
 def catalog_max_price(queryset):
     product_ids = queryset.values("pk")
-    return (
+    max_variant_price = (
         ProductVariant.objects
         .filter(product_id__in=product_ids, is_active=True)
         .aggregate(max_price=Max("price"))
+        .get("max_price")
+    )
+    if max_variant_price:
+        return max_variant_price
+
+    return (
+        queryset
+        .aggregate(max_price=Max("base_price"))
         .get("max_price")
         or 0
     )
