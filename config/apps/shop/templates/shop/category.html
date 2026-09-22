@@ -14,7 +14,7 @@
 {% block site_optional_css %}
 <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
 <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=5">
-<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/pages/shop-reference.css' %}?v=5">
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'js/pages/shop-cards.js' %}?v=2" defer></script>
@@ -38,17 +38,25 @@
             فیلتر
             <span data-filter-count></span>
         </button>
+
         <aside class="shop-reference__sidebar" id="shop-reference-sidebar" data-shop-filter-panel>
-            <div class="shop-reference__sidebar-head"><strong>فیلتر محصولات</strong><button type="button" class="shop-reference__sidebar-close" data-shop-filter-close aria-label="بستن فیلتر">×</button></div>
+            <div class="shop-reference__sidebar-head">
+                <strong>فیلتر محصولات</strong>
+                <button type="button" class="shop-reference__sidebar-close" data-shop-filter-close aria-label="بستن فیلتر">×</button>
+            </div>
             <form method="get" class="shop-reference__filter-form" data-shop-filter-form>
                 <section class="shop-reference__filter-section">
                     <h2>دسته‌بندی‌ها</h2>
                     <div class="shop-reference__category-list">
                         <a href="{% url 'shop:index' %}"><span>همه محصولات</span></a>
-                        {% for item in categories %}<a href="{{ item.get_absolute_url }}" class="{% if item.slug == category.slug %}is-active{% endif %}"><span>{{ item.name }}</span></a>{% endfor %}
+                        {% for item in categories %}
+                        <a href="{{ item.get_absolute_url }}" class="{% if item.slug == category.slug %}is-active{% endif %}">
+                            <span>{{ item.name }}</span><small>{{ item.product_count }}</small>
+                        </a>
+                        {% endfor %}
                     </div>
-                </section>"><input type="radio" name="color" value="{{ color.slug }}" {% if filter_color == color.slug %}checked{% endif %}><span style="--swatch:{{ color.hex_code }}"></span></label>{% endfor %}</div></section>{% endif %}
-                {% if filter_sizes %}
+                </section>
+
                 <section class="shop-reference__filter-section">
                     <h2>سایز</h2>
                     <div class="shop-reference__sizes" role="radiogroup" aria-label="انتخاب سایز">
@@ -60,13 +68,14 @@
                         {% endfor %}
                     </div>
                 </section>
-                {% endif %}
+
                 <section class="shop-reference__filter-section shop-reference__filter-section--checks">
                     <label class="shop-reference__discount-check">
                         <input type="checkbox" name="discount" value="1" {% if filter_discount %}checked{% endif %}>
                         <span>فقط کالاهای تخفیف‌دار</span>
                     </label>
-                </section>"><input type="radio" name="size" value="{{ size.slug }}" {% if filter_size == size.slug %}checked{% endif %}><span>{{ size.name }}</span></label>{% endfor %}</div></section>{% endif %}
+                </section>
+
                 <section class="shop-reference__filter-section shop-reference__filter-section--sort">
                     <h2>مرتب‌سازی</h2>
                     <div class="shop-reference__sort-options">
@@ -88,6 +97,7 @@
                         </label>
                     </div>
                 </section>
+
                 <button class="shop-reference__apply" type="submit">اعمال فیلترها <span>↗</span></button>
                 <a class="shop-reference__clear" href="{{ request.path }}">پاک کردن فیلترها ↻</a>
             </form>
