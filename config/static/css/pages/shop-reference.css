@@ -1649,3 +1649,63 @@ body.shop-page .shop-reference__sort{
         min-height:48px!important;
     }
 }
+
+
+/* =========================================================
+   ASYNC FILTER UX + HERO FALLBACK
+========================================================= */
+body.shop-page .shop-reference__hero-visual{
+    background:
+        #07120c url("/static/images/shop/shop-hero.webp") center center / cover no-repeat!important;
+}
+body.shop-page .shop-reference__hero-visual img{
+    position:relative!important;
+    z-index:1!important;
+}
+body.shop-page .shop-reference__hero-visual::after{
+    z-index:2!important;
+}
+body.shop-page .shop-reference__hero-copy{
+    z-index:5!important;
+}
+body.shop-page .shop-reference.is-filter-loading .shop-reference__catalog{
+    opacity:.62!important;
+    pointer-events:none!important;
+    transition:opacity .16s ease!important;
+}
+body.shop-page .shop-reference.is-filter-loading .shop-reference__catalog::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:200;
+    display:block;
+    border-radius:25px 25px 0 0;
+    background:rgba(248,245,238,.34);
+    backdrop-filter:blur(2px);
+    pointer-events:auto;
+}
+body.shop-page .shop-reference.is-filter-loading .shop-reference__results::after{
+    content:"";
+    position:absolute;
+    top:92px;
+    left:50%;
+    z-index:210;
+    width:26px;
+    height:26px;
+    margin-left:-13px;
+    border:2px solid rgba(12,38,25,.16);
+    border-top-color:#0c2619;
+    border-radius:50%;
+    animation:shop-filter-spin .65s linear infinite;
+}
+@keyframes shop-filter-spin{
+    to{transform:rotate(360deg)}
+}
+@media (max-width:820px){
+    body.shop-page .shop-reference.is-filter-loading .shop-reference__catalog::after{
+        border-radius:18px;
+    }
+    body.shop-page .shop-reference.is-filter-loading .shop-reference__results::after{
+        top:74px;
+    }
+}
