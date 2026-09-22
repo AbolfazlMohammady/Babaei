@@ -162,6 +162,7 @@ class ShopIndexView(ListView):
         context["filter_min_price"] = self.request.GET.get("min_price", "")
         context["filter_max_price"] = self.request.GET.get("max_price", "")
         context["filter_sort"] = self.request.GET.get("sort", "featured")
+        context["filter_sort"] = self.request.GET.get("sort", "featured")
         context["filter_color"] = self.request.GET.get("color", "")
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
