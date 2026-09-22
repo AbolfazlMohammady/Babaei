@@ -1,5 +1,5 @@
 (() => {
-    const HERO_VERSION = '1.1.2';
+    const HERO_VERSION = '1.0.0';
     const canvas = document.querySelector('[data-particle-field]');
     const hero = document.querySelector('.home-hero');
     if (!canvas || !hero) return;
@@ -40,14 +40,6 @@
     const SPARK_N = 0.7;
     const ROUNDING = 0.18;
     const scatter = 1.0;
-
-    /* Formation timing: the field rotates first, then eases slowly into a
-     * clearly readable four-point star, holds it in the exact center, and
-     * only then releases back into the final cloud. */
-    const STAR_GATHER_START = 420;
-    const STAR_GATHER_END = 2920;
-    const STAR_HOLD_END = 3820;
-    const STAR_RELEASE_END = 6200;
 
     const colors = [
         hex('#00B95C'),
@@ -281,38 +273,12 @@
             (3.5 - SPARK_N) / 2 *
             Math.sin(elapsed * 0.00062);
 
-        /*
-         * Formation sequence:
-         * 1) Let the cloud rotate in place.
-         * 2) Gather it slowly toward a compact, unmistakable star.
-         * 3) Hold the star dead-center so the user can read the shape.
-         * 4) Release it gradually back into the final cloud.
-         */
-        const gatherProgress = smoothstep(
-            STAR_GATHER_START,
-            STAR_GATHER_END,
-            elapsed
-        );
-        const releaseProgress = smoothstep(
-            STAR_HOLD_END,
-            STAR_RELEASE_END,
-            elapsed
-        );
-        const starBlend = Math.max(
-            gatherProgress * (1 - releaseProgress),
-            elapsed >= STAR_HOLD_END ? 1 - releaseProgress : 0
-        );
-
-        /*
-         * Keep a visible halo of outer particles during the star formation.
-         * Inner particles form the dense star; outer particles remain partly
-         * in the surrounding cloud so the formation does not look empty.
-         * The exponent compensates for radiusSeed's inner-heavy distribution.
-         */
-        /* Keep the cloud fully formed while it gathers. The star phase
-         * gets its own compact depth so perspective cannot pull it sideways. */
-        const introDepth = 0.86 + 0.14 * Math.min(1, elapsed / STAR_GATHER_END);
-        const introScale = 1.02 - 0.12 * starBlend;
+        /* Cinematic entrance: particles begin deep/far and gently
+         * travel toward their final depth instead of appearing fully formed. */
+        const intro = smoothstep(0, 1, Math.min(1, elapsed / 2100));
+        const introDepth = 0.16 + intro * 0.84;
+        const introScale = 0.10 + intro * 0.90;
+        const starBlend = 1 - intro;
 
         const phase = elapsed * 0.000105;
 
@@ -353,16 +319,6 @@
             const cosT = cosTheta[i];
             const sinT = sinTheta[i];
 
-            /*
-             * Keep the outer field much more intact. Only the dense inner
-             * population should become the readable star; the sparse blue/
-             * contrasting particles around it must remain visibly spread out.
-             */
-            const outerRadius = Math.pow(Math.max(0, r), 0.42);
-            const outerHalo = smoothstep(0.34, 0.70, outerRadius);
-            const starParticleBlend =
-                starBlend * (1 - outerHalo * 0.90);
-
             const superX =
                 Math.abs(cosT) ** (2 / n) * sign(cosT);
 
@@ -380,50 +336,34 @@
                 superY * (1 - rounding) +
                 sinT * rounding;
 
-            /*
-             * During the star phase, collapse almost all radial spread onto
-             * the star arms. This makes the shape visibly read as a star
-             * instead of a loose approximation of one.
-             */
-            const starRadialScale =
-                0.64 +
-                Math.pow(r, 2.15) * 0.42;
-            const radialScale =
-                radialScaleSeed[i] * (1 - starParticleBlend) +
-                starRadialScale * starParticleBlend;
+            /* First frame is a compact four-point star, then it dissolves
+             * organically into the final cloud. */
+            x = x * (1 - starBlend) + starXSeed[i] * starBlend;
+            y = y * (1 - starBlend) + starYSeed[i] * starBlend;
 
             /*
-             * Blend the cloud toward the precomputed star coordinates.
-             * Outer particles intentionally keep part of their original
-             * cloud position, preserving the Gemini-style surrounding dust.
+             * Gemini scatters points radially from a compact core.
+             * The fifth-power distribution heavily favors the inner
+             * surface and produces the characteristic dense dust.
              */
-            x = x * (1 - starParticleBlend) + starXSeed[i] * starRadialScale * starParticleBlend;
-            y = y * (1 - starParticleBlend) + starYSeed[i] * starRadialScale * starParticleBlend;
+            const radialScale = radialScaleSeed[i];
 
-            x *= RADIUS * introScale;
-            y *= RADIUS * introScale;
+            x *= RADIUS * radialScale * introScale;
+            y *= RADIUS * radialScale * introScale;
 
-            const cloudZ =
+            let z =
                 zSeed[i] *
                 RADIUS *
                 (0.1 + 1.2 * scatter) *
                 introDepth;
 
-            /* Collapse depth as well as X/Y. A shallow star stays visually
-             * centered under perspective instead of being pulled sideways
-             * by random Z-depth. */
-            const starZ = zSeed[i] * 5.5;
-            let z = cloudZ * (1 - starParticleBlend) + starZ * starParticleBlend;
-
             /*
-             * The organic cloud deformation is deliberately removed as the
-             * star locks in. That is what makes the final gather feel calm
-             * and precise rather than jittery.
+             * A gentle organic breathing deformation prevents the cloud
+             * from reading as a mathematically perfect sphere.
              */
             const organic =
                 Math.sin(t * 3 + elapsed * 0.00022) *
-                (2.0 + r * 5.0) *
-                (1 - starParticleBlend);
+                (2.0 + r * 5.0);
 
             x += organic * Math.cos(t * 2.0);
             y += organic * Math.sin(t * 2.0);
@@ -475,8 +415,7 @@
                 sizeSeed[i] *
                 (0.36 + depth * 0.66) *
                 (0.60 + r * 0.34) *
-                (0.42 + (1 - starBlend) * 0.58) *
-                (1 + starParticleBlend * 0.16);
+                (0.42 + intro * 0.58);
 
             /*
              * Use the Gemini source palette. BABAEI starts green,
@@ -652,7 +591,7 @@
      */
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            render(reduced ? STAR_RELEASE_END : performance.now());
+            render(performance.now());
         });
     });
 
