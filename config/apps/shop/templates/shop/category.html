@@ -58,7 +58,7 @@
         <div class="shop-reference__results">
             <header class="shop-reference__toolbar">
                 <div class="shop-reference__toolbar-title"><div><span class="shop-reference__toolbar-label">CATEGORY</span><h2>{{ category.name }}</h2></div><span class="shop-reference__count">{{ paginator.count|price }} محصول</span></div>
-                <label class="shop-reference__sort"><span>مرتب‌سازی:</span><select name="sort" data-shop-sort aria-label="مرتب‌سازی محصولات"><option value="featured">پیشنهاد شده</option><option value="newest">جدیدترین</option><option value="price_asc">ارزان‌ترین</option><option value="price_desc">گران‌ترین</option></select></label>
+                <label class="shop-reference__sort"><span>مرتب‌سازی:</span><select name="sort" data-shop-sort aria-label="مرتب‌سازی محصولات"><option value="featured" {% if filter_sort == "featured" %}selected{% endif %}>پیشنهاد شده</option><option value="newest" {% if filter_sort == "newest" %}selected{% endif %}>جدیدترین</option><option value="price_asc" {% if filter_sort == "price_asc" %}selected{% endif %}>ارزان‌ترین</option><option value="price_desc" {% if filter_sort == "price_desc" %}selected{% endif %}>گران‌ترین</option></select></label>
             </header>
             <div class="shop-reference__products" data-shop-products>
                 {% for product in products %}
