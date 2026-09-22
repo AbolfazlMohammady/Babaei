@@ -791,6 +791,18 @@ body.shop-page {
     color: rgba(251, 250, 247, .7);
 }
 
+/* The row that matches the filter currently applied to the grid. */
+.sh-rail__link.is-active {
+    background: var(--sh-forest);
+    border-color: var(--sh-forest);
+    color: var(--sh-cream-2);
+}
+
+.sh-rail__link.is-active .sh-rail__count {
+    background: rgba(255, 255, 255, .16);
+    color: var(--sh-cream-2);
+}
+
 .sh-rail__link--all {
     background: transparent;
     border: 1px dashed var(--sh-line-strong);

@@ -123,14 +123,18 @@ pages (the drawer carries those links) and it loaded on top of the cart.
         <div class="sh-rail__inner">
             <ul class="sh-rail__list">
                 <li class="sh-rail__item">
-                    <a class="sh-rail__link sh-rail__link--all" href="{% url 'shop:index' %}">
+                    <a class="sh-rail__link sh-rail__link--all{% if not filter_category %} is-active{% endif %}"
+                       href="{% url 'shop:index' %}"
+                       {% if not filter_category %}aria-current="true"{% endif %}>
                         همه محصولات
                         <span class="sh-rail__count">{{ paginator.count|price }}</span>
                     </a>
                 </li>
                 {% for category in categories %}
                     <li class="sh-rail__item">
-                        <a class="sh-rail__link" href="{% url 'shop:category' category.slug %}">
+                        <a class="sh-rail__link{% if category.slug == filter_category %} is-active{% endif %}"
+                           href="?category={{ category.slug }}"
+                           {% if category.slug == filter_category %}aria-current="true"{% endif %}>
                             {{ category.name }}
                             <span class="sh-rail__count">{{ category.product_count|price }}</span>
                         </a>

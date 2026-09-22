@@ -50,8 +50,14 @@
                    {% if not current_category_slug %}aria-current="true"{% endif %}>
                     <span>همه محصولات</span><small>{{ paginator.count|price }}</small>
                 </a>
+                {% comment %}
+                On the index these refine the grid in place (the user asked for
+                that explicitly); on a category page they stay canonical links,
+                because there the category is the page path, not a filter.
+                {% endcomment %}
                 {% for item in categories %}
-                    <a href="{% url 'shop:category' item.slug %}" class="{% if item.slug == current_category_slug %}is-active{% endif %}"
+                    <a href="{% if catalog_in_page_filter %}?category={{ item.slug }}{% else %}{% url 'shop:category' item.slug %}{% endif %}"
+                       class="{% if item.slug == current_category_slug %}is-active{% endif %}"
                        {% if item.slug == current_category_slug %}aria-current="true"{% endif %}>
                         <span>{{ item.name }}</span><small>{{ item.product_count|price }}</small>
                     </a>

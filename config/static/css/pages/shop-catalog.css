@@ -878,6 +878,32 @@
     display: none;
 }
 
+/* Loading more used to be silent: the grid dimmed and cards appeared with no
+   indication anything was happening, which reads as "scrolling does nothing".
+   The sentinel is the element the observer watches, so the spinner lives there
+   and inherits its is-done state for free. */
+.shop-reference.is-loading-more .shop-reference__infinite-sentinel::after {
+    content: "";
+    display: block;
+    width: 24px;
+    height: 24px;
+    margin: 20px auto 4px;
+    border: 2px solid var(--sh-sand);
+    border-top-color: var(--sh-forest);
+    border-radius: 50%;
+    animation: sh-spin .7s linear infinite;
+}
+
+@keyframes sh-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shop-reference.is-loading-more .shop-reference__infinite-sentinel::after {
+        animation-duration: 1.8s;
+    }
+}
+
 /* The results dim while shop-reference.js swaps the catalog in. */
 .shop-reference.is-filter-loading .shop-reference__results,
 .shop-reference.is-loading-more .shop-reference__products {
