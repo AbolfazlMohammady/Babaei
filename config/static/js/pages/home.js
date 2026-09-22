@@ -1,5 +1,5 @@
 (() => {
-    const HERO_VERSION = '1.1.0';
+    const HERO_VERSION = '1.1.1';
     const canvas = document.querySelector('[data-particle-field]');
     const hero = document.querySelector('.home-hero');
     if (!canvas || !hero) return;
@@ -303,6 +303,12 @@
             elapsed >= STAR_HOLD_END ? 1 - releaseProgress : 0
         );
 
+        /*
+         * Keep a visible halo of outer particles during the star formation.
+         * Inner particles form the dense star; outer particles remain partly
+         * in the surrounding cloud so the formation does not look empty.
+         * The exponent compensates for radiusSeed's inner-heavy distribution.
+         */
         /* Keep the cloud fully formed while it gathers. The star phase
          * gets its own compact depth so perspective cannot pull it sideways. */
         const introDepth = 0.86 + 0.14 * Math.min(1, elapsed / STAR_GATHER_END);
@@ -347,6 +353,11 @@
             const cosT = cosTheta[i];
             const sinT = sinTheta[i];
 
+            /* Preserve a broad outer dust halo while the core gathers. */
+            const outerRadius = Math.pow(Math.max(0, r), 0.42);
+            const outerHalo = smoothstep(0.48, 0.90, outerRadius);
+            const starParticleBlend = starBlend * (1 - outerHalo * 0.72);
+
             const superX =
                 Math.abs(cosT) ** (2 / n) * sign(cosT);
 
@@ -373,16 +384,16 @@
                 0.64 +
                 Math.pow(r, 2.15) * 0.42;
             const radialScale =
-                radialScaleSeed[i] * (1 - starBlend) +
-                starRadialScale * starBlend;
+                radialScaleSeed[i] * (1 - starParticleBlend) +
+                starRadialScale * starParticleBlend;
 
             /*
              * Blend the cloud toward the precomputed star coordinates.
-             * Both are centered at world origin, so the target itself never
-             * drifts left/right as the formation completes.
+             * Outer particles intentionally keep part of their original
+             * cloud position, preserving the Gemini-style surrounding dust.
              */
-            x = x * (1 - starBlend) + starXSeed[i] * starRadialScale * starBlend;
-            y = y * (1 - starBlend) + starYSeed[i] * starRadialScale * starBlend;
+            x = x * (1 - starParticleBlend) + starXSeed[i] * starRadialScale * starParticleBlend;
+            y = y * (1 - starParticleBlend) + starYSeed[i] * starRadialScale * starParticleBlend;
 
             x *= RADIUS * introScale;
             y *= RADIUS * introScale;
@@ -397,7 +408,7 @@
              * centered under perspective instead of being pulled sideways
              * by random Z-depth. */
             const starZ = zSeed[i] * 5.5;
-            let z = cloudZ * (1 - starBlend) + starZ * starBlend;
+            let z = cloudZ * (1 - starParticleBlend) + starZ * starParticleBlend;
 
             /*
              * The organic cloud deformation is deliberately removed as the
@@ -407,7 +418,7 @@
             const organic =
                 Math.sin(t * 3 + elapsed * 0.00022) *
                 (2.0 + r * 5.0) *
-                (1 - starBlend);
+                (1 - starParticleBlend);
 
             x += organic * Math.cos(t * 2.0);
             y += organic * Math.sin(t * 2.0);
@@ -460,7 +471,7 @@
                 (0.36 + depth * 0.66) *
                 (0.60 + r * 0.34) *
                 (0.42 + (1 - starBlend) * 0.58) *
-                (1 + starBlend * 0.16);
+                (1 + starParticleBlend * 0.16);
 
             /*
              * Use the Gemini source palette. BABAEI starts green,
