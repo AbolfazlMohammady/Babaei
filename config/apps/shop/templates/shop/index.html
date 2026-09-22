@@ -76,13 +76,13 @@
                 <section class="shop-reference__filter-section">
                     <h2>محدوده قیمت</h2>
                     <div class="shop-reference__price-labels">
-                        <span><small>از</small> <b data-min-price-label>{{ filter_min_price|default:"۰" }}</b> تومان</span>
+                        <span><small>از</small> <b data-min-price-label>{{ filter_min_price|default:price_min }}</b> تومان</span>
                         <span><small>تا</small> <b data-max-price-label>{{ filter_max_price|default:"۵,۰۰۰,۰۰۰" }}</b> تومان</span>
                     </div>
                     <div class="shop-reference__range" aria-label="انتخاب بازه قیمت">
                         <div class="shop-reference__range-track"></div>
-                        <input type="range" min="0" max="{{ price_max|default:5000000 }}" step="50000" value="{{ filter_min_price|default:0 }}" data-min-range aria-label="حداقل قیمت">
-                        <input type="range" min="0" max="{{ price_max|default:5000000 }}" step="50000" value="{{ filter_max_price|default:price_max }}" data-max-range aria-label="حداکثر قیمت">
+                        <input type="range" min="{{ price_min|default:0 }}" max="{{ price_max|default:5000000 }}" step="50000" value="{{ filter_min_price|default:price_min }}" data-min-range aria-label="حداقل قیمت">
+                        <input type="range" min="{{ price_min|default:0 }}" max="{{ price_max|default:5000000 }}" step="50000" value="{{ filter_max_price|default:price_max }}" data-max-range aria-label="حداکثر قیمت">
                     </div>
                     <input type="hidden" name="min_price" value="{{ filter_min_price }}" data-min-price-input>
                     <input type="hidden" name="max_price" value="{{ filter_max_price }}" data-max-price-input>
