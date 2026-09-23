@@ -6,6 +6,5 @@ app_name = "saved"
 
 urlpatterns = [
     path("favorite/<int:product_id>/", views.toggle_favorite, name="toggle_favorite"),
-    path("save/<int:product_id>/", views.toggle_saved, name="toggle_saved"),
     path("account/saved/", views.saved_page, name="saved"),
 ]
