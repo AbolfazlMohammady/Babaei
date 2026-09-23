@@ -5,7 +5,7 @@
    ========================================================================== */
 
 .auth-body {
-    --auth-bg: var(--sh-cream);
+    --auth-bg: #cfc8bb;
     --auth-forest: var(--sh-forest);
     --auth-deep: var(--sh-forest-deep);
     --auth-soft: var(--sh-forest-soft);
@@ -42,8 +42,8 @@
     justify-content: center;
 
     background:
-        radial-gradient(circle at 50% 50%, rgba(20,82,60,.020), transparent 52%),
-        var(--auth-bg);
+        radial-gradient(circle at 50% 50%, rgba(20,82,60,.035), transparent 54%),
+        linear-gradient(135deg, #cfc8bb 0%, #c6beb0 100%);
 }
 
 /* --------------------------------------------------------------------------
@@ -59,7 +59,7 @@
     pointer-events: none;
 
     filter: blur(8px);
-    opacity: .52;
+    opacity: .46;
 }
 
 .auth-blob {
@@ -73,9 +73,9 @@
     background:
         radial-gradient(
             circle at 30% 28%,
-            rgba(235,231,222,.74),
-            rgba(125,157,137,.38) 34%,
-            rgba(20,82,60,.62) 78%
+            rgba(220,215,205,.58),
+            rgba(119,149,130,.32) 34%,
+            rgba(20,82,60,.56) 78%
         );
 
     box-shadow:
