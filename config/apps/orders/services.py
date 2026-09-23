@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.db import transaction
 
-from .models import Cart, CartItem
+from .models import Cart, CartItem, Order, OrderItem
 
 
 CART_SESSION_KEY = "babaei_cart_session"
