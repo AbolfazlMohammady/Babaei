@@ -22,7 +22,7 @@
 
             <div class="cart-products__list">
                 {% for item in items %}
-                <article class="cart-product-card" data-cart-item data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
+                <article class="cart-product-card" data-cart-item data-cart-id="{{ item.id }}" data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
                     <a class="cart-product-card__image" href="{{ item.product.get_absolute_url }}" aria-label="{{ item.product.name }}">
                         {% if item.primary_image_url %}
                         <img src="{{ item.primary_image_url }}" alt="{{ item.primary_image_alt|default:item.product.name }}" loading="lazy" decoding="async">
@@ -85,7 +85,7 @@
 
             <div class="cart-panel__items" data-cart-items>
                 {% for item in items %}
-                <article class="cart-line" data-cart-line-id="{{ item.id }}">
+                <article class="cart-line" data-cart-item data-cart-id="{{ item.id }}">
                     <div class="cart-line__content">
                         <div class="cart-line__top">
                             <div class="cart-line__identity">
