@@ -188,32 +188,40 @@ body.not-found-page {
 
 @media (max-width: 640px) {
     .not-found {
+        height: 100dvh;
         min-height: 520px;
     }
 
+    /* Keep the desktop composition on mobile; only scale typography slightly. */
     .not-found__message {
-        width: 90%;
+        width: 92%;
         height: 90%;
-        inset: 5%;
+        inset: 5% 4%;
+    }
+
+    .not-found__message-inner {
+        width: 100%;
+        padding-inline: 8px;
     }
 
     .not-found__title {
-        font-size: 28px;
+        font-size: clamp(30px, 8.5vw, 35px);
     }
 
     .not-found__code {
-        font-size: 64px;
+        font-size: clamp(68px, 20vw, 80px);
     }
 
     .not-found__description {
-        width: 75%;
+        width: min(78%, 360px);
         min-width: 0;
         font-size: 14px;
+        line-height: 1.7;
     }
 
     .not-found__actions {
-        gap: 12px;
-        margin-top: 24px;
+        gap: 16px;
+        margin-top: 28px;
     }
 
     .not-found__button {
