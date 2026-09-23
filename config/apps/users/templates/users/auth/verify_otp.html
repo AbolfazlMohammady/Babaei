@@ -73,8 +73,13 @@
         </form>
 
         <div class="auth-footer-nav">
-            <a href="{% url 'users:login' %}">← تغییر شماره / ارسال دوباره</a>
-            <span>SECURE ACCESS // 02</span>
+            <a class="auth-store-link auth-store-link--secondary" href="{% url 'shop:index' %}">
+                <span>بازگشت به فروشگاه</span>
+                <strong aria-hidden="true">←</strong>
+            </a>
+            <a class="auth-change-link" href="{% url 'users:login' %}">
+                تغییر شماره
+            </a>
         </div>
     </main>
 
