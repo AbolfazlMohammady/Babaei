@@ -43,6 +43,7 @@ body.not-found-page {
     inset: auto;
     z-index: 2;
     pointer-events: none;
+    contain: layout paint;
 }
 
 .not-found__character {
@@ -53,7 +54,9 @@ body.not-found-page {
     display: block;
     user-select: none;
     -webkit-user-drag: none;
-    will-change: left, transform;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .not-found__character--static { bottom: 5%; }
