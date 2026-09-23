@@ -162,6 +162,7 @@
 
 .auth-blob {
     position: absolute;
+    will-change: transform;
 
     width: 220px;
     height: 220px;
