@@ -4,13 +4,13 @@ from django.utils.html import format_html
 from .models import FavoriteProduct
 
 
-class SavedAdminMixin:
+class FavoriteAdminMixin:
     show_full_result_count = False
     list_per_page = 30
 
 
 @admin.register(FavoriteProduct)
-class FavoriteProductAdmin(SavedAdminMixin, admin.ModelAdmin):
+class FavoriteProductAdmin(FavoriteAdminMixin, admin.ModelAdmin):
     list_display = ("user_display", "product_display", "created_at")
     search_fields = ("user__phone", "user__first_name", "user__last_name", "product__name")
     list_filter = ("created_at", "product__category")
