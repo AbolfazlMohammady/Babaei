@@ -2,11 +2,11 @@
 {% load static %}
 
 {% block title %}ورود | BABAEI{% endblock %}
-{% block meta_description %}ورود به حساب BABAEI با شماره موبایل.{% endblock %}
+{% block meta_description %}ورود به BABAEI با شماره موبایل و کد تأیید.{% endblock %}
 {% block body_class %}auth-body shop-page{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=8">
 {% endblock %}
 
 {% block site_optional_css %}
@@ -15,32 +15,39 @@
 {% endblock %}
 
 {% block content %}
-<section class="auth-page" aria-label="ورود به حساب">
-    <div class="auth-card" aria-labelledby="auth-title">
-        <div class="auth-card__top">
-            <span class="auth-card__eyebrow">ACCOUNT</span>
-            <span class="auth-card__mark" aria-hidden="true">B</span>
-        </div>
+<section class="auth-page" aria-label="ورود به BABAEI">
+    <div class="auth-liquid" aria-hidden="true">
+        <div class="auth-blob auth-blob--1"></div>
+        <div class="auth-blob auth-blob--2"></div>
+        <div class="auth-blob auth-blob--3"></div>
+        <div class="auth-blob auth-blob--4"></div>
+        <div class="auth-blob auth-blob--5"></div>
+        <div class="auth-blob auth-blob--6"></div>
+    </div>
 
-        <div class="auth-heading">
-            <span class="auth-heading__line" aria-hidden="true"></span>
-            <p class="auth-heading__kicker">BABAEI</p>
-            <h1 id="auth-title">ورود به حساب</h1>
-            <p class="auth-heading__lead">
-                شماره موبایل خود را وارد کنید تا کد تأیید برای شما ارسال شود.
-            </p>
-        </div>
+    <div class="auth-grid" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+    </div>
 
-        <form method="post" class="auth-form" novalidate data-auth-phone-form>
+    <main class="auth-container">
+        <header class="auth-header">
+            <span class="auth-brand-id">BABAEI // ACCOUNT</span>
+            <h1>
+                WELCOME<br>
+                <strong>BACK.</strong>
+            </h1>
+            <p>ورود با شماره موبایل؛ بدون رمز عبور.</p>
+        </header>
+
+        <form method="post" class="auth-form" novalidate data-auth-phone-form autocomplete="off">
             {% csrf_token %}
 
-            <div class="auth-field-row">
-                <label class="auth-label" for="phone">شماره موبایل</label>
+            <div class="auth-form-group">
+                <label for="phone">شماره موبایل</label>
 
-                <div class="auth-phone">
-                    <span class="auth-phone__prefix">+98</span>
+                <div class="auth-phone-line">
+                    <span class="auth-phone-prefix">+98</span>
                     <input
-                        class="auth-phone__input"
                         id="phone"
                         name="phone"
                         type="tel"
@@ -52,27 +59,29 @@
                         required
                         dir="ltr"
                     >
+                    <span class="auth-input-glow"></span>
                 </div>
-
-                <small class="auth-hint">
-                    شماره را بدون صفر ابتدایی وارد کنید.
-                </small>
             </div>
 
-            <button class="auth-submit" type="submit">
-                <span>دریافت کد تأیید</span>
-                <span aria-hidden="true">←</span>
-            </button>
+            <div class="auth-submit-wrap">
+                <span class="auth-submit-liquid" aria-hidden="true"></span>
+                <button type="submit" class="auth-submit">
+                    <span>دریافت کد تأیید</span>
+                    <strong>↗</strong>
+                </button>
+            </div>
         </form>
 
-        <div class="auth-card__foot">
-            <span>ورود فقط با شماره موبایل انجام می‌شود.</span>
+        <div class="auth-footer-nav">
             <a href="{% url 'shop:index' %}">بازگشت به فروشگاه</a>
+            <span>SECURE ACCESS // 01</span>
         </div>
-    </div>
+    </main>
+
+    <div class="auth-noise" aria-hidden="true"></div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/auth-switch.js' %}?v=4" defer></script>
+<script src="{% static 'js/auth-switch.js' %}?v=5" defer></script>
 {% endblock %}
