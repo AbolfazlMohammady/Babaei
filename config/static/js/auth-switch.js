@@ -1,67 +1,133 @@
 (function () {
     "use strict";
 
-    var shell = document.querySelector("[data-auth-shell]");
-    if (!shell) return;
+    var root = document.querySelector(".auth-page");
+    if (!root) return;
 
-    var prefersReducedMotion = window.matchMedia &&
+    var card = root.querySelector(".auth-card");
+    var reduced = window.matchMedia &&
         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    function normalizeDigits(value) {
+    function digits(value) {
         return String(value || "")
-            .replace(/[۰-۹]/g, function (digit) {
-                return String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit));
+            .replace(/[۰-۹]/g, function (d) {
+                return String("۰۱۲۳۴۵۶۷۸۹".indexOf(d));
             })
-            .replace(/[٠-٩]/g, function (digit) {
-                return String("٠١٢٣٤٥٦٧٨٩".indexOf(digit));
+            .replace(/[٠-٩]/g, function (d) {
+                return String("٠١٢٣٤٥٦٧٨٩".indexOf(d));
             })
             .replace(/\D/g, "");
     }
 
-    function initPhoneNormalization() {
+    function initMode() {
+        var buttons = [].slice.call(
+            root.querySelectorAll("[data-auth-mode-button]")
+        );
+        if (!buttons.length) return;
+
+        var copy = {
+            signin: {
+                eyebrow: "SIGN IN",
+                title: "وارد حساب شو.",
+                lead: "شماره موبایلت را وارد کن؛ کد تأیید برایت ارسال می‌شود."
+            },
+            signup: {
+                eyebrow: "CREATE ACCOUNT",
+                title: "حساب خودت را بساز.",
+                lead: "شماره موبایلت کافی است؛ حساب با اولین تأیید ساخته می‌شود."
+            }
+        };
+
+        buttons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                var mode = button.getAttribute("data-auth-mode-button");
+
+                buttons.forEach(function (item) {
+                    var active =
+                        item.getAttribute("data-auth-mode-button") === mode;
+
+                    item.classList.toggle("is-active", active);
+                    item.setAttribute(
+                        "aria-selected",
+                        active ? "true" : "false"
+                    );
+                });
+
+                var e = root.querySelector('[data-auth-copy="eyebrow"]');
+                var t = root.querySelector('[data-auth-copy="title"]');
+                var l = root.querySelector('[data-auth-copy="lead"]');
+
+                if (e) e.textContent = copy[mode].eyebrow;
+                if (t) t.textContent = copy[mode].title;
+                if (l) l.textContent = copy[mode].lead;
+            });
+        });
+    }
+
+    function initPhone() {
         var input = document.getElementById("phone");
         if (!input) return;
 
         input.addEventListener("input", function () {
-            var normalized = normalizeDigits(input.value).slice(0, 11);
-            if (input.value !== normalized) input.value = normalized;
+            input.value = digits(input.value).slice(0, 11);
         });
     }
 
-    function initOtpDigits() {
-        var digits = [].slice.call(
-            shell.querySelectorAll("[data-otp-digit]")
-        );
-        var hidden = document.getElementById("code");
-        if (!digits.length || !hidden) return;
+    function initRouteTransition() {
+        var form = root.querySelector("[data-auth-phone-form]");
+        if (!form || !card) return;
 
-        function syncHidden() {
-            hidden.value = digits.map(function (input) {
-                return normalizeDigits(input.value).slice(0, 1);
+        form.addEventListener("submit", function (event) {
+            if (card.getAttribute("data-auth-transition") === "verify") {
+                return;
+            }
+
+            event.preventDefault();
+            card.setAttribute("data-auth-transition", "verify");
+
+            try {
+                sessionStorage.setItem("babaei-auth-transition", "verify");
+            } catch (_) {}
+
+            window.setTimeout(function () {
+                form.submit();
+            }, reduced ? 0 : 320);
+        });
+    }
+
+    function initVerify() {
+        var form = root.querySelector("[data-auth-verify-form]");
+        var hidden = document.getElementById("code");
+        var inputs = [].slice.call(root.querySelectorAll("[data-otp-digit]"));
+
+        if (!form || !hidden || !inputs.length) return;
+
+        function sync() {
+            hidden.value = inputs.map(function (input) {
+                return digits(input.value).slice(0, 1);
             }).join("");
         }
 
         function focusAt(index) {
-            if (digits[index]) {
-                digits[index].focus();
-                digits[index].select();
-            }
+            if (!inputs[index]) return;
+            inputs[index].focus();
+            inputs[index].select();
         }
 
-        digits.forEach(function (input, index) {
+        inputs.forEach(function (input, index) {
             input.addEventListener("input", function () {
-                var value = normalizeDigits(input.value);
+                var value = digits(input.value);
 
                 if (!value) {
                     input.value = "";
-                    syncHidden();
+                    sync();
                     return;
                 }
 
                 input.value = value.slice(-1);
-                syncHidden();
+                sync();
 
-                if (index < digits.length - 1) {
+                if (index < inputs.length - 1) {
                     focusAt(index + 1);
                 }
             });
@@ -76,7 +142,7 @@
                     focusAt(index - 1);
                 }
 
-                if (event.key === "ArrowRight" && index < digits.length - 1) {
+                if (event.key === "ArrowRight" && index < inputs.length - 1) {
                     event.preventDefault();
                     focusAt(index + 1);
                 }
@@ -85,168 +151,72 @@
             input.addEventListener("paste", function (event) {
                 event.preventDefault();
 
-                var pasted = normalizeDigits(
-                    event.clipboardData ? event.clipboardData.getData("text") : ""
-                ).slice(0, digits.length);
+                var value = digits(
+                    event.clipboardData
+                        ? event.clipboardData.getData("text")
+                        : ""
+                ).slice(0, inputs.length);
 
-                if (!pasted) return;
-
-                pasted.split("").forEach(function (char, offset) {
-                    if (digits[index + offset]) {
-                        digits[index + offset].value = char;
+                value.split("").forEach(function (char, offset) {
+                    if (inputs[index + offset]) {
+                        inputs[index + offset].value = char;
                     }
                 });
 
-                syncHidden();
-                focusAt(Math.min(index + pasted.length, digits.length - 1));
+                sync();
+                focusAt(
+                    Math.min(
+                        index + Math.max(value.length - 1, 0),
+                        inputs.length - 1
+                    )
+                );
             });
         });
 
-        var form = hidden.closest("form");
-        if (form) {
-            form.addEventListener("submit", function (event) {
-                syncHidden();
+        form.addEventListener("submit", function (event) {
+            sync();
 
-                if (hidden.value.length !== digits.length) {
-                    event.preventDefault();
+            if (hidden.value.length !== inputs.length) {
+                event.preventDefault();
 
-                    var firstEmpty = digits.findIndex(function (input) {
-                        return !input.value;
-                    });
+                var empty = inputs.findIndex(function (input) {
+                    return !input.value;
+                });
 
-                    focusAt(firstEmpty < 0 ? 0 : firstEmpty);
-                }
-            });
-        }
+                focusAt(empty < 0 ? 0 : empty);
+            }
+        });
 
         window.setTimeout(function () {
             focusAt(0);
-        }, 80);
+        }, 90);
     }
 
-    function initRouteTransition() {
-        var phoneForm = shell.querySelector("[data-auth-phone-form]");
-        var verificationStep =
-            shell.getAttribute("data-auth-step") === "verify";
-
-        if (phoneForm) {
-            phoneForm.addEventListener("submit", function (event) {
-                if (shell.getAttribute("data-auth-transition") === "verify") {
-                    return;
-                }
-
-                event.preventDefault();
-                shell.setAttribute("data-auth-transition", "verify");
-
-                try {
-                    window.sessionStorage.setItem(
-                        "babaei-auth-transition",
-                        "verify"
-                    );
-                } catch (_) {}
-
-                var delay = prefersReducedMotion ? 0 : 340;
-
-                window.setTimeout(function () {
-                    phoneForm.submit();
-                }, delay);
-            });
+    function initVerifyEnter() {
+        if (!root.classList.contains("auth-page--verify") || !card) {
+            return;
         }
 
-        if (verificationStep) {
-            var shouldAnimate = false;
+        var animate = false;
 
-            try {
-                shouldAnimate =
-                    window.sessionStorage.getItem("babaei-auth-transition") === "verify";
-                window.sessionStorage.removeItem("babaei-auth-transition");
-            } catch (_) {}
+        try {
+            animate =
+                sessionStorage.getItem("babaei-auth-transition") === "verify";
+            sessionStorage.removeItem("babaei-auth-transition");
+        } catch (_) {}
 
-            if (shouldAnimate && !prefersReducedMotion) {
-                shell.setAttribute("data-auth-transition", "enter");
+        if (!animate || reduced) return;
 
-                window.setTimeout(function () {
-                    shell.removeAttribute("data-auth-transition");
-                }, 460);
-            }
-        }
+        card.setAttribute("data-auth-transition", "enter");
+
+        window.setTimeout(function () {
+            card.removeAttribute("data-auth-transition");
+        }, 480);
     }
 
-    var triggers = [].slice.call(shell.querySelectorAll("[data-auth-go]"));
-    var panes = [].slice.call(shell.querySelectorAll("[data-auth-pane]"));
-    var state = shell.getAttribute("data-auth-state") || "signin";
-
-    function paneNamed(name) {
-        return shell.querySelector(
-            '[data-auth-pane][data-auth-for="' + name + '"]'
-        );
-    }
-
-    function setA11y() {
-        panes.forEach(function (pane) {
-            var on = pane.getAttribute("data-auth-for") === state;
-            pane.setAttribute("aria-hidden", on ? "false" : "true");
-
-            if (on) {
-                pane.removeAttribute("inert");
-            } else {
-                pane.setAttribute("inert", "");
-            }
-        });
-
-        triggers.forEach(function (btn) {
-            btn.setAttribute(
-                "aria-expanded",
-                btn.getAttribute("data-auth-go") === state ? "true" : "false"
-            );
-        });
-    }
-
-    function moveFocus(target) {
-        var wanted = shell.querySelector(
-            '[data-auth-go="' + target + '"][data-auth-focus]'
-        );
-
-        if (wanted) {
-            var field = document.getElementById(
-                wanted.getAttribute("data-auth-focus")
-            );
-
-            if (field && !field.closest("[inert]")) {
-                field.focus();
-                return;
-            }
-        }
-
-        var pane = paneNamed(target);
-        if (pane) pane.focus();
-    }
-
-    function apply(next, focus) {
-        if (next !== "signin" && next !== "signup") return;
-        if (next === state) return;
-
-        state = next;
-        shell.setAttribute("data-auth-state", state);
-        setA11y();
-
-        if (focus) moveFocus(next);
-    }
-
-    triggers.forEach(function (btn) {
-        btn.addEventListener("click", function () {
-            apply(btn.getAttribute("data-auth-go"), true);
-        });
-    });
-
-    initPhoneNormalization();
-    initOtpDigits();
+    initMode();
+    initPhone();
     initRouteTransition();
-
-    if (window.location.hash === "#signup" && triggers.length) {
-        shell.setAttribute("data-auth-state", "signup");
-        state = "signup";
-    }
-
-    setA11y();
+    initVerify();
+    initVerifyEnter();
 })();
