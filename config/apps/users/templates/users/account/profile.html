@@ -3,6 +3,75 @@
 
 {% block title %}اطلاعات شخصی | BABAEI{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/account.css' %}?v=4">
+<style>
+    /* Profile-specific palette: warm cream instead of the bright white surfaces. */
+    .account-body {
+        background: #eee8dc;
+    }
+
+    .account-body main,
+    .account-page,
+    .account-content,
+    .profile-card {
+        background: transparent;
+    }
+
+    .account-shell-header {
+        background: rgba(238, 232, 220, .94);
+    }
+
+    .ac-card,
+    .profile-card,
+    .account-user,
+    .account-nav {
+        background: #e8e0d2;
+    }
+
+    .ac-input,
+    .ac-textarea,
+    .ac-select,
+    .ac-choice__option {
+        background: #f1eadf;
+    }
+
+    /* The mobile quick-actions bar uses z-index 1200; the picker must sit above it. */
+    .jalali-picker {
+        position: relative;
+        z-index: 3000;
+    }
+
+    @media (max-width: 640px) {
+        .jalali-picker {
+            position: fixed;
+            inset-inline: 12px;
+            inset-block-end: calc(84px + env(safe-area-inset-bottom));
+            width: auto;
+            max-height: min(430px, calc(100dvh - 112px));
+            overflow: auto;
+            z-index: 3000;
+            border: 1px solid rgba(39, 108, 77, .24);
+            border-radius: 20px;
+            background: #e8dfd0;
+            box-shadow: 0 24px 70px rgba(16, 45, 35, .34);
+        }
+
+        .date-wheel__columns {
+            min-height: 190px;
+            max-height: 235px;
+        }
+
+        .date-wheel__bottom {
+            position: sticky;
+            inset-block-end: 0;
+            z-index: 2;
+            background: #dfd4c2;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block account_content %}
 <header class="account-page-header">
     <div class="account-page-header__copy">
@@ -62,14 +131,8 @@
             <div class="ac-field profile-field profile-field--wide">
                 <label class="ac-label" id="gender-label">جنسیت</label>
                 <div class="ac-choice gender-choice" role="radiogroup" aria-labelledby="gender-label">
-                    <label class="ac-choice__option gender-option {% if user.gender == 'male' %}is-selected{% endif %}">
-                        <input type="radio" name="gender" value="male" {% if user.gender == 'male' %}checked{% endif %}>
-                        <span class="ac-choice__icon" aria-hidden="true">♂</span><span>آقا</span>
-                    </label>
-                    <label class="ac-choice__option gender-option {% if user.gender == 'female' %}is-selected{% endif %}">
-                        <input type="radio" name="gender" value="female" {% if user.gender == 'female' %}checked{% endif %}>
-                        <span class="ac-choice__icon" aria-hidden="true">♀</span><span>خانم</span>
-                    </label>
+                    <label class="ac-choice__option gender-option {% if user.gender == 'male' %}is-selected{% endif %}"><input type="radio" name="gender" value="male" {% if user.gender == 'male' %}checked{% endif %}><span class="ac-choice__icon" aria-hidden="true">♂</span><span>آقا</span></label>
+                    <label class="ac-choice__option gender-option {% if user.gender == 'female' %}is-selected{% endif %}"><input type="radio" name="gender" value="female" {% if user.gender == 'female' %}checked{% endif %}><span class="ac-choice__icon" aria-hidden="true">♀</span><span>خانم</span></label>
                 </div>
             </div>
         </div>
@@ -82,7 +145,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/profile.js' %}" defer></script>
+<script src="{% static 'js/pages/profile.js' %}?v=3" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.gender-option input').forEach(input => {
