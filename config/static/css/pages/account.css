@@ -1480,54 +1480,173 @@
    ========================================================================== */
 
 .account-shell-footer {
-    margin-block-start: clamp(26px, 4vw, 48px);
-    border-block-start: 1px solid var(--ac-line);
-    background: var(--ac-surface);
+    margin-block-start: clamp(30px, 5vw, 58px);
+    border-block-start: 1px solid rgba(255, 255, 255, .08);
+    background:
+        radial-gradient(circle at 15% 0%, rgba(194, 154, 74, .14), transparent 32%),
+        linear-gradient(145deg, #123f31 0%, #0d3025 58%, #0a271f 100%);
+    color: #f7f3e9;
 }
 
 .account-shell-footer__inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    flex-wrap: wrap;
-
     width: min(var(--ac-shell), 100% - (var(--ac-gutter) * 2));
     margin-inline: auto;
-    padding-block: 26px;
+    padding-block: 34px 28px;
+}
+
+.account-shell-footer__top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) repeat(2, minmax(150px, .8fr));
+    gap: 34px;
+    padding-block-end: 28px;
+}
+
+.account-shell-footer__brand-block {
+    max-width: 430px;
+}
+
+.account-shell-footer__eyebrow {
+    display: block;
+    margin-block-end: 10px;
+    color: #d8bd7d;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .24em;
 }
 
 .account-shell-footer__brand {
-    color: var(--sh-forest);
-    font-size: 13px;
+    display: block;
+    color: #fbfaf7;
+    font-size: 25px;
     font-weight: 900;
-    letter-spacing: .26em;
+    letter-spacing: .28em;
+    line-height: 1;
 }
 
-.account-shell-footer__links {
+.account-shell-footer__brand-block p {
+    max-width: 38ch;
+    margin-block: 12px 16px;
+    color: rgba(247, 243, 233, .68);
+    font-size: 12px;
+    line-height: 1.9;
+}
+
+.account-shell-footer__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.account-shell-footer__chips span {
+    padding: 7px 10px;
+    border: 1px solid rgba(255, 255, 255, .11);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .055);
+    color: rgba(247, 243, 233, .82);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.account-shell-footer__group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 9px;
+}
+
+.account-shell-footer__group strong {
+    margin-block-end: 4px;
+    color: #fbfaf7;
+    font-size: 12.5px;
+    font-weight: 850;
+}
+
+.account-shell-footer__group a {
+    color: rgba(247, 243, 233, .62);
+    font-size: 11.5px;
+    font-weight: 650;
+    transition: color var(--sh-fast), translate var(--sh-fast);
+}
+
+.account-shell-footer__group a:hover {
+    color: #fbfaf7;
+    translate: -2px 0;
+}
+
+.account-shell-footer__note {
+    max-width: 24ch;
+    color: rgba(247, 243, 233, .44);
+    font-size: 10.5px;
+    line-height: 1.8;
+}
+
+.account-shell-footer__bottom {
     display: flex;
     align-items: center;
-    gap: 18px;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    padding-block-start: 18px;
+    border-block-start: 1px solid rgba(255, 255, 255, .10);
+    color: rgba(247, 243, 233, .42);
+    font-size: 10.5px;
 }
 
-.account-shell-footer__links a {
-    color: var(--sh-muted);
-    font-size: 12.5px;
+.account-shell-footer__mark {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(216, 189, 125, .38);
+    border-radius: 50%;
+    color: #d8bd7d;
+    font-family: Georgia, serif;
+    font-size: 15px;
     font-weight: 700;
-    transition: color var(--sh-fast);
 }
 
-.account-shell-footer__links a:hover {
-    color: var(--sh-forest);
-}
-
-/* The floating quick-actions ring is bottom-right on desktop only, so the last
-   row of the page keeps clear of it here. Phones get their clearance from the
-   mobile dock, which pads the body itself. */
 @media (min-width: 901px) {
     .account-shell-footer__inner {
-        padding-block: 30px 132px;
+        padding-block: 36px 132px;
+    }
+}
+
+@media (max-width: 700px) {
+    .account-shell-footer {
+        margin-block-start: 24px;
+    }
+
+    .account-shell-footer__inner {
+        width: min(var(--ac-shell), 100% - 28px);
+        padding-block: 28px calc(var(--dock-h, 64px) + 24px);
+    }
+
+    .account-shell-footer__top {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 26px 20px;
+    }
+
+    .account-shell-footer__brand-block {
+        grid-column: 1 / -1;
+    }
+
+    .account-shell-footer__brand {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 420px) {
+    .account-shell-footer__top {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px 16px;
+    }
+
+    .account-shell-footer__group a {
+        font-size: 11px;
+    }
+
+    .account-shell-footer__bottom {
+        align-items: flex-start;
+        font-size: 9.5px;
     }
 }
 
@@ -1870,13 +1989,19 @@
     .jalali-picker {
         position: fixed;
         inset-inline-start: 50%;
-        inset-block-end: calc(var(--dock-h, 64px) + 18px);
+        inset-block-end: calc(var(--dock-h, 64px) + env(safe-area-inset-bottom, 0px) + 18px);
         inset-block-start: auto;
         width: min(352px, calc(100vw - 24px));
-        max-height: min(610px, calc(100dvh - var(--dock-h, 64px) - 34px));
+        max-height: min(610px, calc(100dvh - var(--dock-h, 64px) - env(safe-area-inset-bottom, 0px) - 34px));
         overflow: auto;
         transform: translateX(-50%);
-        z-index: 180;
+        z-index: 1000;
+        isolation: isolate;
+    }
+
+    body > .jalali-picker,
+    .jalali-picker.is-mobile-portal {
+        position: fixed;
     }
 
     .date-wheel__columns {
