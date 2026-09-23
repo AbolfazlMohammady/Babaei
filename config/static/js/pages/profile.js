@@ -129,10 +129,43 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    const syncWheelVisuals = column => {
+        const items = [...column.querySelectorAll(".date-wheel__item:not(:disabled)")];
+        if (!items.length) return;
+
+        const center = column.scrollTop + column.clientHeight / 2;
+        const half = Math.max(1, column.clientHeight / 2);
+        let focused = null;
+        let focusedDistance = Infinity;
+
+        items.forEach(item => {
+            const itemCenter = item.offsetTop + item.offsetHeight / 2;
+            const distance = Math.abs(itemCenter - center);
+            const normalized = Math.min(distance / half, 1);
+            const rotate = Math.max(-28, Math.min(28, (itemCenter - center) * -0.16));
+            const scale = 1 - normalized * 0.20;
+            const opacity = 1 - normalized * 0.48;
+
+            item.style.transform =
+                `perspective(260px) rotateX(${rotate}deg) scale(${scale})`;
+            item.style.opacity = String(opacity);
+
+            if (distance < focusedDistance) {
+                focusedDistance = distance;
+                focused = item;
+            }
+        });
+
+        items.forEach(item => item.classList.toggle("is-wheel-focused", item === focused));
+    };
+
     const bindWheelSelection = (column, kind) => {
         let timer = 0;
 
+        const sync = () => syncWheelVisuals(column);
+
         column.addEventListener("scroll", () => {
+            sync();
             window.clearTimeout(timer);
             timer = window.setTimeout(() => {
                 const items = [...column.querySelectorAll(".date-wheel__item:not(:disabled)")];
@@ -162,6 +195,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }, 90);
         }, { passive: true });
+
+        requestAnimationFrame(sync);
     };
 
     const render = () => {
@@ -236,14 +271,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (selected) input.value = format(selected);
 
-    input.addEventListener("pointerdown", event => {
-        if (isMobilePicker()) {
-            event.preventDefault();
-            open();
-        }
-    });
+    const openFromMobileTouch = event => {
+        if (!isMobilePicker()) return;
+        event.preventDefault();
+        open();
+    };
+
+    input.addEventListener("pointerdown", openFromMobileTouch);
+    input.addEventListener("touchstart", openFromMobileTouch, { passive: false });
     input.addEventListener("click", open);
-    input.addEventListener("focus", open);
+    input.addEventListener("focus", () => {
+        if (!isMobilePicker()) open();
+    });
     input.addEventListener("keydown", e => e.preventDefault());
     input.addEventListener("paste", e => e.preventDefault());
     document.addEventListener("click", e => {
