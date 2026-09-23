@@ -58,6 +58,7 @@
             stick.className = "not-found__character";
             stick.alt = "";
             stick.draggable = false;
+            stick.decoding = "async";
             stick.src = figure.src;
 
             if (figure.top) stick.style.top = figure.top;
@@ -103,6 +104,9 @@
     let frameId = 0;
     let timer = 0;
     let circles = [];
+    let animationRunning = true;
+    const mobile = window.matchMedia("(max-width: 640px)").matches;
+    const circleCount = mobile ? 220 : 300;
 
     function initCircles() {
         const width = window.innerWidth;
@@ -110,7 +114,7 @@
 
         circles = [];
 
-        for (let index = 0; index < 300; index += 1) {
+        for (let index = 0; index < circleCount; index += 1) {
             const randomX =
                 Math.floor(Math.random() * (width * 3 - width * 1.2 + 1)) +
                 width * 1.2;
@@ -128,6 +132,8 @@
     }
 
     function draw() {
+        if (!animationRunning) return;
+
         const width = window.innerWidth;
         const height = window.innerHeight;
         const distanceX = width / 80;
@@ -135,9 +141,8 @@
 
         timer += 1;
 
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.fillStyle = "white";
         context.clearRect(0, 0, width, height);
+        context.beginPath();
 
         circles.forEach((circle) => {
             if (timer < 65) {
@@ -150,10 +155,11 @@
                 circle.size += growthRate * 0.2;
             }
 
-            context.beginPath();
+            context.moveTo(circle.x + circle.size, circle.y);
             context.arc(circle.x, circle.y, circle.size, 0, Math.PI * 2);
-            context.fill();
         });
+
+        context.fill();
 
         if (timer > 500) {
             frameId = 0;
@@ -167,9 +173,19 @@
         if (frameId) cancelAnimationFrame(frameId);
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        context.fillStyle = "white";
         timer = 0;
+        animationRunning = true;
         initCircles();
         draw();
+    }
+
+    function stopAnimation() {
+        animationRunning = false;
+        if (frameId) {
+            cancelAnimationFrame(frameId);
+            frameId = 0;
+        }
     }
 
     backButton?.addEventListener("click", () => {
@@ -203,8 +219,17 @@
         }, 120);
     });
 
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            stopAnimation();
+        } else if (!reducedMotion && timer < 500) {
+            animationRunning = true;
+            frameId = requestAnimationFrame(draw);
+        }
+    });
+
     window.addEventListener("pagehide", () => {
-        if (frameId) cancelAnimationFrame(frameId);
+        stopAnimation();
         animations.forEach((animation) => animation.cancel());
     });
 })();
