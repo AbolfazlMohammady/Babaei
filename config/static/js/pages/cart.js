@@ -204,7 +204,16 @@
         } finally {
             buttons.forEach((button) => { button.disabled = false; });
 
-            if (form.dataset.cartAction === "update") {\n                const item = form.closest("[data-cart-item]");\n                const quantity = Number(item?.querySelector("[data-quantity-value]")?.dataset.value || 1);\n                const minus = item?.querySelector("[data-quantity-minus]");\n                const plus = item?.querySelector("[data-quantity-plus]");\n                const max = Number(item?.dataset.stock || 0);\n\n                if (minus) minus.disabled = quantity <= 1;\n                if (plus && max > 0) plus.disabled = quantity >= max;\n            }
+            if (form.dataset.cartAction === "update") {
+                const item = form.closest("[data-cart-item]");
+                const quantity = Number(item?.querySelector("[data-quantity-value]")?.dataset.value || 1);
+                const minus = item?.querySelector("[data-quantity-minus]");
+                const plus = item?.querySelector("[data-quantity-plus]");
+                const max = Number(item?.dataset.stock || 0);
+
+                if (minus) minus.disabled = quantity <= 1;
+                if (plus && max > 0) plus.disabled = quantity >= max;
+            }
         }
     });
 
