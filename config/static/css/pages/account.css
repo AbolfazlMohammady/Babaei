@@ -71,6 +71,9 @@
    ========================================================================== */
 
 .account-body {
+    --sh-nav-h: 74px;
+    --sh-gutter: clamp(18px, 4.4vw, 56px);
+    --sh-shell: 1240px;
     background: var(--sh-cream);
     color: var(--sh-ink);
 }
