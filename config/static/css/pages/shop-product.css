@@ -2,9 +2,17 @@
    BABAEI — Product detail
    --------------------------------------------------------------------------
    THE SURFACE
-   This page is cream and forest green like the rest of the store. It paints no
-   surface of its own: the shell's background shows through, which is also why
-   the nav, the dock and the footer need no overrides here.
+   A warm near-white (`--pdp-stage`), one step brighter than the shell's cream,
+   with the store's forest green as the only accent. Full-bleed, so the nav, the
+   dock and the footer keep the colours every other page gives them.
+
+   WHAT IT COSTS
+   Everything below the fold carries `content-visibility: auto`, the photo's box
+   is reserved by the width/height attributes the image tag already emits (so
+   there is no shift when it lands), controls opt out of the mobile tap flash,
+   and every hover rule in this file sits behind one
+   `(hover: hover) and (pointer: fine)` guard at §13 — a touch pointer cannot
+   leave a hover state, and a stuck one reads as a control that turned green.
 
    THE PHOTO IS THE CARD
    The photo is not framed by a panel. `.pd-media__frame` is an inline-block
@@ -66,14 +74,18 @@ body.product-detail-page {
    01 — PAGE FRAME
    ========================================================================== */
 
-/* One step deeper than the store's cream, so the page reads as a stage
-   instead of more of the same flat surface. Full-bleed, so the only colour
-   change is between the nav and the footer; the nav, the dock and the footer
-   stay exactly as every other page shows them. --sh-sand is the store's own
-   deeper neutral, not a colour invented for this page. */
+/* A warm near-white: brighter than the store's cream, and the surface the
+   photo and the white panels are meant to sit on. Full-bleed, so the only
+   colour change is between the nav and the footer — the nav, the dock and the
+   footer stay exactly as every other page shows them. One token, so the depth
+   is a one-line change. */
+body.product-detail-page {
+    --pdp-stage: #f5f3ee;
+}
+
 body.product-detail-page .pd {
     display: block;
-    background: var(--sh-sand);
+    background: var(--pdp-stage);
 }
 
 body.product-detail-page .pd-inner {
@@ -101,10 +113,6 @@ body.product-detail-page .pd-crumbs a {
     color: inherit;
     text-decoration: none;
     transition: color var(--sh-fast);
-}
-
-body.product-detail-page .pd-crumbs a:hover {
-    color: var(--pdp-forest);
 }
 
 body.product-detail-page .pd-crumbs > span[aria-hidden] {
@@ -250,11 +258,6 @@ body.product-detail-page .pd-thumb img {
     object-fit: cover;
 }
 
-body.product-detail-page .pd-thumb:hover {
-    opacity: .88;
-    transform: translateY(-2px);
-}
-
 body.product-detail-page .pd-thumb.is-active {
     border-color: var(--pdp-forest);
     opacity: 1;
@@ -282,12 +285,6 @@ body.product-detail-page .pd-kicker {
 body.product-detail-page .pd-kicker a {
     color: inherit;
     text-decoration: none;
-}
-
-body.product-detail-page .pd-kicker a:hover {
-    color: var(--pdp-forest-soft);
-    text-decoration: underline;
-    text-underline-offset: 4px;
 }
 
 body.product-detail-page .pd-head {
@@ -320,6 +317,20 @@ body.product-detail-page .pd-save form {
     margin: 0;
 }
 
+/* A tap should look like a tap: no grey flash over the control, and no
+   waiting 300ms to find out whether a double-tap was coming. */
+body.product-detail-page .color-option,
+body.product-detail-page .size-option,
+body.product-detail-page .pd-thumb,
+body.product-detail-page .product-save-button,
+body.product-detail-page .pd-qty__control button,
+body.product-detail-page .pd-buy__button,
+body.product-detail-page .pd-incart,
+body.product-detail-page .pd-studio__cta {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
 body.product-detail-page .product-save-button {
     display: inline-flex;
     align-items: center;
@@ -343,11 +354,6 @@ body.product-detail-page .product-save-button svg {
     stroke-width: 1.6;
     stroke-linecap: round;
     stroke-linejoin: round;
-}
-
-body.product-detail-page .product-save-button:hover {
-    border-color: var(--sh-moss);
-    color: var(--pdp-forest);
 }
 
 body.product-detail-page .product-save-button.is-active {
@@ -552,12 +558,6 @@ body.product-detail-page .color-swatch {
     background: var(--swatch, var(--sh-sand));
 }
 
-body.product-detail-page .color-option:hover:not(:disabled),
-body.product-detail-page .size-option:hover:not(:disabled) {
-    border-color: var(--sh-moss);
-    color: var(--pdp-forest);
-}
-
 body.product-detail-page .color-option.is-selected,
 body.product-detail-page .size-option.is-selected {
     border-color: var(--pdp-forest);
@@ -640,11 +640,6 @@ body.product-detail-page .pd-qty__control button {
     transition: background var(--sh-fast), color var(--sh-fast);
 }
 
-body.product-detail-page .pd-qty__control button:hover:not(:disabled) {
-    background: rgba(20, 82, 60, .08);
-    color: var(--pdp-forest);
-}
-
 body.product-detail-page .pd-qty__control button:disabled {
     opacity: .3;
     cursor: not-allowed;
@@ -705,12 +700,6 @@ body.product-detail-page .pd-buy__button {
     box-shadow: 0 12px 24px -20px rgba(20, 82, 60, .8);
 }
 
-body.product-detail-page .pd-buy__button:hover:not(:disabled) {
-    background: linear-gradient(180deg, #227a58 0%, #17604a 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 16px 28px -20px rgba(20, 82, 60, .9);
-}
-
 body.product-detail-page .pd-buy__button:disabled {
     background: var(--sh-sand);
     color: var(--pdp-muted);
@@ -726,10 +715,6 @@ body.product-detail-page .pd-incart {
     border: 1px solid rgba(20, 82, 60, .28);
     background: rgba(20, 82, 60, .06);
     color: var(--pdp-forest);
-}
-
-body.product-detail-page .pd-incart:hover {
-    background: rgba(20, 82, 60, .11);
 }
 
 body.product-detail-page .pd-incart span {
@@ -816,6 +801,16 @@ body.product-detail-page .pd-perk small {
     color: var(--pdp-muted);
     font-size: 11.5px;
     line-height: 1.9;
+}
+
+/* Everything below the fold skips layout and paint until it is nearly in
+   view. `contain-intrinsic-size: auto` makes the browser remember each
+   section's last rendered height, so the scrollbar does not jump. */
+body.product-detail-page .pd-perks,
+body.product-detail-page .pd-story,
+body.product-detail-page .pd-studio {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 200px;
 }
 
 body.product-detail-page .pd-story {
@@ -907,11 +902,6 @@ body.product-detail-page .pd-studio__cta {
     transition: background var(--sh-fast), transform var(--sh-fast);
 }
 
-body.product-detail-page .pd-studio__cta:hover {
-    background: var(--pdp-forest-soft);
-    transform: translateY(-1px);
-}
-
 /* ==========================================================================
    11 — TOAST
    shop-product.js appends this node to <body> on every add-to-cart and every
@@ -978,15 +968,6 @@ body.product-detail-page .pd-media__frame::after {
     opacity: 0;
     transition: opacity var(--sh-slow);
     pointer-events: none;
-}
-
-body.product-detail-page .pd-media__frame.is-interactive:hover {
-    --tilt-lift: 1.012;
-    box-shadow: 14px 16px 0 rgba(20, 82, 60, .09), 0 34px 62px -34px rgba(9, 28, 20, .45);
-}
-
-body.product-detail-page .pd-media__frame.is-interactive:hover::after {
-    opacity: 1;
 }
 
 body.product-detail-page .pd-media__frame.is-tilting {
@@ -1077,6 +1058,24 @@ body.product-detail-page .pd-studio__cta:focus-visible {
     }
 }
 
+/* The dock carries every destination the top bar does, so below the dock's own
+   breakpoint the bar is a second navigation stacked on the first — 62px of a
+   844px screen spent twice. The product page drops it and starts at the
+   breadcrumb. The query is deliberately the dock's own `max-width: 940px`, so
+   the two can never disagree; scoped to this page, not the shell. */
+@media (max-width: 940px) {
+    body.product-detail-page .sh-nav {
+        display: none;
+    }
+}
+
+/* With no bar to sit under, the photo column does not need its height reserved. */
+@media (min-width: 760px) and (max-width: 940px) {
+    body.product-detail-page .pd-media {
+        top: 20px;
+    }
+}
+
 @media (min-width: 941px) {
     body.product-detail-page .product-toast {
         bottom: 28px;
@@ -1084,6 +1083,71 @@ body.product-detail-page .pd-studio__cta:focus-visible {
 }
 
 /* ==========================================================================
+/* ==========================================================================
+   13 — HOVER, ON DEVICES THAT HAVE IT
+   Every hover rule in this sheet lives here, behind one guard. A touch pointer
+   has no hover to leave, so a tap leaves whatever it set painted on the control
+   the shopper just touched — an option chip reading as green until they tap
+   somewhere else. Nothing in here may be a state a shopper needs to see.
+   ========================================================================== */
+
+@media (hover: hover) and (pointer: fine) {
+    body.product-detail-page .pd-crumbs a:hover {
+        color: var(--pdp-forest);
+    }
+
+    body.product-detail-page .pd-thumb:hover {
+        opacity: .88;
+        transform: translateY(-2px);
+    }
+
+    body.product-detail-page .pd-kicker a:hover {
+        color: var(--pdp-forest-soft);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+    }
+
+    body.product-detail-page .product-save-button:hover {
+        border-color: var(--sh-moss);
+        color: var(--pdp-forest);
+    }
+
+    body.product-detail-page .color-option:hover:not(:disabled),
+    body.product-detail-page .size-option:hover:not(:disabled) {
+        border-color: var(--sh-moss);
+        color: var(--pdp-forest);
+    }
+
+    body.product-detail-page .pd-qty__control button:hover:not(:disabled) {
+        background: rgba(20, 82, 60, .08);
+        color: var(--pdp-forest);
+    }
+
+    body.product-detail-page .pd-buy__button:hover:not(:disabled) {
+        background: linear-gradient(180deg, #227a58 0%, #17604a 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 16px 28px -20px rgba(20, 82, 60, .9);
+    }
+
+    body.product-detail-page .pd-incart:hover {
+        background: rgba(20, 82, 60, .11);
+    }
+
+    body.product-detail-page .pd-studio__cta:hover {
+        background: var(--pdp-forest-soft);
+        transform: translateY(-1px);
+    }
+
+    body.product-detail-page .pd-media__frame.is-interactive:hover {
+        --tilt-lift: 1.012;
+        box-shadow: 14px 16px 0 rgba(20, 82, 60, .09), 0 34px 62px -34px rgba(9, 28, 20, .45);
+    }
+
+    body.product-detail-page .pd-media__frame.is-interactive:hover::after {
+        opacity: 1;
+    }
+}
+
    15 — REDUCED MOTION
    ========================================================================== */
 

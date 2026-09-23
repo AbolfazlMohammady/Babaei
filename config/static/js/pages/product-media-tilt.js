@@ -25,34 +25,44 @@
     const noMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     let queued = false;
-    let next = null;
+    let pointer = null;
+    let box = null;
     let attached = false;
+
+    /* Reading the box forces the browser to flush layout, so it must never
+       happen per pointer event: a pointer can move at 120Hz and a forced
+       reflow at that rate is how a smooth card turns into a janky one. The
+       event only records where the pointer is; the box is read inside the
+       animation frame, and only when the page has moved since the last read. */
+    const forgetBox = () => {
+        box = null;
+    };
+
+    const readBox = () => {
+        if (!box) box = card.getBoundingClientRect();
+        return box;
+    };
 
     const flush = () => {
         queued = false;
-        if (!next) return;
-        card.style.setProperty("--tilt-x", `${next.x.toFixed(2)}deg`);
-        card.style.setProperty("--tilt-y", `${next.y.toFixed(2)}deg`);
-        card.style.setProperty("--glow-x", `${next.glowX.toFixed(1)}%`);
-        card.style.setProperty("--glow-y", `${next.glowY.toFixed(1)}%`);
-        next = null;
+        if (!pointer) return;
+
+        const rect = readBox();
+        if (!rect.width || !rect.height) return;
+
+        const px = (pointer.x - rect.left) / rect.width;   // 0 … 1
+        const py = (pointer.y - rect.top) / rect.height;   // 0 … 1
+
+        card.style.setProperty("--tilt-x", `${((0.5 - py) * 2 * MAX_TILT).toFixed(2)}deg`);
+        card.style.setProperty("--tilt-y", `${((px - 0.5) * 2 * MAX_TILT).toFixed(2)}deg`);
+        card.style.setProperty("--glow-x", `${(px * 100).toFixed(1)}%`);
+        card.style.setProperty("--glow-y", `${(py * 100).toFixed(1)}%`);
+        pointer = null;
     };
 
     const onMove = (event) => {
-        const rect = card.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
-
-        const px = (event.clientX - rect.left) / rect.width;  // 0 … 1
-        const py = (event.clientY - rect.top) / rect.height;  // 0 … 1
-
-        next = {
-            // Turning the pointer right lifts the left edge, and so on.
-            y: (px - 0.5) * 2 * MAX_TILT,
-            x: (0.5 - py) * 2 * MAX_TILT,
-            glowX: px * 100,
-            glowY: py * 100,
-        };
-
+        // Read the coordinates now: the event object is reused afterwards.
+        pointer = { x: event.clientX, y: event.clientY };
         if (!card.classList.contains("is-tilting")) {
             card.classList.add("is-tilting");
         }
@@ -64,7 +74,7 @@
 
     const reset = () => {
         card.classList.remove("is-tilting");
-        next = null;
+        pointer = null;
         card.style.setProperty("--tilt-x", "0deg");
         card.style.setProperty("--tilt-y", "0deg");
         card.style.setProperty("--glow-x", "50%");
@@ -73,9 +83,13 @@
 
     const detach = () => {
         if (!attached) return;
+        card.removeEventListener("pointerenter", forgetBox);
         card.removeEventListener("pointermove", onMove);
         card.removeEventListener("pointerleave", reset);
         card.removeEventListener("pointercancel", reset);
+        window.removeEventListener("scroll", forgetBox);
+        window.removeEventListener("resize", forgetBox);
+        forgetBox();
         card.classList.remove("is-interactive");
         attached = false;
         reset();
@@ -83,9 +97,14 @@
 
     const attach = () => {
         if (attached) return;
-        card.addEventListener("pointermove", onMove);
+        card.addEventListener("pointerenter", forgetBox, { passive: true });
+        card.addEventListener("pointermove", onMove, { passive: true });
         card.addEventListener("pointerleave", reset);
         card.addEventListener("pointercancel", reset);
+        // The card is sticky, so its box moves with the page; drop the cached
+        // one whenever the page does, and it is re-read at most once per frame.
+        window.addEventListener("scroll", forgetBox, { passive: true });
+        window.addEventListener("resize", forgetBox, { passive: true });
         card.classList.add("is-interactive");
         attached = true;
     };

@@ -122,7 +122,7 @@
                 const result = await response.json();
 
                 if (response.status === 401 || result.login_required) {
-                    window.location.href = result.login_url || "/account/login/";
+                    window.location.href = result.login_url || "/login/";
                     return;
                 }
 
