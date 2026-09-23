@@ -30,7 +30,6 @@
     {% if request.resolver_match.namespace == 'users' or request.resolver_match.namespace == 'saved' %}
         {% if request.resolver_match.url_name == 'login' or request.resolver_match.url_name == 'verify_otp' %}
         {% else %}
-        <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
         <link rel="stylesheet" href="{% static 'css/babaei-ui.css' %}?v=1">
         <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=10">
         {% endif %}
@@ -102,10 +101,8 @@
     never open. The shop namespace ships its own drawer inside shop_header.html;
     every other page keeps the old include untouched.
     {% endcomment %}
-    {% if request.resolver_match.namespace != 'shop' %}
-        {% if request.resolver_match.namespace != 'users' or request.resolver_match.namespace == 'saved' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
+    {% if request.resolver_match.namespace != 'shop' and request.resolver_match.namespace != 'users' and request.resolver_match.namespace != 'saved' %}
     {% include "includes/mobile_menu.html" %}
-        {% endif %}
     {% endif %}
     {% include "includes/messages.html" %}
     <main>{% block content %}{% endblock %}</main>
@@ -177,7 +174,6 @@
     {% if request.resolver_match.namespace == 'users' or request.resolver_match.namespace == 'saved' %}
         {% if request.resolver_match.url_name == 'login' or request.resolver_match.url_name == 'verify_otp' %}
         {% else %}
-    <script src="{% static 'js/components/quick-actions.js' %}?v=4" defer></script>
     <script src="{% static 'js/storefront.js' %}?v=3" defer></script>
         {% endif %}
     {% else %}
