@@ -1990,3 +1990,41 @@
         scale: none;
     }
 }
+
+
+/* ==========================================================================
+   19 — ACCOUNT / SHOP SHELL INTEGRATION
+   ========================================================================== */
+
+.account-logout-form {
+    display: flex;
+    margin: 0;
+}
+
+.account-sidebar > .account-logout-form {
+    width: 100%;
+}
+
+.account-sidebar > .account-logout-form .account-logout {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+}
+
+@media (max-width: 640px) {
+    .account-sidebar > .account-logout-form .account-logout {
+        min-height: 46px;
+    }
+}
+
+/* The shop navbar is the desktop account header. The mobile experience keeps
+   the existing mobile dock/navigation and removes the desktop navbar entirely. */
+@media (max-width: 700px) {
+    body.account-body .sh-nav {
+        display: none;
+    }
+
+    body.account-body .sh-drawer {
+        display: none;
+    }
+}
