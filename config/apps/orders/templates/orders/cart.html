@@ -111,6 +111,16 @@
             <div class="cart-panel__items" data-cart-items>
                 {% for item in items %}
                 <article class="cart-line" data-cart-item data-cart-id="{{ item.id }}" data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
+                    <div class="cart-line__visual">
+                        <a href="{{ item.product.get_absolute_url }}" class="cart-line__image" aria-label="{{ item.product.name }}">
+                            {% if item.primary_image_url %}
+                            <img src="{{ item.primary_image_url }}" alt="{{ item.primary_image_alt|default:item.product.name }}" loading="lazy" decoding="async">
+                            {% else %}
+                            <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ item.product.name }}" loading="lazy" decoding="async">
+                            {% endif %}
+                        </a>
+                    </div>
+
                     <div class="cart-line__content">
                         <div class="cart-line__top">
                             <div class="cart-line__identity">
