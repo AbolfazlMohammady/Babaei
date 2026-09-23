@@ -171,9 +171,9 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="date-wheel__bottom"><span data-preview></span><div><button type="button" class="date-wheel__clear">پاک کردن</button><button type="button" class="date-wheel__confirm">تأیید تاریخ</button></div></div>`;
 
-        let day = picker.querySelector("[data-day]");
-        let month = picker.querySelector("[data-month]");
-        let year = picker.querySelector("[data-year]");
+        const day = picker.querySelector("[data-day]");
+        const month = picker.querySelector("[data-month]");
+        const year = picker.querySelector("[data-year]");
 
         const rebuildDays = () => {
             const maxDay = daysInMonth(view.year, view.month);
@@ -201,19 +201,9 @@ document.addEventListener("DOMContentLoaded", () => {
         rebuildDays();
         updatePreview();
 
-        [year, month, day].forEach((column) => {
-            const replacement = column.cloneNode(true);
-            column.replaceWith(replacement);
-        });
-        day = picker.querySelector("[data-day]");
-        month = picker.querySelector("[data-month]");
-        year = picker.querySelector("[data-year]");
-        const yearColumn = year;
-        const monthColumn = month;
-        const dayColumn = day;
-        bindWheelSelection(yearColumn, "year");
-        bindWheelSelection(monthColumn, "month");
-        bindWheelSelection(dayColumn, "day");
+        bindWheelSelection(year, "year");
+        bindWheelSelection(month, "month");
+        bindWheelSelection(day, "day");
 
         picker.querySelector(".date-wheel__close").onclick = close;
         picker.querySelector(".date-wheel__clear").onclick = () => { selected = null; hidden.value = ""; input.value = ""; close(); };
