@@ -6,7 +6,7 @@
 {% block body_class %}auth-body shop-page{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=8">
 {% endblock %}
 
 {% block site_optional_css %}
@@ -16,68 +16,72 @@
 
 {% block content %}
 <section class="auth-page auth-page--verify" aria-label="تأیید شماره موبایل">
-    <div class="auth-card" aria-labelledby="verify-title">
-        <div class="auth-card__top">
-            <span class="auth-card__eyebrow">VERIFICATION</span>
-            <span class="auth-card__mark auth-card__mark--done" aria-hidden="true">✓</span>
-        </div>
+    <div class="auth-liquid" aria-hidden="true">
+        <div class="auth-blob auth-blob--1"></div>
+        <div class="auth-blob auth-blob--2"></div>
+        <div class="auth-blob auth-blob--3"></div>
+        <div class="auth-blob auth-blob--4"></div>
+        <div class="auth-blob auth-blob--5"></div>
+        <div class="auth-blob auth-blob--6"></div>
+    </div>
 
-        <div class="auth-heading">
-            <span class="auth-heading__line" aria-hidden="true"></span>
-            <p class="auth-heading__kicker">کد تأیید</p>
-            <h1 id="verify-title">کد پیامک‌شده را وارد کنید</h1>
-            <p class="auth-heading__lead">
-                کد ارسال‌شده به <strong dir="ltr">{{ phone }}</strong> را وارد کنید.
+    <div class="auth-grid" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+    </div>
+
+    <main class="auth-container">
+        <header class="auth-header">
+            <span class="auth-brand-id">BABAEI // VERIFY</span>
+            <h1>
+                ENTER<br>
+                <strong>CODE.</strong>
+            </h1>
+            <p>
+                کد ارسال‌شده به
+                <b dir="ltr">{{ phone }}</b>
+                را وارد کنید.
             </p>
-        </div>
+        </header>
 
-        <form method="post" class="auth-form" novalidate data-auth-verify-form>
+        <form method="post" class="auth-form" novalidate data-auth-verify-form autocomplete="off">
             {% csrf_token %}
 
-            <div class="auth-field-row">
-                <label class="auth-label" for="code">کد تأیید</label>
+            <div class="auth-form-group">
+                <label>کد تأیید</label>
 
-                <div class="auth-otp" aria-label="کد تأیید شش رقمی">
-                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
-                           autocomplete="one-time-code" data-otp-digit="0" aria-label="رقم اول">
-                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
-                           autocomplete="off" data-otp-digit="1" aria-label="رقم دوم">
-                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
-                           autocomplete="off" data-otp-digit="2" aria-label="رقم سوم">
-                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
-                           autocomplete="off" data-otp-digit="3" aria-label="رقم چهارم">
-                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
-                           autocomplete="off" data-otp-digit="4" aria-label="رقم پنجم">
-                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
-                           autocomplete="off" data-otp-digit="5" aria-label="رقم ششم">
+                <div class="auth-otp-line" aria-label="کد تأیید شش رقمی">
+                    <div class="auth-otp-cell"><input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" data-otp-digit="0" aria-label="رقم اول"><span></span></div>
+                    <div class="auth-otp-cell"><input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="off" data-otp-digit="1" aria-label="رقم دوم"><span></span></div>
+                    <div class="auth-otp-cell"><input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="off" data-otp-digit="2" aria-label="رقم سوم"><span></span></div>
+                    <div class="auth-otp-cell"><input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="off" data-otp-digit="3" aria-label="رقم چهارم"><span></span></div>
+                    <div class="auth-otp-cell"><input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="off" data-otp-digit="4" aria-label="رقم پنجم"><span></span></div>
+                    <div class="auth-otp-cell"><input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="off" data-otp-digit="5" aria-label="رقم ششم"><span></span></div>
                 </div>
 
                 <input id="code" name="code" type="hidden">
 
-                <small class="auth-hint">
-                    کد ۶ رقمی را وارد کنید یا یکجا Paste کنید.
-                </small>
+                <small>کد ۶ رقمی را وارد کنید یا یکجا Paste کنید.</small>
             </div>
 
-            <button class="auth-submit" type="submit">
-                <span>تأیید و ورود</span>
-                <span aria-hidden="true">←</span>
-            </button>
+            <div class="auth-submit-wrap">
+                <span class="auth-submit-liquid" aria-hidden="true"></span>
+                <button type="submit" class="auth-submit">
+                    <span>تأیید و ورود</span>
+                    <strong>↗</strong>
+                </button>
+            </div>
         </form>
 
-        <div class="auth-resend">
-            <span>کد را دریافت نکردید؟</span>
-            <a href="{% url 'users:login' %}">بازگشت و ارسال دوباره</a>
+        <div class="auth-footer-nav">
+            <a href="{% url 'users:login' %}">← تغییر شماره / ارسال دوباره</a>
+            <span>SECURE ACCESS // 02</span>
         </div>
+    </main>
 
-        <div class="auth-card__foot">
-            <span>شماره اشتباه است؟</span>
-            <a href="{% url 'users:login' %}">تغییر شماره</a>
-        </div>
-    </div>
+    <div class="auth-noise" aria-hidden="true"></div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/auth-switch.js' %}?v=4" defer></script>
+<script src="{% static 'js/auth-switch.js' %}?v=5" defer></script>
 {% endblock %}
