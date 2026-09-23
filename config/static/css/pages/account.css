@@ -56,9 +56,9 @@
     --ac-line-2: rgba(20, 22, 26, .16);
     --ac-line-3: rgba(20, 22, 26, .26);
 
-    --ac-surface: var(--sh-cream-2);
+    --ac-surface: #f8f5ee;
     --ac-sunken: var(--sh-sand);
-    --ac-field-bg: #ffffff;
+    --ac-field-bg: #f4f1e9;
     --ac-field-h: 54px;
 
     --ac-ring: 0 0 0 3px rgba(20, 82, 60, .16);
@@ -1476,278 +1476,6 @@
 }
 
 /* ==========================================================================
-   15 — SAVED ITEMS
-   ========================================================================== */
-
-.saved-page {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    min-width: 0;
-}
-
-.saved-tabs {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    align-self: flex-start;
-    max-width: 100%;
-    overflow-x: auto;
-
-    padding: 5px;
-    border: 1px solid var(--ac-line);
-    border-radius: 999px;
-    background: var(--ac-surface);
-}
-
-.saved-tab {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex: 0 0 auto;
-
-    min-height: 42px;
-    padding-inline: 18px;
-
-    border: 0;
-    border-radius: 999px;
-    background: transparent;
-    color: var(--sh-ink-2);
-
-    font-size: 12.5px;
-    font-weight: 800;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background-color var(--sh-fast), color var(--sh-fast);
-}
-
-.saved-tab b {
-    display: inline-grid;
-    place-items: center;
-    min-width: 22px;
-    height: 22px;
-    padding-inline: 6px;
-
-    border-radius: 999px;
-    background: var(--ac-sunken);
-    color: var(--sh-muted);
-
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.saved-tab:hover {
-    color: var(--sh-forest);
-}
-
-.saved-tab.is-active {
-    background: var(--sh-forest);
-    color: var(--sh-cream-2);
-}
-
-.saved-tab.is-active b {
-    background: rgba(251, 250, 247, .18);
-    color: var(--sh-gold);
-}
-
-.saved-panel {
-    display: none;
-    min-width: 0;
-}
-
-.saved-panel.is-active {
-    display: block;
-}
-
-/* Two cards up on phones (the shop catalog's mobile rhythm), three on tablets,
-   then as many as fit from 1120px. Every track is minmax(0, 1fr), so no card
-   can be wider than its column: the old repeat(3, 1fr) grid pushed the third
-   card past the viewport edge. */
-.saved-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-    min-width: 0;
-}
-
-@media (min-width: 620px) {
-    .saved-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
-    }
-}
-
-@media (min-width: 1120px) {
-    .saved-grid {
-        grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr));
-    }
-}
-
-.saved-grid > .ac-empty {
-    grid-column: 1 / -1;
-}
-
-.saved-product {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    overflow: hidden;
-
-    border: 1px solid var(--ac-line);
-    border-radius: var(--ac-radius);
-    background: var(--ac-surface);
-    transition: border-color var(--sh-fast), box-shadow var(--sh-fast),
-                transform var(--sh-fast);
-}
-
-.saved-product:hover {
-    border-color: var(--ac-line-3);
-    box-shadow: 0 18px 34px -24px rgba(11, 48, 37, .42);
-    transform: translateY(-3px);
-}
-
-.saved-product__image {
-    position: relative;
-    display: block;
-    aspect-ratio: 4 / 5;
-    overflow: hidden;
-    background: var(--sh-paper);
-}
-
-.saved-product__image img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform var(--sh-slow);
-}
-
-.saved-product:hover .saved-product__image img {
-    transform: scale(1.03);
-}
-
-.saved-product__image > span {
-    display: grid;
-    place-items: center;
-    width: 100%;
-    height: 100%;
-    color: var(--sh-moss);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: .22em;
-}
-
-.saved-product__body {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    min-width: 0;
-    padding: 13px 14px 14px;
-}
-
-.saved-product__cat {
-    color: var(--sh-muted);
-    font-size: 10.5px;
-    font-weight: 800;
-    letter-spacing: .12em;
-}
-
-.saved-product__title {
-    display: -webkit-box;
-    min-height: 40px;
-    overflow: hidden;
-
-    color: var(--sh-ink);
-    font-size: 13px;
-    font-weight: 800;
-    line-height: 1.55;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-}
-
-.saved-product__title a {
-    color: inherit;
-}
-
-.saved-product__title a:hover {
-    color: var(--sh-forest);
-}
-
-.saved-product__footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-
-    margin-block-start: auto;
-    padding-block-start: 10px;
-    border-block-start: 1px solid var(--ac-line);
-}
-
-.saved-product__price {
-    min-width: 0;
-    color: var(--sh-forest);
-    font-size: 13.5px;
-    font-weight: 900;
-    white-space: nowrap;
-}
-
-.saved-product__price small {
-    font-size: 10.5px;
-    font-weight: 700;
-}
-
-.saved-product__footer form {
-    display: flex;
-    margin: 0;
-}
-
-.saved-product__remove {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-
-    min-width: 40px;
-    min-height: 40px;
-    padding-inline: 11px;
-
-    border: 1px solid var(--ac-line-2);
-    border-radius: 999px;
-    background: var(--ac-surface);
-    color: var(--sh-ink-2);
-
-    font-size: 11.5px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: border-color var(--sh-fast), background-color var(--sh-fast),
-                color var(--sh-fast);
-}
-
-.saved-product__remove svg {
-    width: 13px;
-    height: 13px;
-    flex: 0 0 auto;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-}
-
-.saved-product__remove:hover {
-    border-color: rgba(156, 59, 46, .38);
-    background: rgba(156, 59, 46, .06);
-    color: var(--ac-brick);
-}
-
-.saved-product__remove:focus-visible,
-.saved-tab:focus-visible {
-    outline: 2px solid var(--sh-forest);
-    outline-offset: 2px;
-}
-
-/* ==========================================================================
    16 — FOOTER
    ========================================================================== */
 
@@ -2029,5 +1757,198 @@
 
     body.account-body .sh-drawer {
         display: none;
+    }
+}
+
+
+/* ==========================================================================
+   19 — PROFILE / SAVED CATALOG POLISH
+   ========================================================================== */
+
+.account-body .ac-card,
+.account-body .account-user,
+.account-body .account-nav {
+    box-shadow: 0 12px 30px -28px rgba(9, 28, 20, .55);
+}
+
+.account-body .ac-card {
+    background: #f8f5ee;
+}
+
+.account-saved-catalog {
+    margin-block-start: 2px;
+}
+
+.account-saved-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-block-end: 14px;
+    padding-inline: 2px;
+}
+
+.account-saved-toolbar h2 {
+    margin: 0;
+    color: var(--sh-ink);
+    font-size: 14px;
+    font-weight: 850;
+}
+
+.account-saved-toolbar span {
+    color: var(--sh-muted);
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.account-saved-catalog .shop-reference__card {
+    background: #f8f5ee;
+    border-color: rgba(20, 22, 26, .10);
+}
+
+.account-saved-catalog .shop-reference__card-body {
+    background: #f8f5ee;
+}
+
+.account-saved-catalog .shop-reference__price-row strong {
+    color: var(--sh-forest);
+}
+
+.account-saved-catalog .shop-reference__media {
+    background: #e9e4da;
+}
+
+.jalali-picker {
+    z-index: 160;
+    background: #f5f1e8;
+    border-color: rgba(20, 22, 26, .12);
+    box-shadow: 0 30px 70px -30px rgba(9, 28, 20, .62);
+}
+
+.date-wheel__columns {
+    background: #ebe6dc;
+}
+
+.date-wheel__column {
+    background: #f7f3eb;
+    border-color: rgba(20, 22, 26, .12);
+}
+
+.date-wheel__item:hover {
+    background: #ebe6dc;
+}
+
+.date-wheel__bottom {
+    background: #f5f1e8;
+}
+
+.date-wheel__clear,
+.date-wheel__confirm {
+    background: #eee9df;
+}
+
+@media (max-width: 700px) {
+    .account-saved-catalog .shop-reference__products {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .account-saved-catalog .shop-reference__card-body {
+        padding: 10px;
+    }
+
+    .account-saved-catalog .shop-reference__card-info h3 {
+        font-size: 12px;
+    }
+
+    .account-saved-catalog .shop-reference__cart {
+        width: 36px;
+        height: 36px;
+    }
+
+    /* The dock sits above the picker, so its actions can never be covered. */
+    .jalali-picker {
+        position: fixed;
+        inset-inline-start: 50%;
+        inset-block-end: calc(var(--dock-h, 64px) + 18px);
+        inset-block-start: auto;
+        width: min(352px, calc(100vw - 24px));
+        max-height: min(610px, calc(100dvh - var(--dock-h, 64px) - 34px));
+        overflow: auto;
+        transform: translateX(-50%);
+        z-index: 180;
+    }
+
+    .date-wheel__columns {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .date-wheel__column {
+        height: 150px;
+    }
+
+    .date-wheel__spacer {
+        flex-basis: 56px;
+    }
+
+    .date-wheel__item {
+        min-height: 36px;
+    }
+
+    .date-wheel__bottom {
+        position: sticky;
+        inset-block-end: 0;
+        z-index: 2;
+        flex-wrap: nowrap;
+        padding: 10px;
+        box-shadow: 0 -10px 20px -20px rgba(9, 28, 20, .7);
+    }
+
+    .date-wheel__bottom > span {
+        max-width: 38%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .date-wheel__bottom > div {
+        flex: 1;
+        justify-content: flex-end;
+    }
+
+    .date-wheel__clear,
+    .date-wheel__confirm {
+        min-height: 42px;
+        padding-inline: 13px;
+    }
+}
+
+@media (max-width: 380px) {
+    .date-wheel__top {
+        padding-inline: 12px;
+    }
+
+    .date-wheel__columns {
+        padding: 7px;
+        gap: 4px;
+    }
+
+    .date-wheel__item {
+        padding-inline: 3px;
+        font-size: 12px;
+    }
+
+    .date-wheel__bottom > span {
+        display: none;
+    }
+
+    .date-wheel__bottom > div {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .date-wheel__clear,
+    .date-wheel__confirm {
+        flex: 1;
     }
 }
