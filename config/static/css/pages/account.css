@@ -1895,18 +1895,16 @@
 }
 
 .account-saved-catalog {
-    /* The shop catalog normally reserves its first grid column for filters.
-       Favorites has no filter rail, so the results must span the full shell. */
+    /* Favorites has no filter rail, so the catalog spans the complete account
+       content column instead of inheriting the shop's sidebar reservation. */
     grid-template-columns: minmax(0, 1fr);
-    margin-block-start: 2px;
+    margin-block-start: 4px;
+    padding: clamp(16px, 2vw, 22px);
+    background: rgba(248, 245, 238, .72);
 }
 
 .account-saved-catalog .shop-reference__results {
     grid-column: 1 / -1;
-}
-
-.account-saved-catalog .shop-reference__products {
-    width: 100%;
 }
 
 .account-saved-toolbar {
@@ -1914,7 +1912,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-block-end: 14px;
+    margin-block-end: 16px;
     padding-inline: 2px;
 }
 
@@ -1926,26 +1924,28 @@
 }
 
 .account-saved-toolbar span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding-inline: 10px;
+    border: 1px solid var(--sh-line);
+    border-radius: 999px;
+    background: var(--sh-cream-2);
     color: var(--sh-muted);
-    font-size: 11.5px;
-    font-weight: 700;
+    font-size: 10.5px;
+    font-weight: 750;
 }
 
-.account-saved-catalog .shop-reference__card {
-    background: #f8f5ee;
-    border-color: rgba(20, 22, 26, .10);
+@media (min-width: 1001px) {
+    .account-saved-catalog .shop-reference__products {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 }
 
-.account-saved-catalog .shop-reference__card-body {
-    background: #f8f5ee;
-}
-
-.account-saved-catalog .shop-reference__price-row strong {
-    color: var(--sh-forest);
-}
-
-.account-saved-catalog .shop-reference__media {
-    background: #e9e4da;
+@media (min-width: 701px) and (max-width: 1000px) {
+    .account-saved-catalog .shop-reference__products {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 .jalali-picker {
@@ -1978,22 +1978,17 @@
 }
 
 @media (max-width: 700px) {
+    .account-saved-catalog {
+        padding: 12px;
+    }
+
     .account-saved-catalog .shop-reference__products {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
     }
 
-    .account-saved-catalog .shop-reference__card-body {
-        padding: 10px;
-    }
-
-    .account-saved-catalog .shop-reference__card-info h3 {
-        font-size: 12px;
-    }
-
-    .account-saved-catalog .shop-reference__cart {
-        width: 36px;
-        height: 36px;
+    .account-saved-toolbar {
+        margin-block-end: 12px;
     }
 
     /* The dock sits above the picker, so its actions can never be covered. */
