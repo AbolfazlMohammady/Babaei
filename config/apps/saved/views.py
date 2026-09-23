@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Case, Exists, IntegerField, OuterRef, Prefetch, Subquery
-from django.db.models import When
+from django.core.paginator import Paginator
+from django.db.models import Case, IntegerField, Prefetch, When
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -52,60 +52,82 @@ def toggle_favorite(request, product_id):
 
 @login_required
 def saved_page(request):
-    variant_price = Subquery(
-        ProductVariant.objects.filter(
-            product_id=OuterRef("pk"),
-            is_active=True,
-        ).order_by("price", "id").values("price")[:1],
-        output_field=IntegerField(),
-    )
-    variant_compare_price = Subquery(
-        ProductVariant.objects.filter(
-            product_id=OuterRef("pk"),
-            is_active=True,
-        ).order_by("price", "id").values("compare_at_price")[:1],
-        output_field=IntegerField(),
-    )
-    has_variants = Exists(
-        ProductVariant.objects.filter(
-            product_id=OuterRef("pk"),
-            is_active=True,
-        )
-    )
-    favorite_products = list(
+    """
+    Favorites is intentionally kept to a small, predictable query budget:
+
+      1. favorites/products/categories
+      2. first two product images
+      3. active variants used for card price/variant state
+      4. COUNT(*) for the pager
+
+    The previous implementation put three correlated subqueries into the
+    product SELECT for every favorite (price, compare price, has variants)
+    and then loaded the entire favorites list into memory.
+    """
+    favorite_products_qs = (
         Product.objects.filter(
-            favorited_by__user=request.user,
+            favorited_by__user_id=request.user.id,
             is_active=True,
             category__is_active=True,
         )
         .select_related("category")
-        .annotate(
-            listed_price=variant_price,
-            listed_compare_price=variant_compare_price,
-            has_variants=has_variants,
-            is_favorite=Exists(
-                FavoriteProduct.objects.filter(
-                    user_id=request.user.id,
-                    product_id=OuterRef("pk"),
-                )
-            ),
-        )
         .prefetch_related(
             Prefetch(
                 "images",
                 queryset=ProductImage.objects.annotate(
                     type_priority=Case(
-                        When(image_type=ProductImage.ImageType.PRIMARY, then=0),
+                        When(
+                            image_type=ProductImage.ImageType.PRIMARY,
+                            then=0,
+                        ),
                         default=1,
                         output_field=IntegerField(),
                     )
-                ).order_by("type_priority", "sort_order", "id")[:2],
+                )
+                .only(
+                    "id",
+                    "product_id",
+                    "image",
+                    "alt_text",
+                    "image_type",
+                    "sort_order",
+                )
+                .order_by("type_priority", "sort_order", "id")[:2],
                 to_attr="card_images",
-            )
+            ),
+            Prefetch(
+                "variants",
+                queryset=ProductVariant.objects.filter(is_active=True)
+                .only(
+                    "id",
+                    "product_id",
+                    "price",
+                    "compare_at_price",
+                )
+                .order_by("price", "id"),
+                to_attr="active_variants",
+            ),
         )
         .order_by("-favorited_by__created_at")
     )
-    return render(request, "users/account/saved.html", {
-        "favorite_products": favorite_products,
-        "favorite_count": len(favorite_products),
-    })
+
+    paginator = Paginator(favorite_products_qs, 24)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    favorite_products = list(page_obj.object_list)
+    for product in favorite_products:
+        # All rows came through the user's favorite relation, so this avoids
+        # another EXISTS query per product.
+        product.is_favorite = True
+        product.has_variants = bool(product.active_variants)
+
+    return render(
+        request,
+        "users/account/saved.html",
+        {
+            "favorite_products": favorite_products,
+            "favorite_count": paginator.count,
+            "page_obj": page_obj,
+        },
+    )
+
