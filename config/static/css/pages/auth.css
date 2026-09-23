@@ -368,6 +368,46 @@
     transition: transform .4s cubic-bezier(.2,1,.3,1);
 }
 
+/* Phone entry mirrors the centered Verify alignment. */
+.auth-page:not(.auth-page--verify) .auth-header {
+    text-align: center;
+}
+
+.auth-page:not(.auth-page--verify) .auth-brand-id {
+    text-align: center;
+}
+
+.auth-page:not(.auth-page--verify) .auth-header h1 {
+    text-align: center;
+}
+
+.auth-page:not(.auth-page--verify) .auth-header p {
+    margin-inline: auto;
+    text-align: center;
+}
+
+.auth-page:not(.auth-page--verify) .auth-form-group {
+    text-align: center;
+}
+
+.auth-page:not(.auth-page--verify) .auth-phone-line {
+    width: min(100%, 520px);
+    margin-inline: auto;
+}
+
+.auth-page:not(.auth-page--verify) .auth-phone-line input {
+    text-align: center;
+}
+
+.auth-page:not(.auth-page--verify) .auth-phone-prefix {
+    margin-inline-end: 0;
+}
+
+.auth-page:not(.auth-page--verify) .auth-input-glow {
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+}
+
 .auth-form-group:focus-within {
     transform: translateX(-8px);
 }
