@@ -53,7 +53,7 @@ invented, nothing faked: every control here posts to the real endpoints.
                         <p class="auth-lead">شماره موبایل خود را وارد کنید تا کد تأیید برای شما پیامک شود.</p>
                     </div>
 
-                    <form method="post" class="auth-form" novalidate>
+                    <form method="post" class="auth-form" novalidate data-auth-phone-form>
                         {% csrf_token %}
 
                         <div class="auth-row">
@@ -166,5 +166,5 @@ invented, nothing faked: every control here posts to the real endpoints.
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/auth-switch.js' %}?v=1" defer></script>
+<script src="{% static 'js/auth-switch.js' %}?v=2" defer></script>
 {% endblock %}
