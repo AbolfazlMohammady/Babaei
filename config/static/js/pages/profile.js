@@ -121,26 +121,21 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const bindWheelSelection = (column, kind) => {
-        let ticking = false;
+        let timer = 0;
+
         column.addEventListener("scroll", () => {
-            if (ticking) return;
-            ticking = true;
-            requestAnimationFrame(() => {
-                ticking = false;
+            window.clearTimeout(timer);
+            timer = window.setTimeout(() => {
                 const items = [...column.querySelectorAll(".date-wheel__item:not(:disabled)")];
                 if (!items.length) return;
 
                 const center = column.scrollTop + column.clientHeight / 2;
-                let closest = items[0];
-                let distance = Infinity;
-                for (const item of items) {
-                    const itemCenter = item.offsetTop + item.offsetHeight / 2;
-                    const nextDistance = Math.abs(itemCenter - center);
-                    if (nextDistance < distance) {
-                        distance = nextDistance;
-                        closest = item;
-                    }
-                }
+                const closest = items.reduce((best, item) => {
+                    const distance = Math.abs(
+                        item.offsetTop + item.offsetHeight / 2 - center
+                    );
+                    return distance < best.distance ? { item, distance } : best;
+                }, { item: items[0], distance: Infinity }).item;
 
                 const value = Number(closest.dataset.value);
                 if (kind === "year" && value !== view.year) {
@@ -156,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     selected = null;
                     updatePreview();
                 }
-            });
+            }, 90);
         }, { passive: true });
     };
 
