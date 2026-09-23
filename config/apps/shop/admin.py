@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Count, Min, Prefetch, Sum
 from django.utils.html import format_html
 
-from .models import Category, Product, ProductColor, ProductImage, ProductSize, ProductVariant
+from .models import Category, Product, ProductColor, ProductComment, ProductImage, ProductSize, ProductVariant
 
 
 class ShopAdminMixin:
@@ -229,3 +229,38 @@ class ProductImageAdmin(ShopAdminMixin, admin.ModelAdmin):
         if not obj.image:
             return "—"
         return format_html('<img class="ba-thumb" src="{}" alt="">', obj.image.url)
+
+
+@admin.register(ProductComment)
+class ProductCommentAdmin(ShopAdminMixin, admin.ModelAdmin):
+    list_display = ("product", "user_display", "rating_display", "verified_badge", "status_badge", "created_at")
+    list_filter = ("status", "verified_purchase", "rating", "created_at")
+    search_fields = ("product__name", "user__phone", "user__first_name", "user__last_name", "body")
+    list_select_related = ("product", "user")
+    autocomplete_fields = ("product", "user")
+    readonly_fields = ("created_at", "updated_at")
+    date_hierarchy = "created_at"
+    ordering = ("-created_at",)
+    fieldsets = (
+        ("نظر", {"fields": ("product", "user", "body", "rating")}),
+        ("بررسی", {"fields": ("status", "verified_purchase")}),
+        ("سیستم", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
+    )
+
+    @admin.display(description="کاربر")
+    def user_display(self, obj):
+        name = obj.display_name
+        return format_html("<strong>{}</strong><small class=\"ba-subline\">{}</small>", name, obj.user.phone)
+
+    @admin.display(description="امتیاز")
+    def rating_display(self, obj):
+        return "—" if obj.rating is None else f"{obj.rating} / ۵"
+
+    @admin.display(description="خرید")
+    def verified_badge(self, obj):
+        return format_html('<span class="ba-status {}">{}</span>', "is-on" if obj.verified_purchase else "is-off", "تأییدشده" if obj.verified_purchase else "—")
+
+    @admin.display(description="وضعیت")
+    def status_badge(self, obj):
+        css = {ProductComment.Status.APPROVED: "is-on", ProductComment.Status.PENDING: "is-warning", ProductComment.Status.REJECTED: "is-off"}.get(obj.status, "is-off")
+        return format_html('<span class="ba-status {}">{}</span>', css, obj.get_status_display())
