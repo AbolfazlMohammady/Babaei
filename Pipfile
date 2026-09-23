@@ -39,6 +39,7 @@ pytest-django = "*"
 pytest-cov = "*"
 factory-boy = "*"
 model-bakery = "*"
+whitenoise = "*"
 
 [dev-packages]
 coverage = "==7.3.2"
