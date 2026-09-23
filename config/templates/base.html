@@ -21,7 +21,7 @@
     {% endif %}
     {% block site_components_css %}
     {% if request.resolver_match.namespace != 'users' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
-    <link rel="stylesheet" href="{% static 'css/components.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}?v=4">
     {% endif %}
     {% endblock %}
     {% block common_page_css %}{% endblock %}
