@@ -984,3 +984,120 @@
         transform: none;
     }
 }
+
+
+/* --------------------------------------------------------------------------
+   Auth route transition + six-digit OTP
+   -------------------------------------------------------------------------- */
+
+.auth-page {
+    overflow-x: clip;
+}
+
+.auth-shell {
+    will-change: transform, opacity;
+    transition:
+        transform 360ms cubic-bezier(.22, 1, .36, 1),
+        opacity 280ms ease;
+}
+
+.auth-shell[data-auth-transition="verify"] {
+    transform: translate3d(-12%, 0, 0);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.auth-shell[data-auth-transition="enter"] {
+    animation: auth-verify-enter 440ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes auth-verify-enter {
+    from {
+        opacity: 0;
+        transform: translate3d(12%, 0, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.auth-code.auth-code--digits {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 9px;
+
+    min-height: 0;
+    overflow: visible;
+
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.auth-code.auth-code--digits:focus-within {
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.auth-code.auth-code--digits .otp-digit {
+    inline-size: 100%;
+    min-inline-size: 0;
+    min-block-size: 58px;
+    padding: 0;
+
+    border: 1px solid var(--sh-line);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--sh-ink);
+
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    text-align: center;
+    direction: ltr;
+
+    outline: 0;
+    transition:
+        border-color var(--sh-fast),
+        box-shadow var(--sh-fast),
+        transform var(--sh-fast);
+}
+
+.auth-code.auth-code--digits .otp-digit:focus {
+    border-color: var(--sh-forest);
+    box-shadow: 0 0 0 4px rgba(20, 82, 60, .12);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 560px) {
+    .auth-code.auth-code--digits {
+        gap: 6px;
+    }
+
+    .auth-code.auth-code--digits .otp-digit {
+        min-block-size: 50px;
+        border-radius: 11px;
+        font-size: 19px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-shell {
+        transition: none;
+    }
+
+    .auth-shell[data-auth-transition="verify"] {
+        transform: none;
+        opacity: 1;
+    }
+
+    .auth-shell[data-auth-transition="enter"] {
+        animation: none;
+    }
+
+    .auth-code.auth-code--digits .otp-digit {
+        transition: none;
+    }
+}
