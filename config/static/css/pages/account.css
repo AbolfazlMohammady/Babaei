@@ -2014,9 +2014,17 @@
         isolation: isolate;
     }
 
-    body > .jalali-picker,
+    /* Keep the calendar in the date field's positioning context.
+       This makes it open directly below the field instead of against the viewport. */
     .jalali-picker.is-mobile-portal {
-        position: fixed;
+        position: absolute;
+        inset-block-start: calc(100% + 8px);
+        inset-inline-start: 50%;
+        inset-inline-end: auto;
+        inset-block-end: auto;
+        width: min(352px, calc(100vw - 24px));
+        max-height: min(610px, calc(100dvh - 24px));
+        transform: translateX(-50%);
         display: block;
         pointer-events: auto;
         touch-action: manipulation;
