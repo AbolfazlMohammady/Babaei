@@ -124,26 +124,40 @@
         }, 2200);
     };
 
-    const updateItem = (item, data) => {
-        const quantity = item.querySelector("[data-quantity-value]");
-        const lineTotal = item.querySelector("[data-line-total]");
-        const minus = item.querySelector("[data-quantity-minus]");
-        const plus = item.querySelector("[data-quantity-plus]");
-        const max = Number(item.dataset.stock || 0);
-        const previousLineTotal = Number(lineTotal?.dataset.lineValue || 0);
+    const syncItem = (itemId, data) => {
+        const items = [...root.querySelectorAll("[data-cart-item]")].filter(
+            (item) => String(item.dataset.cartId) === String(itemId)
+        );
 
-        if (quantity) {
-            quantity.textContent = formatPrice(data.quantity);
-            quantity.dataset.value = String(data.quantity);
-        }
+        items.forEach((item) => {
+            const quantity = item.querySelector("[data-quantity-value]");
+            const lineTotal = item.querySelector("[data-line-total]");
+            const minus = item.querySelector("[data-quantity-minus]");
+            const plus = item.querySelector("[data-quantity-plus]");
+            const max = Number(item.dataset.stock || 0);
+            const previousLineTotal = Number(lineTotal?.dataset.lineValue || 0);
 
-        if (lineTotal) {
-            animateLineTotal(lineTotal, previousLineTotal, data.line_total);
-            lineTotal.dataset.lineValue = String(data.line_total);
-        }
+            if (quantity) {
+                quantity.textContent = formatPrice(data.quantity);
+                quantity.dataset.value = String(data.quantity);
+            }
 
-        if (minus) minus.disabled = data.quantity <= 1;
-        if (plus && max > 0) plus.disabled = data.quantity >= max;
+            if (lineTotal) {
+                animateLineTotal(lineTotal, previousLineTotal, data.line_total);
+                lineTotal.dataset.lineValue = String(data.line_total);
+            }
+
+            if (minus) minus.disabled = data.quantity <= 1;
+            if (plus && max > 0) plus.disabled = data.quantity >= max;
+        });
+    };
+
+    const removeItem = (itemId) => {
+        root.querySelectorAll("[data-cart-item]").forEach((item) => {
+            if (String(item.dataset.cartId) !== String(itemId)) return;
+            item.classList.add("is-removing");
+            setTimeout(() => item.remove(), 180);
+        });
     };
 
     root.addEventListener("submit", async (event) => {
@@ -158,14 +172,14 @@
         try {
             const data = await request(form);
             const item = form.closest("[data-cart-item]");
+            const itemId = form.closest("[data-cart-item]")?.dataset.cartId || form.action.match(/cart\\/(\\d+)/)?.[1];
 
-            if (form.dataset.cartAction === "update" && item) {
-                updateItem(item, data);
+            if (form.dataset.cartAction === "update" && itemId) {
+                syncItem(itemId, data);
             }
 
-            if (form.dataset.cartAction === "remove" && item) {
-                item.classList.add("is-removing");
-                setTimeout(() => item.remove(), 180);
+            if (form.dataset.cartAction === "remove" && itemId) {
+                removeItem(itemId);
             }
 
             if (form.dataset.cartAction === "clear") {
@@ -190,16 +204,7 @@
         } finally {
             buttons.forEach((button) => { button.disabled = false; });
 
-            const item = form.closest("[data-cart-item]");
-            if (item && form.dataset.cartAction === "update") {
-                const quantity = Number(item.querySelector("[data-quantity-value]")?.dataset.value || 1);
-                const minus = item.querySelector("[data-quantity-minus]");
-                const plus = item.querySelector("[data-quantity-plus]");
-                const max = Number(item.dataset.stock || 0);
-
-                if (minus) minus.disabled = quantity <= 1;
-                if (plus && max > 0) plus.disabled = quantity >= max;
-            }
+            if (form.dataset.cartAction === "update") {\n                const item = form.closest("[data-cart-item]");\n                const quantity = Number(item?.querySelector("[data-quantity-value]")?.dataset.value || 1);\n                const minus = item?.querySelector("[data-quantity-minus]");\n                const plus = item?.querySelector("[data-quantity-plus]");\n                const max = Number(item?.dataset.stock || 0);\n\n                if (minus) minus.disabled = quantity <= 1;\n                if (plus && max > 0) plus.disabled = quantity >= max;\n            }
         }
     });
 
