@@ -718,9 +718,30 @@
    -------------------------------------------------------------------------- */
 
 @media (max-width: 700px) {
+    /* Mobile auth is a fixed viewport: no page dragging/vertical scrolling. */
+    .auth-body {
+        height: 100svh;
+        min-height: 100svh;
+        overflow: hidden;
+        overscroll-behavior: none;
+    }
+
+    .auth-body main {
+        height: 100svh;
+        min-height: 100svh;
+        overflow: hidden;
+    }
+
+    .auth-page {
+        height: 100svh;
+        min-height: 100svh;
+        overflow: hidden;
+    }
+
     .auth-container {
         width: min(100%, 440px);
         padding: 34px 20px 26px;
+        transform: translateY(22px);
     }
 
     .auth-header {
