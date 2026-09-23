@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const initial = isoToDate(hidden.value);
     let selected = initial ? gregorianToJalali(initial) : null;
-    let view = selected || { year: maxYear, month: minAllowedJ.month, day: minAllowedJ.day };
+    let view = selected || { year: maxYear, month: minAllowedJ.month, day: Math.min(minAllowedJ.day, 1) };
 
     const daysInMonth = (year, month) => {
         if (month <= 6) return 31;
@@ -120,6 +120,46 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    const bindWheelSelection = (column, kind) => {
+        let ticking = false;
+        column.addEventListener("scroll", () => {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(() => {
+                ticking = false;
+                const items = [...column.querySelectorAll(".date-wheel__item:not(:disabled)")];
+                if (!items.length) return;
+
+                const center = column.scrollTop + column.clientHeight / 2;
+                let closest = items[0];
+                let distance = Infinity;
+                for (const item of items) {
+                    const itemCenter = item.offsetTop + item.offsetHeight / 2;
+                    const nextDistance = Math.abs(itemCenter - center);
+                    if (nextDistance < distance) {
+                        distance = nextDistance;
+                        closest = item;
+                    }
+                }
+
+                const value = Number(closest.dataset.value);
+                if (kind === "year" && value !== view.year) {
+                    view.year = value;
+                    selected = null;
+                    render();
+                } else if (kind === "month" && value !== view.month) {
+                    view.month = value;
+                    selected = null;
+                    render();
+                } else if (kind === "day" && value !== view.day) {
+                    view.day = value;
+                    selected = null;
+                    updatePreview();
+                }
+            });
+        }, { passive: true });
+    };
+
     const render = () => {
         picker.innerHTML = `
             <div class="date-wheel__top"><div><span class="date-wheel__eyebrow">تاریخ تولد</span><strong>روز، ماه و سال تولد را انتخاب کنید</strong></div><button type="button" class="date-wheel__close" aria-label="بستن">×</button></div>
@@ -131,9 +171,9 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="date-wheel__bottom"><span data-preview></span><div><button type="button" class="date-wheel__clear">پاک کردن</button><button type="button" class="date-wheel__confirm">تأیید تاریخ</button></div></div>`;
 
-        const day = picker.querySelector("[data-day]");
-        const month = picker.querySelector("[data-month]");
-        const year = picker.querySelector("[data-year]");
+        let day = picker.querySelector("[data-day]");
+        let month = picker.querySelector("[data-month]");
+        let year = picker.querySelector("[data-year]");
 
         const rebuildDays = () => {
             const maxDay = daysInMonth(view.year, view.month);
@@ -155,11 +195,25 @@ document.addEventListener("DOMContentLoaded", () => {
             view.month = value; selected = null; rebuildDays(); updatePreview();
         }, value => {
             if (view.year < maxYear) return false;
-            return jalaliToGregorian(view.year, value, 1) > minimumBirthDate;
+            return view.year === maxYear && value > minAllowedJ.month;
         });
 
         rebuildDays();
         updatePreview();
+
+        [year, month, day].forEach((column) => {
+            const replacement = column.cloneNode(true);
+            column.replaceWith(replacement);
+        });
+        day = picker.querySelector("[data-day]");
+        month = picker.querySelector("[data-month]");
+        year = picker.querySelector("[data-year]");
+        const yearColumn = year;
+        const monthColumn = month;
+        const dayColumn = day;
+        bindWheelSelection(yearColumn, "year");
+        bindWheelSelection(monthColumn, "month");
+        bindWheelSelection(dayColumn, "day");
 
         picker.querySelector(".date-wheel__close").onclick = close;
         picker.querySelector(".date-wheel__clear").onclick = () => { selected = null; hidden.value = ""; input.value = ""; close(); };
