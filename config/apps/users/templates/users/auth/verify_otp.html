@@ -24,7 +24,7 @@ control — the same element that carries the invitation on login.html carries a
 real anchor here.
 {% endcomment %}
 <section class="auth-page">
-    <div class="auth-shell" data-auth-shell data-auth-state="signin">
+    <div class="auth-shell" data-auth-shell data-auth-state="signin" data-auth-step="verify">
         <span class="auth-shell__selvedge" aria-hidden="true"></span>
 
         <div class="auth-shell__top">
@@ -53,23 +53,28 @@ real anchor here.
 
                         <div class="auth-row">
                             <label class="auth-label" for="code">کد تأیید</label>
-                            <div class="auth-code">
-                                <input
-                                    class="auth-code__input otp-input"
-                                    id="code"
-                                    name="code"
-                                    type="text"
-                                    inputmode="numeric"
-                                    autocomplete="one-time-code"
-                                    maxlength="6"
-                                    pattern="[0-9]{6}"
-                                    placeholder="۱۲۳۴۵۶"
-                                    aria-describedby="code-hint"
-                                    required
-                                    autofocus
-                                >
+                            <div class="auth-code auth-code--digits" aria-label="کد تأیید ۶ رقمی">
+                                <input class="otp-digit" type="text" inputmode="numeric"
+                                       maxlength="1" autocomplete="one-time-code"
+                                       data-otp-digit="0" aria-label="رقم اول">
+                                <input class="otp-digit" type="text" inputmode="numeric"
+                                       maxlength="1" autocomplete="off"
+                                       data-otp-digit="1" aria-label="رقم دوم">
+                                <input class="otp-digit" type="text" inputmode="numeric"
+                                       maxlength="1" autocomplete="off"
+                                       data-otp-digit="2" aria-label="رقم سوم">
+                                <input class="otp-digit" type="text" inputmode="numeric"
+                                       maxlength="1" autocomplete="off"
+                                       data-otp-digit="3" aria-label="رقم چهارم">
+                                <input class="otp-digit" type="text" inputmode="numeric"
+                                       maxlength="1" autocomplete="off"
+                                       data-otp-digit="4" aria-label="رقم پنجم">
+                                <input class="otp-digit" type="text" inputmode="numeric"
+                                       maxlength="1" autocomplete="off"
+                                       data-otp-digit="5" aria-label="رقم ششم">
                             </div>
-                            <small id="code-hint" class="auth-hint">۶ رقم؛ کد پیامک‌شده تا ۲ دقیقه اعتبار دارد.</small>
+                            <input id="code" name="code" type="hidden" value="">
+                            <small id="code-hint" class="auth-hint">۶ رقم؛ می‌توانید کد را یکجا Paste کنید.</small>
                         </div>
 
                         <button class="auth-submit" type="submit">
@@ -106,4 +111,8 @@ real anchor here.
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/auth-switch.js' %}?v=2" defer></script>
 {% endblock %}
