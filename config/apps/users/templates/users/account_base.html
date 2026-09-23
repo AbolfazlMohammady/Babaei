@@ -11,22 +11,6 @@
 {% endblock %}
 {% block content %}
 {% with ns=request.resolver_match.url_name %}
-<header class="account-shell-header">
-    <div class="account-shell-header__inner">
-        <a href="/" class="account-shell-brand" aria-label="BABAEI"><span>BABAEI</span><span class="account-shell-brand__line" aria-hidden="true"></span></a>
-        <div class="account-shell-header__actions">
-            <a href="/" class="account-shell-back" aria-label="بازگشت به فروشگاه">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg><span>بازگشت به فروشگاه</span>
-            </a>
-            <form method="post" action="{% url 'users:logout' %}">
-                {% csrf_token %}
-                <button type="submit" class="account-logout" aria-label="خروج از حساب">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10"></path><path d="M13 8l4 4-4 4"></path><path d="M9 12h8"></path></svg><span>خروج</span>
-                </button>
-            </form>
-        </div>
-    </div>
-</header>
 <section class="account-page">
     <div class="account-layout">
         <aside class="account-sidebar">
@@ -60,6 +44,12 @@
                     <span class="account-nav__chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"></path></svg></span>
                 </a>
             </nav>
+            <form class="account-logout-form" method="post" action="{% url 'users:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="account-logout" aria-label="خروج از حساب">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10"></path><path d="M13 8l4 4-4 4"></path><path d="M9 12h8"></path></svg><span>خروج از حساب</span>
+                </button>
+            </form>
         </aside>
         <div class="account-content">{% block account_content %}{% endblock %}</div>
     </div>
