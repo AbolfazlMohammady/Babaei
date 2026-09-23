@@ -47,8 +47,6 @@
     ];
 
     const animations = [];
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const isMobile = window.matchMedia("(max-width: 640px)").matches;
 
     function createCharacters() {
         animations.forEach((animation) => animation.cancel());
@@ -60,7 +58,6 @@
             stick.className = "not-found__character";
             stick.alt = "";
             stick.draggable = false;
-            stick.decoding = "async";
             stick.src = figure.src;
 
             if (figure.top) stick.style.top = figure.top;
@@ -71,18 +68,13 @@
 
             if (index === 5) return;
 
-            // Transform-based movement avoids repeatedly triggering layout/reflow.
             animations.push(
                 stick.animate(
-                    [
-                        { transform: "translate3d(100%, 0, 0)" },
-                        { transform: "translate3d(-20%, 0, 0)" },
-                    ],
+                    [{ left: "100%" }, { left: "-20%" }],
                     {
                         duration: figure.speedX,
                         easing: "linear",
                         fill: "forwards",
-                        composite: "add",
                     },
                 ),
             );
@@ -90,15 +82,11 @@
             if (index !== 0 && figure.speedRotation) {
                 animations.push(
                     stick.animate(
-                        [
-                            { transform: "rotate(0deg)" },
-                            { transform: "rotate(-360deg)" },
-                        ],
+                        [{ transform: "rotate(0deg)" }, { transform: "rotate(-360deg)" }],
                         {
                             duration: figure.speedRotation,
                             iterations: Infinity,
                             easing: "linear",
-                            composite: "add",
                         },
                     ),
                 );
@@ -106,11 +94,7 @@
         });
     }
 
-    const context = canvas.getContext("2d", {
-        alpha: false,
-        desynchronized: true,
-    });
-
+    const context = canvas.getContext("2d");
     if (!context) {
         message.classList.add("is-visible");
         return;
@@ -119,23 +103,31 @@
     let frameId = 0;
     let timer = 0;
     let circles = [];
-    let animationRunning = false;
 
     function initCircles() {
         const width = window.innerWidth;
         const height = window.innerHeight;
-        const count = isMobile ? 180 : 300;
 
-        circles = Array.from({ length: count }, () => ({
-            x: width * (1.2 + Math.random() * 1.8),
-            y: height * (-0.2 + Math.random() * 1.2),
-            size: width / 1000,
-        }));
+        circles = [];
+
+        for (let index = 0; index < 300; index += 1) {
+            const randomX =
+                Math.floor(Math.random() * (width * 3 - width * 1.2 + 1)) +
+                width * 1.2;
+
+            const randomY =
+                Math.floor(Math.random() * (height - (height * -0.2 + 1))) +
+                height * -0.2;
+
+            circles.push({
+                x: randomX,
+                y: randomY,
+                size: width / 1000,
+            });
+        }
     }
 
     function draw() {
-        if (!animationRunning) return;
-
         const width = window.innerWidth;
         const height = window.innerHeight;
         const distanceX = width / 80;
@@ -143,26 +135,27 @@
 
         timer += 1;
 
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.fillStyle = "white";
         context.clearRect(0, 0, width, height);
-        context.beginPath();
 
-        for (const circle of circles) {
+        circles.forEach((circle) => {
             if (timer < 65) {
                 circle.x -= distanceX;
                 circle.size += growthRate;
-            } else if (timer < 500) {
+            }
+
+            if (timer > 65 && timer < 500) {
                 circle.x -= distanceX * 0.02;
                 circle.size += growthRate * 0.2;
             }
 
-            context.moveTo(circle.x + circle.size, circle.y);
+            context.beginPath();
             context.arc(circle.x, circle.y, circle.size, 0, Math.PI * 2);
-        }
+            context.fill();
+        });
 
-        context.fill();
-
-        if (timer >= 500) {
-            animationRunning = false;
+        if (timer > 500) {
             frameId = 0;
             return;
         }
@@ -172,23 +165,11 @@
 
     function restartCanvas() {
         if (frameId) cancelAnimationFrame(frameId);
-
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
         timer = 0;
-        animationRunning = true;
         initCircles();
         draw();
-    }
-
-    function stopCanvas() {
-        animationRunning = false;
-
-        if (frameId) {
-            cancelAnimationFrame(frameId);
-            frameId = 0;
-        }
     }
 
     backButton?.addEventListener("click", () => {
@@ -198,6 +179,8 @@
             window.location.assign("/");
         }
     });
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (!reducedMotion) {
         createCharacters();
@@ -212,30 +195,16 @@
 
     window.addEventListener("resize", () => {
         window.clearTimeout(resizeTimer);
-
         resizeTimer = window.setTimeout(() => {
-            // Characters use percentage-based positioning, so they don't need
-            // to be recreated on every resize. Only resize the canvas.
             if (!reducedMotion) {
+                createCharacters();
                 restartCanvas();
             }
-        }, 160);
-    }, { passive: true });
-
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-            stopCanvas();
-            return;
-        }
-
-        if (!reducedMotion && timer < 500) {
-            animationRunning = true;
-            frameId = requestAnimationFrame(draw);
-        }
+        }, 120);
     });
 
     window.addEventListener("pagehide", () => {
-        stopCanvas();
+        if (frameId) cancelAnimationFrame(frameId);
         animations.forEach((animation) => animation.cancel());
-    }, { passive: true });
+    });
 })();
