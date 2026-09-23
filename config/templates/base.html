@@ -62,7 +62,7 @@
     <link rel="preload" href="{% static 'fonts/vazirmatn-var.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}?v=3">
 
-    {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' or request.resolver_match.namespace == 'saved' %}
+    {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'orders' and request.resolver_match.url_name == 'cart' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' or request.resolver_match.namespace == 'saved' %}
     <link rel="stylesheet" href="{% static 'css/pages/shop-shell.css' %}?v=4">
     <noscript><style>
         /* Without JS the nav cannot leave its transparent-over-hero state, so
@@ -185,7 +185,7 @@
     <script src="{% static 'js/storefront.js' %}?v=3" defer></script>
     {% endif %}
     {% endblock %}
-    {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' or request.resolver_match.namespace == 'saved' %}
+    {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'orders' and request.resolver_match.url_name == 'cart' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' or request.resolver_match.namespace == 'saved' %}
     <script src="{% static 'js/pages/shop-shell.js' %}?v=3" defer></script>
     {% endif %}
     {% if request.resolver_match.namespace != 'home' %}
