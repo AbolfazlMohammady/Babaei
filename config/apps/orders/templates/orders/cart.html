@@ -25,7 +25,7 @@
                         <path d="M4 6h2l1.5 9.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 1.9-1.5L20 9H7"></path>
                         <path d="M9 19.5h.01M18 19.5h.01"></path>
                     </svg>
-                    <h2>سبد خرید <span data-cart-count>({{ item_count }})</span></h2>
+                    <h2>سبد خرید <span data-cart-count data-cart-count-value="{{ item_count }}">({{ item_count }})</span></h2>
                 </div>
                 <form method="post" action="{% url 'orders:cart_clear' %}" data-cart-action="clear">
                     {% csrf_token %}
@@ -93,7 +93,7 @@
             <div class="cart-panel__footer">
                 <div class="cart-total">
                     <span>مبلغ کل</span>
-                    <strong data-cart-subtotal data-cart-number="{{ subtotal }}">{{ subtotal|price }} <small>تومان</small></strong>
+                    <strong><span data-cart-subtotal data-cart-number="{{ subtotal }}">{{ subtotal|price }}</span> <small>تومان</small></strong>
                 </div>
 
                 <button class="cart-checkout" type="button" disabled>
