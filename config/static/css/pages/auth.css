@@ -1,538 +1,332 @@
 /* ==========================================================================
-   BABAEI — sign-in / sign-up (one object, two states) and verification
-   --------------------------------------------------------------------------
-   The brief: rebuild the sign-in and register screens around a sliding-panel
-   switcher, in the house language. The reference was a React component with
-   two forms stacked in one grid cell, two invitation panels, and a 2000x2000
-   pseudo-element that swept across to invert the two halves — blue, inline
-   styles, a 1.8s transition, a fixed 550px height.
-
-   Taken from it: the mechanism (two states in one object, an invitation panel
-   that performs the switch) and the feel (the coloured half slides across the
-   object, the contents cross-fade, the thing reads as one solid object turning
-   over). Dropped: the colour, the inline styles, the fixed height, the 1.8s
-   transition, the 2000px element, and every fabricated control.
-
-   WHAT IS REAL HERE
-   Authentication on this site is phone number + OTP code. There is no register
-   route (see apps/users/urls.py), no email/password sign-in and no social
-   login, so the "sign up" side is not a second form: it is the honest framing
-   of the same action — enter your number, confirm the code, and the account is
-   created on the first successful verification (User.objects.get_or_create in
-   verify_otp_view). The sign-up state therefore routes into the one real flow
-   instead of inventing fields the backend cannot read.
-
-   HOW THE SWAP IS BUILT
-     .auth-swap is a two-column grid of exactly equal halves.
-       .auth-stage  (cream, carries the form)   column 1 — the reading start
-       .auth-field  (forest, carries the invite) column 2
-     The state lives in one attribute on the shell, data-auth-state. On signup
-     the stage translates a full -100% and the field a full +100%, so the two
-     halves exchange places exactly; because the halves are equal, the swap is
-     seamless with no keyframes, no FLIP and no measuring. The field paints
-     above the stage, so mid-transition it sweeps across the object the way the
-     reference's pseudo-element did — one transform per element, both
-     compositor-only, 520ms on the house easing.
-     The stage's two panes and the field's two invitations never move: they are
-     stacked in the same cell and cross-fade (opacity + an 18-20px settle in
-     the direction the composition is travelling).
-
-   WHY THE HEIGHT IS NOT 550px
-     The shell is content-sized. It carries a min-block-size so a short form
-     still reads as one solid object, and its grid hands any spare height to
-     the swap row, so the halves stay equal at every width without a magic
-     number anywhere.
-
-   MOBILE — THE EXPLICIT DECISION
-     Under 900px the object becomes a single column: the field turns into a
-     full-width invitation bar above the stage (kicker, the invitation in the
-     display face, and one 52px button — a segmented control would mean two
-     44px targets plus a label in the same space, and one large target is the
-     better phone control). The halves still exchange places in the DOM sense
-     (both panes cross-fade, the ARIA state still flips), but nothing translates
-     horizontally: one column cannot slide sideways without either overflowing
-     or shrinking the target. The vertical settle is kept, the horizontal sweep
-     is not.
-
-   Constraints honoured: not one priority override in this file; no font-family
-   declaration; logical properties throughout so the hairlines stay on the
-   correct edge in RTL; transform/opacity only for motion; reduced motion
-   honoured by collapsing the shared duration token.
+   BABAEI AUTH — Editorial Redesign
    ========================================================================== */
 
-/* --------------------------------------------------------------------------
-   Page canvas
-   -------------------------------------------------------------------------- */
-
 .auth-body {
-    /* Named once: the message banner is a sibling of <main>, so it has to
-       reproduce the shell's column exactly. */
-    --auth-shell: 1040px;
-    --auth-gutter: clamp(18px, 4.5vw, 56px);
-
-    /* Chrome the page shares the viewport with. The sticky .site-header is
-       suppressed on these pages by css/components/quick-actions.css, so the
-       only chrome left is the mobile dock, which pads <body> itself. */
-    --auth-chrome: 0px;
-    --auth-dock: 0px;
-
-    /* The swap: one duration token drives the sweep of the field, the slide of
-       the stage, both cross-fades and the delayed hand-off of visibility, so
-       prefers-reduced-motion can collapse the whole swap in one place. */
-    --auth-swap-dur: 520ms;
-    --auth-swap: var(--auth-swap-dur) var(--sh-ease);
-    --auth-swap-hide: 0s linear var(--auth-swap-dur);
-
+    --auth-max: 1240px;
+    --auth-gutter: clamp(18px, 4vw, 56px);
     background: var(--sh-cream);
+    color: var(--sh-ink);
+    overflow-x: hidden;
 }
 
-@media (max-width: 940px) {
-    .auth-body {
-        --auth-dock: 86px;
-    }
+.auth-body .babaei-quick-actions,
+.auth-body .sh-dock {
+    display: none !important;
 }
 
-.auth-page {
-    display: flex;
-    flex-direction: column;
-
-    min-height: calc(100vh - var(--auth-chrome) - var(--auth-dock));
-    min-height: calc(100svh - var(--auth-chrome) - var(--auth-dock));
-    padding: clamp(22px, 4.6vw, 60px) var(--auth-gutter);
-
+.auth-body main {
+    min-height: calc(100svh - var(--sh-nav-h));
     background:
-        radial-gradient(120% 70% at 100% 0%, rgba(20, 82, 60, .045), transparent 58%),
-        radial-gradient(90% 60% at 0% 100%, rgba(216, 168, 95, .05), transparent 60%),
+        radial-gradient(50% 60% at 0% 0%, rgba(20,82,60,.055), transparent 65%),
+        radial-gradient(45% 50% at 100% 100%, rgba(216,168,95,.06), transparent 70%),
         var(--sh-cream);
 }
 
-/* --------------------------------------------------------------------------
-   The shell — one object
-   -------------------------------------------------------------------------- */
+.auth-page {
+    min-height: calc(100svh - var(--sh-nav-h));
+    padding: clamp(34px, 6vw, 84px) var(--auth-gutter);
+}
 
-.auth-shell {
-    /* The sweep needs a positioning context and a hard clip: the two halves
-       translate past each other inside it. */
-    position: relative;
+.auth-layout {
+    width: min(var(--auth-max), 100%);
+    min-height: calc(100svh - var(--sh-nav-h) - 68px);
+    margin-inline: auto;
+
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: 6px auto minmax(0, 1fr);
-
-    width: min(var(--auth-shell), 100%);
-    /* Content-sized with a floor. The third row is the 1fr, so the swap — not
-       an empty void under the form — absorbs every extra pixel of that floor. */
-    min-block-size: clamp(470px, 64vh, 660px);
-    /* auto margins centre the shell when there is room and collapse to the
-       padding when there is not, so a tall shell is never pushed off the top. */
-    margin: auto;
-
-    border: 1px solid var(--sh-line);
-    border-radius: 20px;
-    background: var(--sh-cream-2);
-    box-shadow: 0 24px 60px rgba(9, 28, 20, .10);
-
-    overflow: hidden;
+    grid-template-columns: minmax(0,1fr) minmax(410px,510px);
+    gap: clamp(40px, 8vw, 120px);
+    align-items: center;
+    direction: ltr;
 }
 
-/* The seam: a fine diagonal hatch over the green gradient, like the woven edge
-   of a bolt of cloth. 6px tall, capped to the shell's radius. */
-.auth-shell__selvedge {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    display: block;
-
-    background:
-        repeating-linear-gradient(115deg,
-            rgba(251, 250, 247, .40) 0 1px,
-            rgba(251, 250, 247, 0) 1px 6px),
-        linear-gradient(90deg,
-            var(--sh-forest) 0%,
-            var(--sh-forest-soft) 58%,
-            var(--sh-forest-deep) 100%);
-}
-
-.auth-shell__top {
-    grid-column: 1 / -1;
-    grid-row: 2;
+.auth-editorial {
+    min-height: 540px;
+    padding: 12px 0;
 
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
     justify-content: space-between;
-    gap: 10px 18px;
 
-    padding: clamp(15px, 2vw, 20px) clamp(20px, 3.2vw, 44px);
-
-    border-block-end: 1px solid var(--sh-line);
+    direction: rtl;
 }
 
-.auth-brand {
-    display: inline-flex;
+.auth-editorial__top,
+.auth-editorial__bottom {
+    display: flex;
     align-items: center;
     gap: 12px;
 
-    min-height: 44px;
-    color: var(--sh-ink);
+    color: var(--sh-muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .18em;
 }
 
-.auth-brand__mark {
+.auth-editorial__top {
+    direction: ltr;
+}
+
+.auth-editorial__top span:first-child {
+    color: var(--sh-forest);
+    font-family: Georgia,serif;
+    font-size: 13px;
+}
+
+.auth-editorial__top i,
+.auth-editorial__bottom i {
+    width: 42px;
+    height: 1px;
+    background: var(--sh-forest);
+    opacity: .4;
+}
+
+.auth-editorial__top b {
+    color: var(--sh-ink-2);
+    font-weight: 800;
+}
+
+.auth-editorial__center {
+    padding-inline-start: clamp(0px, 3vw, 42px);
+}
+
+.auth-kicker {
+    margin: 0 0 18px;
+    color: var(--sh-forest);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .28em;
+    direction: ltr;
+}
+
+.auth-editorial h1 {
+    margin: 0;
+    max-width: 8.7ch;
+    color: var(--sh-forest-deep);
+
+    font-family: Georgia,"Times New Roman",serif;
+    font-size: clamp(56px, 7.4vw, 104px);
+    font-weight: 500;
+    letter-spacing: -.065em;
+    line-height: 1.02;
+}
+
+.auth-editorial h1 em {
+    display: block;
+    color: var(--sh-ink);
+    font-style: normal;
+}
+
+.auth-editorial__copy {
+    max-width: 38ch;
+    margin: 30px 0 0;
+
+    color: var(--sh-muted);
+    font-size: 14px;
+    line-height: 2.25;
+}
+
+.auth-editorial__bottom {
+    direction: ltr;
+}
+
+.auth-editorial__bottom > i {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--sh-gold);
+}
+
+.auth-editorial__bottom a {
+    direction: rtl;
+    color: var(--sh-forest);
+    font-size: 12px;
+    letter-spacing: 0;
+}
+
+.auth-card {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+
+    min-height: 590px;
+    padding: clamp(28px, 4vw, 44px);
+
+    border: 1px solid rgba(20,22,26,.10);
+    border-radius: 28px;
+    background: rgba(251,250,247,.96);
+
+    box-shadow:
+        0 34px 100px rgba(9,28,20,.12),
+        inset 0 1px 0 rgba(255,255,255,.9);
+
+    display: flex;
+    flex-direction: column;
+    direction: rtl;
+
+    transition:
+        transform 360ms cubic-bezier(.22,1,.36,1),
+        opacity 280ms ease;
+}
+
+.auth-card::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 2px;
+    background: var(--sh-forest);
+}
+
+.auth-card::after {
+    content: "B";
+    position: absolute;
+    z-index: -1;
+    left: -28px;
+    bottom: -70px;
+
+    color: rgba(20,82,60,.035);
+    font: 700 250px/1 Georgia,serif;
+}
+
+.auth-card[data-auth-transition="verify"] {
+    transform: translate3d(-13%,0,0);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.auth-card[data-auth-transition="enter"] {
+    animation: auth-enter 460ms cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes auth-enter {
+    from { opacity: 0; transform: translate3d(13%,0,0); }
+    to { opacity: 1; transform: translate3d(0,0,0); }
+}
+
+.auth-card__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.auth-card__eyebrow {
+    display: block;
+    color: var(--sh-forest);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .22em;
+    direction: ltr;
+}
+
+.auth-card__step {
+    display: block;
+    margin-top: 6px;
+    color: var(--sh-muted);
+    font-size: 9px;
+    letter-spacing: .14em;
+    direction: ltr;
+}
+
+.auth-card__mark {
+    width: 42px;
+    height: 42px;
+
     display: grid;
     place-items: center;
 
-    inline-size: 38px;
-    block-size: 38px;
     border-radius: 12px;
     background: var(--sh-forest);
     color: var(--sh-cream-2);
 
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1;
+    font: 700 20px/1 Georgia,serif;
 }
 
-.auth-brand__word {
+.auth-card__mark--done {
+    background: var(--sh-paper);
+    color: var(--sh-forest);
+    border: 1px solid var(--sh-line-strong);
+    font-family: var(--sh-font);
     font-size: 15px;
-    font-weight: 700;
-    letter-spacing: .3em;
-
-    direction: ltr;
-    unicode-bidi: isolate;
 }
 
-.auth-brand__tagline {
+.auth-mode {
+    width: min(100%,290px);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+
+    padding: 4px;
+    margin-bottom: 32px;
+
+    border: 1px solid var(--sh-line);
+    border-radius: 999px;
+    background: var(--sh-paper);
+}
+
+.auth-mode button {
+    min-height: 40px;
+    border-radius: 999px;
+
+    background: transparent;
     color: var(--sh-muted);
-    font-size: 10px;
-    letter-spacing: .18em;
 
-    direction: ltr;
-    unicode-bidi: isolate;
-}
-
-/* --------------------------------------------------------------------------
-   The swap — two exact halves that exchange places
-   --------------------------------------------------------------------------
-   Equal columns, no gap: a full-width translate on either half lands it
-   precisely on the other one. That is the whole trick. Do not introduce a gap
-   or unequal tracks here without re-measuring the swap.
-   -------------------------------------------------------------------------- */
-
-.auth-swap {
-    grid-column: 1 / -1;
-    grid-row: 3;
-
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-
-    min-width: 0;
-}
-
-/* The cream half: the form. Column 1 is the reading-start side in RTL. */
-.auth-stage {
-    grid-column: 1;
-    grid-row: 1;
-    z-index: 1;
-
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    /* Row 1 is the state; row 2 is the quiet footer, pinned to the bottom edge
-       so the two halves of the object end together. */
-    grid-template-rows: minmax(0, 1fr) auto;
-
-    min-width: 0;
-    background: var(--sh-cream-2);
-
-    transform: translateX(0);
-    transition: transform var(--auth-swap);
-}
-
-/* The forest half: the invitation, and the switch. It paints above the stage,
-   so while it travels it sweeps over the form — the reference's big moving
-   panel, at half the object's width instead of 2000px. */
-.auth-field {
-    grid-column: 2;
-    grid-row: 1;
-    z-index: 2;
-
-    display: grid;
-    min-width: 0;
-
-    background:
-        repeating-linear-gradient(115deg,
-            rgba(251, 250, 247, .10) 0 1px,
-            rgba(251, 250, 247, 0) 1px 7px),
-        linear-gradient(150deg,
-            var(--sh-forest) 0%,
-            var(--sh-forest-soft) 62%,
-            var(--sh-forest-deep) 100%);
-    color: var(--sh-cream-2);
-
-    transform: translateX(0);
-    transition: transform var(--auth-swap);
-}
-
-/* The state change: one attribute, two transforms, and the halves swap. */
-.auth-shell[data-auth-state="signup"] .auth-stage {
-    transform: translateX(-100%);
-}
-
-.auth-shell[data-auth-state="signup"] .auth-field {
-    transform: translateX(100%);
-}
-
-/* --------------------------------------------------------------------------
-   The invitation (both states stacked, cross-fading)
-   -------------------------------------------------------------------------- */
-
-.auth-invite {
-    grid-area: 1 / 1;
-
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-
-    min-width: 0;
-    padding: clamp(26px, 3.4vw, 48px) clamp(24px, 3.2vw, 46px) clamp(24px, 3vw, 42px);
-
-    /* Off: invisible, and only after the fade has finished so the outgoing
-       invitation is still painted while the field is travelling. */
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(-18px);
-    transition: opacity var(--auth-swap), transform var(--auth-swap),
-                visibility var(--auth-swap-hide);
-}
-
-.auth-shell[data-auth-state="signin"] .auth-invite[data-auth-for="signin"],
-.auth-shell[data-auth-state="signup"] .auth-invite[data-auth-for="signup"] {
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-    transition: opacity var(--auth-swap), transform var(--auth-swap),
-                visibility 0s;
-}
-
-/* Tuned for the forest surface rather than the page: the tick in front of the
-   kicker is drawn in the current colour here. */
-.auth-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-
-    color: rgba(251, 250, 247, .62);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .22em;
-
-    direction: ltr;
-    unicode-bidi: isolate;
-}
-
-.auth-kicker::before {
-    content: "";
-    inline-size: 26px;
-    block-size: 1px;
-    background: currentColor;
-}
-
-/* The typographic moment: the invitation itself, in the display face. */
-.auth-quote {
-    margin: 0;
-    color: var(--sh-cream-2);
-    font-size: clamp(26px, 3vw, 38px);
+    font-size: 12px;
     font-weight: 800;
-    letter-spacing: -.02em;
-    line-height: 1.5;
-}
-
-.auth-note {
-    max-width: 34ch;
-    margin: 0;
-    color: rgba(251, 250, 247, .72);
-    font-size: 13px;
-    line-height: 2.05;
-}
-
-/* The switch itself. A real button on the forest surface: the one loud control
-   on this half, at the bottom, directly above the foot. */
-.auth-invite__action {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-
-    margin-block-start: auto;
-    min-height: 52px;
-    padding-inline: 20px;
-
-    border: 1px solid rgba(251, 250, 247, .34);
-    border-radius: 16px;
-    background: var(--sh-cream-2);
-    color: var(--sh-forest-deep);
-
-    font-size: 14.5px;
-    font-weight: 700;
-    text-align: start;
-    text-decoration: none;
-
     cursor: pointer;
-    transition: background var(--sh-fast), box-shadow var(--sh-fast),
-                transform var(--sh-fast);
+
+    transition: background var(--sh-fast),color var(--sh-fast),box-shadow var(--sh-fast);
 }
 
-.auth-invite__action:hover {
-    background: #fff;
-    box-shadow: 0 14px 30px rgba(9, 28, 20, .28);
-    transform: translateY(-1px);
+.auth-mode button.is-active {
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+    box-shadow: 0 7px 18px rgba(20,82,60,.18);
 }
 
-.auth-invite__action:active {
-    transform: translateY(0);
+.auth-heading {
+    margin-bottom: 30px;
 }
 
-.auth-invite__action:focus-visible {
-    outline: 2px solid var(--sh-cream-2);
-    outline-offset: 3px;
-}
-
-.auth-invite__arrow {
-    font-size: 17px;
-    line-height: 1;
-    transition: transform var(--sh-fast);
-}
-
-.auth-invite__action:hover .auth-invite__arrow {
-    transform: translateX(-3px);
-}
-
-.auth-field__foot {
-    padding-block-start: 18px;
-
-    border-block-start: 1px solid rgba(251, 250, 247, .20);
-    color: rgba(251, 250, 247, .58);
-    font-size: 10px;
-    letter-spacing: .22em;
-
+.auth-heading__number {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--sh-gold);
+    font: 11px Georgia,serif;
     direction: ltr;
-    unicode-bidi: isolate;
 }
 
-/* --------------------------------------------------------------------------
-   The stage: two states stacked in one cell
-   -------------------------------------------------------------------------- */
-
-.auth-pane {
-    grid-area: 1 / 1;
-
-    display: flex;
-    flex-direction: column;
-    gap: clamp(18px, 2.4vw, 26px);
-
-    min-width: 0;
-    padding: clamp(26px, 3.4vw, 46px) clamp(22px, 3.2vw, 44px) clamp(18px, 2.6vw, 32px);
-
-    /* Off: out of the paint, out of hit-testing, out of the accessibility tree
-       (inert and aria-hidden come from the markup and the script). */
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(20px);
-    transition: opacity var(--auth-swap), transform var(--auth-swap),
-                visibility var(--auth-swap-hide);
-}
-
-.auth-shell[data-auth-state="signin"] .auth-pane[data-auth-for="signin"],
-.auth-shell[data-auth-state="signup"] .auth-pane[data-auth-for="signup"] {
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-    transition: opacity var(--auth-swap), transform var(--auth-swap),
-                visibility 0s;
-}
-
-.auth-header {
-    display: flex;
-    flex-direction: column;
-    gap: 11px;
-}
-
-.auth-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-
+.auth-heading__kicker {
+    margin: 0 0 10px;
     color: var(--sh-forest);
     font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .22em;
-    text-transform: uppercase;
-
+    font-weight: 900;
+    letter-spacing: .2em;
     direction: ltr;
-    unicode-bidi: isolate;
 }
 
-/* The 26px tick in front of the eyebrow, borrowed from .sh-hero__eyebrow. */
-.auth-eyebrow::before {
-    content: "";
-    inline-size: 26px;
-    block-size: 1px;
-    background: var(--sh-forest);
-    opacity: .55;
-}
-
-.auth-title {
+.auth-heading h2 {
     margin: 0;
     color: var(--sh-ink);
-    font-size: clamp(26px, 4.2vw, 34px);
-    font-weight: 800;
-    letter-spacing: -.02em;
-    line-height: 1.4;
+    font-size: clamp(31px,4vw,45px);
+    font-weight: 850;
+    letter-spacing: -.045em;
+    line-height: 1.25;
 }
 
-.auth-lead {
-    max-width: 42ch;
-    margin: 0;
+.auth-heading p:last-child {
+    max-width: 38ch;
+    margin: 11px 0 0;
     color: var(--sh-muted);
-    font-size: 13.5px;
-    line-height: 2.05;
+    font-size: 13px;
+    line-height: 2;
 }
 
-/* The sign-up state's honest summary of what signing up means here. */
-.auth-facts {
-    display: grid;
-    gap: 10px;
-
-    margin: 0;
-    padding: 0;
-    list-style: none;
+.auth-heading p:last-child strong {
+    color: var(--sh-forest);
 }
-
-.auth-facts__item {
-    position: relative;
-
-    padding-inline-start: 22px;
-
-    color: var(--sh-muted);
-    font-size: 12.5px;
-    line-height: 1.95;
-}
-
-.auth-facts__item::before {
-    content: "";
-
-    position: absolute;
-    inset-inline-start: 0;
-    inset-block-start: .66em;
-
-    inline-size: 9px;
-    block-size: 9px;
-    border-radius: 50%;
-    background: var(--sh-forest);
-    opacity: .32;
-}
-
-/* --------------------------------------------------------------------------
-   Form
-   -------------------------------------------------------------------------- */
 
 .auth-form {
     display: flex;
@@ -540,925 +334,293 @@
     gap: 18px;
 }
 
-.auth-row {
+.auth-field-row {
     display: flex;
     flex-direction: column;
-    gap: 9px;
-}
-
-.auth-label {
-    color: var(--sh-ink-2);
-    font-size: 12.5px;
-    font-weight: 600;
-}
-
-/* The phone control is one frame with a hairline-divided +98 affix, so the
-   prefix reads as part of the field instead of as a floating label. */
-.auth-phone {
-    display: flex;
-    align-items: stretch;
-
-    min-height: 58px;
-    overflow: hidden;
-
-    /* The number is a Latin island: +98 then the national digits, left to
-       right, whatever the page direction is. */
-    direction: ltr;
-
-    border: 1px solid var(--sh-line);
-    border-radius: 16px;
-    background: #fff;
-    transition: border-color var(--sh-fast), box-shadow var(--sh-fast);
-}
-
-.auth-phone__prefix {
-    display: grid;
-    place-items: center;
-
-    padding-inline: 15px;
-    border-inline-end: 1px solid var(--sh-line);
-    background: var(--sh-paper);
-    color: var(--sh-ink-2);
-
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: .06em;
-}
-
-.auth-phone__input {
-    flex: 1 1 auto;
-
-    min-width: 0;
-    min-block-size: 56px;
-    padding-inline: 16px;
-
-    border: 0;
-    background: transparent;
-    color: var(--sh-ink);
-
-    font-size: 17px;
-    font-weight: 600;
-    letter-spacing: .04em;
-    text-align: left;
-}
-
-.auth-phone__input::placeholder {
-    color: var(--sh-muted);
-    font-weight: 400;
-}
-
-/* One focus state for the whole control, in the brand colour, on the frame
-   rather than on the bare input. */
-.auth-phone:focus-within,
-.auth-code:focus-within {
-    border-color: var(--sh-forest);
-    box-shadow: 0 0 0 4px rgba(20, 82, 60, .12);
-}
-
-/* The global ring in app.css would sit inside the shared frame; the frame's own
-   ring is the visible focus indicator for these two controls. */
-.auth-phone__input:focus,
-.auth-phone__input:focus-visible,
-.auth-code__input:focus,
-.auth-code__input:focus-visible {
-    outline: none;
-}
-
-.auth-hint {
-    color: var(--sh-muted);
-    font-size: 11px;
-    line-height: 1.9;
-}
-
-/* The submit is the only loud element on the page. Also used for the real
-   button that routes the sign-up state back to the phone entry. */
-.auth-submit {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-
-    inline-size: 100%;
-    min-height: 58px;
-    padding-inline: 22px;
-
-    border: 0;
-    border-radius: 16px;
-    background: var(--sh-forest);
-    color: var(--sh-cream-2);
-    box-shadow: 0 12px 26px rgba(20, 82, 60, .20);
-
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: .01em;
-    text-align: start;
-
-    cursor: pointer;
-    transition: background var(--sh-fast), box-shadow var(--sh-fast),
-                transform var(--sh-fast);
-}
-
-.auth-submit:hover {
-    background: var(--sh-forest-soft);
-    box-shadow: 0 16px 32px rgba(20, 82, 60, .26);
-    transform: translateY(-1px);
-}
-
-.auth-submit:active {
-    transform: translateY(0);
-}
-
-.auth-submit:focus-visible {
-    outline: 2px solid var(--sh-forest);
-    outline-offset: 3px;
-}
-
-.auth-submit__arrow {
-    font-size: 17px;
-    line-height: 1;
-    transition: transform var(--sh-fast);
-}
-
-.auth-submit:hover .auth-submit__arrow {
-    transform: translateX(-3px);
-}
-
-/* --------------------------------------------------------------------------
-   Verification: the code field
-   -------------------------------------------------------------------------- */
-
-.auth-code {
-    display: flex;
-    align-items: stretch;
-
-    min-height: 64px;
-    overflow: hidden;
-
-    border: 1px solid var(--sh-line);
-    border-radius: 16px;
-    background: #fff;
-    transition: border-color var(--sh-fast), box-shadow var(--sh-fast);
-}
-
-/* Six tracked digits in one hairline frame. The input is still a single field
-   named `code`; only its presentation changed. The inline-start padding is the
-   letter-spacing once over, which recentres the run the tracking pushes left. */
-.auth-code__input,
-.otp-input {
-    flex: 1 1 auto;
-
-    min-width: 0;
-    min-block-size: 62px;
-    padding-inline: calc(.46em + 12px) 12px;
-
-    border: 0;
-    background: transparent;
-    color: var(--sh-ink);
-
-    font-size: 23px;
-    font-weight: 700;
-    letter-spacing: .46em;
-    text-align: center;
-    direction: ltr;
-}
-
-.auth-code__input::placeholder {
-    color: var(--sh-sand);
-    font-weight: 600;
-}
-
-/* --------------------------------------------------------------------------
-   Quiet footer of the stage
-   -------------------------------------------------------------------------- */
-
-.auth-meta {
-    grid-area: 2 / 1;
-
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    padding: 16px clamp(22px, 3.2vw, 44px) clamp(22px, 3vw, 32px);
-
-    border-block-start: 1px solid var(--sh-line);
-}
-
-.auth-policy {
-    margin: 0;
-    color: var(--sh-muted);
-    font-size: 11.5px;
-    line-height: 2;
-}
-
-.auth-policy a {
-    color: var(--sh-ink-2);
-    text-decoration: underline;
-    text-decoration-color: var(--sh-line);
-    text-underline-offset: 3px;
-    transition: color var(--sh-fast), text-decoration-color var(--sh-fast);
-}
-
-.auth-policy a:hover {
-    color: var(--sh-forest);
-    text-decoration-color: currentColor;
-}
-
-.auth-back-link {
-    align-self: flex-start;
-    display: inline-flex;
-    align-items: center;
     gap: 8px;
-
-    min-height: 44px;
-    color: var(--sh-ink-2);
-    font-size: 12.5px;
-    font-weight: 600;
-    transition: color var(--sh-fast);
-}
-
-.auth-back-link:hover {
-    color: var(--sh-forest);
-}
-
-.auth-back-link:focus-visible,
-.auth-resend:focus-visible {
-    outline: 2px solid var(--sh-forest);
-    outline-offset: 3px;
-    border-radius: 6px;
-}
-
-.auth-recovery {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 10px;
-
-    margin: 0;
-    color: var(--sh-muted);
-    font-size: 12px;
-    line-height: 1.9;
-}
-
-.auth-resend {
-    display: inline-flex;
-    align-items: center;
-
-    min-block-size: 44px;
-    color: var(--sh-forest);
-    font-weight: 700;
-    text-decoration: underline;
-    text-underline-offset: 4px;
-    text-decoration-color: rgba(20, 82, 60, .3);
-    transition: text-decoration-color var(--sh-fast);
-}
-
-.auth-resend:hover {
-    text-decoration-color: currentColor;
-}
-
-/* --------------------------------------------------------------------------
-   Messages
-   --------------------------------------------------------------------------
-   includes/messages.html renders between the header and <main>, so this is the
-   one piece of the page that is not inside the shell. It is given the shell's
-   own column width and centred, and every toast wraps inside it: the message
-   reads as part of the composition instead of as text at the top of the page.
-   -------------------------------------------------------------------------- */
-
-.auth-body .messages {
-    display: grid;
-    gap: 10px;
-
-    width: min(var(--auth-shell), calc(100% - 2 * var(--auth-gutter)));
-    margin: 18px auto 0;
-}
-
-.auth-body .toast {
-    padding: 13px 16px;
-
-    border: 1px solid var(--sh-line);
-    border-radius: 14px;
-    background: var(--sh-cream-2);
-    box-shadow: 0 10px 26px rgba(9, 28, 20, .08);
-    color: var(--sh-ink-2);
-
-    font-size: 13px;
-    line-height: 1.9;
-    text-align: start;
-    overflow-wrap: anywhere;
-}
-
-.auth-body .toast-error {
-    border-color: rgba(217, 45, 32, .28);
-    background: rgba(217, 45, 32, .05);
-    color: var(--color-danger);
-}
-
-.auth-body .toast-success {
-    border-color: rgba(35, 134, 54, .26);
-    background: rgba(35, 134, 54, .05);
-    color: var(--color-success);
-}
-
-.auth-body .toast-warning,
-.auth-body .toast-info {
-    border-color: rgba(216, 168, 95, .38);
-    background: rgba(216, 168, 95, .07);
-    color: #7a5a24;
-}
-
-/* --------------------------------------------------------------------------
-   Responsive
-   --------------------------------------------------------------------------
-   900px: one column. The field stops being a half and becomes the invitation
-   bar above the stage, and the swap stops translating horizontally — a single
-   column has nowhere sideways to go that does not shrink a target or push past
-   an edge. The cross-fade stays, the settle becomes vertical. The halves are
-   still halves in the ARIA sense: both panes still swap, one inert at a time.
-   -------------------------------------------------------------------------- */
-
-@media (max-width: 900px) {
-    .auth-body {
-        /* Narrowing the shared token rather than the shell alone keeps the
-           message banner exactly as wide as the object it sits above. */
-        --auth-shell: 560px;
-    }
-
-    .auth-swap {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: auto minmax(0, 1fr);
-    }
-
-    .auth-stage {
-        grid-column: 1;
-        grid-row: 2;
-    }
-
-    .auth-field {
-        grid-column: 1;
-        grid-row: 1;
-    }
-
-    /* The sweep is a desktop gesture; here the halves simply cross-fade with a
-       short vertical settle. Kept at equal specificity to the state rules,
-       later in the file, so it wins where it should and nothing else moves. */
-    .auth-shell .auth-pane,
-    .auth-shell .auth-invite {
-        transform: translateY(12px);
-    }
-
-    .auth-shell[data-auth-state] .auth-stage,
-    .auth-shell[data-auth-state] .auth-field {
-        transform: none;
-    }
-
-    .auth-invite {
-        gap: 10px;
-        padding-block: 22px 20px;
-    }
-
-    .auth-quote {
-        font-size: clamp(21px, 5.4vw, 27px);
-    }
-
-    .auth-note,
-    .auth-field__foot {
-        display: none;
-    }
-}
-
-@media (max-width: 560px) {
-    .auth-shell {
-        border-radius: 18px;
-    }
-
-    .auth-brand__tagline {
-        display: none;
-    }
-
-    .auth-pane {
-        gap: 20px;
-        padding-block: 24px 18px;
-    }
-
-    .auth-shell__top {
-        padding-block: 13px;
-    }
-
-    .auth-title {
-        font-size: 25px;
-    }
-
-    .auth-phone__input {
-        font-size: 16px;
-    }
-
-    .auth-code__input {
-        font-size: 21px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    /* One token collapses the whole swap — the sweep, the slide, both
-       cross-fades and the delayed visibility hand-off. */
-    .auth-body {
-        --auth-swap-dur: 1ms;
-    }
-
-    .auth-submit,
-    .auth-submit__arrow,
-    .auth-phone,
-    .auth-code,
-    .auth-back-link,
-    .auth-policy a,
-    .auth-resend,
-    .auth-invite__action,
-    .auth-invite__arrow {
-        transition: none;
-    }
-
-    .auth-submit:hover,
-    .auth-submit:hover .auth-submit__arrow,
-    .auth-invite__action:hover,
-    .auth-invite__action:hover .auth-invite__arrow {
-        transform: none;
-    }
-}
-
-
-/* --------------------------------------------------------------------------
-   Auth route transition + six-digit OTP
-   -------------------------------------------------------------------------- */
-
-.auth-page {
-    overflow-x: clip;
-}
-
-.auth-shell {
-    will-change: transform, opacity;
-    transition:
-        transform 360ms cubic-bezier(.22, 1, .36, 1),
-        opacity 280ms ease;
-}
-
-.auth-shell[data-auth-transition="verify"] {
-    transform: translate3d(-12%, 0, 0);
-    opacity: 0;
-    pointer-events: none;
-}
-
-.auth-shell[data-auth-transition="enter"] {
-    animation: auth-verify-enter 440ms cubic-bezier(.22, 1, .36, 1) both;
-}
-
-@keyframes auth-verify-enter {
-    from {
-        opacity: 0;
-        transform: translate3d(12%, 0, 0);
-    }
-    to {
-        opacity: 1;
-        transform: translate3d(0, 0, 0);
-    }
-}
-
-.auth-code.auth-code--digits {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 9px;
-
-    min-height: 0;
-    overflow: visible;
-
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-}
-
-.auth-code.auth-code--digits:focus-within {
-    border-color: transparent;
-    box-shadow: none;
-}
-
-.auth-code.auth-code--digits .otp-digit {
-    inline-size: 100%;
-    min-inline-size: 0;
-    min-block-size: 58px;
-    padding: 0;
-
-    border: 1px solid var(--sh-line);
-    border-radius: 14px;
-    background: #fff;
-    color: var(--sh-ink);
-
-    font-size: 22px;
-    font-weight: 800;
-    line-height: 1;
-    text-align: center;
-    direction: ltr;
-
-    outline: 0;
-    transition:
-        border-color var(--sh-fast),
-        box-shadow var(--sh-fast),
-        transform var(--sh-fast);
-}
-
-.auth-code.auth-code--digits .otp-digit:focus {
-    border-color: var(--sh-forest);
-    box-shadow: 0 0 0 4px rgba(20, 82, 60, .12);
-    transform: translateY(-1px);
-}
-
-@media (max-width: 560px) {
-    .auth-code.auth-code--digits {
-        gap: 6px;
-    }
-
-    .auth-code.auth-code--digits .otp-digit {
-        min-block-size: 50px;
-        border-radius: 11px;
-        font-size: 19px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .auth-shell {
-        transition: none;
-    }
-
-    .auth-shell[data-auth-transition="verify"] {
-        transform: none;
-        opacity: 1;
-    }
-
-    .auth-shell[data-auth-transition="enter"] {
-        animation: none;
-    }
-
-    .auth-code.auth-code--digits .otp-digit {
-        transition: none;
-    }
-}
-
-
-/* ==========================================================================
-   BABAEI — Auth v5
-   --------------------------------------------------------------------------
-   Auth is part of the store, not a separate microsite.
-   The real shop navigation is rendered above it; this layer owns only the
-   authentication object itself.
-   ========================================================================== */
-
-.auth-body {
-    --auth-shell: 1120px;
-    --auth-gutter: clamp(18px, 4vw, 48px);
-    background: var(--sh-cream);
-    color: var(--sh-ink);
-}
-
-.auth-body main {
-    background:
-        radial-gradient(80% 70% at 12% 8%, rgba(20, 82, 60, .055), transparent 56%),
-        radial-gradient(70% 60% at 90% 94%, rgba(216, 168, 95, .055), transparent 55%),
-        var(--sh-cream);
-}
-
-.auth-page {
-    width: min(var(--auth-shell), 100%);
-    min-height: calc(100svh - var(--sh-nav-h));
-    margin-inline: auto;
-    padding: clamp(34px, 6vw, 74px) var(--auth-gutter);
-    display: grid;
-    place-items: center;
-}
-
-.auth-shell {
-    position: relative;
-    width: 100%;
-    min-block-size: 600px;
-    border: 1px solid rgba(20, 22, 26, .10);
-    border-radius: 26px;
-    background: var(--sh-cream-2);
-    box-shadow:
-        0 28px 70px rgba(9, 28, 20, .10),
-        0 2px 0 rgba(255,255,255,.80) inset;
-    overflow: hidden;
-    isolation: isolate;
-}
-
-.auth-shell::before {
-    content: "";
-    position: absolute;
-    inset-inline: 0;
-    inset-block-start: 0;
-    height: 3px;
-    z-index: 10;
-    background: linear-gradient(
-        90deg,
-        var(--sh-forest-deep),
-        var(--sh-forest-soft) 52%,
-        var(--sh-gold)
-    );
-}
-
-.auth-swap {
-    height: 100%;
-    min-height: 600px;
-    display: grid;
-    grid-template-columns: minmax(0, 44%) minmax(0, 56%);
-    grid-template-rows: 1fr;
-}
-
-.auth-stage {
-    grid-column: 2;
-    grid-row: 1;
-    background: var(--sh-cream-2);
-    border-inline-start: 1px solid var(--sh-line);
-    transform: translateX(0);
-}
-
-.auth-field {
-    grid-column: 1;
-    grid-row: 1;
-    position: relative;
-    min-height: 100%;
-    padding: clamp(34px, 4vw, 54px);
-    display: grid;
-    background:
-        repeating-linear-gradient(
-            118deg,
-            rgba(251, 250, 247, .075) 0 1px,
-            transparent 1px 7px
-        ),
-        linear-gradient(
-            150deg,
-            var(--sh-forest-deep) 0%,
-            var(--sh-forest) 58%,
-            #1c6a4d 100%
-        );
-    color: var(--sh-cream-2);
-    transform: translateX(0);
-}
-
-.auth-field::after {
-    content: "";
-    position: absolute;
-    width: 240px;
-    height: 240px;
-    border-radius: 50%;
-    border: 1px solid rgba(251, 250, 247, .11);
-    inset-inline-end: -95px;
-    inset-block-end: -105px;
-    pointer-events: none;
-}
-
-.auth-invite {
-    position: relative;
-    z-index: 1;
-    min-width: 0;
-    padding: 0;
-    gap: 17px;
-}
-
-.auth-kicker {
-    color: rgba(251,250,247,.60);
-    font-size: 10px;
-    letter-spacing: .22em;
-}
-
-.auth-quote {
-    max-width: 8ch;
-    margin-top: 8px;
-    font-size: clamp(32px, 4.4vw, 54px);
-    line-height: 1.34;
-    font-weight: 800;
-    letter-spacing: -.045em;
-}
-
-.auth-note {
-    max-width: 30ch;
-    color: rgba(251,250,247,.72);
-    font-size: 13px;
-    line-height: 2.15;
-}
-
-.auth-field__foot {
-    margin-top: auto;
-    padding-top: 20px;
-    border-top-color: rgba(251,250,247,.18);
-}
-
-.auth-invite__action {
-    margin-top: auto;
-    min-height: 54px;
-    border-radius: 15px;
-    background: var(--sh-cream-2);
-    color: var(--sh-forest-deep);
-    box-shadow: 0 14px 28px rgba(9,28,20,.18);
-}
-
-.auth-stage {
-    grid-template-rows: minmax(0, 1fr) auto;
-}
-
-.auth-pane {
-    padding: clamp(44px, 5vw, 76px) clamp(32px, 5vw, 72px) 36px;
-    gap: 28px;
-}
-
-.auth-header {
-    gap: 14px;
-    max-width: 540px;
-}
-
-.auth-eyebrow {
-    color: var(--sh-forest);
-}
-
-.auth-title {
-    font-size: clamp(34px, 4.2vw, 52px);
-    line-height: 1.24;
-    letter-spacing: -.045em;
-    font-weight: 800;
-}
-
-.auth-lead {
-    max-width: 44ch;
-    color: var(--sh-muted);
-    font-size: 14px;
-    line-height: 2.05;
-}
-
-.auth-form {
-    width: min(100%, 500px);
-    gap: 20px;
 }
 
 .auth-label {
-    font-size: 12px;
     color: var(--sh-ink-2);
-}
-
-.auth-phone,
-.auth-code {
-    border-radius: 15px;
-    background: var(--sh-cream-2);
-    border-color: var(--sh-line-strong);
+    font-size: 12px;
+    font-weight: 800;
 }
 
 .auth-phone {
     min-height: 62px;
+    display: flex;
+
+    direction: ltr;
+    overflow: hidden;
+
+    border: 1px solid var(--sh-line-strong);
+    border-radius: 16px;
+    background: #fff;
+
+    transition: border-color var(--sh-fast),box-shadow var(--sh-fast);
+}
+
+.auth-phone:focus-within {
+    border-color: var(--sh-forest);
+    box-shadow: 0 0 0 4px rgba(20,82,60,.08);
 }
 
 .auth-phone__prefix {
-    background: var(--sh-paper);
-    color: var(--sh-forest);
-    border-color: var(--sh-line);
     min-width: 68px;
+    display: grid;
+    place-items: center;
+
+    border-inline-end: 1px solid var(--sh-line);
+    background: var(--sh-paper);
+
+    color: var(--sh-forest);
+    font-size: 14px;
+    font-weight: 850;
 }
 
 .auth-phone__input {
+    min-width: 0;
+    flex: 1;
+
+    padding-inline: 17px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+
+    color: var(--sh-ink);
     font-size: 17px;
+    font-weight: 650;
+    text-align: left;
 }
 
-.auth-phone:focus-within,
-.auth-code:focus-within {
-    border-color: var(--sh-forest);
-    box-shadow: 0 0 0 4px rgba(20,82,60,.09);
+.auth-phone__input::placeholder {
+    color: #9ba0a4;
+    font-weight: 450;
+}
+
+.auth-field-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.auth-field-meta small {
+    color: var(--sh-muted);
+    font-size: 10px;
+}
+
+.auth-field-meta b {
+    color: var(--sh-forest);
+    font-size: 9px;
+    letter-spacing: .18em;
+    direction: ltr;
 }
 
 .auth-submit {
-    min-height: 58px;
-    border-radius: 15px;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding-inline: 21px;
+
+    border-radius: 16px;
     background: var(--sh-forest);
     color: var(--sh-cream-2);
-    box-shadow: 0 15px 30px rgba(20,82,60,.18);
+
+    font-size: 14px;
+    font-weight: 850;
+
+    box-shadow: 0 16px 34px rgba(20,82,60,.18);
+    cursor: pointer;
+
+    transition: background var(--sh-fast),transform var(--sh-fast),box-shadow var(--sh-fast);
 }
 
 .auth-submit:hover {
     background: var(--sh-forest-soft);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px rgba(20,82,60,.23);
 }
 
-.auth-meta {
-    padding: 18px clamp(32px, 5vw, 72px) 28px;
-    background: var(--sh-paper);
-    border-block-start-color: var(--sh-line);
+.auth-submit strong {
+    font-size: 18px;
+    font-weight: 500;
+    direction: ltr;
 }
 
-.auth-policy,
-.auth-back-link,
-.auth-recovery {
-    color: var(--sh-muted);
+.auth-card__foot {
+    margin-top: auto;
+    padding-top: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    border-top: 1px solid var(--sh-line);
 }
 
-.auth-policy a,
-.auth-back-link:hover,
+.auth-card__foot p,
+.auth-card__foot a,
 .auth-resend {
+    margin: 0;
+    color: var(--sh-muted);
+    font-size: 10px;
+    line-height: 1.8;
+}
+
+.auth-card__foot a,
+.auth-resend a {
     color: var(--sh-forest);
+    font-weight: 850;
+    white-space: nowrap;
 }
 
-.auth-facts__item {
-    color: rgba(251,250,247,.82);
+.auth-progress {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    margin-bottom: 30px;
 }
 
-.auth-facts__item::before {
-    background: var(--sh-gold);
-    opacity: .9;
+.auth-progress span {
+    height: 2px;
+    background: var(--sh-line-strong);
 }
 
-/* Route transition: the auth object follows the same calm horizontal movement
-   as the store drawer rather than jumping between unrelated layouts. */
-.auth-shell[data-auth-transition="verify"] {
-    transform: translate3d(-7%, 0, 0);
-    opacity: 0;
+.auth-progress span.is-active {
+    background: var(--sh-forest);
 }
 
-@media (max-width: 900px) {
-    .auth-page {
-        min-height: calc(100svh - var(--sh-nav-h));
-        padding: 22px 16px 44px;
-    }
+.auth-otp {
+    display: grid;
+    grid-template-columns: repeat(6,minmax(0,1fr));
+    gap: 8px;
+    direction: ltr;
+}
 
-    .auth-shell,
-    .auth-swap {
-        min-block-size: 0;
-        height: auto;
-    }
+.otp-digit {
+    width: 100%;
+    height: 58px;
+    min-width: 0;
 
-    .auth-swap {
+    border: 1px solid var(--sh-line-strong);
+    border-radius: 14px;
+    background: #fff;
+
+    color: var(--sh-ink);
+    text-align: center;
+    font-size: 21px;
+    font-weight: 850;
+
+    outline: 0;
+    transition: border-color var(--sh-fast),box-shadow var(--sh-fast),transform var(--sh-fast);
+}
+
+.otp-digit:focus {
+    border-color: var(--sh-forest);
+    box-shadow: 0 0 0 4px rgba(20,82,60,.08);
+    transform: translateY(-2px);
+}
+
+.auth-resend {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 16px;
+}
+
+@media (max-width: 980px) {
+    .auth-layout {
         grid-template-columns: 1fr;
-        grid-template-rows: auto minmax(0, auto);
+        gap: 32px;
+        min-height: auto;
     }
 
-    .auth-field {
-        grid-column: 1;
-        grid-row: 1;
-        min-height: 270px;
-        padding: 28px 26px;
+    .auth-editorial {
+        min-height: auto;
+        padding: 0 0 4px;
     }
 
-    .auth-stage {
-        grid-column: 1;
-        grid-row: 2;
-        border-inline-start: 0;
-        border-block-start: 1px solid var(--sh-line);
+    .auth-editorial__center {
+        padding-inline-start: 0;
     }
 
-    .auth-pane {
-        padding: 34px 24px 28px;
+    .auth-editorial h1 {
+        font-size: clamp(50px,9vw,76px);
     }
 
-    .auth-meta {
-        padding-inline: 24px;
+    .auth-editorial__copy,
+    .auth-editorial__bottom {
+        display: none;
     }
 
-    .auth-quote {
-        max-width: none;
-        font-size: 34px;
+    .auth-card {
+        order: -1;
+        min-height: 550px;
     }
 }
 
-@media (max-width: 560px) {
-    .auth-shell {
-        border-radius: 20px;
+@media (max-width: 600px) {
+    .auth-page {
+        padding: 22px 14px 34px;
     }
 
-    .auth-field {
-        min-height: 230px;
+    .auth-layout {
+        gap: 18px;
+    }
+
+    .auth-card {
+        min-height: 0;
         padding: 24px 20px;
+        border-radius: 22px;
     }
 
-    .auth-pane {
-        padding: 30px 20px 22px;
-    }
-
-    .auth-title {
-        font-size: 30px;
-    }
-
-    .auth-form {
+    .auth-mode {
         width: 100%;
     }
 
-    .auth-meta {
-        padding-inline: 20px;
+    .auth-heading h2 {
+        font-size: 30px;
+    }
+
+    .auth-otp {
+        gap: 5px;
+    }
+
+    .otp-digit {
+        height: 50px;
+        border-radius: 11px;
+        font-size: 18px;
+    }
+
+    .auth-card__foot {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .auth-editorial {
+        display: none;
     }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .auth-card,
+    .auth-mode button,
+    .auth-phone,
+    .auth-submit,
+    .otp-digit {
+        transition: none;
+    }
 
-/* Auth uses the shop header as its only global chrome. */
-.auth-body .babaei-quick-actions {
-    display: none !important;
-}
+    .auth-card[data-auth-transition="verify"] {
+        transform: none;
+        opacity: 1;
+    }
 
-.auth-body .sh-dock {
-    display: none !important;
-}
-
-@media (max-width: 940px) {
-    .auth-body {
-        padding-block-end: 0;
+    .auth-card[data-auth-transition="enter"] {
+        animation: none;
     }
 }
