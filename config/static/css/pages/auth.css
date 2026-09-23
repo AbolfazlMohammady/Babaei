@@ -624,3 +624,7 @@
         animation: none;
     }
 }
+
+.auth-body .mobile-menu {
+    display: none !important;
+}
