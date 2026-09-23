@@ -231,6 +231,16 @@ class ProductImageAdmin(ShopAdminMixin, admin.ModelAdmin):
         return format_html('<img class="ba-thumb" src="{}" alt="">', obj.image.url)
 
 
+@admin.action(description="تأیید نظرات انتخاب‌شده")
+def approve_comments(modeladmin, request, queryset):
+    queryset.update(status=ProductComment.Status.APPROVED)
+
+
+@admin.action(description="رد نظرات انتخاب‌شده")
+def reject_comments(modeladmin, request, queryset):
+    queryset.update(status=ProductComment.Status.REJECTED)
+
+
 @admin.register(ProductComment)
 class ProductCommentAdmin(ShopAdminMixin, admin.ModelAdmin):
     list_display = ("product", "user_display", "rating_display", "verified_badge", "status_badge", "created_at")
@@ -241,6 +251,7 @@ class ProductCommentAdmin(ShopAdminMixin, admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     date_hierarchy = "created_at"
     ordering = ("-created_at",)
+    actions = (approve_comments, reject_comments)
     fieldsets = (
         ("نظر", {"fields": ("product", "user", "body", "rating")}),
         ("بررسی", {"fields": ("status", "verified_purchase")}),
