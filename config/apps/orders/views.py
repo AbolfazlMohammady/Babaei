@@ -70,7 +70,8 @@ def cart_view(request):
     subtotal = sum(item.line_total for item in items)
     _remember_cart_count(request, item_count)
     cart = items[0].cart if items else None
-    return render(request, "orders/cart.html", {"cart": cart, "items": items, "item_count": item_count, "subtotal": subtotal})
+    hero_product = items[0].product if items else None
+    return render(request, "orders/cart.html", {"cart": cart, "items": items, "item_count": item_count, "subtotal": subtotal, "hero_product": hero_product})
 
 
 @require_POST
