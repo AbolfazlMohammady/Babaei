@@ -93,36 +93,40 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isMobilePicker() || picker.hidden || picker.parentElement !== document.body) return;
 
         const rect = input.getBoundingClientRect();
-        const padding = 12;
+        const viewportPadding = 12;
         const gap = 8;
-        const width = Math.min(352, window.innerWidth - padding * 2);
+        const width = Math.min(352, window.innerWidth - viewportPadding * 2);
 
-        // Mobile picker is intentionally viewport-anchored and horizontally
-        // centered. Its vertical position follows the date field.
-        const height = Math.min(
-            picker.scrollHeight || 610,
-            window.innerHeight - padding * 2
+        // Anchor the popup to the exact field that was tapped:
+        // same horizontal center, directly below the field.
+        const fieldCenter = rect.left + rect.width / 2;
+        const idealLeft = fieldCenter - width / 2;
+        const left = Math.max(
+            viewportPadding,
+            Math.min(idealLeft, window.innerWidth - width - viewportPadding)
         );
 
-        const below = rect.bottom + gap;
-        const above = rect.top - height - gap;
-        const top = below + height <= window.innerHeight - padding
-            ? below
-            : Math.max(padding, above);
+        const top = rect.bottom + gap;
+        const availableHeight = Math.max(
+            260,
+            window.innerHeight - top - viewportPadding
+        );
 
         picker.style.setProperty("position", "fixed", "important");
         picker.style.setProperty("display", "block", "important");
+        picker.style.setProperty("box-sizing", "border-box", "important");
         picker.style.setProperty("width", `${width}px`, "important");
         picker.style.setProperty("max-width", `${width}px`, "important");
-        picker.style.setProperty("left", "50%", "important");
+        picker.style.setProperty("max-height", `${availableHeight}px`, "important");
+        picker.style.setProperty("left", `${left}px`, "important");
         picker.style.setProperty("right", "auto", "important");
         picker.style.setProperty("top", `${top}px`, "important");
         picker.style.setProperty("bottom", "auto", "important");
-        picker.style.setProperty("inset-inline-start", "50%", "important");
+        picker.style.setProperty("inset-inline-start", `${left}px`, "important");
         picker.style.setProperty("inset-inline-end", "auto", "important");
         picker.style.setProperty("inset-block-start", `${top}px`, "important");
         picker.style.setProperty("inset-block-end", "auto", "important");
-        picker.style.setProperty("transform", "translateX(-50%)", "important");
+        picker.style.setProperty("transform", "none", "important");
     };
 
     const close = () => {
