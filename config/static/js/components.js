@@ -185,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
    off screen except the three cheap things that must: reveal, scroll-linked
    depth for the giant text, and the magnetic pills on a fine pointer.
    ========================================================================= */
-document.addEventListener("DOMContentLoaded", () => {
+const setupSiteFooter = () => {
     const footer = document.querySelector("[data-site-footer]");
 
     if (!footer) {
@@ -194,18 +194,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    /* Back to top. */
-    const toTop = footer.querySelector("[data-footer-top]");
-
-    if (toTop) {
-        toTop.addEventListener("click", () => {
-            window.scrollTo({ top: 0, behavior: calm.matches ? "auto" : "smooth" });
-        });
-    }
-
     /* Reveal. One observer, unobserved as it fires; without it the blocks are
        simply visible, because the hidden state is only ever added by CSS that
        this same sheet guards. */
+    const stage = footer.closest("[data-footer-stage]") || footer;
     const blocks = footer.querySelectorAll("[data-ft-reveal]");
 
     if (blocks.length) {
@@ -215,18 +207,22 @@ document.addEventListener("DOMContentLoaded", () => {
             // Arm the hidden state only now that an observer exists to undo it.
             footer.classList.add("is-animated");
 
+            // The trigger is the stage, not each block. The footer is fixed to
+            // the viewport, so its children are always "in view" as far as an
+            // observer is concerned — watching them would fire at page load and
+            // the fade would be over before anyone scrolled down to see it.
             const revealer = new IntersectionObserver((entries) => {
                 entries.forEach((entry) => {
                     if (!entry.isIntersecting) {
                         return;
                     }
 
-                    entry.target.classList.add("is-revealed");
-                    revealer.unobserve(entry.target);
+                    blocks.forEach((block) => block.classList.add("is-revealed"));
+                    revealer.disconnect();
                 });
-            }, { rootMargin: "0px 0px -12% 0px" });
+            }, { rootMargin: "0px 0px -18% 0px" });
 
-            blocks.forEach((block) => revealer.observe(block));
+            revealer.observe(stage);
         }
     }
 
@@ -241,7 +237,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const paint = () => {
             owed = false;
 
-            const box = footer.getBoundingClientRect();
+            // The stage is what moves; the pinned footer's box does not.
+            const box = stage.getBoundingClientRect();
             const travel = box.height + window.innerHeight;
 
             if (travel <= 0) {
@@ -274,7 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }, { rootMargin: "240px" });
 
-        watcher.observe(footer);
+        watcher.observe(stage);
     }
 
     /* Magnetic pills. Fine pointers only — the same gate the hover styles use,
@@ -339,4 +336,15 @@ document.addEventListener("DOMContentLoaded", () => {
         window.addEventListener("scroll", forget, { passive: true });
         pill.classList.add("is-magnetic");
     });
-});
+};
+
+/* Run now when the document is already parsed — which it is, because this file
+   is loaded with `defer` — and wait for the event only when it is not. This
+   block used to wait on DOMContentLoaded unconditionally, and when that event
+   has already fired the listener never runs: no reveal arming, no scroll-linked
+   depth, no magnetic pills, with nothing in the console to say so. */
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupSiteFooter, { once: true });
+} else {
+    setupSiteFooter();
+}

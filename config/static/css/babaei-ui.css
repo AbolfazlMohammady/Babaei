@@ -1240,54 +1240,17 @@ body.auth-body .auth-policy a {
 
 /* --------------------------------------------------------------------------
    FOOTER
+   --------------------------------------------------------------------------
+   The site footer is styled in css/components.css, next to the markup it
+   belongs to. The `!important` block that used to live here painted an older
+   footer — .site-footer h3, __brand, __newsletter, __socials and
+   .footer-newsletter, none of which exist in the markup any more — but two of
+   its selectors (.site-footer a and .site-footer__bottom) still matched, so
+   they overrode the live footer's own colours on every page that loads this
+   sheet: navy #94a3a9 link text instead of the footer's ink, and an unguarded
+   `.site-footer a:hover` that stuck on touch. Removed rather than rewritten:
+   the footer owns its own tokens now.
    -------------------------------------------------------------------------- */
-
-body:not(.customizer-page) .site-footer {
-    background: var(--ba-bg-deep) !important;
-    border-top: 1px solid var(--ba-border) !important;
-    color: var(--ba-text-soft) !important;
-}
-
-body:not(.customizer-page) .site-footer h3 {
-    color: #fff !important;
-}
-
-body:not(.customizer-page) .site-footer a {
-    color: var(--ba-muted) !important;
-    text-decoration: none !important;
-}
-
-body:not(.customizer-page) .site-footer a:hover {
-    color: var(--ba-accent) !important;
-}
-
-body:not(.customizer-page) .site-footer__brand p,
-body:not(.customizer-page) .site-footer__brand-note,
-body:not(.customizer-page) .site-footer__newsletter p,
-body:not(.customizer-page) .site-footer__bottom {
-    color: var(--ba-muted) !important;
-}
-
-body:not(.customizer-page) .site-footer__socials a {
-    border-color: var(--ba-border) !important;
-    color: var(--ba-accent) !important;
-    background: transparent !important;
-}
-
-body:not(.customizer-page) .footer-newsletter {
-    border-color: var(--ba-border) !important;
-    background: var(--ba-surface) !important;
-}
-
-body:not(.customizer-page) .footer-newsletter input {
-    border: 0 !important;
-    background: transparent !important;
-}
-
-body:not(.customizer-page) .footer-newsletter button {
-    background: var(--ba-accent) !important;
-    color: var(--ba-500) !important;
-}
 
 /* Account has its own footer inside the account shell. */
 body.account-body .account-shell-footer {
@@ -2545,56 +2508,23 @@ body.product-detail-page .next-step-card {
 
 
 /* --------------------------------------------------------------------------
-   BACKGROUND ART — use the supplied /static/images/back artwork across pages.
-   Keep the imagery visible; avoid the washed-out white canvas introduced by
-   the temporary reference layer.
+   BACKGROUND ART — retired.
+   --------------------------------------------------------------------------
+   This tail block painted a dark navy photographic wash over <body> on every
+   page, then forced <main> transparent so it showed through. Three problems,
+   all measured on the cart (the only page that still reached it):
+
+     * the shop and home pages never showed it, because storefront.css loads
+       after this sheet and pins them to cream — so it only ever painted the
+       cart, which css/pages/cart.css explicitly declares as
+       "forest green + cream, same as the shop shell";
+     * `body:not(.customizer-page) main { background: transparent !important }`
+       left <main> see-through, so the pinned footer behind the page could show
+       through the content — the one thing the curtain reveal depends on;
+     * `body:not(.customizer-page) .site-footer { background: rgba(8,20,26,.94)
+       !important }` repainted the footer navy on the two pages that carry a
+       footer and load this sheet.
+
+   The artwork stays in config/static/images/back/ for whoever wants it back;
+   only the layer that contradicted the storefront palette is gone.
    -------------------------------------------------------------------------- */
-body:not(.customizer-page) {
-    background:
-        linear-gradient(180deg, rgba(7,17,23,.76), rgba(10,20,26,.92)),
-        url("/static/images/back/dddepth-200.jpg") center / cover fixed !important;
-}
-
-body:not(.customizer-page) main {
-    background: transparent !important;
-}
-
-body.home-page {
-    background:
-        linear-gradient(180deg, rgba(4,20,30,.78), rgba(8,19,25,.90)),
-        url("/static/images/back/dddepth-201.jpg") center / cover fixed !important;
-}
-
-body.shop-page,
-body.product-detail-page,
-body.cart-page,
-body.account-body,
-body.auth-body {
-    background:
-        linear-gradient(180deg, rgba(7,19,26,.78), rgba(10,22,28,.92)),
-        url("/static/images/back/dddepth-202.jpg") center / cover fixed !important;
-}
-
-body.shop-page main,
-body.product-detail-page main,
-body.cart-page main,
-body.account-body main,
-body.auth-body main {
-    background: transparent !important;
-}
-
-body:not(.customizer-page) .site-footer {
-    background: rgba(8,20,26,.94) !important;
-}
-
-@media (max-width: 900px) {
-    body:not(.customizer-page),
-    body.home-page,
-    body.shop-page,
-    body.product-detail-page,
-    body.cart-page,
-    body.account-body,
-    body.auth-body {
-        background-attachment: scroll !important;
-    }
-}
