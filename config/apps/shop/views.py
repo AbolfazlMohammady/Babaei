@@ -4,14 +4,16 @@ import json
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Case, CharField, Count, Exists, F, IntegerField, Max, Min, OuterRef, Prefetch, Q, Subquery, Value, When
+from django.db.models import Avg, Case, CharField, Count, Exists, F, IntegerField, Max, Min, OuterRef, Prefetch, Q, Subquery, Value, When
 from django.db.models.functions import Concat
 from django.http import HttpResponsePermanentRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.utils.safestring import mark_safe
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, ListView
 
-from .models import Category, Product, ProductImage, ProductVariant
+from .models import Category, Product, ProductComment, ProductImage, ProductVariant
 from apps.saved.models import FavoriteProduct
 
 AUTH_USER_SESSION_KEY = "_auth_user_id"
@@ -295,6 +297,45 @@ class CategoryDetailView(ListView):
             return HttpResponsePermanentRedirect(request.path)
         return super().get(request, *args, **kwargs)
 
+class ProductCommentAddView(LoginRequiredMixin, View):
+    login_url = "users:login"
+
+    def post(self, request, slug):
+        product = get_object_or_404(Product, slug=slug, is_active=True, category__is_active=True)
+        body = (request.POST.get("body") or "").strip()
+        rating_raw = (request.POST.get("rating") or "").strip()
+        if not body:
+            return redirect(f"{product.get_absolute_url()}#comments")
+        rating = None
+        if rating_raw:
+            try:
+                rating = int(rating_raw)
+            except (TypeError, ValueError):
+                rating = None
+            if rating is not None and not 1 <= rating <= 5:
+                rating = None
+        from apps.orders.models import Order, OrderItem
+        verified_purchase = OrderItem.objects.filter(order__user=request.user, order__status=Order.Status.DELIVERED, product=product).exists()
+        ProductComment.objects.create(product=product, user=request.user, body=body[:2000], rating=rating, verified_purchase=verified_purchase, status=ProductComment.Status.PENDING)
+        return redirect(f"{product.get_absolute_url()}#comments")
+
+
+class ProductCommentsView(ListView):
+    template_name = "shop/product_comments.html"
+    context_object_name = "comments"
+    paginate_by = 12
+
+    def get_queryset(self):
+        self.product = get_object_or_404(Product.objects.select_related("category"), slug=self.kwargs["slug"], is_active=True, category__is_active=True)
+        return ProductComment.objects.filter(product=self.product, status=ProductComment.Status.APPROVED).select_related("user").order_by("-created_at", "-id")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        summary = ProductComment.objects.filter(product=self.product, status=ProductComment.Status.APPROVED).aggregate(count=Count("id"), average=Avg("rating"))
+        context["product"] = self.product
+        context["comment_count"] = summary["count"] or 0
+        context["comment_average"] = summary["average"]
+        return context
 
 class ProductDetailView(DetailView):
     template_name = "shop/product_detail.html"
@@ -338,6 +379,11 @@ class ProductDetailView(DetailView):
         context["colors"] = colors
         context["sizes"] = sizes
         context["total_stock"] = sum(variant.stock_quantity for variant in offers)
+        approved_comments = ProductComment.objects.filter(product=self.object, status=ProductComment.Status.APPROVED).select_related("user").order_by("-created_at", "-id")
+        comment_summary = approved_comments.aggregate(count=Count("id"), average=Avg("rating"))
+        context["featured_comments"] = list(approved_comments[:3])
+        context["comment_count"] = comment_summary["count"] or 0
+        context["comment_average"] = comment_summary["average"]
         context["cart_variant_data"] = schema_json({str(variant.id): (variant.cart_quantity or 0) for variant in offers})
         context["variant_data"] = schema_json([{ "id": variant.id, "color_id": variant.color_id, "color": variant.color.name, "color_hex": variant.color.hex_code, "size_id": variant.size_id, "size": variant.size.name, "price": variant.price, "compare_at_price": variant.compare_at_price, "stock": variant.stock_quantity, "sku": variant.sku } for variant in offers])
         if offers:
