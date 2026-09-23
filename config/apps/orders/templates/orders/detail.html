@@ -25,6 +25,30 @@
         </div>
     </header>
 
+    {% if order.status == "cancelled" or order.status == "refunded" %}
+    <div class="order-alert order-alert--danger">
+        این سفارش در وضعیت {{ order.get_status_display }} قرار دارد.
+    </div>
+    {% else %}
+    <div class="order-progress" aria-label="مراحل سفارش">
+        <div class="order-progress__step{% if order.payment_status == 'paid' %} is-done{% endif %}">
+            <span>01</span><strong>پرداخت</strong>
+        </div>
+        <div class="order-progress__line{% if order.status == 'processing' or order.status == 'shipped' or order.status == 'delivered' %} is-done{% endif %}"></div>
+        <div class="order-progress__step{% if order.status == 'processing' or order.status == 'shipped' or order.status == 'delivered' %} is-done{% endif %}">
+            <span>02</span><strong>آماده‌سازی</strong>
+        </div>
+        <div class="order-progress__line{% if order.status == 'shipped' or order.status == 'delivered' %} is-done{% endif %}"></div>
+        <div class="order-progress__step{% if order.status == 'shipped' or order.status == 'delivered' %} is-done{% endif %}">
+            <span>03</span><strong>ارسال</strong>
+        </div>
+        <div class="order-progress__line{% if order.status == 'delivered' %} is-done{% endif %}"></div>
+        <div class="order-progress__step{% if order.status == 'delivered' %} is-done{% endif %}">
+            <span>04</span><strong>تحویل</strong>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="order-detail-grid">
         <section class="order-card">
             <div class="order-card__head">
