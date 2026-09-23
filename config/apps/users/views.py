@@ -8,10 +8,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from .models import Address, City, OTP, Province
+from apps.orders.services import merge_guest_cart
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -29,8 +31,18 @@ def _is_authenticated_session(request):
 
 
 def login_view(request):
+    next_url = request.GET.get("next") or request.POST.get("next") or request.session.get("login_next")
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        request.session["login_next"] = next_url
+    else:
+        next_url = ""
+
     if _is_authenticated_session(request):
-        return redirect("users:profile")
+        return redirect(next_url or "users:profile")
     if request.method == "POST":
         phone = request.POST.get("phone", "").strip()
         if not phone:
@@ -69,8 +81,16 @@ def verify_otp_view(request):
             messages.error(request, "حساب کاربری شما غیرفعال است.")
             return redirect("users:login")
         login(request, user, backend=AUTH_BACKEND)
+        merge_guest_cart(request, user)
+        next_url = request.session.pop("login_next", "")
         request.session.pop("otp_phone", None)
         request.session.pop("otp_id", None)
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            return redirect(next_url)
         return redirect("users:profile")
     return render(request, "users/auth/verify_otp.html", {"phone": phone})
 
