@@ -5,7 +5,7 @@
    ========================================================================== */
 
 .auth-body {
-    --auth-bg: #f6f7f5;
+    --auth-bg: var(--sh-cream);
     --auth-forest: var(--sh-forest);
     --auth-deep: var(--sh-forest-deep);
     --auth-soft: var(--sh-forest-soft);
@@ -42,8 +42,8 @@
     justify-content: center;
 
     background:
-        radial-gradient(circle at 50% 50%, rgba(20,82,60,.025), transparent 56%),
-        linear-gradient(135deg, #f9faf8 0%, #f1f3f0 100%);
+        radial-gradient(circle at 50% 50%, rgba(20,82,60,.032), transparent 52%),
+        var(--auth-bg);
 }
 
 /* --------------------------------------------------------------------------
