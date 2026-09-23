@@ -42,7 +42,7 @@
     justify-content: center;
 
     background:
-        radial-gradient(circle at 50% 50%, rgba(20,82,60,.032), transparent 52%),
+        radial-gradient(circle at 50% 50%, rgba(20,82,60,.020), transparent 52%),
         var(--auth-bg);
 }
 
@@ -59,7 +59,7 @@
     pointer-events: none;
 
     filter: blur(8px);
-    opacity: .62;
+    opacity: .52;
 }
 
 .auth-blob {
@@ -73,9 +73,9 @@
     background:
         radial-gradient(
             circle at 30% 28%,
-            rgba(251,250,247,.92),
-            rgba(143,174,156,.44) 34%,
-            rgba(20,82,60,.70) 78%
+            rgba(235,231,222,.74),
+            rgba(125,157,137,.38) 34%,
+            rgba(20,82,60,.62) 78%
         );
 
     box-shadow:
