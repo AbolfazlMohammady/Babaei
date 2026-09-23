@@ -175,3 +175,167 @@ def clear_cart(request) -> None:
     cart = get_active_cart(request)
     cart.items.all().delete()
     invalidate_product_cart_cache(request)
+
+
+
+def create_order_from_cart(*, user, cart, address, customer_note=""):
+    """Convert the active cart into an immutable order snapshot."""
+    from apps.shop.models import ProductVariant
+
+    with transaction.atomic():
+        locked_cart = Cart.objects.select_for_update().get(
+            pk=cart.pk,
+            user=user,
+            status=Cart.Status.ACTIVE,
+        )
+        items = list(
+            locked_cart.items
+            .select_related(
+                "product",
+                "product__category",
+                "variant__color",
+                "variant__size",
+            )
+            .select_for_update()
+            .order_by("added_at", "id")
+        )
+        if not items:
+            raise ValueError("سبد خرید خالی است.")
+
+        order_rows = []
+        subtotal = 0
+
+        for item in items:
+            product = item.product
+            if not product.is_active or not product.category.is_active:
+                raise ValueError(f"محصول «{product.name}» دیگر قابل سفارش نیست.")
+
+            variant = None
+            if item.variant_id:
+                variant = (
+                    ProductVariant.objects
+                    .select_for_update()
+                    .select_related("color", "size")
+                    .get(pk=item.variant_id, product_id=product.id)
+                )
+                if not variant.is_active:
+                    raise ValueError(f"ترکیب «{product.name}» دیگر قابل سفارش نیست.")
+                if variant.stock_quantity < item.quantity:
+                    raise ValueError(f"موجودی «{product.name}» برای تعداد انتخاب‌شده کافی نیست.")
+                unit_price = variant.price
+                compare_at_price = variant.compare_at_price
+                variant_sku = variant.sku
+                color_name = variant.color.name
+                size_name = variant.size.name
+            else:
+                unit_price = product.base_price
+                compare_at_price = product.compare_at_price
+                variant_sku = ""
+                color_name = ""
+                size_name = ""
+
+            line_total = unit_price * item.quantity
+            subtotal += line_total
+            order_rows.append({
+                "cart_item": item,
+                "variant": variant,
+                "unit_price": unit_price,
+                "compare_at_price": compare_at_price,
+                "variant_sku": variant_sku,
+                "color_name": color_name,
+                "size_name": size_name,
+                "line_total": line_total,
+            })
+
+        order = Order.objects.create(
+            user=user,
+            status=Order.Status.PENDING,
+            payment_status=Order.PaymentStatus.UNPAID,
+            shipping_status=Order.ShippingStatus.PENDING,
+            shipping_title=address.title,
+            shipping_recipient=user.get_full_name().strip(),
+            shipping_phone=str(address.phone),
+            shipping_province=address.city.province.name,
+            shipping_city=address.city.name,
+            shipping_postal_code=address.postal_code,
+            shipping_address=address.description or address.title,
+            subtotal=subtotal,
+            discount_amount=0,
+            shipping_amount=0,
+            total_amount=subtotal,
+            currency="IRT",
+            customer_note=customer_note.strip(),
+        )
+
+        OrderItem.objects.bulk_create([
+            OrderItem(
+                order=order,
+                product=row["cart_item"].product,
+                variant=row["variant"],
+                product_name=row["cart_item"].product.name,
+                variant_sku=row["variant_sku"],
+                color_name=row["color_name"],
+                size_name=row["size_name"],
+                unit_price=row["unit_price"],
+                compare_at_price=row["compare_at_price"],
+                quantity=row["cart_item"].quantity,
+                line_total=row["line_total"],
+            )
+            for row in order_rows
+        ])
+
+        locked_cart.status = Cart.Status.CONVERTED
+        locked_cart.save(update_fields=["status", "updated_at"])
+
+    return order
+
+
+def process_manual_payment(*, order, success):
+    """Development-only payment simulator.
+
+    Successful payment locks each variant, verifies stock, decrements inventory,
+    and marks the order paid. Failed payment keeps the order pending so it can
+    be retried.
+    """
+    from apps.shop.models import ProductVariant
+    from django.utils import timezone
+
+    with transaction.atomic():
+        locked_order = Order.objects.select_for_update().get(pk=order.pk)
+
+        if locked_order.payment_status == Order.PaymentStatus.PAID:
+            return locked_order, False
+
+        if locked_order.status in {Order.Status.CANCELLED, Order.Status.REFUNDED}:
+            raise ValueError("این سفارش دیگر قابل پرداخت نیست.")
+
+        if not success:
+            locked_order.payment_status = Order.PaymentStatus.FAILED
+            locked_order.payment_reference = f"MANUAL-FAILED-{locked_order.number}"
+            locked_order.save(update_fields=["payment_status", "payment_reference", "updated_at"])
+            return locked_order, True
+
+        order_items = list(locked_order.items.select_related("product", "variant").select_for_update())
+        for item in order_items:
+            if not item.variant_id:
+                continue
+            variant = ProductVariant.objects.select_for_update().get(pk=item.variant_id)
+            if not variant.is_active or variant.stock_quantity < item.quantity:
+                raise ValueError(f"موجودی «{item.product_name}» دیگر کافی نیست.")
+            variant.stock_quantity -= item.quantity
+            variant.save(update_fields=["stock_quantity"])
+
+        locked_order.payment_status = Order.PaymentStatus.PAID
+        locked_order.status = Order.Status.PAID
+        locked_order.payment_reference = f"MANUAL-{locked_order.number}"
+        locked_order.paid_at = timezone.now()
+        locked_order.save(
+            update_fields=[
+                "payment_status",
+                "status",
+                "payment_reference",
+                "paid_at",
+                "updated_at",
+            ]
+        )
+        return locked_order, True
