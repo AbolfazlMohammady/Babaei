@@ -26,14 +26,14 @@
 }
 
 .auth-body main {
-    min-height: calc(100svh - var(--sh-nav-h));
+    min-height: 100svh;
 }
 
 .auth-page {
     position: relative;
     isolation: isolate;
 
-    min-height: calc(100svh - var(--sh-nav-h));
+    min-height: 100svh;
     width: 100%;
     overflow: hidden;
 
@@ -399,11 +399,11 @@
 
     padding: 18px 24px;
 
-    border: 0;
+    border: 1px solid rgba(251,250,247,.14);
     border-radius: 18px;
 
-    background: var(--auth-cream);
-    color: var(--auth-deep);
+    background: var(--auth-forest);
+    color: var(--auth-cream);
 
     display: flex;
     align-items: center;
@@ -423,6 +423,7 @@
 .auth-submit:hover {
     letter-spacing: .03em;
     transform: translateY(-1px);
+    background: var(--auth-soft);
 }
 
 .auth-submit-wrap:hover .auth-submit-liquid {
@@ -442,26 +443,70 @@
 
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-
-    font-family: "Courier New", monospace;
-    font-size: 9px;
+    justify-content: flex-start;
+    gap: 14px;
 }
 
-.auth-footer-nav a {
-    color: var(--auth-dim);
-    transition: color .25s ease;
-}
+.auth-store-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
 
-.auth-footer-nav a:hover {
+    min-height: 44px;
+    padding: 0 16px;
+
+    border: 1px solid rgba(20,82,60,.18);
+    border-radius: 12px;
+    background: rgba(251,250,247,.72);
+
     color: var(--auth-forest);
+    font-family: var(--sh-font);
+    font-size: 11px;
+    font-weight: 800;
+    text-decoration: none;
+
+    box-shadow: 0 8px 20px rgba(9,28,20,.06);
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        border-color .25s ease,
+        transform .25s ease,
+        box-shadow .25s ease;
 }
 
-.auth-footer-nav span {
-    color: rgba(109,114,120,.58);
-    letter-spacing: .12em;
+.auth-store-link strong {
+    font-family: "Courier New", monospace;
+    font-size: 15px;
+    line-height: 1;
     direction: ltr;
+    transition: transform .25s ease;
+}
+
+.auth-store-link:hover {
+    background: var(--auth-forest);
+    color: var(--auth-cream);
+    border-color: var(--auth-forest);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(20,82,60,.14);
+}
+
+.auth-store-link:hover strong {
+    transform: translateX(-3px);
+}
+
+.auth-change-link {
+    color: var(--sh-muted);
+    font-size: 10px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: rgba(109,114,120,.30);
+    text-underline-offset: 4px;
+}
+
+.auth-change-link:hover {
+    color: var(--auth-forest);
+    text-decoration-color: currentColor;
 }
 
 /* --------------------------------------------------------------------------
