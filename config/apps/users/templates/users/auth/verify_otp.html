@@ -32,23 +32,16 @@
     <main class="auth-container">
         <header class="auth-header">
             <span class="auth-brand-id">BABAEI // VERIFY</span>
-            <h1>
-                ENTER<br>
-                <strong>CODE.</strong>
-            </h1>
+            <h1>ENTER <strong>CODE.</strong></h1>
             <p>
-                کد ارسال‌شده به
-                <b dir="ltr">{{ phone }}</b>
-                را وارد کنید.
+                کد ارسال‌شده به <b dir="ltr">{{ phone }}</b> را وارد کنید.
             </p>
         </header>
 
         <form method="post" class="auth-form" novalidate data-auth-verify-form autocomplete="off">
             {% csrf_token %}
 
-            <div class="auth-form-group">
-                <label>کد تأیید</label>
-
+            <div class="auth-form-group auth-form-group--otp">
                 <div class="auth-otp-line" aria-label="کد تأیید شش رقمی">
                     <div class="auth-otp-cell"><input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" data-otp-digit="0" aria-label="رقم اول"><span></span></div>
                     <div class="auth-otp-cell"><input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="off" data-otp-digit="1" aria-label="رقم دوم"><span></span></div>
