@@ -12,7 +12,7 @@
     {% include "includes/shop_header.html" %}
 {% elif request.resolver_match.namespace == 'users' %}
     {% if request.resolver_match.url_name == 'login' or request.resolver_match.url_name == 'verify_otp' %}
-        {% include "includes/shop_header.html" %}
+        {# Auth pages intentionally render without global site navigation. #}
     {% else %}
 <header class="site-header">
     <div class="site-header__inner">
