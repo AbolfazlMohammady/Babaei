@@ -157,10 +157,10 @@
                     <strong><span data-cart-subtotal data-cart-number="{{ subtotal }}">{{ subtotal|price }}</span> <small>تومان</small></strong>
                 </div>
 
-                <button class="cart-checkout" type="button" disabled>
+                <a class="cart-checkout cart-checkout--link" href="{% url 'orders:checkout' %}">
                     <span>ادامه ثبت سفارش</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
-                </button>
+                </a>
 
                 <a class="cart-continue" href="{% url 'shop:index' %}">ادامه خرید</a>
             </div>
