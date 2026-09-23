@@ -222,7 +222,7 @@ js/storefront.js). Nothing on this page needs !important.
                         </article>
                     {% endfor %}
                 </div>
-                {% if comment_count > 3 %}<a class="pd-comments__all" href="{% url 'shop:product_comments' product.slug %}">مشاهده همه {{ comment_count }} نظر <span aria-hidden="true">←</span></a>{% endif %}
+                {% if comment_count %}<a class="pd-comments__all" href="{% url 'shop:product_comments' product.slug %}">مشاهده همه {{ comment_count }} نظر <span aria-hidden="true">←</span></a>{% endif %}
             {% else %}
                 <div class="pd-comments__empty"><strong>هنوز نظری برای این محصول ثبت نشده.</strong><span>اگر این محصول را استفاده کردی، تجربه‌ات می‌تواند برای نفر بعدی مفید باشد.</span></div>
             {% endif %}
