@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Case, CharField, ExpressionWrapper, F, OuterRef, PositiveBigIntegerField, Subquery, Sum, When, Value
 from django.db.models.functions import Concat
 from django.http import JsonResponse
@@ -10,8 +11,21 @@ from django.views.decorators.http import require_POST
 
 from apps.shop.models import Product, ProductImage, ProductVariant
 
-from .models import Cart, CartItem
-from .services import CART_COUNT_SESSION_KEY, CART_SESSION_KEY, add_to_cart, clear_cart, get_active_cart, remove_cart_item, update_cart_item
+from apps.users.models import Address
+
+from .models import Cart, CartItem, Order
+from .services import (
+    CART_COUNT_SESSION_KEY,
+    CART_SESSION_KEY,
+    add_to_cart,
+    clear_cart,
+    create_order_from_cart,
+    get_active_cart,
+    invalidate_product_cart_cache,
+    process_manual_payment,
+    remove_cart_item,
+    update_cart_item,
+)
 
 AUTH_USER_SESSION_KEY = "_auth_user_id"
 
@@ -147,3 +161,131 @@ def cart_clear_view(request):
         return JsonResponse({"ok": True, "count": 0, "subtotal": 0})
     messages.success(request, "سبد خرید خالی شد.")
     return redirect("orders:cart")
+
+
+@login_required
+def checkout_view(request):
+    cart = get_active_cart(request)
+    addresses = list(
+        request.user.addresses
+        .select_related("city", "city__province")
+        .order_by("-is_default", "-id")
+    )
+    items = list(
+        cart.items
+        .select_related("product", "variant__color", "variant__size")
+        .order_by("added_at", "id")
+    )
+
+    if not items:
+        messages.info(request, "سبد خرید شما خالی است.")
+        return redirect("orders:cart")
+
+    if request.method == "POST":
+        address_id = request.POST.get("address_id")
+        note = request.POST.get("customer_note", "")
+        try:
+            address = Address.objects.select_related("city", "city__province").get(
+                pk=address_id,
+                user=request.user,
+            )
+            order = create_order_from_cart(
+                user=request.user,
+                cart=cart,
+                address=address,
+                customer_note=note,
+            )
+        except (Address.DoesNotExist, ValueError) as exc:
+            messages.error(request, str(exc) or "لطفاً یک آدرس معتبر انتخاب کنید.")
+        else:
+            _remember_cart_count(request, 0)
+            invalidate_product_cart_cache(request)
+            return redirect("orders:payment", order_uuid=order.uuid)
+
+    subtotal = sum(item.line_total for item in items)
+    selected_address_id = request.POST.get("address_id") if request.method == "POST" else None
+    if not selected_address_id:
+        selected_address = next((address for address in addresses if address.is_default), None)
+        selected_address_id = selected_address.pk if selected_address else None
+
+    return render(
+        request,
+        "orders/checkout.html",
+        {
+            "cart": cart,
+            "items": items,
+            "addresses": addresses,
+            "selected_address_id": selected_address_id,
+            "subtotal": subtotal,
+            "shipping_amount": 0,
+            "total_amount": subtotal,
+        },
+    )
+
+
+@login_required
+def orders_list_view(request):
+    orders = (
+        Order.objects
+        .filter(user=request.user)
+        .prefetch_related("items")
+        .order_by("-created_at")
+    )
+    return render(request, "orders/list.html", {"orders": orders})
+
+
+@login_required
+def order_detail_view(request, order_uuid):
+    order = get_object_or_404(
+        Order.objects.prefetch_related("items"),
+        uuid=order_uuid,
+        user=request.user,
+    )
+    return render(request, "orders/detail.html", {"order": order})
+
+
+@login_required
+def order_payment_view(request, order_uuid):
+    order = get_object_or_404(
+        Order.objects.prefetch_related("items"),
+        uuid=order_uuid,
+        user=request.user,
+    )
+
+    if order.payment_status == Order.PaymentStatus.PAID:
+        return redirect("orders:detail", order_uuid=order.uuid)
+
+    if request.method == "POST":
+        result = request.POST.get("result")
+        if result not in {"success", "failed"}:
+            messages.error(request, "نتیجه پرداخت نامعتبر است.")
+            return redirect("orders:payment", order_uuid=order.uuid)
+
+        try:
+            order, changed = process_manual_payment(
+                order=order,
+                success=result == "success",
+            )
+        except ValueError as exc:
+            messages.error(request, str(exc))
+            return redirect("orders:payment", order_uuid=order.uuid)
+
+        if result == "success":
+            messages.success(request, "پرداخت با موفقیت ثبت شد.")
+            return redirect("orders:invoice", order_uuid=order.uuid)
+
+        messages.error(request, "پرداخت ناموفق بود. سفارش شما حذف نشده و می‌توانید دوباره تلاش کنید.")
+        return redirect("orders:detail", order_uuid=order.uuid)
+
+    return render(request, "orders/payment.html", {"order": order})
+
+
+@login_required
+def invoice_view(request, order_uuid):
+    order = get_object_or_404(
+        Order.objects.prefetch_related("items"),
+        uuid=order_uuid,
+        user=request.user,
+        payment_status=Order.PaymentStatus.PAID,
+    )
+    return render(request, "orders/invoice.html", {"order": order})
