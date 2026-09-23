@@ -40,6 +40,7 @@ def login_view(request):
         request.session["login_next"] = next_url
     else:
         next_url = ""
+        request.session.pop("login_next", None)
 
     if _is_authenticated_session(request):
         return redirect(next_url or "users:profile")
