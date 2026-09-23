@@ -6,41 +6,12 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/account.css' %}?v=4">
 <style>
-    /* Profile-specific palette: warm cream instead of the bright white surfaces. */
-    .account-body {
-        background: #eee8dc;
-    }
-
-    .account-body main,
-    .account-page,
-    .account-content,
-    .profile-card {
-        background: transparent;
-    }
-
-    .account-shell-header {
-        background: rgba(238, 232, 220, .94);
-    }
-
-    .ac-card,
-    .profile-card,
-    .account-user,
-    .account-nav {
-        background: #e8e0d2;
-    }
-
-    .ac-input,
-    .ac-textarea,
-    .ac-select,
-    .ac-choice__option {
-        background: #f1eadf;
-    }
-
-    /* The mobile quick-actions bar uses z-index 1200; the picker must sit above it. */
-    .jalali-picker {
-        position: relative;
-        z-index: 3000;
-    }
+    .account-body { background: #eee8dc; }
+    .account-body main, .account-page, .account-content, .profile-card { background: transparent; }
+    .account-shell-header { background: rgba(238, 232, 220, .94); }
+    .ac-card, .profile-card, .account-user, .account-nav { background: #e8e0d2; }
+    .ac-input, .ac-textarea, .ac-select, .ac-choice__option { background: #f1eadf; }
+    .jalali-picker { position: relative; z-index: 3000; }
 
     @media (max-width: 640px) {
         .jalali-picker {
@@ -56,12 +27,7 @@
             background: #e8dfd0;
             box-shadow: 0 24px 70px rgba(16, 45, 35, .34);
         }
-
-        .date-wheel__columns {
-            min-height: 190px;
-            max-height: 235px;
-        }
-
+        .date-wheel__columns { min-height: 190px; max-height: 235px; }
         .date-wheel__bottom {
             position: sticky;
             inset-block-end: 0;
@@ -84,7 +50,6 @@
 <article class="ac-card profile-card">
     <form method="post" action="{% url 'users:profile_update' %}" enctype="multipart/form-data" class="ac-form profile-form">
         {% csrf_token %}
-
         <section class="profile-identity">
             <div class="profile-image profile-image--large">
                 {% if user.image %}<img src="{{ user.image.url }}" alt="تصویر پروفایل">{% else %}<span aria-hidden="true">{{ user.first_name|first|default:"ب" }}</span>{% endif %}
@@ -136,24 +101,19 @@
                 </div>
             </div>
         </div>
-
-        <div class="ac-form__actions profile-actions">
-            <button class="ac-btn ac-btn--primary profile-save" type="submit">ذخیره تغییرات</button>
-        </div>
+        <div class="ac-form__actions profile-actions"><button class="ac-btn ac-btn--primary profile-save" type="submit">ذخیره تغییرات</button></div>
     </form>
 </article>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/profile.js' %}?v=3" defer></script>
+<script src="{% static 'js/pages/profile.js' %}?v=4" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.gender-option input').forEach(input => {
-        input.addEventListener('change', () => {
-            document.querySelectorAll('.gender-option').forEach(option => option.classList.remove('is-selected'));
-            input.closest('.gender-option')?.classList.add('is-selected');
-        });
-    });
+    document.querySelectorAll('.gender-option input').forEach(input => input.addEventListener('change', () => {
+        document.querySelectorAll('.gender-option').forEach(option => option.classList.remove('is-selected'));
+        input.closest('.gender-option')?.classList.add('is-selected');
+    }));
 });
 </script>
 {% endblock %}
