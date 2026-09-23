@@ -6,11 +6,9 @@
     const message = document.querySelector("[data-not-found-message]");
     const backButton = document.querySelector("[data-go-back]");
 
-    if (!charactersRoot || !canvas || !message) {
-        return;
-    }
+    if (!charactersRoot || !canvas || !message) return;
 
-    const CHARACTER_SOURCES = [
+    const stickFigures = [
         {
             top: "0%",
             src: "https://cdn.21st.dev/assets/mirror/54/54f366bdbf75b7a2d3b9f2264c3ada12aefcaf6e6a467bcecc856ffcd686e52e.svg",
@@ -48,65 +46,55 @@
         },
     ];
 
-    const activeAnimations = [];
+    const animations = [];
 
-    const createCharacters = () => {
-        activeAnimations.forEach((animation) => animation.cancel());
-        activeAnimations.length = 0;
+    function createCharacters() {
+        animations.forEach((animation) => animation.cancel());
+        animations.length = 0;
         charactersRoot.replaceChildren();
 
-        CHARACTER_SOURCES.forEach((figure, index) => {
-            const character = document.createElement("img");
-            character.className = "not-found__character";
-            character.alt = "";
-            character.decoding = "async";
-            character.draggable = false;
-            character.src = figure.src;
+        stickFigures.forEach((figure, index) => {
+            const stick = document.createElement("img");
+            stick.className = "not-found__character";
+            stick.alt = "";
+            stick.draggable = false;
+            stick.src = figure.src;
 
-            if (figure.top) character.style.top = figure.top;
-            if (figure.bottom) character.style.bottom = figure.bottom;
-            if (figure.transform) character.style.transform = figure.transform;
+            if (figure.top) stick.style.top = figure.top;
+            if (figure.bottom) stick.style.bottom = figure.bottom;
+            if (figure.transform) stick.style.transform = figure.transform;
 
-            if (index === CHARACTER_SOURCES.length - 1) {
-                character.classList.add("not-found__character--static");
-                charactersRoot.appendChild(character);
-                return;
-            }
+            charactersRoot.appendChild(stick);
 
-            charactersRoot.appendChild(character);
+            if (index === 5) return;
 
-            const horizontal = character.animate(
-                [
-                    { left: "100%" },
-                    { left: "-20%" },
-                ],
-                {
-                    duration: figure.speedX,
-                    easing: "linear",
-                    fill: "forwards",
-                },
-            );
-            activeAnimations.push(horizontal);
-
-            if (figure.speedRotation) {
-                const rotation = character.animate(
-                    [
-                        { transform: "rotate(0deg)" },
-                        { transform: "rotate(-360deg)" },
-                    ],
+            animations.push(
+                stick.animate(
+                    [{ left: "100%" }, { left: "-20%" }],
                     {
-                        duration: figure.speedRotation,
-                        iterations: Infinity,
+                        duration: figure.speedX,
                         easing: "linear",
+                        fill: "forwards",
                     },
+                ),
+            );
+
+            if (index !== 0 && figure.speedRotation) {
+                animations.push(
+                    stick.animate(
+                        [{ transform: "rotate(0deg)" }, { transform: "rotate(-360deg)" }],
+                        {
+                            duration: figure.speedRotation,
+                            iterations: Infinity,
+                            easing: "linear",
+                        },
+                    ),
                 );
-                activeAnimations.push(rotation);
             }
         });
-    };
+    }
 
     const context = canvas.getContext("2d");
-
     if (!context) {
         message.classList.add("is-visible");
         return;
@@ -116,41 +104,48 @@
     let timer = 0;
     let circles = [];
 
-    const resizeCanvas = () => {
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    function initCircles() {
         const width = window.innerWidth;
         const height = window.innerHeight;
 
-        canvas.width = Math.floor(width * dpr);
-        canvas.height = Math.floor(height * dpr);
-        canvas.style.width = width + "px";
-        canvas.style.height = height + "px";
+        circles = [];
 
-        context.setTransform(dpr, 0, 0, dpr, 0, 0);
+        for (let index = 0; index < 300; index += 1) {
+            const randomX =
+                Math.floor(Math.random() * (width * 3 - width * 1.2 + 1)) +
+                width * 1.2;
 
-        const size = Math.max(0.8, width / 1000);
-        circles = Array.from({ length: 300 }, () => ({
-            x: width * (1.2 + Math.random() * 1.8),
-            y: height * (-0.2 + Math.random() * 1.2),
-            size,
-        }));
-    };
+            const randomY =
+                Math.floor(Math.random() * (height - (height * -0.2 + 1))) +
+                height * -0.2;
 
-    const draw = () => {
+            circles.push({
+                x: randomX,
+                y: randomY,
+                size: width / 1000,
+            });
+        }
+    }
+
+    function draw() {
         const width = window.innerWidth;
         const height = window.innerHeight;
         const distanceX = width / 80;
         const growthRate = width / 1000;
 
         timer += 1;
-        context.clearRect(0, 0, width, height);
-        context.fillStyle = "rgba(255, 255, 255, 0.9)";
 
-        for (const circle of circles) {
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.fillStyle = "white";
+        context.clearRect(0, 0, width, height);
+
+        circles.forEach((circle) => {
             if (timer < 65) {
                 circle.x -= distanceX;
                 circle.size += growthRate;
-            } else if (timer < 500) {
+            }
+
+            if (timer > 65 && timer < 500) {
                 circle.x -= distanceX * 0.02;
                 circle.size += growthRate * 0.2;
             }
@@ -158,40 +153,38 @@
             context.beginPath();
             context.arc(circle.x, circle.y, circle.size, 0, Math.PI * 2);
             context.fill();
-        }
+        });
 
-        if (timer >= 500) {
+        if (timer > 500) {
             frameId = 0;
             return;
         }
 
-        frameId = window.requestAnimationFrame(draw);
-    };
+        frameId = requestAnimationFrame(draw);
+    }
 
-    const restartCanvasAnimation = () => {
-        if (frameId) {
-            window.cancelAnimationFrame(frameId);
-        }
-
+    function restartCanvas() {
+        if (frameId) cancelAnimationFrame(frameId);
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
         timer = 0;
-        resizeCanvas();
+        initCircles();
         draw();
-    };
+    }
 
     backButton?.addEventListener("click", () => {
         if (window.history.length > 1) {
             window.history.back();
-            return;
+        } else {
+            window.location.assign("/");
         }
-
-        window.location.assign("/");
     });
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (!reducedMotion) {
         createCharacters();
-        restartCanvasAnimation();
+        restartCanvas();
     }
 
     window.setTimeout(() => {
@@ -199,20 +192,19 @@
     }, reducedMotion ? 0 : 1200);
 
     let resizeTimer = 0;
+
     window.addEventListener("resize", () => {
         window.clearTimeout(resizeTimer);
         resizeTimer = window.setTimeout(() => {
             if (!reducedMotion) {
                 createCharacters();
-                restartCanvasAnimation();
+                restartCanvas();
             }
         }, 120);
     });
 
     window.addEventListener("pagehide", () => {
-        if (frameId) {
-            window.cancelAnimationFrame(frameId);
-        }
-        activeAnimations.forEach((animation) => animation.cancel());
+        if (frameId) cancelAnimationFrame(frameId);
+        animations.forEach((animation) => animation.cancel());
     });
 })();
