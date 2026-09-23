@@ -5,9 +5,18 @@
    ========================================================================== */
 
 body.cart-page {
+    /* Mirror the shop shell tokens because this page uses the exact shop nav. */
+    --sh-font: "Vazirmatn", "IRANSansX", Tahoma, Arial, sans-serif;
+    --sh-font-latin: "Vazirmatn", "Helvetica Neue", Arial, sans-serif;
+    --sh-nav-h: 74px;
+    --sh-gutter: clamp(18px, 4.4vw, 56px);
+    --sh-shell: 1240px;
+    --sh-tap: 44px;
+
     --cart-radius: var(--sh-radius, 18px);
     background: var(--sh-cream) !important;
     color: var(--sh-ink);
+    font-family: var(--sh-font);
 }
 
 body.cart-page main {
@@ -618,6 +627,12 @@ body.cart-page .cart-checkout:disabled {
 .cart-toast.is-visible { opacity: 1; translate: -50% 0; }
 .cart-toast--error { background: #7d302b; }
 
+@media (max-width: 940px) {
+    body.cart-page {
+        --sh-nav-h: 68px;
+    }
+}
+
 @media (max-width: 900px) {
     .cart-shell {
         width: min(100% - 32px, 680px);
@@ -668,6 +683,13 @@ body.cart-page .cart-checkout:disabled {
 
     .cart-product-card__action {
         justify-self: start;
+    }
+}
+
+@media (max-width: 640px) {
+    body.cart-page {
+        --sh-nav-h: 62px;
+        --sh-gutter: 16px;
     }
 }
 
