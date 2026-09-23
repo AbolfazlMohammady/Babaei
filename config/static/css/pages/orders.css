@@ -529,6 +529,77 @@ body.orders-page {
     gap: 8px;
 }
 
+.order-progress {
+    display: grid;
+    grid-template-columns: auto minmax(24px, 1fr) auto minmax(24px, 1fr) auto minmax(24px, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    border: 1px solid rgba(20,22,26,.07);
+    border-radius: 18px;
+    background: rgba(255,255,255,.62);
+}
+
+.order-progress__step {
+    display: grid;
+    justify-items: center;
+    gap: 5px;
+    min-width: 52px;
+    color: var(--sh-muted, #6d7278);
+}
+
+.order-progress__step span {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--sh-line, rgba(20,22,26,.1));
+    border-radius: 50%;
+    background: var(--sh-cream-2, #fbfaf7);
+    font-size: 8px;
+    font-weight: 800;
+}
+
+.order-progress__step strong {
+    font-size: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.order-progress__step.is-done {
+    color: var(--sh-forest, #14523c);
+}
+
+.order-progress__step.is-done span {
+    border-color: var(--sh-forest, #14523c);
+    background: var(--sh-forest, #14523c);
+    color: var(--sh-cream-2, #fbfaf7);
+}
+
+.order-progress__line {
+    height: 1px;
+    background: var(--sh-line, rgba(20,22,26,.1));
+}
+
+.order-progress__line.is-done {
+    background: var(--sh-forest, #14523c);
+}
+
+.order-alert {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.order-alert--danger {
+    border: 1px solid rgba(125,48,43,.15);
+    background: rgba(125,48,43,.05);
+    color: #7d302b;
+}
+
 .order-detail-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
@@ -1079,6 +1150,24 @@ body.orders-page {
 
     .order-row__number strong {
         font-size: 10px;
+    }
+
+    .order-progress {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+        padding: 11px 8px;
+    }
+
+    .order-progress__line {
+        display: none;
+    }
+
+    .order-progress__step {
+        min-width: 0;
+    }
+
+    .order-progress__step strong {
+        font-size: 7px;
     }
 
     .order-item {
