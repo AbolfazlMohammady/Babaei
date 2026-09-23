@@ -94,6 +94,11 @@ class Product(models.Model):
         return reverse("shop:product", kwargs={"slug": self.slug})
 
     def _prefetched_variants(self):
+        # Catalog/account pages use Prefetch(..., to_attr="active_variants")
+        # because a plain related-manager cache is slower and less explicit.
+        variants = getattr(self, "active_variants", None)
+        if variants is not None:
+            return variants
         return getattr(self, "_prefetched_objects_cache", {}).get("active_variants")
 
     def _lowest_variant(self):
