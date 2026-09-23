@@ -43,7 +43,7 @@
         if (!element) return;
 
         if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-            element.textContent = \`\${formatPrice(to)} تومان\`;
+            element.textContent = formatPrice(to) + " تومان";
             return;
         }
 
@@ -55,7 +55,7 @@
         const tick = (now) => {
             const progress = Math.min(1, (now - startedAt) / 300);
             const eased = 1 - Math.pow(1 - progress, 3);
-            element.textContent = \`\${formatPrice(Math.round(start + (end - start) * eased))} تومان\`;
+            element.textContent = formatPrice(Math.round(start + (end - start) * eased)) + " تومان";
 
             if (progress < 1) {
                 element.dataset.numberFrame = String(requestAnimationFrame(tick));
@@ -78,7 +78,7 @@
         const subtotalEl = subtotalEls[0];
         const previous = Number(subtotalEl?.dataset.cartNumber || subtotal || 0);
 
-        if (summaryCount) summaryCount.textContent = \`(\${formatPrice(count)})\`;
+        if (summaryCount) summaryCount.textContent = "(" + formatPrice(count) + ")";
 
         subtotalEls.forEach((el) => {
             if (animate) {
@@ -113,7 +113,7 @@
 
     const showMessage = (message, isError = false) => {
         const toast = document.createElement("div");
-        toast.className = \`cart-toast\${isError ? " cart-toast--error" : ""}\`;
+        toast.className = "cart-toast" + (isError ? " cart-toast--error" : "");
         toast.textContent = message;
         document.body.appendChild(toast);
 
