@@ -5,7 +5,7 @@
    ========================================================================== */
 
 .auth-body {
-    --auth-bg: #cfc8bb;
+    --auth-bg: #f6f7f5;
     --auth-forest: var(--sh-forest);
     --auth-deep: var(--sh-forest-deep);
     --auth-soft: var(--sh-forest-soft);
@@ -42,8 +42,106 @@
     justify-content: center;
 
     background:
-        radial-gradient(circle at 50% 50%, rgba(20,82,60,.035), transparent 54%),
-        linear-gradient(135deg, #cfc8bb 0%, #c6beb0 100%);
+        radial-gradient(circle at 50% 50%, rgba(20,82,60,.025), transparent 56%),
+        linear-gradient(135deg, #f9faf8 0%, #f1f3f0 100%);
+}
+
+/* --------------------------------------------------------------------------
+   Auth messages
+   -------------------------------------------------------------------------- */
+
+.auth-body > .messages {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    z-index: 80;
+
+    width: min(calc(100% - 32px), 470px);
+    margin: 0;
+
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.auth-body > .messages .toast {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    min-height: 50px;
+    padding: 12px 15px 12px 17px;
+
+    border: 1px solid rgba(20,22,26,.09);
+    border-radius: 14px;
+    background: rgba(255,255,255,.94);
+
+    color: #30343a;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.8;
+    text-align: right;
+
+    box-shadow:
+        0 18px 50px rgba(20,22,26,.10),
+        0 2px 8px rgba(20,22,26,.05);
+
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+
+    pointer-events: auto;
+    animation: auth-message-in .42s cubic-bezier(.22,1,.36,1) both;
+}
+
+.auth-body > .messages .toast::before {
+    content: "!";
+
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+
+    border-radius: 50%;
+
+    display: grid;
+    place-items: center;
+
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.auth-body > .messages .toast-error,
+.auth-body > .messages .toast-danger {
+    border-color: rgba(171,67,67,.16);
+}
+
+.auth-body > .messages .toast-error::before,
+.auth-body > .messages .toast-danger::before {
+    background: rgba(171,67,67,.10);
+    color: #a33f3f;
+}
+
+.auth-body > .messages .toast-success {
+    border-color: rgba(20,82,60,.16);
+}
+
+.auth-body > .messages .toast-success::before {
+    content: "✓";
+    background: rgba(20,82,60,.10);
+    color: var(--auth-forest);
+}
+
+@keyframes auth-message-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 /* --------------------------------------------------------------------------
@@ -59,7 +157,7 @@
     pointer-events: none;
 
     filter: blur(8px);
-    opacity: .46;
+    opacity: .30;
 }
 
 .auth-blob {
@@ -73,9 +171,9 @@
     background:
         radial-gradient(
             circle at 30% 28%,
-            rgba(220,215,205,.58),
-            rgba(119,149,130,.32) 34%,
-            rgba(20,82,60,.56) 78%
+            rgba(239,242,239,.78),
+            rgba(119,149,130,.18) 34%,
+            rgba(20,82,60,.30) 78%
         );
 
     box-shadow:
@@ -164,7 +262,7 @@
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    opacity: .22;
+    opacity: .16;
 }
 
 .auth-grid span {
