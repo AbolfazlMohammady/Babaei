@@ -968,6 +968,22 @@ body.orders-page {
     font-size: 8px;
 }
 
+@media (max-width: 940px) {
+    body.orders-page {
+        --sh-nav-h: 0px;
+        padding-block-end: 0;
+    }
+
+    body.orders-page .sh-nav {
+        display: none;
+    }
+
+    .orders-shell {
+        min-height: 100vh;
+        padding-bottom: calc(100px + var(--dock-h, 64px));
+    }
+
+}
 @media (max-width: 900px) {
     .orders-shell {
         width: min(100% - 24px, 700px);
