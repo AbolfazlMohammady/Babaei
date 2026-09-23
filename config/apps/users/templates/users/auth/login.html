@@ -73,8 +73,10 @@
         </form>
 
         <div class="auth-footer-nav">
-            <a href="{% url 'shop:index' %}">بازگشت به فروشگاه</a>
-            <span>SECURE ACCESS // 01</span>
+            <a class="auth-store-link" href="{% url 'shop:index' %}">
+                <span>بازگشت به فروشگاه</span>
+                <strong aria-hidden="true">←</strong>
+            </a>
         </div>
     </main>
 
