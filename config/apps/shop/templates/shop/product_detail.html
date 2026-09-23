@@ -33,7 +33,7 @@ js/storefront.js). Nothing on this page needs !important.
 {% block extra_css %}{% endblock %}
 {% block site_optional_css %}
 <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=10">
-<link rel="stylesheet" href="{% static 'css/pages/shop-product.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/pages/shop-product.css' %}?v=5">
 {% endblock %}
 
 {% block content %}
@@ -110,43 +110,48 @@ js/storefront.js). Nothing on this page needs !important.
                     <h1>{{ product.name }}</h1>
                     {% saved_status request.user product as saved_state %}
                     {% comment %}
-                    One icon-button group, not two blocks. The two POST forms, their
-                    csrf tokens and the `next` field are the load-bearing parts; the
-                    glyphs are inline SVG so the control no longer depends on an emoji
-                    font being installed.
+                    One save control, not two. The bookmark (saved:toggle_saved)
+                    was removed: this heart on saved:toggle_favorite already keeps
+                    the product, so two buttons were spending a row of the column
+                    on one idea. The POST form, its csrf token and the `next`
+                    field are the load-bearing parts; the glyph is inline SVG so
+                    the control does not depend on an emoji font being installed.
                     {% endcomment %}
                     <div class="pd-save">
                         <form method="post" action="{% url 'saved:toggle_favorite' product.id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="product-save-button{% if saved_state.favorite %} is-active{% endif %}" aria-label="{% if saved_state.favorite %}حذف از علاقه‌مندی‌ها{% else %}افزودن به علاقه‌مندی‌ها{% endif %}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.4c-1.1-.7-7.4-4.8-7.4-9.8a4.2 4.2 0 0 1 7.4-2.7 4.2 4.2 0 0 1 7.4 2.7c0 5-6.3 9.1-7.4 9.8Z"></path></svg></button></form>
-                        <form method="post" action="{% url 'saved:toggle_saved' product.id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="product-save-button{% if saved_state.saved %} is-active{% endif %}" aria-label="{% if saved_state.saved %}حذف از ذخیره‌ها{% else %}ذخیره محصول{% endif %}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 4.6h9.2v15l-4.6-3.5-4.6 3.5z"></path></svg></button></form>
                     </div>
                 </div>
 
                 {% if product.short_description %}<p class="pd-lede">{{ product.short_description }}</p>{% endif %}
 
-                <div class="pd-price" aria-live="polite">
-                    <div class="pd-price__row"><strong id="product-price" class="pd-price__value">{{ product.display_price|price }}</strong><span class="pd-price__unit">تومان</span></div>
-                    <div id="product-old-price-row" class="pd-price__meta{% if not product.has_discount %} is-hidden{% endif %}"><del id="product-old-price">{{ product.display_compare_price|price }}</del><span id="product-discount" class="pd-discount">{{ product.discount_percent|discount_percent }}</span></div>
-                    <small class="pd-price__note">قیمت‌ها به تومان هستند</small>
-                </div>
-
                 {% comment %}
-                Availability sits with the price but under it, on one hairline: a
-                big number and a small line, never two boxes of equal weight.
+                One band, two lines, nothing else competing for the eye. The
+                price, the struck-through compare-at and the percentage share the
+                first line; one availability line follows. The old markup stacked
+                four rows here — price, "prices are in toman", compare-at +
+                percentage, then total stock — and that stack is what read as
+                clutter. #product-discount must stay inside #product-old-price-row:
+                the script hides that row alone when the chosen variant has no
+                discount, so a chip left outside it would never go away.
                 {% endcomment %}
-                <div class="pd-stock">
-                    <i class="pd-dot" aria-hidden="true"></i>
+                <div class="pd-price" aria-live="polite">
+                    <div class="pd-price__row">
+                        <strong id="product-price" class="pd-price__value">{{ product.display_price|price }}</strong>
+                        <span class="pd-price__unit">تومان</span>
+                        <span id="product-old-price-row" class="pd-price__meta{% if not product.has_discount %} is-hidden{% endif %}"><del id="product-old-price">{{ product.display_compare_price|price }}</del><span id="product-discount" class="pd-discount">{{ product.discount_percent|discount_percent }}</span></span>
+                    </div>
                     {% if product.active_variants %}
-                        <span>موجودی کل</span><strong id="total-stock">{{ total_stock|price }} عدد</strong>
+                        <span id="variant-status" class="pd-status" aria-live="polite"></span>
                     {% else %}
-                        <span>وضعیت</span><strong>موجود</strong>
+                        <span class="pd-status">موجود</span>
                     {% endif %}
                 </div>
 
                 {% if product.active_variants %}
                     {% comment %}
                     Colour and size are one control group: the same geometry, the
-                    same hairline above the pair, and one accent for the selected
-                    option in both rows.
+                    same accent for the selected option in both rows, and one line
+                    each — the price band above already closes the section off.
                     {% endcomment %}
                     <section class="pd-options" aria-label="انتخاب رنگ و سایز">
                         <div class="pd-option">
@@ -157,7 +162,6 @@ js/storefront.js). Nothing on this page needs !important.
                             <div class="pd-option__head"><h2>سایز</h2></div>
                             <div class="size-options" role="radiogroup" aria-label="سایز محصول">{% for size in sizes %}<button type="button" class="size-option" data-size-id="{{ size.id }}">{{ size.name }}</button>{% endfor %}</div>
                         </div>
-                        <div id="variant-status" class="pd-status" aria-live="polite"></div>
                     </section>
                 {% endif %}
 
@@ -169,7 +173,7 @@ js/storefront.js). Nothing on this page needs !important.
                 <form method="post" action="{% url 'orders:cart_add' %}" class="pd-buy" id="add-to-cart-form">
                     {% csrf_token %}<input type="hidden" name="product_id" value="{{ product.id }}"><input type="hidden" name="variant_id" id="cart-variant-id" value="">
                     <div class="pd-qty" data-product-quantity-wrap>
-                        <div class="pd-qty__head"><label for="cart-quantity">تعداد</label><span data-product-quantity-stock></span></div>
+                        <div class="pd-qty__head"><label for="cart-quantity">تعداد</label></div>
                         <div class="pd-qty__control"><button type="button" data-product-quantity-button="-1" aria-label="کاهش تعداد">-</button><input id="cart-quantity" name="quantity" type="number" min="1" value="1" inputmode="numeric" aria-label="تعداد محصول"><button type="button" data-product-quantity-button="1" aria-label="افزایش تعداد">+</button></div>
                     </div>
                     <button id="add-to-cart-button" class="pd-buy__button" type="submit"{% if product.active_variants %} disabled{% endif %}>افزودن به سبد خرید</button>

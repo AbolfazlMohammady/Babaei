@@ -66,8 +66,14 @@ body.product-detail-page {
    01 — PAGE FRAME
    ========================================================================== */
 
+/* One step deeper than the store's cream, so the page reads as a stage
+   instead of more of the same flat surface. Full-bleed, so the only colour
+   change is between the nav and the footer; the nav, the dock and the footer
+   stay exactly as every other page shows them. --sh-sand is the store's own
+   deeper neutral, not a colour invented for this page. */
 body.product-detail-page .pd {
     display: block;
+    background: var(--sh-sand);
 }
 
 body.product-detail-page .pd-inner {
@@ -262,7 +268,7 @@ body.product-detail-page .pd-info {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: clamp(14px, 1.6vw, 18px);
+    gap: clamp(12px, 1.4vw, 16px);
 }
 
 body.product-detail-page .pd-kicker {
@@ -366,38 +372,38 @@ body.product-detail-page .pd-lede {
    ========================================================================== */
 
 body.product-detail-page .pd-price {
-    padding-top: clamp(14px, 1.6vw, 18px);
+    padding-block: clamp(14px, 1.6vw, 18px);
     border-top: 1px solid var(--sh-line);
+    border-bottom: 1px solid var(--sh-line);
 }
 
 body.product-detail-page .pd-price__row {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 8px;
+    gap: 6px 10px;
 }
 
 body.product-detail-page .pd-price__value {
     color: var(--pdp-ink);
-    font-size: clamp(29px, 5.4vw, 40px);
+    font-size: clamp(23px, 4.2vw, 32px);
     font-weight: 900;
-    line-height: 1.16;
+    line-height: 1.2;
     letter-spacing: -.02em;
     font-variant-numeric: tabular-nums;
 }
 
 body.product-detail-page .pd-price__unit {
     color: var(--pdp-muted);
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 600;
 }
 
+/* Compare-at and percentage travel together, on the price's own line. */
 body.product-detail-page .pd-price__meta {
-    display: flex;
-    flex-wrap: wrap;
+    display: inline-flex;
     align-items: center;
-    gap: 9px;
-    margin-top: 8px;
+    gap: 8px;
 }
 
 body.product-detail-page .pd-price__meta.is-hidden {
@@ -406,15 +412,15 @@ body.product-detail-page .pd-price__meta.is-hidden {
 
 body.product-detail-page .pd-price__meta del {
     color: var(--pdp-muted);
-    font-size: 13px;
+    font-size: 12.5px;
     font-variant-numeric: tabular-nums;
 }
 
 body.product-detail-page .pd-discount {
     display: inline-flex;
     align-items: center;
-    min-height: 26px;
-    padding-inline: 12px;
+    min-height: 24px;
+    padding-inline: 11px;
     border-radius: var(--pdp-radius-control);
     background: var(--pdp-forest);
     color: var(--sh-cream-2);
@@ -423,31 +429,24 @@ body.product-detail-page .pd-discount {
     font-variant-numeric: tabular-nums;
 }
 
-body.product-detail-page .pd-price__note {
-    display: block;
-    margin-top: 8px;
-    color: var(--pdp-muted);
-    font-size: 11px;
+body.product-detail-page .pd-discount:empty {
+    display: none;
 }
 
-body.product-detail-page .pd-stock {
+/* The one availability line. Its dot rides on ::before so an empty status
+   (before the script has picked a variant) leaves no stray dot behind. */
+body.product-detail-page .pd-status {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+    margin-top: 8px;
     color: var(--pdp-muted);
-    font-size: 12.5px;
-    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.8;
 }
 
-body.product-detail-page .pd-stock strong {
-    color: var(--pdp-ink);
-    font-size: 13px;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-}
-
-body.product-detail-page .pd-dot {
+body.product-detail-page .pd-status::before {
+    content: "";
     flex: 0 0 7px;
     width: 7px;
     height: 7px;
@@ -456,17 +455,27 @@ body.product-detail-page .pd-dot {
     box-shadow: 0 0 0 3px rgba(29, 107, 78, .14);
 }
 
+body.product-detail-page .pd-status:empty {
+    display: none;
+}
+
+body.product-detail-page .pd-status strong {
+    color: var(--pdp-ink);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
 /* ==========================================================================
    08 — OPTIONS
-   Pills, like the catalog's filters, on a hairline above the pair.
+   Pills, like the catalog's filters. The hairline that separates them from the
+   price is the price band's own bottom border; a second one here would just be
+   another rule for the eye to jump over.
    ========================================================================== */
 
 body.product-detail-page .pd-options {
     display: flex;
     flex-direction: column;
-    gap: clamp(14px, 1.6vw, 18px);
-    padding-top: clamp(14px, 1.6vw, 18px);
-    border-top: 1px solid var(--sh-line);
+    gap: clamp(12px, 1.4vw, 16px);
 }
 
 body.product-detail-page .pd-option__head {
@@ -480,11 +489,29 @@ body.product-detail-page .pd-option__head h2 {
     font-weight: 800;
 }
 
+/* One line each on phones. Wrapping three colour chips into a row of two
+   plus a straggler is what made this look untidy; the row scrolls sideways
+   instead if a product ever carries more options than fit. From 560px there is
+   room to wrap again. */
 body.product-detail-page .color-options,
 body.product-detail-page .size-options {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
+    padding-bottom: 2px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+}
+
+body.product-detail-page .color-options::-webkit-scrollbar,
+body.product-detail-page .size-options::-webkit-scrollbar {
+    display: none;
+}
+
+body.product-detail-page .color-options > *,
+body.product-detail-page .size-options > * {
+    flex: 0 0 auto;
 }
 
 body.product-detail-page .color-option,
@@ -492,9 +519,9 @@ body.product-detail-page .size-option {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: var(--pdp-tap);
-    padding-block: 4px;
-    padding-inline: 16px;
+    min-height: 44px;
+    padding-block: 2px;
+    padding-inline: 14px;
     border: 1px solid var(--sh-line);
     border-radius: var(--pdp-radius-control);
     background: var(--sh-cream-2);
@@ -507,19 +534,19 @@ body.product-detail-page .size-option {
 }
 
 body.product-detail-page .color-option {
-    gap: 9px;
-    padding-inline: 12px 18px;
+    gap: 7px;
+    padding-inline: 9px 13px;
 }
 
 body.product-detail-page .size-option {
-    min-width: 62px;
+    min-width: 56px;
     font-weight: 700;
 }
 
 body.product-detail-page .color-swatch {
-    flex: 0 0 22px;
-    width: 22px;
-    height: 22px;
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
     border: 1px solid var(--sh-line-strong);
     border-radius: 50%;
     background: var(--swatch, var(--sh-sand));
@@ -550,22 +577,6 @@ body.product-detail-page .size-option:disabled,
 body.product-detail-page .size-option.is-unavailable {
     opacity: .35;
     cursor: not-allowed;
-}
-
-body.product-detail-page .pd-status {
-    color: var(--pdp-muted);
-    font-size: 11.5px;
-    line-height: 1.9;
-}
-
-body.product-detail-page .pd-status:empty {
-    display: none;
-}
-
-body.product-detail-page .pd-status strong {
-    color: var(--pdp-forest);
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================================================
@@ -672,12 +683,14 @@ body.product-detail-page .pd-incart {
     align-items: center;
     justify-content: center;
     gap: 2px;
-    min-height: 56px;
+    width: 100%;
+    max-width: 320px;
+    min-height: 48px;
     margin: 0;
-    padding: 12px 22px;
+    padding: 10px 22px;
     border-radius: var(--pdp-radius-control);
     font: inherit;
-    font-size: 14.5px;
+    font-size: 13.5px;
     font-weight: 800;
     text-align: center;
     text-decoration: none;
@@ -689,13 +702,13 @@ body.product-detail-page .pd-buy__button {
     border: 0;
     background: linear-gradient(180deg, var(--pdp-forest-soft) 0%, var(--pdp-forest) 100%);
     color: var(--sh-cream-2);
-    box-shadow: 0 20px 34px -22px rgba(20, 82, 60, .85);
+    box-shadow: 0 12px 24px -20px rgba(20, 82, 60, .8);
 }
 
 body.product-detail-page .pd-buy__button:hover:not(:disabled) {
     background: linear-gradient(180deg, #227a58 0%, #17604a 100%);
     transform: translateY(-1px);
-    box-shadow: 0 24px 40px -22px rgba(20, 82, 60, .9);
+    box-shadow: 0 16px 28px -20px rgba(20, 82, 60, .9);
 }
 
 body.product-detail-page .pd-buy__button:disabled {
@@ -1011,6 +1024,14 @@ body.product-detail-page .pd-studio__cta:focus-visible {
 @media (min-width: 480px) {
     body.product-detail-page .pd-media__frame img {
         max-height: min(62vh, 520px);
+    }
+}
+
+@media (min-width: 560px) {
+    body.product-detail-page .color-options,
+    body.product-detail-page .size-options {
+        flex-wrap: wrap;
+        overflow-x: visible;
     }
 }
 
