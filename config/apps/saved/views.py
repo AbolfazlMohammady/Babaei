@@ -70,7 +70,16 @@ def saved_page(request):
             is_active=True,
             category__is_active=True,
         )
-        .select_related("category")
+        # The card needs only these scalar product fields. Category is used only
+        # for the active filter, so selecting the whole category row is wasted.
+        .only(
+            "id",
+            "name",
+            "slug",
+            "base_price",
+            "compare_at_price",
+            "is_featured",
+        )
         .prefetch_related(
             Prefetch(
                 "images",
