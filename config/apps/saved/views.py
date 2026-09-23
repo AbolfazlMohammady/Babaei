@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Case, Exists, IntegerField, OuterRef, Prefetch, Subquery, F
+from django.db.models import Case, Exists, IntegerField, OuterRef, Prefetch, Subquery
 from django.db.models import When
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 
 from apps.shop.models import Product, ProductImage, ProductVariant
 
-from .models import FavoriteProduct, SavedProduct
+from .models import FavoriteProduct
 
 
 def _back(request, fallback="users:saved"):
