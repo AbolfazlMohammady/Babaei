@@ -174,3 +174,169 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+
+/* =========================================================================
+   SITE FOOTER
+   The behaviour behind includes/footer.html. Vanilla, because this project
+   has no React, no Tailwind and no GSAP: what was ported from the component
+   the footer design comes from is the effect, not the stack.
+
+   Everything is gated on the footer existing, and nothing runs while it is
+   off screen except the three cheap things that must: reveal, scroll-linked
+   depth for the giant text, and the magnetic pills on a fine pointer.
+   ========================================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+    const footer = document.querySelector("[data-site-footer]");
+
+    if (!footer) {
+        return;
+    }
+
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    /* Back to top. */
+    const toTop = footer.querySelector("[data-footer-top]");
+
+    if (toTop) {
+        toTop.addEventListener("click", () => {
+            window.scrollTo({ top: 0, behavior: calm.matches ? "auto" : "smooth" });
+        });
+    }
+
+    /* Reveal. One observer, unobserved as it fires; without it the blocks are
+       simply visible, because the hidden state is only ever added by CSS that
+       this same sheet guards. */
+    const blocks = footer.querySelectorAll("[data-ft-reveal]");
+
+    if (blocks.length) {
+        if (!("IntersectionObserver" in window)) {
+            blocks.forEach((block) => block.classList.add("is-revealed"));
+        } else {
+            // Arm the hidden state only now that an observer exists to undo it.
+            footer.classList.add("is-animated");
+
+            const revealer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) {
+                        return;
+                    }
+
+                    entry.target.classList.add("is-revealed");
+                    revealer.unobserve(entry.target);
+                });
+            }, { rootMargin: "0px 0px -12% 0px" });
+
+            blocks.forEach((block) => revealer.observe(block));
+        }
+    }
+
+    /* The giant brand text tracks how far the footer has come up the screen.
+       The listener only records that a frame is owed; the geometry is read
+       once per frame, and only while the footer is near the viewport at all. */
+    const giant = footer.querySelector("[data-footer-giant]");
+
+    if (giant && !calm.matches) {
+        let owed = false;
+
+        const paint = () => {
+            owed = false;
+
+            const box = footer.getBoundingClientRect();
+            const travel = box.height + window.innerHeight;
+
+            if (travel <= 0) {
+                return;
+            }
+
+            const progress = Math.min(1, Math.max(0, (window.innerHeight - box.top) / travel));
+            footer.style.setProperty("--ft-p", progress.toFixed(3));
+        };
+
+        const onScroll = () => {
+            if (owed) {
+                return;
+            }
+
+            owed = true;
+            window.requestAnimationFrame(paint);
+        };
+
+        const watcher = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    window.addEventListener("scroll", onScroll, { passive: true });
+                    window.addEventListener("resize", onScroll, { passive: true });
+                    paint();
+                } else {
+                    window.removeEventListener("scroll", onScroll);
+                    window.removeEventListener("resize", onScroll);
+                }
+            });
+        }, { rootMargin: "240px" });
+
+        watcher.observe(footer);
+    }
+
+    /* Magnetic pills. Fine pointers only — the same gate the hover styles use,
+       so a touch shopper never gets a control that answers to a pointer they
+       do not have. */
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+    if (!fine.matches || calm.matches) {
+        return;
+    }
+
+    footer.querySelectorAll("[data-magnet]").forEach((pill) => {
+        let box = null;
+        let owed = false;
+        let pointer = null;
+
+        const forget = () => {
+            box = null;
+        };
+
+        const paint = () => {
+            owed = false;
+
+            if (!pointer) {
+                return;
+            }
+
+            if (!box) {
+                box = pill.getBoundingClientRect();
+            }
+
+            if (!box.width || !box.height) {
+                return;
+            }
+
+            const dx = (pointer.x - (box.left + box.width / 2)) * 0.2;
+            const dy = (pointer.y - (box.top + box.height / 2)) * 0.26;
+
+            pill.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+            pointer = null;
+        };
+
+        const onMove = (event) => {
+            pointer = { x: event.clientX, y: event.clientY };
+
+            if (owed) {
+                return;
+            }
+
+            owed = true;
+            window.requestAnimationFrame(paint);
+        };
+
+        const reset = () => {
+            pointer = null;
+            pill.style.transform = "";
+        };
+
+        pill.addEventListener("pointerenter", forget, { passive: true });
+        pill.addEventListener("pointermove", onMove, { passive: true });
+        pill.addEventListener("pointerleave", reset);
+        window.addEventListener("scroll", forget, { passive: true });
+        pill.classList.add("is-magnetic");
+    });
+});
