@@ -172,7 +172,7 @@
         try {
             const data = await request(form);
             const item = form.closest("[data-cart-item]");
-            const itemId = form.closest("[data-cart-item]")?.dataset.cartId || form.action.match(/cart\\/(\\d+)/)?.[1];
+            const itemId = item?.dataset.cartId;
 
             if (form.dataset.cartAction === "update" && itemId) {
                 syncItem(itemId, data);
