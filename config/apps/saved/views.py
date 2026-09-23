@@ -1,10 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Case, Exists, IntegerField, OuterRef, Prefetch, Subquery, F
+from django.db.models import When
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from apps.shop.models import Product, ProductImage
+from apps.shop.models import Product, ProductImage, ProductVariant
 
 from .models import FavoriteProduct, SavedProduct
 
@@ -45,35 +47,61 @@ def toggle_favorite(request, product_id):
 
 
 @login_required
-@require_POST
-def toggle_saved(request, product_id):
-    product = get_object_or_404(Product, pk=product_id, is_active=True)
-    saved, created = SavedProduct.objects.get_or_create(user=request.user, product=product)
-    if not created:
-        saved.delete()
-        messages.success(request, "محصول از ذخیره‌شده‌ها حذف شد.")
-    else:
-        messages.success(request, "محصول ذخیره شد.")
-    return _back(request)
-
-
-@login_required
 def saved_page(request):
-    favorite_ids = set(FavoriteProduct.objects.filter(user=request.user).values_list("product_id", flat=True))
-    saved_ids = set(SavedProduct.objects.filter(user=request.user).values_list("product_id", flat=True))
-    favorite_products = list(
-        Product.objects.filter(id__in=favorite_ids, is_active=True)
-        .select_related("category")
-        .prefetch_related("images")
+    variant_price = Subquery(
+        ProductVariant.objects.filter(
+            product_id=OuterRef("pk"),
+            is_active=True,
+        ).order_by("price", "id").values("price")[:1],
+        output_field=IntegerField(),
     )
-    saved_products = list(
-        Product.objects.filter(id__in=saved_ids, is_active=True)
+    variant_compare_price = Subquery(
+        ProductVariant.objects.filter(
+            product_id=OuterRef("pk"),
+            is_active=True,
+        ).order_by("price", "id").values("compare_at_price")[:1],
+        output_field=IntegerField(),
+    )
+    has_variants = Exists(
+        ProductVariant.objects.filter(
+            product_id=OuterRef("pk"),
+            is_active=True,
+        )
+    )
+    favorite_products = list(
+        Product.objects.filter(
+            favorited_by__user=request.user,
+            is_active=True,
+            category__is_active=True,
+        )
         .select_related("category")
-        .prefetch_related("images")
+        .annotate(
+            listed_price=variant_price,
+            listed_compare_price=variant_compare_price,
+            has_variants=has_variants,
+            is_favorite=Exists(
+                FavoriteProduct.objects.filter(
+                    user_id=request.user.id,
+                    product_id=OuterRef("pk"),
+                )
+            ),
+        )
+        .prefetch_related(
+            Prefetch(
+                "images",
+                queryset=ProductImage.objects.annotate(
+                    type_priority=Case(
+                        When(image_type=ProductImage.ImageType.PRIMARY, then=0),
+                        default=1,
+                        output_field=IntegerField(),
+                    )
+                ).order_by("type_priority", "sort_order", "id")[:2],
+                to_attr="card_images",
+            )
+        )
+        .order_by("-favorited_by__created_at")
     )
     return render(request, "users/account/saved.html", {
         "favorite_products": favorite_products,
-        "saved_products": saved_products,
         "favorite_count": len(favorite_products),
-        "saved_count": len(saved_products),
     })
