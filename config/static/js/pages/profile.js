@@ -235,6 +235,13 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (selected) input.value = format(selected);
+
+    input.addEventListener("pointerdown", event => {
+        if (isMobilePicker()) {
+            event.preventDefault();
+            open();
+        }
+    });
     input.addEventListener("click", open);
     input.addEventListener("focus", open);
     input.addEventListener("keydown", e => e.preventDefault());
