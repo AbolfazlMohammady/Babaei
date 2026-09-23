@@ -840,7 +840,8 @@ body.shop-page.sh-no-scroll {
 }
 
 @media (max-width: 940px) {
-    body.shop-page {
+    body.shop-page,
+    body.cart-page {
         --sh-nav-h: 68px;
     }
 
@@ -853,7 +854,8 @@ body.shop-page.sh-no-scroll {
     }}
 
 @media (max-width: 700px) {
-    body.shop-page {
+    body.shop-page,
+    body.cart-page {
         --sh-nav-h: 62px;
         --sh-gutter: 16px;
     }
