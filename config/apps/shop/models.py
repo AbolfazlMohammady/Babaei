@@ -242,3 +242,62 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"{self.product} - {self.image_type}"
+
+
+class ProductComment(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", _("در انتظار بررسی")
+        APPROVED = "approved", _("تأییدشده")
+        REJECTED = "rejected", _("ردشده")
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name=_("محصول"),
+    )
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="product_comments",
+        verbose_name=_("کاربر"),
+    )
+    body = models.TextField(_("متن نظر"), max_length=2000)
+    rating = models.PositiveSmallIntegerField(
+        _("امتیاز"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)],
+        help_text=_("اختیاری؛ از ۱ تا ۵ ستاره."),
+    )
+    status = models.CharField(
+        _("وضعیت"),
+        max_length=12,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+    verified_purchase = models.BooleanField(_("خرید تأییدشده"), default=False, db_index=True)
+    created_at = models.DateTimeField(_("زمان ثبت"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("آخرین بروزرسانی"), auto_now=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        indexes = [
+            models.Index(fields=("product", "status", "-created_at"), name="shop_comment_product_idx"),
+            models.Index(fields=("user", "status", "-created_at"), name="shop_comment_user_idx"),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.rating is not None and self.rating > 5:
+            from django.core.exceptions import ValidationError
+            raise ValidationError({"rating": _("امتیاز باید بین ۱ تا ۵ باشد.")})
+
+    @property
+    def display_name(self):
+        name = f"{self.user.first_name} {self.user.last_name}".strip()
+        return name or "کاربر BABAEI"
+
+    def __str__(self):
+        return f"{self.product} / {self.display_name}"
