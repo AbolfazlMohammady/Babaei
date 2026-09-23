@@ -195,6 +195,55 @@ js/storefront.js). Nothing on this page needs !important.
 
         {% if product.description %}<section class="pd-story" data-reveal><h2>توضیحات محصول</h2><div class="pd-story__body">{{ product.description|linebreaks }}</div></section>{% endif %}
 
+
+
+        <section class="pd-comments" id="comments" data-reveal aria-labelledby="product-comments-title">
+            <div class="pd-comments__head">
+                <div>
+                    <p class="pd-kicker">نظر مشتری‌ها</p>
+                    <h2 id="product-comments-title">تجربه‌ی کسانی که این محصول را انتخاب کردند</h2>
+                </div>
+                <div class="pd-comments__summary" aria-label="خلاصه نظرات">
+                    {% if comment_average %}<strong>{{ comment_average|floatformat:1 }}</strong><span class="pd-stars" aria-label="{{ comment_average|floatformat:1 }} از ۵">★★★★★</span>{% endif %}
+                    <small>{{ comment_count|default:0 }} نظر</small>
+                </div>
+            </div>
+
+            {% if featured_comments %}
+                <div class="pd-comments__list">
+                    {% for comment in featured_comments %}
+                        <article class="pd-comment">
+                            <div class="pd-comment__top">
+                                <div class="pd-comment__user"><span class="pd-comment__avatar" aria-hidden="true">{{ comment.display_name|first }}</span><div><strong>{{ comment.display_name }}</strong>{% if comment.verified_purchase %}<small>خرید تأییدشده</small>{% endif %}</div></div>
+                                {% if comment.rating %}<span class="pd-stars pd-stars--small" aria-label="{{ comment.rating }} از ۵">{% if comment.rating >= 1 %}★{% endif %}{% if comment.rating >= 2 %}★{% endif %}{% if comment.rating >= 3 %}★{% endif %}{% if comment.rating >= 4 %}★{% endif %}{% if comment.rating >= 5 %}★{% endif %}</span>{% endif %}
+                            </div>
+                            <p>{{ comment.body }}</p>
+                            <time datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|date:'j F Y' }}</time>
+                        </article>
+                    {% endfor %}
+                </div>
+                {% if comment_count > 3 %}<a class="pd-comments__all" href="{% url 'shop:product_comments' product.slug %}">مشاهده همه {{ comment_count }} نظر <span aria-hidden="true">←</span></a>{% endif %}
+            {% else %}
+                <div class="pd-comments__empty"><strong>هنوز نظری برای این محصول ثبت نشده.</strong><span>اگر این محصول را استفاده کردی، تجربه‌ات می‌تواند برای نفر بعدی مفید باشد.</span></div>
+            {% endif %}
+
+            <div class="pd-comment-form">
+                <div class="pd-comment-form__head"><div><h3>نظر خودت را بنویس</h3><p>نظر شما پس از بررسی در صفحه محصول نمایش داده می‌شود.</p></div></div>
+                {% if request.user.is_authenticated %}
+                    <form method="post" action="{% url 'shop:product_comment_add' product.slug %}">
+                        {% csrf_token %}
+                        <div class="pd-comment-form__fields">
+                            <label>امتیاز <select name="rating"><option value="">بدون امتیاز</option><option value="5">★★★★★ عالی</option><option value="4">★★★★ خیلی خوب</option><option value="3">★★★ خوب</option><option value="2">★★ قابل قبول</option><option value="1">★ ضعیف</option></select></label>
+                            <label class="pd-comment-form__body">متن نظر<textarea name="body" maxlength="2000" rows="4" required placeholder="کیفیت، جنس، اندازه یا تجربه‌ات از محصول..."></textarea></label>
+                        </div>
+                        <button type="submit" class="pd-comment-form__submit">ثبت نظر</button>
+                    </form>
+                {% else %}
+                    <a class="pd-comment-form__login" href="{% url 'users:login' %}?next={{ request.path|urlencode }}">برای ثبت نظر وارد حساب کاربری شو <span>←</span></a>
+                {% endif %}
+            </div>
+        </section>
+
         <section class="pd-studio" data-reveal>
             <div class="pd-studio__copy"><p class="pd-kicker">BABAEI DESIGN STUDIO</p><h2>لیبلت را روی لباس قرار بده</h2><p>از بین طرح‌های آماده انتخاب کن، روی سینه، پشت یا آستین قرار بده، اندازه و زاویه را تغییر بده و قیمت هر چاپ را همان لحظه ببین.</p></div>
             <a class="pd-studio__cta" href="{% url 'customizer:designer' product.slug %}">ورود به طراحی</a>
