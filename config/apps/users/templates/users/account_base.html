@@ -33,7 +33,7 @@
                     <span class="account-nav__label">آدرس‌ها</span>
                     <span class="account-nav__chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"></path></svg></span>
                 </a>
-                <a href="#" class="account-nav__item">
+                <a href="{% url 'orders:list' %}" class="account-nav__item {% if ns == 'list' or ns == 'detail' or ns == 'payment' or ns == 'checkout' or ns == 'invoice' %}is-active{% endif %}"{% if ns == 'list' or ns == 'detail' or ns == 'payment' or ns == 'checkout' or ns == 'invoice' %} aria-current="page"{% endif %}>
                     <span class="account-nav__index" aria-hidden="true">03</span>
                     <span class="account-nav__label">سفارش‌های من</span>
                     <span class="account-nav__chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"></path></svg></span>
