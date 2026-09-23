@@ -202,6 +202,7 @@ const setupSiteFooter = () => {
 
     if (blocks.length) {
         if (!("IntersectionObserver" in window)) {
+            footer.classList.add("is-visible");
             blocks.forEach((block) => block.classList.add("is-revealed"));
         } else {
             // Arm the hidden state only now that an observer exists to undo it.
@@ -247,6 +248,7 @@ const setupSiteFooter = () => {
 
             const progress = Math.min(1, Math.max(0, (window.innerHeight - box.top) / travel));
             footer.style.setProperty("--ft-p", progress.toFixed(3));
+            footer.classList.toggle("is-visible", progress > 0.08);
         };
 
         const onScroll = () => {
