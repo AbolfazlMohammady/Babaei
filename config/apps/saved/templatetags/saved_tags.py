@@ -1,6 +1,6 @@
 from django import template
 
-from ..models import FavoriteProduct, SavedProduct
+from ..models import FavoriteProduct
 
 register = template.Library()
 
@@ -11,5 +11,4 @@ def saved_status(user, product):
         return {"favorite": False, "saved": False}
     return {
         "favorite": FavoriteProduct.objects.filter(user=user, product=product).exists(),
-        "saved": SavedProduct.objects.filter(user=user, product=product).exists(),
     }
