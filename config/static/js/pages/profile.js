@@ -85,7 +85,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return candidate < today && candidate <= minimumBirthDate;
     };
 
-    const close = () => { picker.hidden = true; input.setAttribute("aria-expanded", "false"); };
+    const pickerField = input.closest(".jalali-picker-field");
+    const pickerHome = picker.parentElement;
+    const isMobilePicker = () => window.matchMedia("(max-width: 700px)").matches;
+
+    const close = () => {
+        if (picker.parentElement !== pickerHome) pickerHome.appendChild(picker);
+        picker.classList.remove("is-mobile-portal");
+        picker.hidden = true;
+        input.setAttribute("aria-expanded", "false");
+    };
     const updatePreview = () => {
         const preview = picker.querySelector("[data-preview]");
         if (preview) preview.textContent = selected ? format(selected) : format(view);
@@ -212,12 +221,28 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     };
 
-    const open = () => { picker.hidden = false; input.setAttribute("aria-expanded", "true"); render(); };
+    const open = () => {
+        if (!picker.hidden) return;
+
+        if (isMobilePicker()) {
+            document.body.appendChild(picker);
+            picker.classList.add("is-mobile-portal");
+        }
+
+        picker.hidden = false;
+        input.setAttribute("aria-expanded", "true");
+        render();
+    };
+
     if (selected) input.value = format(selected);
     input.addEventListener("click", open);
     input.addEventListener("focus", open);
     input.addEventListener("keydown", e => e.preventDefault());
     input.addEventListener("paste", e => e.preventDefault());
-    document.addEventListener("click", e => { if (!input.closest(".jalali-picker-field")?.contains(e.target)) close(); });
+    document.addEventListener("click", e => {
+        const insideField = pickerField?.contains(e.target);
+        const insidePicker = picker.contains(e.target);
+        if (!insideField && !insidePicker) close();
+    });
     document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
 });
