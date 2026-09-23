@@ -64,9 +64,6 @@
 
     {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
     <link rel="stylesheet" href="{% static 'css/pages/shop-shell.css' %}?v=4">
-    {% endif %}
-    {% if request.resolver_match.namespace == 'shop' %}
-    <link rel="stylesheet" href="{% static 'css/pages/shop-catalog.css' %}?v=2">
     <noscript><style>
         /* Without JS the nav cannot leave its transparent-over-hero state, so
            pin it to the solid cream surface instead. */
@@ -78,6 +75,15 @@
         .sh-nav.is-top .sh-nav__link::after{background:#14523c}
         .sh-nav.is-top .sh-icon__badge{border-color:#f4f1ea}
     </style></noscript>
+    {% endif %}
+    {% comment %}
+    The catalogue sheet belongs to pages that actually build a catalogue — the
+    filters, the result grid, the reference cards. The product page renders none
+    of those selectors, so it skips the 27KB render-blocking request. The no-JS
+    nav fix above stays in the shell block, because the product page has a nav.
+    {% endcomment %}
+    {% if request.resolver_match.namespace == 'shop' and request.resolver_match.url_name != 'product' %}
+    <link rel="stylesheet" href="{% static 'css/pages/shop-catalog.css' %}?v=2">
     {% endif %}
     {% comment %}
     The mobile dock. Deliberately absent from the home page, which carries no

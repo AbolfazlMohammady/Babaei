@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Case, Exists, IntegerField, OuterRef, Prefetch, Subquery
@@ -22,9 +23,12 @@ def toggle_favorite(request, product_id):
             return JsonResponse({
                 "ok": False,
                 "login_required": True,
-                "login_url": "/account/login/",
+                "login_url": settings.LOGIN_URL,
             }, status=401)
-        return redirect("/account/login/")
+        # The login page is /login/ (settings.LOGIN_URL). The hardcoded
+        # /account/login/ that used to sit here was never a route, so an
+        # anonymous tap on a heart landed on a 404 instead of the sign-in page.
+        return redirect(settings.LOGIN_URL)
 
     product = get_object_or_404(Product, pk=product_id, is_active=True)
     favorite, created = FavoriteProduct.objects.get_or_create(user=request.user, product=product)
