@@ -29,6 +29,9 @@ class Migration(migrations.Migration):
             ],
             options={
                 "ordering": ("-created_at",),
+                "constraints": [
+                    models.CheckConstraint(check=models.Q(rating__isnull=True) | models.Q(rating__gte=1, rating__lte=5), name="shop_comment_rating_valid"),
+                ],
                 "indexes": [
                     models.Index(fields=("product", "status", "-created_at"), name="shop_comment_product_idx"),
                     models.Index(fields=("user", "status", "-created_at"), name="shop_comment_user_idx"),
