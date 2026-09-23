@@ -5,6 +5,7 @@
     const formatPrice = (value) => new Intl.NumberFormat("fa-IR").format(Number(value || 0));
     const csrfToken = root.querySelector("input[name=csrfmiddlewaretoken]")?.value;
     const summaryCount = root.querySelector("[data-cart-count]");
+    const summaryCountValue = Number(summaryCount?.dataset.cartCountValue || 0);
     const subtotalEls = [...root.querySelectorAll("[data-cart-subtotal]")];
     const summary = root.querySelector("[data-cart-summary]");
     const empty = root.querySelector("[data-cart-empty]");
@@ -223,7 +224,7 @@
         form.requestSubmit();
     });
 
-    const initialCount = Number(summaryCount?.textContent?.replace(/[^0-9]/g, "") || 0);
+    const initialCount = summaryCountValue;
     const initialSubtotal = Number(subtotalEls[0]?.dataset.cartNumber || 0);
     setTotals(initialCount, initialSubtotal, false);
 })();
