@@ -22,7 +22,10 @@
             .replace(/\D/g, "");
     }
 
-    if (!reduced && blobs.length) {
+    var finePointer = !window.matchMedia ||
+        window.matchMedia("(pointer: fine)").matches;
+
+    if (!reduced && blobs.length && finePointer) {
         var lastX = 0;
         var lastY = 0;
         var ticking = false;
