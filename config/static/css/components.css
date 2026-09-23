@@ -958,3 +958,54 @@ body:not(.customizer-page) main {
         padding-block: 64px 74px;
     }
 }
+
+
+/* ==========================================================================
+   FOOTER CURTAIN / MOBILE POLISH
+   ========================================================================== */
+
+.site-footer__stage {
+    margin-top: 0;
+}
+
+.site-footer.is-animated [data-ft-reveal] {
+    opacity: 0;
+    transform: translateY(28px) scale(.985);
+    will-change: opacity, transform;
+}
+
+.site-footer.is-animated.is-visible [data-ft-reveal] {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.site-footer__giant {
+    will-change: transform, opacity;
+}
+
+@media (max-width: 700px) {
+    .site-footer__stage {
+        height: 480px;
+        min-height: 480px;
+        margin-top: 0;
+    }
+
+    .site-footer {
+        min-height: 480px;
+        height: 480px;
+        padding-block: 64px 74px;
+    }
+}
+
+@media (max-width: 560px) {
+    .site-footer__stage {
+        height: 480px;
+        min-height: 480px;
+    }
+
+    .site-footer {
+        min-height: 480px;
+        height: 480px;
+        padding-block-end: 74px;
+    }
+}
