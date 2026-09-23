@@ -27,7 +27,7 @@
     {% block common_page_css %}{% endblock %}
     {% block extra_css %}{% endblock %}
     {% block site_optional_css %}
-    {% if request.resolver_match.namespace == 'users' %}
+    {% if request.resolver_match.namespace == 'users' or request.resolver_match.namespace == 'saved' %}
         {% if request.resolver_match.url_name == 'login' or request.resolver_match.url_name == 'verify_otp' %}
         {% else %}
         <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
@@ -62,7 +62,7 @@
     <link rel="preload" href="{% static 'fonts/vazirmatn-var.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}?v=3">
 
-    {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
+    {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' or request.resolver_match.namespace == 'saved' %}
     <link rel="stylesheet" href="{% static 'css/pages/shop-shell.css' %}?v=4">
     <noscript><style>
         /* Without JS the nav cannot leave its transparent-over-hero state, so
@@ -103,15 +103,15 @@
     every other page keeps the old include untouched.
     {% endcomment %}
     {% if request.resolver_match.namespace != 'shop' %}
-        {% if request.resolver_match.namespace != 'users' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
+        {% if request.resolver_match.namespace != 'users' or request.resolver_match.namespace == 'saved' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
     {% include "includes/mobile_menu.html" %}
         {% endif %}
     {% endif %}
     {% include "includes/messages.html" %}
     <main>{% block content %}{% endblock %}</main>
-    {% if request.resolver_match.namespace == "users" and request.resolver_match.url_name != "login" and request.resolver_match.url_name != "verify_otp" %}
+    {% if request.resolver_match.namespace == "users" and request.resolver_match.url_name != "login" and request.resolver_match.url_name != "verify_otp" or request.resolver_match.namespace == "saved" %}
     {% include "includes/footer.html" %}
-    {% elif request.resolver_match.namespace != "users" %}
+    {% elif request.resolver_match.namespace != "users" and request.resolver_match.namespace != "saved" %}
     {% include "includes/footer.html" %}
     {% endif %}
 
@@ -120,7 +120,7 @@
     navigation that the drawer already carries and overlapped the cart icon on
     phones. Other pages keep it.
     {% endcomment %}
-    {% if request.resolver_match.namespace != 'shop' and request.resolver_match.namespace != 'users' %}
+    {% if request.resolver_match.namespace != 'shop' and request.resolver_match.namespace != 'users' and request.resolver_match.namespace != 'saved' %}
         {% if request.resolver_match.namespace != 'users' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
     <nav class="babaei-quick-actions" data-quick-actions aria-label="دسترسی‌های سریع">
         <ul class="babaei-quick-actions__ring" id="babaei-quick-actions-menu">
@@ -174,7 +174,7 @@
     <script src="{% static 'js/components.js' %}" defer></script>
     {% endif %}
     {% block site_optional_js %}
-    {% if request.resolver_match.namespace == 'users' %}
+    {% if request.resolver_match.namespace == 'users' or request.resolver_match.namespace == 'saved' %}
         {% if request.resolver_match.url_name == 'login' or request.resolver_match.url_name == 'verify_otp' %}
         {% else %}
     <script src="{% static 'js/components/quick-actions.js' %}?v=4" defer></script>
@@ -185,7 +185,7 @@
     <script src="{% static 'js/storefront.js' %}?v=3" defer></script>
     {% endif %}
     {% endblock %}
-    {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
+    {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' or request.resolver_match.namespace == 'saved' %}
     <script src="{% static 'js/pages/shop-shell.js' %}?v=3" defer></script>
     {% endif %}
     {% if request.resolver_match.namespace != 'home' %}
