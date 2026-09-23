@@ -48,8 +48,10 @@
     {% endcomment %}
     <link rel="preload" href="{% static 'fonts/vazirmatn-var.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}?v=3">
+    {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name == 'login' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name == 'verify_otp' %}
+    <link rel="stylesheet" href="{% static 'css/pages/shop-shell.css' %}?v=4">
+    {% endif %}
     {% if request.resolver_match.namespace == 'shop' %}
-    <link rel="stylesheet" href="{% static 'css/pages/shop-shell.css' %}?v=3">
     <link rel="stylesheet" href="{% static 'css/pages/shop-catalog.css' %}?v=2">
     <noscript><style>
         /* Without JS the nav cannot leave its transparent-over-hero state, so
@@ -92,7 +94,7 @@
     navigation that the drawer already carries and overlapped the cart icon on
     phones. Other pages keep it.
     {% endcomment %}
-    {% if request.resolver_match.namespace != 'shop' %}
+    {% if request.resolver_match.namespace != 'shop' and not (request.resolver_match.namespace == 'users' and request.resolver_match.url_name == 'login') and not (request.resolver_match.namespace == 'users' and request.resolver_match.url_name == 'verify_otp') %}
     <nav class="babaei-quick-actions" data-quick-actions aria-label="دسترسی‌های سریع">
         <ul class="babaei-quick-actions__ring" id="babaei-quick-actions-menu">
             <li class="babaei-quick-actions__item" style="--i:0;--a:90deg">
@@ -133,7 +135,7 @@
     </nav>
     {% endif %}
 
-    {% if request.resolver_match.namespace != 'home' %}
+    {% if request.resolver_match.namespace != 'home' and not (request.resolver_match.namespace == 'users' and request.resolver_match.url_name == 'login') and not (request.resolver_match.namespace == 'users' and request.resolver_match.url_name == 'verify_otp') %}
     {% include "includes/mobile_dock.html" %}
     {% endif %}
 
