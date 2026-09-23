@@ -5,57 +5,65 @@ The site footer. One include, so every page that has a footer has this one.
 It is built for Django templates and plain CSS: the React/GSAP footer it is
 modelled on has no equivalent here, so what was ported is the design — the
 ambient glow, the masked grid, the giant brand text, the tilted marquee, the
-glass pills and the credits bar — and the behaviour was written vanilla in
-js/components.js (scroll reveal, magnetic pills on a fine pointer, back to
-top).
+glass pills and the curtain reveal — and the behaviour was written vanilla in
+js/components.js (scroll reveal, magnetic pills on a fine pointer, the curtain's
+scroll progress).
 
-Two deliberate differences from the original:
-  * No "curtain" reveal. The original pins the footer to the viewport behind a
-    clipped wrapper; that needs every page's `main` to be opaque, and on a
-    short viewport it clips the footer's own content out of reach. The footer
-    sits in normal flow instead, so it works at any height on every page.
+The curtain: .site-footer__stage below is a 100dvh box in normal flow that
+clips what it holds, and .site-footer inside it is fixed to the bottom of the
+viewport. The page scrolls the box up and the footer is uncovered — never a
+moment before. It needs two things from the page, both declared in
+css/components.css and both checked by tools/pdp_probe.py: <main> has to be
+opaque and stacked above the footer, and no sheet may force it transparent.
+Below 660px of viewport height the curtain is dropped and the footer returns to
+normal flow, because a fixed 100dvh footer would clip its own content out of
+reach there.
+
+Two deliberate omissions:
   * No newsletter form. The old one posted to the current URL and nothing in
     the project ever handled it.
+  * No link columns and no duplicate pills. The store, the account links and
+    favourites were a second copy of navigation the header already carries; the
+    chips below are the actions that are not reachable anywhere else.
 
-Links are real routes. Instagram, Telegram and YouTube have no URL anywhere in
-this project — they were `#` in the old footer too — so they stay markers until
-the store's handles are known. Nothing here invents an address or a handle.
+Links are real routes. Instagram and "تماس با ما" have no URL anywhere in this
+project — Instagram was `#` in the old footer too — so they stay markers until
+the store's handle and contact address are known. Nothing here invents either.
 ==========================================================================
 {% endcomment %}
-<footer class="site-footer" data-site-footer>
+<div class="site-footer__stage" data-footer-stage>
+    <footer class="site-footer" data-site-footer>
     <span class="site-footer__aurora" aria-hidden="true"></span>
     <span class="site-footer__mesh" aria-hidden="true"></span>
     <span class="site-footer__giant" aria-hidden="true" data-footer-giant>BABAEI</span>
 
     <div class="site-footer__band" aria-hidden="true">
         <div class="site-footer__track">
-            <span class="site-footer__reel">
+            {% comment %}
+            Six copies, shifted by one. The track animates to -100% / 6, i.e.
+            exactly one reel, so the loop lands on an identical copy and never
+            jumps; and five copies always cover the screen. Two copies at -50%
+            ran out of words on a 1920px screen and showed a gap.
+            {% endcomment %}
+            {% for _ in "123456" %}<span class="site-footer__reel">
                 <span>کیفیت قابل لمس</span><i>✦</i>
                 <span>ارسال مطمئن</span><i>✦</i>
                 <span>بسته‌بندی قابل پیگیری</span><i>✦</i>
                 <span>طراحی مینیمال</span><i>✦</i>
                 <span>استایل روزمره</span><i>✦</i>
                 <span>ساخت اختصاصی</span><i>✦</i>
-            </span>
-            <span class="site-footer__reel">
-                <span>کیفیت قابل لمس</span><i>✦</i>
-                <span>ارسال مطمئن</span><i>✦</i>
-                <span>بسته‌بندی قابل پیگیری</span><i>✦</i>
-                <span>طراحی مینیمال</span><i>✦</i>
-                <span>استایل روزمره</span><i>✦</i>
-                <span>ساخت اختصاصی</span><i>✦</i>
-            </span>
+            </span>{% endfor %}
         </div>
     </div>
 
     <div class="container site-footer__inner">
         <p class="site-footer__eyebrow">BABAEI · WEAR YOUR STORY</p>
-        <h2 class="site-footer__headline" data-ft-reveal>داستانت را بپوش</h2>
-        <p class="site-footer__lede" data-ft-reveal>
+        <h2 class="site-footer__headline" data-ft-reveal style="--ft-d: 0ms">داستانت را بپوش</h2>
+        <p class="site-footer__lede" data-ft-reveal style="--ft-d: 80ms">
             از پارچه تا دوخت، هر قطعه برای روزهای واقعی تو انتخاب شده — ساده، باکیفیت و ماندگار.
         </p>
 
-        <div class="site-footer__actions" data-ft-reveal>
+        <div class="site-footer__actions" data-ft-reveal style="--ft-d: 160ms">
             <div class="site-footer__actions-row">
                 <a class="footer-pill footer-pill--lead" href="{% url 'shop:index' %}" data-magnet>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16l-1.4 12.2a1.5 1.5 0 0 1-1.5 1.3H6.9a1.5 1.5 0 0 1-1.5-1.3Z"/><path d="M8.6 7V5.6a3.4 3.4 0 0 1 6.8 0V7"/></svg>
@@ -68,39 +76,16 @@ the store's handles are known. Nothing here invents an address or a handle.
                 </a>
             </div>
             <div class="site-footer__actions-row site-footer__actions-row--quiet">
-                <a class="footer-pill" href="{% url 'orders:cart' %}" data-magnet>سبد خرید</a>
-                <a class="footer-pill" href="{% url 'saved:saved' %}" data-magnet>علاقه‌مندی‌ها</a>
                 {% comment %}TODO: real contact route or address — nothing in this project serves one yet.{% endcomment %}
                 <a class="footer-pill" href="#" data-magnet>تماس با ما</a>
             </div>
         </div>
 
-        <div class="site-footer__links" data-ft-reveal>
-            <nav class="site-footer__group" aria-label="فروشگاه">
-                <strong>فروشگاه</strong>
-                <a href="{% url 'shop:index' %}">همه محصولات</a>
-                <a href="{% url 'orders:cart' %}">سبد خرید</a>
-            </nav>
-            <nav class="site-footer__group" aria-label="حساب کاربری">
-                <strong>حساب کاربری</strong>
-                <a href="{% url 'users:profile' %}">اطلاعات شخصی</a>
-                <a href="{% url 'users:addresses' %}">آدرس‌ها</a>
-                <a href="{% url 'saved:saved' %}">علاقه‌مندی‌ها</a>
-            </nav>
-            <nav class="site-footer__group" aria-label="ارتباط با ما">
-                <strong>ارتباط با ما</strong>
-                <a href="#">اینستاگرام</a>
-                <a href="#">تلگرام</a>
-                <a href="#">یوتیوب</a>
-            </nav>
-        </div>
     </div>
 
     <div class="container site-footer__bottom">
         <span class="site-footer__copy">© {% now "Y" %} BABAEI — تمامی حقوق محفوظ است.</span>
         <span class="footer-pill footer-pill--static">ساخته‌شده با <i class="footer-heart" aria-hidden="true">❤</i> در BABAEI</span>
-        <button type="button" class="site-footer__top" data-footer-top aria-label="بازگشت به بالا">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5.5 11.5 6.5-6.5 6.5 6.5"/></svg>
-        </button>
     </div>
-</footer>
+    </footer>
+</div>

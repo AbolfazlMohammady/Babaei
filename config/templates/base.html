@@ -21,7 +21,7 @@
     {% endif %}
     {% block site_components_css %}
     {% if request.resolver_match.namespace != 'users' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
-    <link rel="stylesheet" href="{% static 'css/components.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}?v=5">
     {% endif %}
     {% endblock %}
     {% block common_page_css %}{% endblock %}
@@ -30,12 +30,12 @@
     {% if request.resolver_match.namespace == 'users' or request.resolver_match.namespace == 'saved' %}
         {% if request.resolver_match.url_name == 'login' or request.resolver_match.url_name == 'verify_otp' %}
         {% else %}
-        <link rel="stylesheet" href="{% static 'css/babaei-ui.css' %}?v=1">
+        <link rel="stylesheet" href="{% static 'css/babaei-ui.css' %}?v=2">
         <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=10">
         {% endif %}
     {% else %}
     <link rel="stylesheet" href="{% static 'css/components/quick-actions.css' %}?v=9">
-    <link rel="stylesheet" href="{% static 'css/babaei-ui.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'css/babaei-ui.css' %}?v=2">
     <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=10">
     {% endif %}
     {% endblock %}
@@ -168,7 +168,7 @@
 
     {% if request.resolver_match.namespace != 'users' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
     <script src="{% static 'js/app.js' %}" defer></script>
-    <script src="{% static 'js/components.js' %}?v=2" defer></script>
+    <script src="{% static 'js/components.js' %}?v=3" defer></script>
     {% endif %}
     {% block site_optional_js %}
     {% if request.resolver_match.namespace == 'users' or request.resolver_match.namespace == 'saved' %}
