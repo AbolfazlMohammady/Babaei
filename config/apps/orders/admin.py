@@ -64,7 +64,22 @@ def mark_processing(modeladmin, request, queryset):
 
 @admin.action(description="علامت‌گذاری پرداخت‌شده")
 def mark_paid(modeladmin, request, queryset):
-    queryset.update(payment_status=Order.PaymentStatus.PAID, status=Order.Status.PAID, paid_at=timezone.now())
+    from .services import process_manual_payment
+
+    succeeded = 0
+    failed = 0
+    for order in queryset:
+        try:
+            process_manual_payment(order=order, success=True)
+        except ValueError as exc:
+            failed += 1
+            modeladmin.message_user(request, f"{order.number}: {exc}", level="ERROR")
+        else:
+            succeeded += 1
+    if succeeded:
+        modeladmin.message_user(request, f"{succeeded} سفارش به‌عنوان پرداخت‌شده ثبت شد.")
+    if failed:
+        modeladmin.message_user(request, f"{failed} سفارش به دلیل موجودی یا وضعیت سفارش ثبت نشد.", level="WARNING")
 
 
 @admin.action(description="انتقال به ارسال‌شده")
