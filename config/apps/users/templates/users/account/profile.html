@@ -3,6 +3,44 @@
 
 {% block title %}اطلاعات شخصی | BABAEI{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/account.css' %}?v=3">
+<style>
+    /* Profile date picker: keep the sheet above the mobile quick navigation. */
+    .jalali-picker {
+        position: relative;
+        z-index: 100;
+    }
+
+    @media (max-width: 640px) {
+        .jalali-picker {
+            position: fixed;
+            inset-inline: 12px;
+            inset-block-end: calc(78px + env(safe-area-inset-bottom));
+            width: auto;
+            max-height: min(440px, calc(100dvh - 108px));
+            overflow: auto;
+            z-index: 200;
+            border-color: rgba(39, 108, 77, .2);
+            background: #f3ecdf;
+            box-shadow: 0 24px 70px rgba(16, 45, 35, .3);
+        }
+
+        .date-wheel__columns {
+            min-height: 190px;
+            max-height: 240px;
+        }
+
+        .date-wheel__bottom {
+            position: sticky;
+            inset-block-end: 0;
+            z-index: 2;
+            background: #eee5d5;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block account_content %}
 <section class="profile-hero">
     <div class="profile-hero__copy">
@@ -47,57 +85,39 @@
                 <label class="ac-label" for="first-name">نام</label>
                 <input id="first-name" class="ac-input" type="text" name="first_name" value="{{ user.first_name }}" autocomplete="given-name">
             </div>
-
             <div class="ac-field profile-field">
                 <label class="ac-label" for="last-name">نام خانوادگی</label>
                 <input id="last-name" class="ac-input" type="text" name="last_name" value="{{ user.last_name }}" autocomplete="family-name">
             </div>
-
             <div class="ac-field profile-field">
                 <label class="ac-label" for="phone">شماره موبایل</label>
                 <input id="phone" class="ac-input" type="tel" value="{{ user.phone }}" disabled dir="ltr">
                 <span class="ac-hint">شماره موبایل شناسه ورود است و از این فرم تغییر نمی‌کند.</span>
             </div>
-
             <div class="ac-field profile-field">
                 <label class="ac-label" for="email">ایمیل</label>
                 <input id="email" class="ac-input" type="email" name="email" value="{{ user.email|default:'' }}" dir="ltr" autocomplete="email" placeholder="name@example.com">
             </div>
-
             <div class="ac-field jalali-picker-field profile-field profile-field--wide">
                 <label class="ac-label" for="birth-date-display">تاریخ تولد</label>
                 <div class="ac-input-group">
-                    <input id="birth-date-display" class="ac-input jalali-date-input" type="text" value="" placeholder="سال / ماه / روز" readonly autocomplete="off" aria-haspopup="dialog">
-                    <span class="ac-input-group__icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24"><path d="M4.5 6.5h15v13h-15z"></path><path d="M8 4v4M16 4v4M4.5 11h15"></path></svg>
-                    </span>
+                    <input id="birth-date-display" class="ac-input jalali-date-input" type="text" value="" placeholder="سال / ماه / روز" readonly autocomplete="off" aria-haspopup="dialog" aria-expanded="false" data-jalali-picker>
+                    <span class="ac-input-group__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 6.5h15v13h-15z"></path><path d="M8 4v4M16 4v4M4.5 11h15"></path></svg></span>
                 </div>
-                <span class="ac-hint">برای انتخاب ��اریخ، روی کادر بزن.</span>
+                <span class="ac-hint">برای انتخاب تاریخ، روی کادر بزن.</span>
                 <input type="hidden" name="birth_date" value="{{ user.birth_date|date:'Y-m-d' }}" data-gregorian-input>
                 <div class="jalali-picker" data-jalali-calendar hidden></div>
             </div>
-
             <div class="ac-field profile-field profile-field--wide">
                 <label class="ac-label" id="gender-label">جنسیت</label>
                 <div class="ac-choice gender-choice" role="radiogroup" aria-labelledby="gender-label">
-                    <label class="ac-choice__option gender-option {% if user.gender == 'male' %}is-selected{% endif %}">
-                        <input type="radio" name="gender" value="male" {% if user.gender == 'male' %}checked{% endif %}>
-                        <span class="ac-choice__icon" aria-hidden="true">♂</span>
-                        <span>آقا</span>
-                    </label>
-
-                    <label class="ac-choice__option gender-option {% if user.gender == 'female' %}is-selected{% endif %}">
-                        <input type="radio" name="gender" value="female" {% if user.gender == 'female' %}checked{% endif %}>
-                        <span class="ac-choice__icon" aria-hidden="true">♀</span>
-                        <span>خانم</span>
-                    </label>
+                    <label class="ac-choice__option gender-option {% if user.gender == 'male' %}is-selected{% endif %}"><input type="radio" name="gender" value="male" {% if user.gender == 'male' %}checked{% endif %}><span class="ac-choice__icon" aria-hidden="true">♂</span><span>آقا</span></label>
+                    <label class="ac-choice__option gender-option {% if user.gender == 'female' %}is-selected{% endif %}"><input type="radio" name="gender" value="female" {% if user.gender == 'female' %}checked{% endif %}><span class="ac-choice__icon" aria-hidden="true">♀</span><span>خانم</span></label>
                 </div>
             </div>
         </div>
 
-        <div class="ac-form__actions profile-actions">
-            <button class="ac-btn ac-btn--primary profile-save" type="submit">ذخیره تغییرات</button>
-        </div>
+        <div class="ac-form__actions profile-actions"><button class="ac-btn ac-btn--primary profile-save" type="submit">ذخیره تغییرات</button></div>
     </form>
 </article>
 {% endblock %}
@@ -106,12 +126,10 @@
 <script src="{% static 'js/pages/profile.js' %}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.gender-option input').forEach(input => {
-        input.addEventListener('change', () => {
-            document.querySelectorAll('.gender-option').forEach(option => option.classList.remove('is-selected'));
-            input.closest('.gender-option')?.classList.add('is-selected');
-        });
-    });
+    document.querySelectorAll('.gender-option input').forEach(input => input.addEventListener('change', () => {
+        document.querySelectorAll('.gender-option').forEach(option => option.classList.remove('is-selected'));
+        input.closest('.gender-option')?.classList.add('is-selected');
+    }));
 });
 </script>
 {% endblock %}
