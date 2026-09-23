@@ -3,6 +3,10 @@
 
 {% block title %}علاقه‌مندی‌ها | BABAEI{% endblock %}
 {% block body_class %}account-body saved-account-page{% endblock %}
+{% block site_optional_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/pages/shop-catalog.css' %}?v=5">
+{% endblock %}
 
 {% block account_content %}
 <section class="saved-page">
@@ -37,6 +41,24 @@
                 {% endfor %}
             </div>
         </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="shop-reference__pagination account-saved-pagination" aria-label="صفحه‌بندی علاقه‌مندی‌ها">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" aria-label="صفحه قبل">‹</a>
+            {% endif %}
+            {% for number in page_obj.paginator.page_range %}
+                {% if number == page_obj.number %}
+                    <span class="is-current" aria-current="page">{{ number }}</span>
+                {% elif number <= 2 or number > page_obj.paginator.num_pages|add:"-2" or number >= page_obj.number|add:"-1" and number <= page_obj.number|add:"1" %}
+                    <a href="?page={{ number }}">{{ number }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" aria-label="صفحه بعد">›</a>
+            {% endif %}
+        </nav>
+        {% endif %}
     </section>
 </section>
 {% endblock %}
