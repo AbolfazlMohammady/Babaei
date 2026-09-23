@@ -9,7 +9,7 @@
     const subtotalEls = [...root.querySelectorAll("[data-cart-subtotal]")];
     const summary = root.querySelector("[data-cart-summary]");
     const empty = root.querySelector("[data-cart-empty]");
-    const headerBadges = [...document.querySelectorAll(".header-cart__badge")];
+    const headerBadges = [...document.querySelectorAll(".header-cart__badge, .sh-icon__badge")];
 
     const animateNumber = (element, from, to, duration = 360) => {
         if (!element) return;
@@ -28,34 +28,6 @@
             const progress = Math.min(1, (now - startedAt) / duration);
             const eased = 1 - Math.pow(1 - progress, 3);
             element.textContent = formatPrice(Math.round(start + (end - start) * eased));
-
-            if (progress < 1) {
-                element.dataset.numberFrame = String(requestAnimationFrame(tick));
-            } else {
-                delete element.dataset.numberFrame;
-            }
-        };
-
-        element.dataset.numberFrame = String(requestAnimationFrame(tick));
-    };
-
-    const animateLineTotal = (element, from, to) => {
-        if (!element) return;
-
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-            element.textContent = formatPrice(to) + " تومان";
-            return;
-        }
-
-        const start = Number(from || 0);
-        const end = Number(to || 0);
-        const startedAt = performance.now();
-        cancelAnimationFrame(Number(element.dataset.numberFrame || 0));
-
-        const tick = (now) => {
-            const progress = Math.min(1, (now - startedAt) / 300);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            element.textContent = formatPrice(Math.round(start + (end - start) * eased)) + " تومان";
 
             if (progress < 1) {
                 element.dataset.numberFrame = String(requestAnimationFrame(tick));
@@ -131,21 +103,14 @@
 
         items.forEach((item) => {
             const quantity = item.querySelector("[data-quantity-value]");
-            const lineTotal = item.querySelector("[data-line-total]");
             const minus = item.querySelector("[data-quantity-minus]");
             const plus = item.querySelector("[data-quantity-plus]");
             const max = Number(item.dataset.stock || 0);
-            const previousLineTotal = Number(lineTotal?.dataset.lineValue || 0);
-
             if (quantity) {
                 quantity.textContent = formatPrice(data.quantity);
                 quantity.dataset.value = String(data.quantity);
             }
 
-            if (lineTotal) {
-                animateLineTotal(lineTotal, previousLineTotal, data.line_total);
-                lineTotal.dataset.lineValue = String(data.line_total);
-            }
 
             if (minus) minus.disabled = data.quantity <= 1;
             if (plus && max > 0) plus.disabled = data.quantity >= max;
