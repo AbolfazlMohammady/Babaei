@@ -24,8 +24,9 @@
 
     var finePointer = !window.matchMedia ||
         window.matchMedia("(pointer: fine)").matches;
+    var wideViewport = window.innerWidth > 700;
 
-    if (!reduced && blobs.length && finePointer) {
+    if (!reduced && blobs.length && finePointer && wideViewport) {
         var lastX = 0;
         var lastY = 0;
         var ticking = false;
@@ -41,7 +42,7 @@
             });
         }
 
-        document.addEventListener("mousemove", function (event) {
+        root.addEventListener("mousemove", function (event) {
             lastX = event.clientX / window.innerWidth - 0.5;
             lastY = event.clientY / window.innerHeight - 0.5;
 
