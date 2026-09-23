@@ -91,10 +91,8 @@
     global navigation of its own.
     {% endcomment %}
     {% if request.resolver_match.namespace != 'home' %}
-        {% if request.resolver_match.namespace != 'orders' or request.resolver_match.url_name != 'cart' %}
-            {% if request.resolver_match.namespace != 'users' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
-    <link rel="stylesheet" href="{% static 'css/mobile-dock.css' %}?v=2">
-            {% endif %}
+        {% if request.resolver_match.namespace != 'users' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
+    <link rel="stylesheet" href="{% static 'css/mobile-dock.css' %}?v=3">
         {% endif %}
     {% endif %}
 </head>
@@ -171,10 +169,8 @@
     {% endif %}
 
     {% if request.resolver_match.namespace != 'home' %}
-        {% if request.resolver_match.namespace != 'orders' or request.resolver_match.url_name != 'cart' %}
-            {% if request.resolver_match.namespace != 'users' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
+        {% if request.resolver_match.namespace != 'users' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
     {% include "includes/mobile_dock.html" %}
-            {% endif %}
         {% endif %}
     {% endif %}
 
@@ -199,10 +195,8 @@
     <script src="{% static 'js/pages/shop-shell.js' %}?v=3" defer></script>
     {% endif %}
     {% if request.resolver_match.namespace != 'home' %}
-        {% if request.resolver_match.namespace != 'orders' or request.resolver_match.url_name != 'cart' %}
-            {% if request.resolver_match.namespace != 'users' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
-    <script src="{% static 'js/mobile-dock.js' %}?v=2" defer></script>
-            {% endif %}
+        {% if request.resolver_match.namespace != 'users' or request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' %}
+    <script src="{% static 'js/mobile-dock.js' %}?v=3" defer></script>
         {% endif %}
     {% endif %}
     {% block extra_js %}{% endblock %}
