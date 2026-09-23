@@ -1972,9 +1972,18 @@
     background: #f5f1e8;
 }
 
-.date-wheel__clear,
-.date-wheel__confirm {
+.date-wheel__clear {
     background: #eee9df;
+}
+
+.date-wheel__confirm {
+    border-color: var(--sh-forest);
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+}
+
+.date-wheel__confirm:hover {
+    background: var(--sh-forest-deep);
 }
 
 @media (max-width: 700px) {
@@ -2008,6 +2017,13 @@
     body > .jalali-picker,
     .jalali-picker.is-mobile-portal {
         position: fixed;
+        display: block;
+        pointer-events: auto;
+        touch-action: manipulation;
+    }
+
+    .jalali-picker.is-mobile-portal[hidden] {
+        display: none;
     }
 
     .date-wheel__columns {
