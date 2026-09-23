@@ -33,7 +33,7 @@ js/storefront.js). Nothing on this page needs !important.
 {% block extra_css %}{% endblock %}
 {% block site_optional_css %}
 <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=10">
-<link rel="stylesheet" href="{% static 'css/pages/shop-product.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/pages/shop-product.css' %}?v=4">
 {% endblock %}
 
 {% block content %}
@@ -54,19 +54,31 @@ js/storefront.js). Nothing on this page needs !important.
         {% endcomment %}
         <div class="pd-stage">
             <section class="pd-media" aria-label="تصاویر {{ product.name }}" data-product-gallery>
-                <div class="pd-media__frame" id="product-gallery-panel" role="tabpanel" aria-label="تصویر انتخاب‌شده">
+                <div class="pd-media__frame" id="product-gallery-panel" role="tabpanel" aria-label="تصویر انتخاب‌شده" data-product-tilt>
                     {% with image=product.gallery_images.0 %}
                         {% if image %}
                             {% image_variants image as v %}
                             <picture>
-                                {% if v.avif %}<source type="image/avif" data-format="avif" srcset="{{ v.avif }}" sizes="(max-width: 759px) calc(100vw - 40px), (max-width: 1400px) 48vw, 566px">{% endif %}
-                                {% if v.webp %}<source type="image/webp" data-format="webp" srcset="{{ v.webp }}" sizes="(max-width: 759px) calc(100vw - 40px), (max-width: 1400px) 48vw, 566px">{% endif %}
+                                {% if v.avif %}<source type="image/avif" data-format="avif" srcset="{{ v.avif }}" sizes="(max-width: 759px) calc(100vw - 44px), (max-width: 1200px) 46vw, 520px">{% endif %}
+                                {% if v.webp %}<source type="image/webp" data-format="webp" srcset="{{ v.webp }}" sizes="(max-width: 759px) calc(100vw - 44px), (max-width: 1200px) 46vw, 520px">{% endif %}
                                 <img id="product-gallery-main" src="{{ v.src|default:image.image.url }}" alt="{{ image.alt_text|default:product.name }}"{% if v.width %} width="{{ v.width }}" height="{{ v.height }}"{% endif %} fetchpriority="high" decoding="async">
                             </picture>
                         {% else %}
                             <img id="product-gallery-main" src="{% static 'images/home/Tshirt.png' %}" alt="{{ product.name }}" fetchpriority="high" decoding="async">
                         {% endif %}
                     {% endwith %}
+                    {% comment %}
+                    The two option labels live on the photo now, as glass pills
+                    that fade in once a choice is made (`:empty` hides them
+                    until then). Same ids, so shop-product.js keeps filling
+                    them. Nothing is duplicated from the column beside it: the
+                    title already sits there, so the photo carries only what the
+                    column cannot show at a glance.
+                    {% endcomment %}
+                    <div class="pd-media__picks">
+                        <span id="selected-color-label" class="pd-glass" aria-live="polite"></span>
+                        <span id="selected-size-label" class="pd-glass" aria-live="polite"></span>
+                    </div>
                 </div>
 
                 <div class="pd-thumbs" role="tablist" aria-label="انتخاب تصویر">
@@ -74,8 +86,8 @@ js/storefront.js). Nothing on this page needs !important.
                         {% image_variants image as v %}
                         <button type="button" class="pd-thumb{% if forloop.first %} is-active{% endif %}" data-gallery-thumb data-image="{{ image.image.url }}" data-alt="{{ image.alt_text|default:product.name }}" data-avif="{{ v.avif }}" data-webp="{{ v.webp }}" role="tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="product-gallery-panel" aria-label="تصویر {{ forloop.counter }}">
                             <picture>
-                                {% if v.avif %}<source type="image/avif" data-format="avif" srcset="{{ v.avif }}" sizes="72px">{% endif %}
-                                {% if v.webp %}<source type="image/webp" data-format="webp" srcset="{{ v.webp }}" sizes="72px">{% endif %}
+                                {% if v.avif %}<source type="image/avif" data-format="avif" srcset="{{ v.avif }}" sizes="76px">{% endif %}
+                                {% if v.webp %}<source type="image/webp" data-format="webp" srcset="{{ v.webp }}" sizes="76px">{% endif %}
                                 <img src="{{ v.src|default:image.image.url }}" alt="" loading="lazy" decoding="async">
                             </picture>
                         </button>
@@ -138,11 +150,11 @@ js/storefront.js). Nothing on this page needs !important.
                     {% endcomment %}
                     <section class="pd-options" aria-label="انتخاب رنگ و سایز">
                         <div class="pd-option">
-                            <div class="pd-option__head"><h2>رنگ</h2><span id="selected-color-label" aria-live="polite"></span></div>
+                            <div class="pd-option__head"><h2>رنگ</h2></div>
                             <div class="color-options" role="radiogroup" aria-label="رنگ محصول">{% for color in colors %}<button type="button" class="color-option" data-color-id="{{ color.id }}" aria-label="{{ color.name }}" title="{{ color.name }}"><span class="color-swatch" style="--swatch: {{ color.hex_code }}"></span><span class="color-option__name">{{ color.name }}</span></button>{% endfor %}</div>
                         </div>
                         <div class="pd-option">
-                            <div class="pd-option__head"><h2>سایز</h2><span id="selected-size-label" aria-live="polite"></span></div>
+                            <div class="pd-option__head"><h2>سایز</h2></div>
                             <div class="size-options" role="radiogroup" aria-label="سایز محصول">{% for size in sizes %}<button type="button" class="size-option" data-size-id="{{ size.id }}">{{ size.name }}</button>{% endfor %}</div>
                         </div>
                         <div id="variant-status" class="pd-status" aria-live="polite"></div>
@@ -186,4 +198,4 @@ js/storefront.js). Nothing on this page needs !important.
     </div>
 </div>
 {% endblock %}
-{% block extra_js %}<script>window.BabaeiProduct={variants:{{ variant_data }},cartVariants:{{ cart_variant_data }},initialProductPrice:{{ product.display_price|default:0 }},initialComparePrice:{{ product.display_compare_price|default:0 }}};</script><script src="{% static 'js/pages/shop-product.js' %}?v=4" defer></script>{% endblock %}
+{% block extra_js %}<script>window.BabaeiProduct={variants:{{ variant_data }},cartVariants:{{ cart_variant_data }},initialProductPrice:{{ product.display_price|default:0 }},initialComparePrice:{{ product.display_compare_price|default:0 }}};</script><script src="{% static 'js/pages/shop-product.js' %}?v=4" defer></script><script src="{% static 'js/pages/product-media-tilt.js' %}?v=1" defer></script>{% endblock %}
