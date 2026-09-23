@@ -741,7 +741,7 @@
     .auth-container {
         width: min(100%, 440px);
         padding: 34px 20px 26px;
-        transform: translateY(22px);
+        transform: translateY(68px);
     }
 
     .auth-header {
