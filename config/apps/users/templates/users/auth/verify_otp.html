@@ -6,7 +6,7 @@
 {% block body_class %}auth-body shop-page{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=6">
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=7">
 {% endblock %}
 
 {% block site_optional_css %}
@@ -16,86 +16,68 @@
 
 {% block content %}
 <section class="auth-page auth-page--verify" aria-label="تأیید شماره موبایل">
-    <div class="auth-layout">
-        <aside class="auth-editorial" aria-label="BABAEI">
-            <div class="auth-editorial__top">
-                <span>02</span><i></i><b>VERIFY</b>
-            </div>
+    <div class="auth-card" aria-labelledby="verify-title">
+        <div class="auth-card__top">
+            <span class="auth-card__eyebrow">VERIFICATION</span>
+            <span class="auth-card__mark auth-card__mark--done" aria-hidden="true">✓</span>
+        </div>
 
-            <div class="auth-editorial__center">
-                <p class="auth-kicker">ONE MORE STEP</p>
-                <h1>یک کد<em>تا ورود</em>فاصله داری.</h1>
-                <p class="auth-editorial__copy">
-                    کدی که به شماره‌ات فرستادیم را وارد کن
-                    تا به حساب BABAEI برگردی.
-                </p>
-            </div>
+        <div class="auth-heading">
+            <span class="auth-heading__line" aria-hidden="true"></span>
+            <p class="auth-heading__kicker">کد تأیید</p>
+            <h1 id="verify-title">کد پیامک‌شده را وارد کنید</h1>
+            <p class="auth-heading__lead">
+                کد ارسال‌شده به <strong dir="ltr">{{ phone }}</strong> را وارد کنید.
+            </p>
+        </div>
 
-            <div class="auth-editorial__bottom">
-                <a href="{% url 'users:login' %}">← تغییر شماره</a>
-            </div>
-        </aside>
+        <form method="post" class="auth-form" novalidate data-auth-verify-form>
+            {% csrf_token %}
 
-        <section class="auth-card auth-card--verify" aria-labelledby="verify-title">
-            <div class="auth-card__top">
-                <div>
-                    <span class="auth-card__eyebrow">VERIFICATION</span>
-                    <span class="auth-card__step">STEP 02 / 02</span>
-                </div>
-                <span class="auth-card__mark auth-card__mark--done">✓</span>
-            </div>
+            <div class="auth-field-row">
+                <label class="auth-label" for="code">کد تأیید</label>
 
-            <div class="auth-progress"><span></span><span class="is-active"></span></div>
-
-            <div class="auth-heading">
-                <span class="auth-heading__number">/ 02</span>
-                <p class="auth-heading__kicker">SMS CODE</p>
-                <h2 id="verify-title">کد را وارد کن.</h2>
-                <p>
-                    کد ارسال‌شده به <strong dir="ltr">{{ phone }}</strong> را وارد کن.
-                </p>
-            </div>
-
-            <form method="post" class="auth-form" novalidate data-auth-verify-form>
-                {% csrf_token %}
-
-                <div class="auth-field-row">
-                    <div class="auth-otp" aria-label="کد تأیید شش رقمی">
-                        <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" data-otp-digit="0" aria-label="رقم اول">
-                        <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="off" data-otp-digit="1" aria-label="رقم دوم">
-                        <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="off" data-otp-digit="2" aria-label="رقم سوم">
-                        <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="off" data-otp-digit="3" aria-label="رقم چهارم">
-                        <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="off" data-otp-digit="4" aria-label="رقم پنجم">
-                        <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" autocomplete="off" data-otp-digit="5" aria-label="رقم ششم">
-                    </div>
-
-                    <input id="code" name="code" type="hidden">
-
-                    <div class="auth-field-meta">
-                        <small>۶ رقم یا Paste یکجای کد</small>
-                        <b>OTP</b>
-                    </div>
+                <div class="auth-otp" aria-label="کد تأیید شش رقمی">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
+                           autocomplete="one-time-code" data-otp-digit="0" aria-label="رقم اول">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
+                           autocomplete="off" data-otp-digit="1" aria-label="رقم دوم">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
+                           autocomplete="off" data-otp-digit="2" aria-label="رقم سوم">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
+                           autocomplete="off" data-otp-digit="3" aria-label="رقم چهارم">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
+                           autocomplete="off" data-otp-digit="4" aria-label="رقم پنجم">
+                    <input class="otp-digit" type="text" inputmode="numeric" maxlength="1"
+                           autocomplete="off" data-otp-digit="5" aria-label="رقم ششم">
                 </div>
 
-                <button class="auth-submit" type="submit">
-                    <span>تأیید و ورود</span><strong>↗</strong>
-                </button>
-            </form>
+                <input id="code" name="code" type="hidden">
 
-            <div class="auth-resend">
-                <span>کد را دریافت نکردی؟</span>
-                <a href="{% url 'users:login' %}">ارسال دوباره</a>
+                <small class="auth-hint">
+                    کد ۶ رقمی را وارد کنید یا یکجا Paste کنید.
+                </small>
             </div>
 
-            <div class="auth-card__foot">
-                <p>شماره را اشتباه وارد کردی؟</p>
-                <a href="{% url 'users:login' %}">تغییر شماره</a>
-            </div>
-        </section>
+            <button class="auth-submit" type="submit">
+                <span>تأیید و ورود</span>
+                <span aria-hidden="true">←</span>
+            </button>
+        </form>
+
+        <div class="auth-resend">
+            <span>کد را دریافت نکردید؟</span>
+            <a href="{% url 'users:login' %}">بازگشت و ارسال دوباره</a>
+        </div>
+
+        <div class="auth-card__foot">
+            <span>شماره اشتباه است؟</span>
+            <a href="{% url 'users:login' %}">تغییر شماره</a>
+        </div>
     </div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/auth-switch.js' %}?v=3" defer></script>
+<script src="{% static 'js/auth-switch.js' %}?v=4" defer></script>
 {% endblock %}
