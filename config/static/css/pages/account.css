@@ -82,11 +82,16 @@
     display: block;
 }
 
-/* The account shell carries its own header and footer, so the legacy chrome is
-   dropped here — exactly as before this pass. */
+/* The account shell carries its own header, so the legacy chrome is dropped
+   here — exactly as before this pass.
+   
+   The footer used to be hidden along with it, back when the account shell
+   supplied one of its own. That one is gone (see account_base.html), so hiding
+   this one left every account page with no footer at all. It is the single
+   site footer now, and it sits inside .site-footer__stage, so this selector
+   would not have matched it anyway. */
 .account-body > header.site-header,
-.account-body > .mobile-menu,
-.account-body > footer.site-footer {
+.account-body > .mobile-menu {
     display: none;
 }
 

@@ -1,8 +1,19 @@
+from math import ceil
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.db.models import Case, IntegerField, Prefetch, When
+from django.db.models import (
+    Case,
+    Count,
+    Exists,
+    IntegerField,
+    OuterRef,
+    Prefetch,
+    Subquery,
+    When,
+    Window,
+)
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -10,6 +21,34 @@ from django.views.decorators.http import require_POST
 from apps.shop.models import Product, ProductImage, ProductVariant
 
 from .models import FavoriteProduct
+
+
+class FavoritePage:
+    """Small paginator that gets the total from the product query itself."""
+
+    def __init__(self, object_list, number, count, per_page):
+        self.object_list = object_list
+        self.number = number
+        self.count = count
+        self.per_page = per_page
+        self.num_pages = max(1, ceil(count / per_page))
+        self.page_range = range(1, self.num_pages + 1)
+        self.paginator = self
+
+    def has_previous(self):
+        return self.number > 1
+
+    def has_next(self):
+        return self.number < self.num_pages
+
+    def has_other_pages(self):
+        return self.has_previous() or self.has_next()
+
+    def previous_page_number(self):
+        return self.number - 1
+
+    def next_page_number(self):
+        return self.number + 1
 
 
 def _back(request, fallback="users:saved"):
@@ -53,25 +92,34 @@ def toggle_favorite(request, product_id):
 @login_required
 def saved_page(request):
     """
-    Favorites is intentionally kept to a small, predictable query budget:
+    Keep the favorites page to three application queries:
 
-      1. favorites/products/categories
-      2. first two product images
-      3. active variants used for card price/variant state
-      4. COUNT(*) for the pager
+      1. the authenticated user (from AuthenticationMiddleware)
+      2. products + favorite total + lowest active variant price/state
+      3. the first two product images
 
-    The previous implementation put three correlated subqueries into the
-    product SELECT for every favorite (price, compare price, has variants)
-    and then loaded the entire favorites list into memory.
+    The previous implementation needed two extra queries for active variants
+    and COUNT(*). Variant values are now scalar subqueries in the product
+    SELECT, while COUNT(*) is a window value on the same result set.
     """
+
+    per_page = 24
+    try:
+        page_number = max(1, int(request.GET.get("page", 1)))
+    except (TypeError, ValueError):
+        page_number = 1
+
+    active_variants = ProductVariant.objects.filter(
+        product_id=OuterRef("pk"),
+        is_active=True,
+    ).order_by("price", "id")
+
     favorite_products_qs = (
         Product.objects.filter(
             favorited_by__user_id=request.user.id,
             is_active=True,
             category__is_active=True,
         )
-        # The card needs only these scalar product fields. Category is used only
-        # for the active filter, so selecting the whole category row is wasted.
         .only(
             "id",
             "name",
@@ -79,6 +127,14 @@ def saved_page(request):
             "base_price",
             "compare_at_price",
             "is_featured",
+        )
+        .annotate(
+            listed_price=Subquery(active_variants.values("price")[:1]),
+            listed_compare_price=Subquery(
+                active_variants.values("compare_at_price")[:1]
+            ),
+            favorite_total=Window(Count("pk")),
+            has_active_variants=Exists(active_variants),
         )
         .prefetch_related(
             Prefetch(
@@ -104,39 +160,42 @@ def saved_page(request):
                 .order_by("type_priority", "sort_order", "id")[:2],
                 to_attr="card_images",
             ),
-            Prefetch(
-                "variants",
-                queryset=ProductVariant.objects.filter(is_active=True)
-                .only(
-                    "id",
-                    "product_id",
-                    "price",
-                    "compare_at_price",
-                )
-                .order_by("price", "id"),
-                to_attr="active_variants",
-            ),
         )
         .order_by("-favorited_by__created_at")
     )
 
-    paginator = Paginator(favorite_products_qs, 24)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    offset = (page_number - 1) * per_page
+    rows = list(favorite_products_qs[offset:offset + per_page])
 
-    favorite_products = list(page_obj.object_list)
-    for product in favorite_products:
-        # All rows came through the user's favorite relation, so this avoids
-        # another EXISTS query per product.
+    if rows:
+        favorite_count = rows[0].favorite_total or 0
+    elif page_number > 1:
+        # Invalid/high page numbers are uncommon. Re-run page 1 only in this
+        # case so a stale URL still renders safely without a COUNT(*) query.
+        rows = list(favorite_products_qs[:per_page])
+        favorite_count = rows[0].favorite_total if rows else 0
+        page_number = 1
+    else:
+        favorite_count = 0
+
+    for product in rows:
+        # Every row came through the user's favorite relation.
         product.is_favorite = True
-        product.has_variants = bool(product.active_variants)
+        product.has_variants = bool(product.has_active_variants)
+
+    page_obj = FavoritePage(
+        rows,
+        page_number,
+        favorite_count,
+        per_page,
+    )
 
     return render(
         request,
         "users/account/saved.html",
         {
-            "favorite_products": favorite_products,
-            "favorite_count": paginator.count,
+            "favorite_products": rows,
+            "favorite_count": favorite_count,
             "page_obj": page_obj,
         },
     )
-
