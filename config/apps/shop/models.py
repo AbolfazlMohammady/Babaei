@@ -3,6 +3,8 @@ from __future__ import annotations
 import uuid
 from pathlib import Path
 
+from django.conf import settings
+
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models import Q
@@ -257,7 +259,7 @@ class ProductComment(models.Model):
         verbose_name=_("محصول"),
     )
     user = models.ForeignKey(
-        "users.User",
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="product_comments",
         verbose_name=_("کاربر"),
@@ -283,6 +285,9 @@ class ProductComment(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
+        constraints = [
+            models.CheckConstraint(check=Q(rating__isnull=True) | Q(rating__gte=1, rating__lte=5), name="shop_comment_rating_valid"),
+        ]
         indexes = [
             models.Index(fields=("product", "status", "-created_at"), name="shop_comment_product_idx"),
             models.Index(fields=("user", "status", "-created_at"), name="shop_comment_user_idx"),
