@@ -89,10 +89,51 @@ document.addEventListener("DOMContentLoaded", () => {
     const pickerHome = picker.parentElement;
     const isMobilePicker = () => window.matchMedia("(max-width: 700px)").matches;
 
+    const positionMobilePicker = () => {
+        if (!isMobilePicker() || picker.hidden || picker.parentElement !== document.body) return;
+
+        const rect = input.getBoundingClientRect();
+        const viewportPadding = 12;
+        const gap = 8;
+        const pickerWidth = Math.min(352, window.innerWidth - viewportPadding * 2);
+
+        // Keep the picker horizontally centered on the actual date field.
+        const centeredLeft = rect.left + (rect.width - pickerWidth) / 2;
+        const left = Math.max(
+            viewportPadding,
+            Math.min(centeredLeft, window.innerWidth - pickerWidth - viewportPadding)
+        );
+
+        // Prefer opening directly below the date field. If the remaining
+        // viewport is too short, flip above it rather than escaping the screen.
+        const pickerHeight = Math.min(
+            610,
+            Math.max(300, window.innerHeight - 140)
+        );
+        const below = rect.bottom + gap;
+        const above = rect.top - pickerHeight - gap;
+        const top = below + pickerHeight <= window.innerHeight - viewportPadding
+            ? below
+            : Math.max(viewportPadding, above);
+
+        picker.style.width = `${pickerWidth}px`;
+        picker.style.left = `${left}px`;
+        picker.style.top = `${top}px`;
+        picker.style.right = "auto";
+        picker.style.bottom = "auto";
+        picker.style.transform = "none";
+    };
+
     const close = () => {
         if (picker.parentElement !== pickerHome) pickerHome.appendChild(picker);
         picker.classList.remove("is-mobile-portal");
         picker.hidden = true;
+        picker.style.width = "";
+        picker.style.left = "";
+        picker.style.top = "";
+        picker.style.right = "";
+        picker.style.bottom = "";
+        picker.style.transform = "";
         input.setAttribute("aria-expanded", "false");
     };
     const updatePreview = () => {
@@ -267,6 +308,10 @@ document.addEventListener("DOMContentLoaded", () => {
         picker.hidden = false;
         input.setAttribute("aria-expanded", "true");
         render();
+
+        if (isMobilePicker()) {
+            positionMobilePicker();
+        }
     };
 
     if (selected) input.value = format(selected);
@@ -291,4 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!insideField && !insidePicker) close();
     });
     document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+
+    window.addEventListener("resize", positionMobilePicker, { passive: true });
+    window.addEventListener("scroll", positionMobilePicker, { passive: true });
 });
