@@ -78,6 +78,21 @@
         </div>
     </main>
 
+    <svg class="auth-svg-filter" aria-hidden="true" focusable="false">
+        <defs>
+            <filter id="auth-gooey">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur"></feGaussianBlur>
+                <feColorMatrix
+                    in="blur"
+                    mode="matrix"
+                    values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9"
+                    result="goo"
+                ></feColorMatrix>
+                <feComposite in="SourceGraphic" in2="goo" operator="atop"></feComposite>
+            </filter>
+        </defs>
+    </svg>
+
     <div class="auth-noise" aria-hidden="true"></div>
 </section>
 {% endblock %}
