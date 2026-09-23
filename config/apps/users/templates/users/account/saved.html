@@ -1,7 +1,7 @@
 {% extends "users/account_base.html" %}
 {% load static shop_tags %}
 
-{% block title %}علاقه‌مندی‌ها و ذخیره‌ها | BABAEI{% endblock %}
+{% block title %}علاقه‌مندی‌ها | BABAEI{% endblock %}
 {% block body_class %}account-body saved-account-page{% endblock %}
 
 {% block account_content %}
@@ -9,102 +9,38 @@
     <header class="account-page-header saved-page__header">
         <div class="account-page-header__copy">
             <span class="account-page-header__eyebrow">YOUR COLLECTION</span>
-            <h1 class="account-page-title">علاقه‌مندی‌ها و ذخیره‌ها</h1>
-            <p class="account-page-description">محصولاتی که برای خرید یا بررسی دوباره نگه داشته‌ای.</p>
+            <h1 class="account-page-title">علاقه‌مندی‌ها</h1>
+            <p class="account-page-description">محصولاتی که دوست داشته‌ای و برای خرید دوباره نگه داشته‌ای.</p>
         </div>
     </header>
 
-    <div class="saved-tabs" role="tablist">
-        <button type="button" class="saved-tab is-active" data-saved-tab="favorites">علاقه‌مندی‌ها <b>{{ favorite_count }}</b></button>
-        <button type="button" class="saved-tab" data-saved-tab="saved">ذخیره‌شده‌ها <b>{{ saved_count }}</b></button>
-    </div>
+    <section class="shop-reference__catalog account-saved-catalog" id="favorites" aria-labelledby="favorites-title">
+        <div class="shop-reference__results">
+            <div class="account-saved-toolbar">
+                <h2 id="favorites-title">علاقه‌مندی‌های من</h2>
+                <span>{{ favorite_count }} محصول</span>
+            </div>
 
-    <section class="saved-panel is-active" data-saved-panel="favorites">
-        <div class="saved-grid" data-probe="saved-grid">
-            {% for product in favorite_products %}
-                <article class="saved-product">
-                    <a href="{{ product.get_absolute_url }}" class="saved-product__image">
-                        {% with image=product.images.all|first %}
-                            {% if image %}<img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy">{% else %}<span>BABAEI</span>{% endif %}
-                        {% endwith %}
-                    </a>
-                    <div class="saved-product__body">
-                        <span class="saved-product__cat">{{ product.category.name }}</span>
-                        <h2 class="saved-product__title"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h2>
-                        <div class="saved-product__footer">
-                            <strong class="saved-product__price">{{ product.display_price|price }} <small>تومان</small></strong>
-                            <form method="post" action="{% url 'saved:toggle_favorite' product.id %}">
-                                {% csrf_token %}<input type="hidden" name="next" value="{% url 'saved:saved' %}">
-                                <button type="submit" class="saved-product__remove" aria-label="حذف {{ product.name }} از علاقه‌مندی‌ها">
-                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg><span>حذف</span>
-                                </button>
-                            </form>
+            <div class="shop-reference__products" data-shop-products>
+                {% for product in favorite_products %}
+                    {% include "shop/includes/_catalog_card.html" %}
+                {% empty %}
+                    <div class="ac-empty saved-empty">
+                        <div class="ac-empty__art ac-empty__art--heart" aria-hidden="true">
+                            <span class="ac-empty__heart"></span>
                         </div>
+                        <span class="ac-empty__eyebrow">FAVOURITES</span>
+                        <h2>هنوز محصولی به علاقه‌مندی‌ها اضافه نکرده‌ای</h2>
+                        <p>هر محصولی را که دوست داشتی، با قلب روی کارت محصول به اینجا اضافه کن.</p>
+                        <a href="{% url 'shop:index' %}" class="ac-btn ac-btn--primary">مشاهده فروشگاه</a>
                     </div>
-                </article>
-            {% empty %}
-                <div class="ac-empty saved-empty">
-                    <div class="ac-empty__art ac-empty__art--heart" aria-hidden="true">
-                        <span class="ac-empty__heart"></span>
-                    </div>
-                    <span class="ac-empty__eyebrow">FAVOURITES</span>
-                    <h2>هنوز محصولی به علاقه‌مندی‌ها اضافه نکرده‌ای</h2>
-                    <p>هر محصولی را که دوست داشتی، با قلب روی کارت ذخیره کن تا اینجا جمع شود.</p>
-                    <a href="{% url 'shop:index' %}" class="ac-btn ac-btn--primary">مشاهده فروشگاه</a>
-                </div>
-            {% endfor %}
-        </div>
-    </section>
-
-    <section class="saved-panel" data-saved-panel="saved">
-        <div class="saved-grid">
-            {% for product in saved_products %}
-                <article class="saved-product">
-                    <a href="{{ product.get_absolute_url }}" class="saved-product__image">
-                        {% with image=product.images.all|first %}
-                            {% if image %}<img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy">{% else %}<span>BABAEI</span>{% endif %}
-                        {% endwith %}
-                    </a>
-                    <div class="saved-product__body">
-                        <span class="saved-product__cat">{{ product.category.name }}</span>
-                        <h2 class="saved-product__title"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h2>
-                        <div class="saved-product__footer">
-                            <strong class="saved-product__price">{{ product.display_price|price }} <small>تومان</small></strong>
-                            <form method="post" action="{% url 'saved:toggle_saved' product.id %}">
-                                {% csrf_token %}<input type="hidden" name="next" value="{% url 'saved:saved' %}">
-                                <button type="submit" class="saved-product__remove" aria-label="حذف {{ product.name }} از ذخیره‌شده‌ها">
-                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg><span>حذف</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </article>
-            {% empty %}
-                <div class="ac-empty saved-empty">
-                    <div class="ac-empty__art ac-empty__art--bookmark" aria-hidden="true">
-                        <span class="ac-empty__bookmark"></span>
-                    </div>
-                    <span class="ac-empty__eyebrow">SAVED</span>
-                    <h2>هنوز محصولی ذخیره نکرده‌ای</h2>
-                    <p>نشان ذخیره روی کارت محصول، آن را برای بعد در همین بخش نگه می‌دارد.</p>
-                    <a href="{% url 'shop:index' %}" class="ac-btn ac-btn--primary">مشاهده فروشگاه</a>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
     </section>
 </section>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const tabs = document.querySelectorAll('[data-saved-tab]');
-    const panels = document.querySelectorAll('[data-saved-panel]');
-    tabs.forEach(tab => tab.addEventListener('click', () => {
-        const target = tab.dataset.savedTab;
-        tabs.forEach(item => item.classList.toggle('is-active', item === tab));
-        panels.forEach(panel => panel.classList.toggle('is-active', panel.dataset.savedPanel === target));
-    }));
-});
-</script>
+<script src="{% static 'js/pages/shop-cards.js' %}?v=4" defer></script>
 {% endblock %}
