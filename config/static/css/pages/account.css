@@ -2099,3 +2099,62 @@
         flex: 1;
     }
 }
+
+
+/* ==========================================================================
+   20 — JALALI WHEEL / 3D FOCUS
+   ========================================================================== */
+
+.date-wheel__column {
+    position: relative;
+    perspective: 260px;
+    perspective-origin: center center;
+    scrollbar-width: none;
+    overscroll-behavior-y: contain;
+    scroll-snap-type: y proximity;
+    scroll-padding-block: 56px;
+    -ms-overflow-style: none;
+}
+
+.date-wheel__column::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.date-wheel__item {
+    position: relative;
+    transform-origin: center center;
+    will-change: transform, opacity, background-color, color;
+    backface-visibility: hidden;
+    transition:
+        transform 90ms ease-out,
+        opacity 90ms ease-out,
+        background-color 120ms ease-out,
+        color 120ms ease-out,
+        box-shadow 120ms ease-out;
+}
+
+.date-wheel__item.is-wheel-focused {
+    z-index: 3;
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+    font-weight: 900;
+    box-shadow: 0 8px 18px -12px rgba(9, 28, 20, .75);
+}
+
+.date-wheel__item.is-wheel-focused:hover {
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+}
+
+.date-wheel__selection {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .date-wheel__item {
+        transition: background-color 1ms linear, color 1ms linear;
+        transform: none !important;
+    }
+}
