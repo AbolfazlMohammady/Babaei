@@ -8,7 +8,9 @@
  markup below, untouched, until its own pass.
 =============================================================================
 {% endcomment %}
-{% if request.resolver_match.namespace == 'shop' %}
+{% if request.resolver_match.namespace == 'shop'
+      or request.resolver_match.namespace == 'users' and request.resolver_match.url_name == 'login'
+      or request.resolver_match.namespace == 'users' and request.resolver_match.url_name == 'verify_otp' %}
 
     {% include "includes/shop_header.html" %}
 
