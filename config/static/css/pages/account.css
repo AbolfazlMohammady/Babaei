@@ -1895,7 +1895,18 @@
 }
 
 .account-saved-catalog {
+    /* The shop catalog normally reserves its first grid column for filters.
+       Favorites has no filter rail, so the results must span the full shell. */
+    grid-template-columns: minmax(0, 1fr);
     margin-block-start: 2px;
+}
+
+.account-saved-catalog .shop-reference__results {
+    grid-column: 1 / -1;
+}
+
+.account-saved-catalog .shop-reference__products {
+    width: 100%;
 }
 
 .account-saved-toolbar {
