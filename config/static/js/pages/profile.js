@@ -116,6 +116,10 @@ document.addEventListener("DOMContentLoaded", () => {
             ? below
             : Math.max(viewportPadding, above);
 
+        // Reset the logical inset values from the mobile stylesheet first.
+        // Otherwise inset-block-start/end can win over top/bottom and push the
+        // fixed picker back to the viewport edge.
+        picker.style.inset = "auto";
         picker.style.width = `${pickerWidth}px`;
         picker.style.left = `${left}px`;
         picker.style.top = `${top}px`;
