@@ -97,41 +97,15 @@
                 </div>
                 <form method="post" action="{% url 'orders:cart_clear' %}" data-cart-action="clear">
                     {% csrf_token %}
-                    <button class="cart-panel__clear" type="submit">پاک کردن همه</button>
+                    <button class="cart-panel__clear" type="submit">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M6.5 7.5h11"></path>
+                            <path d="M9 7.5V5.8h6v1.7"></path>
+                            <path d="m8 7.5.7 11h6.6l.7-11"></path>
+                        </svg>
+                        <span>پاک کردن همه</span>
+                    </button>
                 </form>
-            </div>
-
-            <div class="cart-panel__items" data-cart-items>
-                {% for item in items %}
-                <article class="cart-line" data-cart-item data-cart-id="{{ item.id }}" data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
-                    <div class="cart-line__content">
-                        <div class="cart-line__top">
-                            <div class="cart-line__identity">
-                                <span class="cart-line__name">{{ item.product.name }}</span>
-                                <span class="cart-line__category">{{ item.product.category.name }}</span>
-                            </div>
-                        </div>
-
-                        <div class="cart-line__meta">
-                            {% if item.variant and item.variant.color %}
-                            <span class="cart-line__color"><i style="--cart-color: {{ item.variant.color.hex_code }}" aria-hidden="true"></i>{{ item.variant.color.name }}</span>
-                            {% endif %}
-                            {% if item.variant and item.variant.size %}<span>{{ item.variant.size.name }}</span>{% endif %}
-                        </div>
-
-                        <div class="cart-line__bottom">
-                            <form method="post" action="{% url 'orders:cart_update' item.id %}" class="cart-quantity" data-cart-action="update" aria-label="تعداد {{ item.product.name }}">
-                                {% csrf_token %}
-                                <input type="hidden" name="quantity" value="{{ item.quantity }}">
-                                <button type="submit" data-quantity-button="-1" data-quantity-minus aria-label="کاهش تعداد" {% if item.quantity <= 1 %}disabled{% endif %}>−</button>
-                                <span class="cart-quantity__value" data-quantity-value data-value="{{ item.quantity }}">{{ item.quantity }}</span>
-                                <button type="submit" data-quantity-button="1" data-quantity-plus aria-label="افزایش تعداد" {% if item.variant and item.quantity >= item.variant.stock_quantity %}disabled{% endif %}>+</button>
-                            </form>
-                            <span class="cart-line__price" data-line-total data-line-value="{{ item.line_total }}">{{ item.line_total|price }} تومان</span>
-                        </div>
-                    </div>
-                </article>
-                {% endfor %}
             </div>
 
             <div class="cart-panel__footer">
