@@ -733,3 +733,70 @@
     height: 0;
     overflow: hidden;
 }
+
+
+/* Verify: centered, single-line English heading and centered SMS copy. */
+.auth-page--verify .auth-header {
+    text-align: center;
+}
+
+.auth-page--verify .auth-brand-id {
+    text-align: center;
+}
+
+.auth-page--verify .auth-header h1 {
+    text-align: center;
+    white-space: nowrap;
+    font-size: clamp(44px, 6vw, 72px);
+    line-height: .95;
+    direction: ltr;
+}
+
+.auth-page--verify .auth-header h1 strong {
+    display: inline;
+}
+
+.auth-page--verify .auth-header p {
+    max-width: none;
+    margin-inline: auto;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.auth-page--verify .auth-form-group--otp {
+    text-align: center;
+}
+
+.auth-page--verify .auth-otp-line {
+    width: min(100%, 520px);
+    margin-inline: auto;
+}
+
+.auth-page--verify .auth-form-group--otp > small {
+    display: block;
+    margin-top: 12px;
+    color: var(--sh-muted);
+    font-size: 10px;
+    text-align: center;
+}
+
+@media (max-width: 700px) {
+    .auth-page--verify .auth-header h1 {
+        font-size: clamp(38px, 12vw, 52px);
+    }
+
+    .auth-page--verify .auth-header p {
+        white-space: nowrap;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 420px) {
+    .auth-page--verify .auth-header h1 {
+        font-size: 36px;
+    }
+
+    .auth-page--verify .auth-header p {
+        font-size: 10px;
+    }
+}
