@@ -124,7 +124,12 @@ class Address(models.Model):
 
     class Meta:
         ordering = ("-is_default", "-id")
-        indexes = [models.Index(fields=("user", "is_default"))]
+        indexes = [
+            models.Index(
+                fields=("user", "-is_default", "-id"),
+                name="users_address_account_list_idx",
+            )
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=("user",),
