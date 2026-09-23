@@ -55,37 +55,10 @@
         <div class="account-content">{% block account_content %}{% endblock %}</div>
     </div>
 </section>
-<footer class="account-shell-footer">
-    <div class="account-shell-footer__inner">
-        <div class="account-shell-footer__top">
-            <section class="account-shell-footer__brand-block">
-                <span class="account-shell-footer__eyebrow">BABAEI ACCOUNT</span>
-                <strong class="account-shell-footer__brand">BABAEI</strong>
-                <p>فضای شخصی تو برای مدیریت اطلاعات، آدرس‌ها و علاقه‌مندی‌های فروشگاه.</p>
-                <div class="account-shell-footer__chips" aria-label="امکانات حساب">
-                    <span>حساب شخصی</span>
-                    <span>علاقه‌مندی‌ها</span>
-                </div>
-            </section>
-            <nav class="account-shell-footer__group" aria-label="دسترسی سریع">
-                <strong>دسترسی سریع</strong>
-                <a href="{% url 'shop:index' %}">فروشگاه</a>
-                <a href="{% url 'users:profile' %}">اطلاعات شخصی</a>
-                <a href="{% url 'users:addresses' %}">آدرس‌ها</a>
-                <a href="{% url 'saved:saved' %}">علاقه‌مندی‌ها</a>
-            </nav>
-            <div class="account-shell-footer__group">
-                <strong>راهنما و ارتباط</strong>
-                <a href="#">پشتیبانی</a>
-                <a href="#">حریم خصوصی</a>
-                <span class="account-shell-footer__note">هرجا در حساب کاربری به مشکل خوردی، از بخش پشتیبانی کمک بگیر.</span>
-            </div>
-        </div>
-        <div class="account-shell-footer__bottom">
-            <span>© BABAEI — همه حقوق محفوظ است.</span>
-            <span class="account-shell-footer__mark">B</span>
-        </div>
-    </div>
-</footer>
+{% comment %}
+The account shell used to carry its own footer here, which meant two footers on
+every account page. The site footer below covers the same ground — the shop, the
+account links and favourites — so this one is gone rather than duplicated.
+{% endcomment %}
 {% endwith %}
 {% endblock %}
