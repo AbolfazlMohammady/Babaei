@@ -218,7 +218,7 @@ const setupSiteFooter = () => {
                         return;
                     }
 
-                    blocks.forEach((block) => block.classList.add("is-revealed"));
+                    footer.classList.add("is-visible");
                     revealer.disconnect();
                 });
             }, { rootMargin: "0px 0px -18% 0px" });
