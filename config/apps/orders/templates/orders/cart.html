@@ -5,18 +5,68 @@
 {% block body_class %}cart-page{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/cart.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/pages/cart.css' %}?v=5">
 {% endblock %}
 
 {% block content %}
 <div class="cart-shell" data-cart-page>
     {% if items %}
     <div class="cart-checkout-layout">
-        <div class="cart-page-spacer" aria-hidden="true">
-            <span class="cart-page-spacer__eyebrow">BABAEI / BAG</span>
-            <h1>سبد خرید</h1>
-            <p>محصولات انتخاب‌شده‌ات را بررسی کن و تعداد هر کالا را تغییر بده.</p>
-        </div>
+        <!-- Reference component: products on the right, cart on the left. -->
+        <section class="cart-products" aria-label="محصولات سبد خرید">
+            <div class="cart-products__intro">
+                <span class="cart-products__eyebrow">BABAEI / BAG</span>
+                <h1>سبد خرید</h1>
+                <p>محصولات انتخاب‌شده‌ات را بررسی کن و تعداد هر کالا را تغییر بده.</p>
+            </div>
+
+            <div class="cart-products__list">
+                {% for item in items %}
+                <article class="cart-product-card" data-cart-item data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
+                    <a class="cart-product-card__image" href="{{ item.product.get_absolute_url }}" aria-label="{{ item.product.name }}">
+                        {% if item.primary_image_url %}
+                        <img src="{{ item.primary_image_url }}" alt="{{ item.primary_image_alt|default:item.product.name }}" loading="lazy" decoding="async">
+                        {% else %}
+                        <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ item.product.name }}" loading="lazy" decoding="async">
+                        {% endif %}
+                    </a>
+
+                    <div class="cart-product-card__info">
+                        <div class="cart-product-card__title-row">
+                            <div class="cart-product-card__title">
+                                <h2>{{ item.product.name }}</h2>
+                                <span>{{ item.product.category.name }}</span>
+                            </div>
+                            <span class="cart-product-card__price">{{ item.unit_price|price }} تومان</span>
+                        </div>
+
+                        <div class="cart-product-card__meta">
+                            {% if item.variant and item.variant.color %}
+                            <span class="cart-product-card__color">
+                                <i style="--cart-color: {{ item.variant.color.hex_code }}" aria-hidden="true"></i>
+                                {{ item.variant.color.name }}
+                            </span>
+                            {% endif %}
+                            {% if item.variant and item.variant.size %}
+                            <span>{{ item.variant.size.name }}</span>
+                            {% endif %}
+                            {% if item.variant and item.variant.sku %}
+                            <span dir="ltr">{{ item.variant.sku }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <form method="post" action="{% url 'orders:cart_update' item.id %}" class="cart-product-card__action" data-cart-action="update">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="{{ item.quantity }}">
+                        <button type="submit" data-quantity-button="-1" data-quantity-minus aria-label="کاهش تعداد" {% if item.quantity <= 1 %}disabled{% endif %}>−</button>
+                        <span data-quantity-value data-value="{{ item.quantity }}">{{ item.quantity }}</span>
+                        <button type="submit" data-quantity-button="1" data-quantity-plus aria-label="افزایش تعداد" {% if item.variant and item.quantity >= item.variant.stock_quantity %}disabled{% endif %}>+</button>
+                    </form>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
 
         <aside class="cart-panel" data-cart-summary aria-label="سبد خرید">
             <div class="cart-panel__header">
@@ -35,7 +85,7 @@
 
             <div class="cart-panel__items" data-cart-items>
                 {% for item in items %}
-                <article class="cart-line" data-cart-item data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
+                <article class="cart-line" data-cart-line-id="{{ item.id }}">
                     <div class="cart-line__content">
                         <div class="cart-line__top">
                             <div class="cart-line__identity">
@@ -46,43 +96,26 @@
                             <form method="post" action="{% url 'orders:cart_remove' item.id %}" data-cart-action="remove">
                                 {% csrf_token %}
                                 <button class="cart-line__remove" type="submit" aria-label="حذف {{ item.product.name }}">
-                                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M6 6l12 12M18 6L6 18"></path>
-                                    </svg>
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
                                 </button>
                             </form>
                         </div>
 
                         <div class="cart-line__meta">
-                            {% if item.variant %}
-                                {% if item.variant.size %}
-                                <span>{{ item.variant.size.name }}</span>
-                                {% endif %}
-                                {% if item.variant.color %}
-                                <span class="cart-line__color">
-                                    <i style="--cart-color: {{ item.variant.color.hex_code }}" aria-hidden="true"></i>
-                                    {{ item.variant.color.name }}
-                                </span>
-                                {% endif %}
-                                {% if item.variant.sku %}
-                                <span dir="ltr">{{ item.variant.sku }}</span>
-                                {% endif %}
+                            {% if item.variant and item.variant.color %}
+                            <span class="cart-line__color"><i style="--cart-color: {{ item.variant.color.hex_code }}" aria-hidden="true"></i>{{ item.variant.color.name }}</span>
                             {% endif %}
+                            {% if item.variant and item.variant.size %}<span>{{ item.variant.size.name }}</span>{% endif %}
                         </div>
 
                         <div class="cart-line__bottom">
                             <form method="post" action="{% url 'orders:cart_update' item.id %}" class="cart-quantity" data-cart-action="update" aria-label="تعداد {{ item.product.name }}">
                                 {% csrf_token %}
                                 <input type="hidden" name="quantity" value="{{ item.quantity }}">
-                                <button type="submit" data-quantity-button="-1" data-quantity-minus aria-label="کاهش تعداد" {% if item.quantity <= 1 %}disabled{% endif %}>
-                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg>
-                                </button>
+                                <button type="submit" data-quantity-button="-1" data-quantity-minus aria-label="کاهش تعداد" {% if item.quantity <= 1 %}disabled{% endif %}>−</button>
                                 <span class="cart-quantity__value" data-quantity-value data-value="{{ item.quantity }}">{{ item.quantity }}</span>
-                                <button type="submit" data-quantity-button="1" data-quantity-plus aria-label="افزایش تعداد" {% if item.variant and item.quantity >= item.variant.stock_quantity %}disabled{% endif %}>
-                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
-                                </button>
+                                <button type="submit" data-quantity-button="1" data-quantity-plus aria-label="افزایش تعداد" {% if item.variant and item.quantity >= item.variant.stock_quantity %}disabled{% endif %}>+</button>
                             </form>
-
                             <span class="cart-line__price" data-line-total data-line-value="{{ item.line_total }}">{{ item.line_total|price }} تومان</span>
                         </div>
                     </div>
@@ -109,10 +142,7 @@
 
     <section class="cart-empty" data-cart-empty{% if items %} hidden{% endif %}>
         <div class="cart-empty__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-                <path d="M4 6h2l1.5 9.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 1.9-1.5L20 9H7"></path>
-                <path d="M9 19.5h.01M18 19.5h.01"></path>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M4 6h2l1.5 9.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 1.9-1.5L20 9H7"></path><path d="M9 19.5h.01M18 19.5h.01"></path></svg>
         </div>
         <span class="cart-empty__eyebrow">YOUR BAG IS EMPTY</span>
         <h2>سبد خریدت خالیه</h2>
@@ -123,5 +153,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pages/cart.js' %}?v=3" defer></script>
+<script src="{% static 'js/pages/cart.js' %}?v=4" defer></script>
 {% endblock %}
