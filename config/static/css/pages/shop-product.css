@@ -74,13 +74,17 @@ body.product-detail-page {
    01 — PAGE FRAME
    ========================================================================== */
 
-/* A warm near-white: brighter than the store's cream, and the surface the
-   photo and the white panels are meant to sit on. Full-bleed, so the only
-   colour change is between the nav and the footer — the nav, the dock and the
-   footer stay exactly as every other page shows them. One token, so the depth
-   is a one-line change. */
+/* TWO surfaces, not two shades of white. `--pdp-stage` is the page: a warm
+   light sand, deeper than the nav's cream so the bar reads as a bar, and deep
+   enough that the panels on it are unmistakable. `--pdp-panel` is every block
+   the page builds — cards, chips, wells — and it is actually white. Chasing a
+   "brighter" page tone while the panels stayed off-white is what flattened the
+   whole page into one sheet of paper: nothing was distinguishable.
+   Both are single tokens. */
 body.product-detail-page {
-    --pdp-stage: #f5f3ee;
+    --pdp-stage: #e9e4d9;
+    --pdp-panel: #ffffff;
+    --pdp-panel-line: var(--sh-line-strong);
 }
 
 body.product-detail-page .pd {
@@ -173,7 +177,7 @@ body.product-detail-page .pd-media__frame img {
     max-width: 100%;
     max-height: min(58vh, 460px);
     border-radius: var(--pdp-radius-card);
-    background: var(--sh-cream-2);
+    background: var(--pdp-panel);
 }
 
 body.product-detail-page .pd-media__frame picture {
@@ -244,7 +248,7 @@ body.product-detail-page .pd-thumb {
     scroll-snap-align: center;
     border: 2px solid transparent;
     border-radius: 16px;
-    background: var(--sh-cream-2);
+    background: var(--pdp-panel);
     box-shadow: 0 8px 18px -14px rgba(9, 28, 20, .5);
     opacity: .62;
     cursor: pointer;
@@ -340,7 +344,7 @@ body.product-detail-page .product-save-button {
     padding: 0;
     border: 1px solid var(--sh-line);
     border-radius: var(--sh-radius-sm);
-    background: var(--sh-cream-2);
+    background: var(--pdp-panel);
     color: var(--pdp-ink-2);
     cursor: pointer;
     transition: color var(--sh-fast), border-color var(--sh-fast), background var(--sh-fast);
@@ -530,7 +534,7 @@ body.product-detail-page .size-option {
     padding-inline: 14px;
     border: 1px solid var(--sh-line);
     border-radius: var(--pdp-radius-control);
-    background: var(--sh-cream-2);
+    background: var(--pdp-panel);
     color: var(--pdp-ink-2);
     font: inherit;
     font-size: 12.5px;
@@ -623,7 +627,7 @@ body.product-detail-page .pd-qty__control {
     overflow: hidden;
     border: 1px solid var(--sh-line);
     border-radius: var(--pdp-radius-control);
-    background: var(--sh-cream-2);
+    background: var(--pdp-panel);
 }
 
 body.product-detail-page .pd-qty__control button {
@@ -750,9 +754,10 @@ body.product-detail-page .pd-perks {
     gap: 2px;
     margin-top: clamp(26px, 3.6vw, 42px);
     padding: clamp(10px, 1.6vw, 16px) clamp(16px, 2.2vw, 24px);
-    border: 1px solid var(--sh-line);
+    border: 1px solid var(--pdp-panel-line);
     border-radius: var(--pdp-radius-card);
-    background: var(--sh-cream-2);
+    background: var(--pdp-panel);
+    box-shadow: var(--pdp-shadow-soft);
 }
 
 body.product-detail-page .pd-perk {
@@ -858,9 +863,12 @@ body.product-detail-page .pd-studio {
     gap: clamp(16px, 2.4vw, 28px);
     margin-top: clamp(26px, 3.6vw, 42px);
     padding: clamp(20px, 3vw, 32px);
-    border: 1px solid rgba(20, 82, 60, .16);
+    border: 1px solid rgba(20, 82, 60, .22);
     border-radius: var(--pdp-radius-card);
-    background: linear-gradient(135deg, rgba(20, 82, 60, .07) 0%, rgba(143, 174, 156, .10) 100%);
+    background:
+        linear-gradient(135deg, rgba(20, 82, 60, .09) 0%, rgba(143, 174, 156, .16) 100%),
+        var(--pdp-panel);
+    box-shadow: var(--pdp-shadow-soft);
 }
 
 body.product-detail-page .pd-studio__copy {
@@ -920,7 +928,7 @@ body.product-detail-page .product-toast {
     padding: 12px 20px;
     border: 1px solid rgba(20, 82, 60, .22);
     border-radius: var(--pdp-radius-control);
-    background: var(--sh-cream-2);
+    background: var(--pdp-panel);
     color: var(--pdp-ink);
     font-size: 13px;
     font-weight: 700;
