@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}ورود و ساخت حساب | BABAEI{% endblock %}
-{% block meta_description %}ورود یا ساخت حساب کاربری BABAEI با شماره موبایل و کد تأیید پیامکی.{% endblock %}
+{% block title %}ورود | BABAEI{% endblock %}
+{% block meta_description %}ورود یا ساخت حساب BABAEI با شماره موبایل.{% endblock %}
 {% block body_class %}auth-body shop-page{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=6">
 {% endblock %}
 
 {% block site_optional_css %}
@@ -15,146 +15,96 @@
 {% endblock %}
 
 {% block content %}
-{% comment %}
-One object, two states. Sign-in and sign-up are the same action on this site
-(phone number + OTP; there is no separate register route and no password), so
-the two states are two framings of one flow, not two different forms.
-
-The composition: a cream stage carrying the form, and a forest "field" carrying
-the invitation to the other state. Switching the state sweeps the field across
-the box the stage occupies and swaps the two halves of the object. Nothing
-invented, nothing faked: every control here posts to the real endpoints.
-{% endcomment %}
 <section class="auth-page" aria-label="ورود و ثبت‌نام">
-    <div class="auth-shell" data-auth-shell data-auth-state="signin">
-        <div class="auth-swap">
-            {% comment %}
-            The stage: both states stacked in the same cell, cross-fading. The
-            off-canvas one carries aria-hidden + inert, so it is out of the
-            accessibility tree and out of the tab order.
-            {% endcomment %}
-            <div class="auth-stage">
-                <section class="auth-pane" data-auth-pane data-auth-for="signin"
-                         id="auth-pane-signin" aria-labelledby="auth-title-signin"
-                         tabindex="-1">
-                    <div class="auth-header">
-                        <span class="auth-eyebrow" dir="ltr">Sign in</span>
-                        <h1 class="auth-title" id="auth-title-signin">ورود به حساب</h1>
-                        <p class="auth-lead">شماره موبایل خود را وارد کنید تا کد تأیید برای شما پیامک شود.</p>
-                    </div>
-
-                    <form method="post" class="auth-form" novalidate data-auth-phone-form>
-                        {% csrf_token %}
-
-                        <div class="auth-row">
-                            <label class="auth-label" for="phone">شماره موبایل</label>
-                            <div class="auth-phone">
-                                <span class="auth-phone__prefix" aria-hidden="true">+98</span>
-                                <input
-                                    class="auth-phone__input"
-                                    id="phone"
-                                    name="phone"
-                                    type="tel"
-                                    inputmode="numeric"
-                                    autocomplete="tel"
-                                    maxlength="11"
-                                    placeholder="912 345 6789"
-                                    value="{{ phone|default:'' }}"
-                                    aria-describedby="phone-hint"
-                                    required
-                                >
-                            </div>
-                            <small id="phone-hint" class="auth-hint">شماره را بدون صفر ابتدایی و بدون فاصله وارد کنید.</small>
-                        </div>
-
-                        <button class="auth-submit" type="submit">
-                            <span>دریافت کد تأیید</span>
-                            <span class="auth-submit__arrow" aria-hidden="true">←</span>
-                        </button>
-                    </form>
-                </section>
-
-                <section class="auth-pane" data-auth-pane data-auth-for="signup"
-                         id="auth-pane-signup" aria-labelledby="auth-title-signup"
-                         tabindex="-1" aria-hidden="true" inert>
-                    <div class="auth-header">
-                        <span class="auth-eyebrow" dir="ltr">New here?</span>
-                        <h2 class="auth-title" id="auth-title-signup">ساخت حساب</h2>
-                        <p class="auth-lead">
-                            ثبت‌نام جداگانه‌ای وجود ندارد. شماره موبایل‌تان را وارد می‌کنید و کد تأیید را
-                            می‌زنید؛ حساب همان لحظه ساخته می‌شود.
-                        </p>
-                    </div>
-
-                    <ul class="auth-facts">
-                        <li class="auth-facts__item">بدون رمز عبور؛ فقط شماره موبایل و کد پیامکی.</li>
-                        <li class="auth-facts__item">حساب با اولین کد تأییدِ درست ساخته می‌شود.</li>
-                        <li class="auth-facts__item">سفارش‌ها و آدرس‌ها روی همین حساب می‌مانند.</li>
-                    </ul>
-
-                    {% comment %}
-                    A real button, not a form: the phone entry lives in the other
-                    state of this same object, so this routes there and puts the
-                    caret in the field instead of faking a second form.
-                    {% endcomment %}
-                    <button class="auth-submit" type="button" data-auth-go="signin"
-                            data-auth-focus="phone" aria-expanded="true"
-                            aria-controls="auth-pane-signin">
-                        <span>وارد کردن شماره موبایل</span>
-                        <span class="auth-submit__arrow" aria-hidden="true">←</span>
-                    </button>
-                </section>
-
-                <div class="auth-meta">
-                    <p class="auth-policy">
-                        با ادامه، <a href="#">شرایط استفاده</a> و <a href="#">حریم خصوصی</a> را می‌پذیرید.
-                    </p>
-                    <a href="/" class="auth-back-link">بازگشت به فروشگاه</a>
-                </div>
+    <div class="auth-layout">
+        <aside class="auth-editorial" aria-label="BABAEI">
+            <div class="auth-editorial__top">
+                <span>01</span><i></i><b>ACCOUNT</b>
             </div>
 
-            {% comment %}
-            The field: the only decorative surface on the page, and the switch.
-            It sits in one half of the object at rest and sweeps into the other
-            when the state changes — the halves invert, exactly the way the
-            reference turns over, but with real text on it.
-            {% endcomment %}
-            <aside class="auth-field">
-                <div class="auth-invite" data-auth-for="signin">
-                    <span class="auth-kicker" dir="ltr">New here?</span>
-                    <p class="auth-quote">تازه آمده‌اید؟</p>
-                    <p class="auth-note">
-                        برای ساخت حساب، شماره موبایل کافی است؛ رمز عبوری در کار نیست و
-                        حساب با اولین کد تأیید ساخته می‌شود.
-                    </p>
-                    <button class="auth-invite__action" type="button" data-auth-go="signup"
-                            aria-expanded="false" aria-controls="auth-pane-signup">
-                        <span>ساخت حساب</span>
-                        <span class="auth-invite__arrow" aria-hidden="true">←</span>
-                    </button>
-                    <span class="auth-field__foot" dir="ltr">Wear Your Story.</span>
+            <div class="auth-editorial__center">
+                <p class="auth-kicker">WEAR YOUR STORY</p>
+                <h1>حساب تو،<em>ادامه‌ی</em>داستان توست.</h1>
+                <p class="auth-editorial__copy">
+                    بدون رمز عبور و بدون فرم‌های اضافه.
+                    فقط شماره موبایل، یک کد کوتاه و تمام.
+                </p>
+            </div>
+
+            <div class="auth-editorial__bottom">
+                <span>EST. 2026</span><i></i><span>IRAN</span>
+            </div>
+        </aside>
+
+        <section class="auth-card" aria-labelledby="auth-title">
+            <div class="auth-card__top">
+                <div>
+                    <span class="auth-card__eyebrow">BABAEI ACCOUNT</span>
+                    <span class="auth-card__step">STEP 01 / 02</span>
+                </div>
+                <span class="auth-card__mark">B</span>
+            </div>
+
+            <div class="auth-mode" role="tablist" aria-label="نوع حساب">
+                <button type="button" class="is-active"
+                        data-auth-mode-button="signin"
+                        role="tab" aria-selected="true">ورود</button>
+                <button type="button"
+                        data-auth-mode-button="signup"
+                        role="tab" aria-selected="false">ساخت حساب</button>
+            </div>
+
+            <div class="auth-heading">
+                <span class="auth-heading__number">/ 01</span>
+                <p class="auth-heading__kicker" data-auth-copy="eyebrow">SIGN IN</p>
+                <h2 id="auth-title" data-auth-copy="title">وارد حساب شو.</h2>
+                <p data-auth-copy="lead">
+                    شماره موبایلت را وارد کن؛ کد تأیید برایت ارسال می‌شود.
+                </p>
+            </div>
+
+            <form method="post" class="auth-form" novalidate data-auth-phone-form>
+                {% csrf_token %}
+                <div class="auth-field-row">
+                    <label class="auth-label" for="phone">شماره موبایل</label>
+
+                    <div class="auth-phone">
+                        <span class="auth-phone__prefix">+98</span>
+                        <input
+                            class="auth-phone__input"
+                            id="phone"
+                            name="phone"
+                            type="tel"
+                            inputmode="numeric"
+                            autocomplete="tel"
+                            maxlength="11"
+                            placeholder="912 345 6789"
+                            value="{{ phone|default:'' }}"
+                            required
+                            dir="ltr"
+                        >
+                    </div>
+
+                    <div class="auth-field-meta">
+                        <small>بدون صفر ابتدایی و بدون فاصله</small>
+                        <b>PHONE</b>
+                    </div>
                 </div>
 
-                <div class="auth-invite" data-auth-for="signup">
-                    <span class="auth-kicker" dir="ltr">One of us?</span>
-                    <p class="auth-quote">قبلاً اینجا بوده‌اید؟</p>
-                    <p class="auth-note">
-                        همان شماره موبایل و همان کد تأیید شما را به حساب‌تان برمی‌گرداند؛
-                        نیازی به ساختن حساب تازه نیست.
-                    </p>
-                    <button class="auth-invite__action" type="button" data-auth-go="signin"
-                            aria-expanded="true" aria-controls="auth-pane-signin">
-                        <span>ورود به حساب</span>
-                        <span class="auth-invite__arrow" aria-hidden="true">←</span>
-                    </button>
-                    <span class="auth-field__foot" dir="ltr">Wear Your Story.</span>
-                </div>
-            </aside>
-        </div>
+                <button class="auth-submit" type="submit">
+                    <span>ادامه</span><strong>↗</strong>
+                </button>
+            </form>
+
+            <div class="auth-card__foot">
+                <p>با ادامه، شرایط استفاده و حریم خصوصی BABAEI را می‌پذیری.</p>
+                <a href="{% url 'shop:index' %}">بازگشت به فروشگاه</a>
+            </div>
+        </section>
     </div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/auth-switch.js' %}?v=2" defer></script>
+<script src="{% static 'js/auth-switch.js' %}?v=3" defer></script>
 {% endblock %}
