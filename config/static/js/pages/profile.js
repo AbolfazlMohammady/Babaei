@@ -89,9 +89,53 @@ document.addEventListener("DOMContentLoaded", () => {
     const pickerHome = picker.parentElement;
     const isMobilePicker = () => window.matchMedia("(max-width: 700px)").matches;
 
+    const positionMobilePicker = () => {
+        if (!isMobilePicker() || picker.hidden || picker.parentElement !== document.body) return;
+
+        const rect = input.getBoundingClientRect();
+        const padding = 12;
+        const gap = 8;
+        const width = Math.min(352, window.innerWidth - padding * 2);
+
+        // Mobile picker is intentionally viewport-anchored and horizontally
+        // centered. Its vertical position follows the date field.
+        const height = Math.min(
+            picker.scrollHeight || 610,
+            window.innerHeight - padding * 2
+        );
+
+        const below = rect.bottom + gap;
+        const above = rect.top - height - gap;
+        const top = below + height <= window.innerHeight - padding
+            ? below
+            : Math.max(padding, above);
+
+        picker.style.setProperty("position", "fixed", "important");
+        picker.style.setProperty("display", "block", "important");
+        picker.style.setProperty("width", `${width}px`, "important");
+        picker.style.setProperty("max-width", `${width}px`, "important");
+        picker.style.setProperty("left", "50%", "important");
+        picker.style.setProperty("right", "auto", "important");
+        picker.style.setProperty("top", `${top}px`, "important");
+        picker.style.setProperty("bottom", "auto", "important");
+        picker.style.setProperty("inset-inline-start", "50%", "important");
+        picker.style.setProperty("inset-inline-end", "auto", "important");
+        picker.style.setProperty("inset-block-start", `${top}px`, "important");
+        picker.style.setProperty("inset-block-end", "auto", "important");
+        picker.style.setProperty("transform", "translateX(-50%)", "important");
+    };
+
     const close = () => {
+        if (picker.parentElement !== pickerHome) pickerHome.appendChild(picker);
         picker.classList.remove("is-mobile-portal");
         picker.hidden = true;
+
+        [
+            "position", "display", "width", "max-width", "left", "right", "top",
+            "bottom", "inset-inline-start", "inset-inline-end",
+            "inset-block-start", "inset-block-end", "transform"
+        ].forEach(property => picker.style.removeProperty(property));
+
         input.setAttribute("aria-expanded", "false");
     };
     const updatePreview = () => {
@@ -259,12 +303,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!picker.hidden) return;
 
         if (isMobilePicker()) {
+            document.body.appendChild(picker);
             picker.classList.add("is-mobile-portal");
         }
 
         picker.hidden = false;
         input.setAttribute("aria-expanded", "true");
         render();
+
+        if (isMobilePicker()) {
+            requestAnimationFrame(positionMobilePicker);
+        }
     };
 
     if (selected) input.value = format(selected);
@@ -290,4 +339,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
 
+    window.addEventListener("resize", positionMobilePicker, { passive: true });
+    window.addEventListener("scroll", positionMobilePicker, { passive: true });
 });
