@@ -2,11 +2,11 @@
 {% load static %}
 
 {% block title %}ورود | BABAEI{% endblock %}
-{% block meta_description %}ورود یا ساخت حساب BABAEI با شماره موبایل.{% endblock %}
+{% block meta_description %}ورود به حساب BABAEI با شماره موبایل.{% endblock %}
 {% block body_class %}auth-body shop-page{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=6">
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}?v=7">
 {% endblock %}
 
 {% block site_optional_css %}
@@ -15,96 +15,64 @@
 {% endblock %}
 
 {% block content %}
-<section class="auth-page" aria-label="ورود و ثبت‌نام">
-    <div class="auth-layout">
-        <aside class="auth-editorial" aria-label="BABAEI">
-            <div class="auth-editorial__top">
-                <span>01</span><i></i><b>ACCOUNT</b>
-            </div>
+<section class="auth-page" aria-label="ورود به حساب">
+    <div class="auth-card" aria-labelledby="auth-title">
+        <div class="auth-card__top">
+            <span class="auth-card__eyebrow">ACCOUNT</span>
+            <span class="auth-card__mark" aria-hidden="true">B</span>
+        </div>
 
-            <div class="auth-editorial__center">
-                <p class="auth-kicker">WEAR YOUR STORY</p>
-                <h1>حساب تو،<em>ادامه‌ی</em>داستان توست.</h1>
-                <p class="auth-editorial__copy">
-                    بدون رمز عبور و بدون فرم‌های اضافه.
-                    فقط شماره موبایل، یک کد کوتاه و تمام.
-                </p>
-            </div>
+        <div class="auth-heading">
+            <span class="auth-heading__line" aria-hidden="true"></span>
+            <p class="auth-heading__kicker">BABAEI</p>
+            <h1 id="auth-title">ورود به حساب</h1>
+            <p class="auth-heading__lead">
+                شماره موبایل خود را وارد کنید تا کد تأیید برای شما ارسال شود.
+            </p>
+        </div>
 
-            <div class="auth-editorial__bottom">
-                <span>EST. 2026</span><i></i><span>IRAN</span>
-            </div>
-        </aside>
+        <form method="post" class="auth-form" novalidate data-auth-phone-form>
+            {% csrf_token %}
 
-        <section class="auth-card" aria-labelledby="auth-title">
-            <div class="auth-card__top">
-                <div>
-                    <span class="auth-card__eyebrow">BABAEI ACCOUNT</span>
-                    <span class="auth-card__step">STEP 01 / 02</span>
-                </div>
-                <span class="auth-card__mark">B</span>
-            </div>
+            <div class="auth-field-row">
+                <label class="auth-label" for="phone">شماره موبایل</label>
 
-            <div class="auth-mode" role="tablist" aria-label="نوع حساب">
-                <button type="button" class="is-active"
-                        data-auth-mode-button="signin"
-                        role="tab" aria-selected="true">ورود</button>
-                <button type="button"
-                        data-auth-mode-button="signup"
-                        role="tab" aria-selected="false">ساخت حساب</button>
-            </div>
-
-            <div class="auth-heading">
-                <span class="auth-heading__number">/ 01</span>
-                <p class="auth-heading__kicker" data-auth-copy="eyebrow">SIGN IN</p>
-                <h2 id="auth-title" data-auth-copy="title">وارد حساب شو.</h2>
-                <p data-auth-copy="lead">
-                    شماره موبایلت را وارد کن؛ کد تأیید برایت ارسال می‌شود.
-                </p>
-            </div>
-
-            <form method="post" class="auth-form" novalidate data-auth-phone-form>
-                {% csrf_token %}
-                <div class="auth-field-row">
-                    <label class="auth-label" for="phone">شماره موبایل</label>
-
-                    <div class="auth-phone">
-                        <span class="auth-phone__prefix">+98</span>
-                        <input
-                            class="auth-phone__input"
-                            id="phone"
-                            name="phone"
-                            type="tel"
-                            inputmode="numeric"
-                            autocomplete="tel"
-                            maxlength="11"
-                            placeholder="912 345 6789"
-                            value="{{ phone|default:'' }}"
-                            required
-                            dir="ltr"
-                        >
-                    </div>
-
-                    <div class="auth-field-meta">
-                        <small>بدون صفر ابتدایی و بدون فاصله</small>
-                        <b>PHONE</b>
-                    </div>
+                <div class="auth-phone">
+                    <span class="auth-phone__prefix">+98</span>
+                    <input
+                        class="auth-phone__input"
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        inputmode="numeric"
+                        autocomplete="tel"
+                        maxlength="11"
+                        placeholder="912 345 6789"
+                        value="{{ phone|default:'' }}"
+                        required
+                        dir="ltr"
+                    >
                 </div>
 
-                <button class="auth-submit" type="submit">
-                    <span>ادامه</span><strong>↗</strong>
-                </button>
-            </form>
-
-            <div class="auth-card__foot">
-                <p>با ادامه، شرایط استفاده و حریم خصوصی BABAEI را می‌پذیری.</p>
-                <a href="{% url 'shop:index' %}">بازگشت به فروشگاه</a>
+                <small class="auth-hint">
+                    شماره را بدون صفر ابتدایی وارد کنید.
+                </small>
             </div>
-        </section>
+
+            <button class="auth-submit" type="submit">
+                <span>دریافت کد تأیید</span>
+                <span aria-hidden="true">←</span>
+            </button>
+        </form>
+
+        <div class="auth-card__foot">
+            <span>ورود فقط با شماره موبایل انجام می‌شود.</span>
+            <a href="{% url 'shop:index' %}">بازگشت به فروشگاه</a>
+        </div>
     </div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/auth-switch.js' %}?v=3" defer></script>
+<script src="{% static 'js/auth-switch.js' %}?v=4" defer></script>
 {% endblock %}
