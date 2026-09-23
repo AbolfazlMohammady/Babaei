@@ -110,6 +110,9 @@ def merge_guest_cart(request, user) -> None:
         guest.save(update_fields=["status", "updated_at"])
     request.session.pop(CART_SESSION_KEY, None)
     invalidate_product_cart_cache(request)
+    merged_count = user_cart.item_count
+    request.session[CART_COUNT_SESSION_KEY] = merged_count
+    request._babaei_cart_item_count = merged_count
 
 
 def add_to_cart(request, *, product, variant=None, quantity=1) -> CartItem:
