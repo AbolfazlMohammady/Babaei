@@ -7,6 +7,7 @@ from django.core.cache import cache
 from django.db.models import Avg, Case, CharField, Count, Exists, F, IntegerField, Max, Min, OuterRef, Prefetch, Q, Subquery, Value, When
 from django.db.models.functions import Concat
 from django.http import HttpResponsePermanentRedirect
+from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.safestring import mark_safe
 from django.views import View
@@ -305,6 +306,7 @@ class ProductCommentAddView(LoginRequiredMixin, View):
         body = (request.POST.get("body") or "").strip()
         rating_raw = (request.POST.get("rating") or "").strip()
         if not body:
+            messages.error(request, "متن نظر را وارد کنید.")
             return redirect(f"{product.get_absolute_url()}#comments")
         rating = None
         if rating_raw:
@@ -312,11 +314,13 @@ class ProductCommentAddView(LoginRequiredMixin, View):
                 rating = int(rating_raw)
             except (TypeError, ValueError):
                 rating = None
-            if rating is not None and not 1 <= rating <= 5:
-                rating = None
+            if rating is None or not 1 <= rating <= 5:
+                messages.error(request, "امتیاز باید بین ۱ تا ۵ باشد.")
+                return redirect(f"{product.get_absolute_url()}#comments")
         from apps.orders.models import Order, OrderItem
         verified_purchase = OrderItem.objects.filter(order__user=request.user, order__status=Order.Status.DELIVERED, product=product).exists()
         ProductComment.objects.create(product=product, user=request.user, body=body[:2000], rating=rating, verified_purchase=verified_purchase, status=ProductComment.Status.PENDING)
+        messages.success(request, "نظر شما ثبت شد و پس از بررسی نمایش داده می‌شود.")
         return redirect(f"{product.get_absolute_url()}#comments")
 
 
