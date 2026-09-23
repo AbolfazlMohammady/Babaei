@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models import Count
 from django.utils import timezone
 from django.utils.html import format_html
@@ -73,13 +73,13 @@ def mark_paid(modeladmin, request, queryset):
             process_manual_payment(order=order, success=True)
         except ValueError as exc:
             failed += 1
-            modeladmin.message_user(request, f"{order.number}: {exc}", level="ERROR")
+            modeladmin.message_user(request, f"{order.number}: {exc}", level=messages.ERROR)
         else:
             succeeded += 1
     if succeeded:
         modeladmin.message_user(request, f"{succeeded} سفارش به‌عنوان پرداخت‌شده ثبت شد.")
     if failed:
-        modeladmin.message_user(request, f"{failed} سفارش به دلیل موجودی یا وضعیت سفارش ثبت نشد.", level="WARNING")
+        modeladmin.message_user(request, f"{failed} سفارش به دلیل موجودی یا وضعیت سفارش ثبت نشد.", level=messages.WARNING)
 
 
 @admin.action(description="انتقال به ارسال‌شده")
