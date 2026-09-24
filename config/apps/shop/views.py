@@ -388,6 +388,30 @@ class ProductDetailView(DetailView):
         context["featured_comments"] = list(approved_comments[:3])
         context["comment_count"] = comment_summary["count"] or 0
         context["comment_average"] = comment_summary["average"]
+        # A small horizontal shelf below the product details. Keep it lightweight:
+        # reuse the catalog card data and show a handful of random active products.
+        similar_variant_price, similar_variant_compare_price, similar_variant_max_price = price_annotations()
+        similar_annotations = card_annotations(self.request)
+        similar_images = ProductImage.objects.annotate(
+            type_priority=Case(
+                When(image_type=ProductImage.ImageType.PRIMARY, then=0),
+                default=1,
+                output_field=IntegerField(),
+            )
+        ).order_by("type_priority", "sort_order", "id")[:2]
+        context["similar_products"] = list(
+            Product.objects.filter(is_active=True, category__is_active=True)
+            .exclude(pk=self.object.pk)
+            .select_related("category")
+            .annotate(
+                listed_price=similar_variant_price,
+                listed_compare_price=similar_variant_compare_price,
+                listed_max_price=similar_variant_max_price,
+                **similar_annotations,
+            )
+            .prefetch_related(Prefetch("images", queryset=similar_images, to_attr="card_images"))
+            .order_by("?")[:8]
+        )
         context["cart_variant_data"] = schema_json({str(variant.id): (variant.cart_quantity or 0) for variant in offers})
         context["variant_data"] = schema_json([{ "id": variant.id, "color_id": variant.color_id, "color": variant.color.name, "color_hex": variant.color.hex_code, "size_id": variant.size_id, "size": variant.size.name, "price": variant.price, "compare_at_price": variant.compare_at_price, "stock": variant.stock_quantity, "sku": variant.sku } for variant in offers])
         if offers:
