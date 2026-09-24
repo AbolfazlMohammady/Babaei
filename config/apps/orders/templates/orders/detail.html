@@ -49,75 +49,107 @@
     </div>
     {% endif %}
 
-    <div class="order-detail-grid">
+    <div class="order-summary-grid">
+        <section class="order-card order-card--payment">
+            <div class="order-card__head">
+                <div>
+                    <span class="order-card__eyebrow">PAYMENT</span>
+                    <h2>وضعیت پرداخت</h2>
+                </div>
+                <span class="order-status order-status--{{ order.payment_status }}">{{ order.get_payment_status_display }}</span>
+            </div>
+            <div class="order-metric">
+                <span>مبلغ پرداخت</span>
+                <strong>{{ order.total_amount|price }} <small>تومان</small></strong>
+            </div>
+            <dl class="order-mini-meta">
+                <div><dt>مرجع</dt><dd dir="ltr">{{ order.payment_reference|default:"—" }}</dd></div>
+                <div><dt>زمان پرداخت</dt><dd>{{ order.paid_at|date:"Y/m/d - H:i"|default:"—" }}</dd></div>
+            </dl>
+            {% if order.payment_status != "paid" %}
+            <a class="order-btn order-btn--primary order-btn--full" href="{% url 'orders:payment' order.uuid %}">
+                {% if order.payment_status == "failed" %}تلاش دوباره برای پرداخت{% else %}پرداخت سفارش{% endif %}
+            </a>
+            {% endif %}
+        </section>
+
         <section class="order-card">
             <div class="order-card__head">
                 <div>
-                    <span class="order-card__eyebrow">ITEMS</span>
-                    <h2>اقلام سفارش</h2>
+                    <span class="order-card__eyebrow">DELIVERY</span>
+                    <h2>اطلاعات تحویل</h2>
                 </div>
+                <span class="shipping-chip">{{ order.get_shipping_status_display }}</span>
             </div>
-            <div class="order-items">
-                {% for item in order.items.all %}
-                <article class="order-item">
-                    <div class="order-item__copy">
-                        <strong>{{ item.product_name }}</strong>
-                        {% if item.color_name or item.size_name %}
-                        <span>{{ item.color_name }}{% if item.color_name and item.size_name %} · {% endif %}{{ item.size_name }}</span>
-                        {% endif %}
-                        {% if item.variant_sku %}<small dir="ltr">{{ item.variant_sku }}</small>{% endif %}
-                    </div>
-                    <div class="order-item__qty">× {{ item.quantity }}</div>
-                    <strong class="order-item__price">{{ item.line_total|price }} تومان</strong>
-                </article>
-                {% endfor %}
-            </div>
+            <dl class="order-address">
+                <div><dt>گیرنده</dt><dd>{{ order.shipping_recipient|default:"—" }}</dd></div>
+                <div><dt>موبایل</dt><dd dir="ltr">{{ order.shipping_phone }}</dd></div>
+                <div><dt>استان / شهر</dt><dd>{{ order.shipping_province }}، {{ order.shipping_city }}</dd></div>
+                <div><dt>کد پستی</dt><dd dir="ltr">{{ order.shipping_postal_code }}</dd></div>
+                <div><dt>آدرس</dt><dd>{{ order.shipping_address }}</dd></div>
+            </dl>
         </section>
 
-        <aside class="order-side">
-            <section class="order-card">
-                <div class="order-card__head">
-                    <div>
-                        <span class="order-card__eyebrow">PAYMENT</span>
-                        <h2>وضعیت پرداخت</h2>
-                    </div>
+        <section class="order-card order-card--totals">
+            <div class="order-card__head">
+                <div>
+                    <span class="order-card__eyebrow">TOTAL</span>
+                    <h2>خلاصه مالی</h2>
                 </div>
-                <div class="order-status-box">
-                    <span class="order-status order-status--{{ order.payment_status }}">{{ order.get_payment_status_display }}</span>
-                    <strong>{{ order.total_amount|price }} <small>تومان</small></strong>
-                    {% if order.payment_reference %}<small dir="ltr">{{ order.payment_reference }}</small>{% endif %}
-                    {% if order.paid_at %}<span>{{ order.paid_at|date:"Y/m/d - H:i" }}</span>{% endif %}
-                </div>
-                {% if order.payment_status != "paid" %}
-                <a class="order-btn order-btn--primary order-btn--full" href="{% url 'orders:payment' order.uuid %}">
-                    {% if order.payment_status == "failed" %}تلاش دوباره برای پرداخت{% else %}پرداخت سفارش{% endif %}
-                </a>
-                {% endif %}
-            </section>
-
-            <section class="order-card">
-                <div class="order-card__head">
-                    <div>
-                        <span class="order-card__eyebrow">DELIVERY</span>
-                        <h2>اطلاعات تحویل</h2>
-                    </div>
-                </div>
-                <dl class="order-address">
-                    <div><dt>گیرنده</dt><dd>{{ order.shipping_recipient|default:"—" }}</dd></div>
-                    <div><dt>تماس</dt><dd dir="ltr">{{ order.shipping_phone }}</dd></div>
-                    <div><dt>استان / شهر</dt><dd>{{ order.shipping_province }}، {{ order.shipping_city }}</dd></div>
-                    <div><dt>کد پستی</dt><dd dir="ltr">{{ order.shipping_postal_code }}</dd></div>
-                    <div><dt>آدرس</dt><dd>{{ order.shipping_address }}</dd></div>
-                </dl>
-            </section>
-
-            <section class="order-card">
-                <div class="order-total-row"><span>جمع کالاها</span><strong>{{ order.subtotal|price }} تومان</strong></div>
-                <div class="order-total-row"><span>تخفیف</span><strong>{{ order.discount_amount|price }} تومان</strong></div>
-                <div class="order-total-row"><span>ارسال</span><strong>{% if order.shipping_amount %}{{ order.shipping_amount|price }} تومان{% else %}رایگان{% endif %}</strong></div>
-                <div class="order-total-row order-total-row--final"><span>مبلغ نهایی</span><strong>{{ order.total_amount|price }} تومان</strong></div>
-            </section>
-        </aside>
+            </div>
+            <div class="order-totals-list">
+                <div><span>جمع کالاها</span><strong>{{ order.subtotal|price }} تومان</strong></div>
+                <div><span>تخفیف</span><strong>{% if order.discount_amount %}- {% endif %}{{ order.discount_amount|price }} تومان</strong></div>
+                <div><span>ارسال</span><strong>{% if order.shipping_amount %}{{ order.shipping_amount|price }} تومان{% else %}رایگان{% endif %}</strong></div>
+                <div class="order-total-row--final"><span>مبلغ نهایی</span><strong>{{ order.total_amount|price }} تومان</strong></div>
+            </div>
+        </section>
     </div>
+
+    <section class="order-card order-card--items">
+        <div class="order-card__head">
+            <div>
+                <span class="order-card__eyebrow">ITEMS</span>
+                <h2>اقلام سفارش</h2>
+            </div>
+            <span class="order-card__count">{{ order.items.all|length }} قلم</span>
+        </div>
+
+        <div class="order-items">
+            {% for item in order.items.all %}
+            <article class="order-item">
+                <div class="order-item__index">{{ forloop.counter|stringformat:"02d" }}</div>
+                <div class="order-item__copy">
+                    <strong>{{ item.product_name }}</strong>
+                    {% if item.color_name or item.size_name %}
+                    <span>{{ item.color_name }}{% if item.color_name and item.size_name %} · {% endif %}{{ item.size_name }}</span>
+                    {% endif %}
+                    {% if item.variant_sku %}<small dir="ltr">SKU: {{ item.variant_sku }}</small>{% endif %}
+                </div>
+                <div class="order-item__qty">× {{ item.quantity }}</div>
+                <div class="order-item__unit">
+                    <span>واحد</span>
+                    <strong>{{ item.unit_price|price }}</strong>
+                </div>
+                <strong class="order-item__price">{{ item.line_total|price }} <small>تومان</small></strong>
+            </article>
+            {% empty %}
+            <div class="order-empty">موردی برای نمایش وجود ندارد.</div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% if order.customer_note %}
+    <section class="order-card order-note-card">
+        <div class="order-card__head">
+            <div>
+                <span class="order-card__eyebrow">NOTE</span>
+                <h2>یادداشت سفارش</h2>
+            </div>
+        </div>
+        <p>{{ order.customer_note }}</p>
+    </section>
+    {% endif %}
+
 </section>
 {% endblock %}
