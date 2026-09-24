@@ -40,7 +40,7 @@
 @font-face {
     font-family: "BABAEI-Latin";
     src: url("../fonts/runtime-font/RuntimeRegular-m2Odx.otf") format("opentype");
-    font-weight: 400 900;
+    font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
