@@ -1759,3 +1759,51 @@ body.orders-page * {
         font-size: 12px;
     }
 }
+
+
+/* Order flow uses the profile/shop navigation proportions.
+   Keep it full-height and visually substantial instead of collapsing into a
+   shallow strip when an order body is rendered. */
+body.orders-page .sh-nav {
+    height: 82px;
+}
+
+body.orders-page .sh-nav__inner {
+    min-height: 82px;
+}
+
+body.orders-page .sh-brand__mark {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+}
+
+body.orders-page .sh-nav__link {
+    min-height: 46px;
+}
+
+body.orders-page .sh-icon {
+    width: 44px;
+    height: 44px;
+}
+
+@media (max-width: 940px) {
+    body.orders-page .sh-nav {
+        height: 68px;
+    }
+
+    body.orders-page .sh-nav__inner {
+        min-height: 68px;
+    }
+
+    body.orders-page .sh-brand__mark {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+    }
+
+    body.orders-page .sh-icon {
+        width: 42px;
+        height: 42px;
+    }
+}
