@@ -2442,3 +2442,188 @@ body.product-detail-page .pd-comments--empty-state .pd-comment-form__submit {
         transform: none;
     }
 }
+
+/* ==========================================================================
+   FINAL MOBILE COMMENTS OVERRIDE
+   One compact horizontal shelf + one compact write-review card.
+   This intentionally comes last so older responsive rules cannot expand it.
+   ========================================================================== */
+
+@media (max-width: 719px) {
+    body.product-detail-page .pd-comments {
+        padding: 12px !important;
+        border-radius: 18px !important;
+    }
+
+    body.product-detail-page .pd-comments__list,
+    body.product-detail-page .pd-comments__list--all {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        gap: 9px !important;
+        margin: 10px 0 0 !important;
+        padding: 3px 2px 9px !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        scroll-snap-type: x mandatory !important;
+        direction: rtl !important;
+    }
+
+    body.product-detail-page .pd-comments__list > .pd-comment,
+    body.product-detail-page .pd-comments__list--all > .pd-comment {
+        display: block !important;
+        flex: 0 0 270px !important;
+        width: 270px !important;
+        max-width: 270px !important;
+        min-width: 270px !important;
+        min-height: 0 !important;
+        height: 154px !important;
+        margin: 0 !important;
+        padding: 13px 13px 11px !important;
+        border-radius: 14px !important;
+        scroll-snap-align: start !important;
+        box-sizing: border-box !important;
+    }
+
+    body.product-detail-page .pd-comment__top {
+        gap: 7px !important;
+    }
+
+    body.product-detail-page .pd-comment__avatar {
+        width: 34px !important;
+        height: 34px !important;
+        flex-basis: 34px !important;
+    }
+
+    body.product-detail-page .pd-comment__identity strong {
+        font-size: 10.5px !important;
+    }
+
+    body.product-detail-page .pd-comment__identity small {
+        font-size: 7.5px !important;
+    }
+
+    body.product-detail-page .pd-stars--small {
+        padding: 4px 6px !important;
+        font-size: 8px !important;
+    }
+
+    body.product-detail-page .pd-comment > p {
+        min-height: 0 !important;
+        height: 53px !important;
+        overflow: hidden !important;
+        margin: 9px 0 5px !important;
+        padding-inline-start: 13px !important;
+        font-size: 9.5px !important;
+        line-height: 1.75 !important;
+    }
+
+    body.product-detail-page .pd-comment > time {
+        padding-top: 4px !important;
+        font-size: 7.5px !important;
+    }
+
+    body.product-detail-page .pd-comment-form {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 12px 0 0 !important;
+        padding: 14px !important;
+        border-radius: 15px !important;
+        box-sizing: border-box !important;
+    }
+
+    body.product-detail-page .pd-comment-form__head {
+        padding-top: 3px !important;
+    }
+
+    body.product-detail-page .pd-comment-form__head h3 {
+        margin: 5px 0 2px !important;
+        font-size: 15px !important;
+    }
+
+    body.product-detail-page .pd-comment-form__head p {
+        margin-bottom: 9px !important;
+        font-size: 8px !important;
+        line-height: 1.7 !important;
+    }
+
+    body.product-detail-page .pd-comment-form__form {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+
+    body.product-detail-page .pd-comment-form__rating,
+    body.product-detail-page .pd-comment-form__body {
+        padding: 9px 10px !important;
+        border-radius: 9px !important;
+    }
+
+    body.product-detail-page .pd-comment-form__label-row {
+        margin-bottom: 4px !important;
+        font-size: 8px !important;
+    }
+
+    body.product-detail-page .pd-rating-stars {
+        justify-content: flex-start !important;
+    }
+
+    body.product-detail-page .pd-rating-stars label {
+        width: 29px !important;
+        height: 29px !important;
+        font-size: 19px !important;
+        border-radius: 7px !important;
+    }
+
+    body.product-detail-page .pd-comment-form__body textarea {
+        width: 100% !important;
+        min-height: 66px !important;
+        height: 66px !important;
+        padding: 8px 9px !important;
+        font-size: 9.5px !important;
+        line-height: 1.7 !important;
+        box-sizing: border-box !important;
+    }
+
+    body.product-detail-page .pd-comment-form__footer {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        margin-top: 0 !important;
+    }
+
+    body.product-detail-page .pd-comment-form__footer > span {
+        font-size: 7.5px !important;
+    }
+
+    body.product-detail-page .pd-comment-form__submit {
+        width: auto !important;
+        min-width: 104px !important;
+        min-height: 34px !important;
+        padding: 0 12px !important;
+        font-size: 9px !important;
+    }
+
+    body.product-detail-page .pd-comments__all {
+        min-height: 34px !important;
+        margin: 8px auto 0 !important;
+        padding: 0 14px !important;
+        font-size: 8.5px !important;
+    }
+}
+
+@media (max-width: 390px) {
+    body.product-detail-page .pd-comments__list > .pd-comment,
+    body.product-detail-page .pd-comments__list--all > .pd-comment {
+        flex-basis: 252px !important;
+        width: 252px !important;
+        min-width: 252px !important;
+        max-width: 252px !important;
+    }
+}
