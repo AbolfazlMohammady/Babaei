@@ -111,3 +111,31 @@
     </form>
 </section>
 {% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const choices = [...document.querySelectorAll(".address-choice__item")];
+    const sync = () => {
+        choices.forEach((choice) => {
+            const input = choice.querySelector("input[type='radio']");
+            choice.classList.toggle("is-selected", Boolean(input?.checked));
+        });
+    };
+
+    choices.forEach((choice) => {
+        const input = choice.querySelector("input[type='radio']");
+        if (!input) return;
+        input.addEventListener("change", sync);
+        choice.addEventListener("click", (event) => {
+            if (event.target === input) return;
+            input.checked = true;
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+    });
+
+    sync();
+});
+</script>
+{% endblock %}
