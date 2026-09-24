@@ -199,12 +199,14 @@ js/storefront.js). Nothing on this page needs !important.
 
         <section class="pd-comments" id="comments" data-reveal aria-labelledby="product-comments-title">
             <div class="pd-comments__head">
-                <div>
-                    <p class="pd-kicker">نظر مشتری‌ها</p>
-                    <h2 id="product-comments-title">تجربه‌ی کسانی که این محصول را انتخاب کردند</h2>
+                <div class="pd-comments__title">
+                    <span class="pd-comments__eyebrow">بازخورد مشتری‌ها</span>
+                    <h2 id="product-comments-title">تجربه واقعی مشتری‌ها</h2>
+                    <p>نظرهایی که درباره کیفیت، حس استفاده و انتخاب این محصول ثبت شده.</p>
                 </div>
-                <div class="pd-comments__summary" aria-label="خلاصه نظرات">
-                    {% if comment_average %}<strong>{{ comment_average|floatformat:1 }}</strong><span class="pd-stars" aria-label="{{ comment_average|floatformat:1 }} از ۵">★★★★★</span>{% endif %}
+                <div class="pd-comments__rating">
+                    <strong>{{ comment_average|default:"0"|floatformat:1 }}</strong>
+                    <span class="pd-stars" aria-hidden="true">★★★★★</span>
                     <small>{{ comment_count|default:0 }} نظر</small>
                 </div>
             </div>
@@ -214,32 +216,89 @@ js/storefront.js). Nothing on this page needs !important.
                     {% for comment in featured_comments %}
                         <article class="pd-comment">
                             <div class="pd-comment__top">
-                                <div class="pd-comment__user"><span class="pd-comment__avatar" aria-hidden="true">{{ comment.display_name|first }}</span><div><strong>{{ comment.display_name }}</strong>{% if comment.verified_purchase %}<small>خرید تأییدشده</small>{% endif %}</div></div>
-                                {% if comment.rating %}<span class="pd-stars pd-stars--small" aria-label="{{ comment.rating }} از ۵">{% if comment.rating >= 1 %}★{% endif %}{% if comment.rating >= 2 %}★{% endif %}{% if comment.rating >= 3 %}★{% endif %}{% if comment.rating >= 4 %}★{% endif %}{% if comment.rating >= 5 %}★{% endif %}</span>{% endif %}
+                                <div class="pd-comment__user">
+                                    {% if comment.user.image %}
+                                        <img class="pd-comment__avatar pd-comment__avatar--image" src="{{ comment.user.image.url }}" alt="تصویر {{ comment.display_name }}" loading="lazy">
+                                    {% else %}
+                                        <span class="pd-comment__avatar" aria-hidden="true">{{ comment.display_name|first }}</span>
+                                    {% endif %}
+                                    <div class="pd-comment__identity">
+                                        <strong>{{ comment.display_name }}</strong>
+                                        {% if comment.verified_purchase %}<small><span aria-hidden="true">✓</span> خرید تأییدشده</small>{% endif %}
+                                    </div>
+                                </div>
+                                {% if comment.rating %}
+                                    <span class="pd-stars pd-stars--small" aria-label="{{ comment.rating }} از ۵">
+                                        {% if comment.rating >= 1 %}★{% endif %}{% if comment.rating >= 2 %}★{% endif %}{% if comment.rating >= 3 %}★{% endif %}{% if comment.rating >= 4 %}★{% endif %}{% if comment.rating >= 5 %}★{% endif %}
+                                    </span>
+                                {% endif %}
                             </div>
                             <p>{{ comment.body }}</p>
                             <time datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|date:'j F Y' }}</time>
                         </article>
                     {% endfor %}
                 </div>
-                {% if comment_count %}<a class="pd-comments__all" href="{% url 'shop:product_comments' product.slug %}">مشاهده همه {{ comment_count }} نظر <span aria-hidden="true">←</span></a>{% endif %}
+                {% if comment_count %}
+                    <a class="pd-comments__all" href="{% url 'shop:product_comments' product.slug %}">
+                        <span>مشاهده همه {{ comment_count }} نظر</span><b aria-hidden="true">←</b>
+                    </a>
+                {% endif %}
             {% else %}
-                <div class="pd-comments__empty"><strong>هنوز نظری برای این محصول ثبت نشده.</strong><span>اگر این محصول را استفاده کردی، تجربه‌ات می‌تواند برای نفر بعدی مفید باشد.</span></div>
+                <div class="pd-comments__empty">
+                    <strong>هنوز نظری برای این محصول ثبت نشده.</strong>
+                    <span>اگر این محصول را استفاده کردی، تجربه‌ات برای نفر بعدی ارزشمند است.</span>
+                </div>
             {% endif %}
 
             <div class="pd-comment-form">
-                <div class="pd-comment-form__head"><div><h3>نظر خودت را بنویس</h3><p>نظر شما پس از بررسی در صفحه محصول نمایش داده می‌شود.</p></div></div>
+                <div class="pd-comment-form__head">
+                    <div>
+                        <span class="pd-comment-form__eyebrow">تجربه‌ات را ثبت کن</span>
+                        <h3>نظر خودت را درباره این محصول بنویس</h3>
+                        <p>امتیاز و تجربه‌ات را ثبت کن؛ نظر پس از بررسی نمایش داده می‌شود.</p>
+                    </div>
+                </div>
+
                 {% if request.user.is_authenticated %}
-                    <form method="post" action="{% url 'shop:product_comment_add' product.slug %}">
+                    <form method="post" action="{% url 'shop:product_comment_add' product.slug %}" class="pd-comment-form__form" data-comment-form>
                         {% csrf_token %}
-                        <div class="pd-comment-form__fields">
-                            <label>امتیاز <select name="rating"><option value="">بدون امتیاز</option><option value="5">★★★★★ عالی</option><option value="4">★★★★ خیلی خوب</option><option value="3">★★★ خوب</option><option value="2">★★ قابل قبول</option><option value="1">★ ضعیف</option></select></label>
-                            <label class="pd-comment-form__body">متن نظر<textarea name="body" maxlength="2000" rows="4" required placeholder="کیفیت، جنس، اندازه یا تجربه‌ات از محصول..."></textarea></label>
+                        <div class="pd-comment-form__rating">
+                            <div class="pd-comment-form__label-row">
+                                <label>امتیاز محصول</label>
+                                <span data-rating-label>انتخاب نشده</span>
+                            </div>
+                            <div class="pd-rating-stars" role="radiogroup" aria-label="انتخاب امتیاز از ۱ تا ۵">
+                                <input type="radio" id="comment-rating-5" name="rating" value="5">
+                                <label for="comment-rating-5" title="۵ ستاره" aria-label="۵ ستاره">★</label>
+                                <input type="radio" id="comment-rating-4" name="rating" value="4">
+                                <label for="comment-rating-4" title="۴ ستاره" aria-label="۴ ستاره">★</label>
+                                <input type="radio" id="comment-rating-3" name="rating" value="3">
+                                <label for="comment-rating-3" title="۳ ستاره" aria-label="۳ ستاره">★</label>
+                                <input type="radio" id="comment-rating-2" name="rating" value="2">
+                                <label for="comment-rating-2" title="۲ ستاره" aria-label="۲ ستاره">★</label>
+                                <input type="radio" id="comment-rating-1" name="rating" value="1">
+                                <label for="comment-rating-1" title="۱ ستاره" aria-label="۱ ستاره">★</label>
+                            </div>
                         </div>
-                        <button type="submit" class="pd-comment-form__submit">ثبت نظر</button>
+
+                        <div class="pd-comment-form__body">
+                            <div class="pd-comment-form__label-row">
+                                <label for="product-comment-body">متن نظر</label>
+                                <span><b data-comment-count>0</b> / ۲۰۰۰</span>
+                            </div>
+                            <textarea id="product-comment-body" name="body" maxlength="2000" rows="5" required placeholder="از کیفیت، جنس، اندازه یا تجربه استفاده‌ات بنویس..."></textarea>
+                        </div>
+
+                        <div class="pd-comment-form__footer">
+                            <span>نظر شما بعد از بررسی منتشر می‌شود.</span>
+                            <button type="submit" class="pd-comment-form__submit"><span>ثبت نظر</span><b aria-hidden="true">←</b></button>
+                        </div>
                     </form>
                 {% else %}
-                    <a class="pd-comment-form__login" href="{% url 'users:login' %}?next={{ request.path|urlencode }}">برای ثبت نظر وارد حساب کاربری شو <span>←</span></a>
+                    <div class="pd-comment-form__login">
+                        <div><strong>برای ثبت نظر وارد حساب کاربری شو</strong><span>بعد از ورود می‌توانی امتیاز و تجربه‌ات را ثبت کنی.</span></div>
+                        <a href="{% url 'users:login' %}?next={{ request.path|urlencode }}">ورود به حساب <span aria-hidden="true">←</span></a>
+                    </div>
                 {% endif %}
             </div>
         </section>
@@ -251,4 +310,24 @@ js/storefront.js). Nothing on this page needs !important.
     </div>
 </div>
 {% endblock %}
-{% block extra_js %}<script>window.BabaeiProduct={variants:{{ variant_data }},cartVariants:{{ cart_variant_data }},initialProductPrice:{{ product.display_price|default:0 }},initialComparePrice:{{ product.display_compare_price|default:0 }}};</script><script src="{% static 'js/pages/shop-product.js' %}?v=4" defer></script><script src="{% static 'js/pages/product-media-tilt.js' %}?v=2" defer></script>{% endblock %}
+{% block extra_js %}
+<script>
+window.BabaeiProduct={variants:{{ variant_data }},cartVariants:{{ cart_variant_data }},initialProductPrice:{{ product.display_price|default:0 }},initialComparePrice:{{ product.display_compare_price|default:0 }}};
+document.addEventListener("DOMContentLoaded",function(){
+    const form=document.querySelector("[data-comment-form]");
+    if(!form) return;
+    const ratingLabel=form.querySelector("[data-rating-label]");
+    const ratingNames={1:"ضعیف",2:"قابل قبول",3:"خوب",4:"خیلی خوب",5:"عالی"};
+    form.querySelectorAll('input[name="rating"]').forEach(function(input){
+        input.addEventListener("change",function(){
+            ratingLabel.textContent=this.value+" ستاره — "+ratingNames[this.value];
+        });
+    });
+    const textarea=form.querySelector("textarea[name='body']");
+    const counter=form.querySelector("[data-comment-count]");
+    textarea.addEventListener("input",function(){ counter.textContent=this.value.length.toLocaleString("fa-IR"); });
+});
+</script>
+<script src="{% static 'js/pages/shop-product.js' %}?v=4" defer></script>
+<script src="{% static 'js/pages/product-media-tilt.js' %}?v=2" defer></script>
+{% endblock %}
