@@ -1,18 +1,60 @@
 /* ==========================================================================
-   BABAEI — Fonts & shared design tokens
+   BABAEI — Typography & shared design tokens
+   --------------------------------------------------------------------------
+   Persian/UI: El Messiri
+   Latin/English: Runtime
    ========================================================================== */
 
 @font-face {
-    font-family: "Vazirmatn";
-    src: url("../fonts/vazirmatn-var.woff2") format("woff2");
-    font-weight: 100 900;
+    font-family: "BABAEI-Persian";
+    src: url("../fonts/el-messiri-font/ElmessiriRegular-MVYOr.otf") format("opentype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "BABAEI-Persian";
+    src: url("../fonts/el-messiri-font/ElmessiriMedium-K7BOp.otf") format("opentype");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "BABAEI-Persian";
+    src: url("../fonts/el-messiri-font/ElmessiriSemibold-2O74K.otf") format("opentype");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "BABAEI-Persian";
+    src: url("../fonts/el-messiri-font/ElMessiriBold-vm3ZO.otf") format("opentype");
+    font-weight: 700 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "BABAEI-Latin";
+    src: url("../fonts/runtime-font/RuntimeRegular-m2Odx.otf") format("opentype");
+    font-weight: 400 900;
     font-style: normal;
     font-display: swap;
 }
 
 :root {
-    --sh-font: "Vazirmatn", "IRANSansX", Tahoma, Arial, sans-serif;
-    --sh-font-latin: "Vazirmatn", "Helvetica Neue", Arial, sans-serif;
+    --sh-font: "BABAEI-Persian", "El Messiri", Tahoma, Arial, sans-serif;
+    --sh-font-latin: "BABAEI-Latin", "Helvetica Neue", Arial, sans-serif;
+
+    /* Keep older site tokens pointed at the same type system. */
+    --font-sans: var(--sh-font);
+    --font-display: var(--sh-font);
+    --ba-font: var(--sh-font);
+    --ba-display: var(--sh-font);
+    --ba-latin: var(--sh-font-latin);
 
     --sh-forest: #14523c;
     --sh-forest-deep: #0e3d2d;
@@ -36,4 +78,9 @@
     --sh-dur: 320ms;
     --sh-fast: var(--sh-dur-fast) var(--sh-ease);
     --sh-slow: var(--sh-dur) var(--sh-ease);
+}
+
+/* Latin-facing brand labels, codes and explicit LTR content use Runtime. */
+:where([dir="ltr"], [lang="en"], .sh-brand__name, .sh-brand__tagline, .orders-eyebrow, .order-card__eyebrow, .cart-products__eyebrow, .invoice__brand) {
+    font-family: var(--sh-font-latin);
 }
