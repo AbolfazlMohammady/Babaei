@@ -750,42 +750,62 @@ body.product-detail-page .pd-incart[hidden] {
 
 body.product-detail-page .pd-perks {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 2px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
     margin-top: clamp(26px, 3.6vw, 42px);
-    padding: clamp(10px, 1.6vw, 16px) clamp(16px, 2.2vw, 24px);
-    border: 1px solid var(--pdp-panel-line);
-    border-radius: var(--pdp-radius-card);
-    background: var(--pdp-panel);
-    box-shadow: var(--pdp-shadow-soft);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 body.product-detail-page .pd-perk {
+    position: relative;
     display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    padding-block: 12px;
+    align-items: center;
+    gap: 14px;
+    min-height: 92px;
+    padding: 18px 17px;
+    border: 1px solid rgba(20, 82, 60, .12);
+    border-radius: 18px;
+    background: #f8f5ee;
+    box-shadow:
+        0 14px 28px -24px rgba(9, 28, 20, .65),
+        inset 0 1px 0 rgba(255,255,255,.9);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
 body.product-detail-page .pd-perk + .pd-perk {
-    border-top: 1px solid var(--sh-line);
+    border-top: 1px solid rgba(20, 82, 60, .12);
+}
+
+body.product-detail-page .pd-perk::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block: 17px;
+    width: 3px;
+    border-radius: 99px;
+    background: var(--pdp-forest);
 }
 
 body.product-detail-page .pd-perk__icon {
-    flex: 0 0 38px;
+    flex: 0 0 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: rgba(20, 82, 60, .08);
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(20, 82, 60, .12);
+    border-radius: 13px;
+    background: #fffdf8;
     color: var(--pdp-forest);
+    box-shadow: 0 7px 16px -14px rgba(9, 28, 20, .7);
 }
 
 body.product-detail-page .pd-perk__icon svg {
-    width: 19px;
-    height: 19px;
+    width: 20px;
+    height: 20px;
     fill: none;
     stroke: currentColor;
     stroke-width: 1.6;
@@ -796,16 +816,26 @@ body.product-detail-page .pd-perk__icon svg {
 body.product-detail-page .pd-perk strong {
     display: block;
     color: var(--pdp-ink);
-    font-size: 13.5px;
-    font-weight: 800;
+    font-size: 13px;
+    font-weight: 900;
 }
 
 body.product-detail-page .pd-perk small {
     display: block;
     margin-top: 4px;
     color: var(--pdp-muted);
-    font-size: 11.5px;
-    line-height: 1.9;
+    font-size: 10.5px;
+    line-height: 1.8;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    body.product-detail-page .pd-perk:hover {
+        transform: translateY(-2px);
+        border-color: rgba(20, 82, 60, .22);
+        box-shadow:
+            0 18px 32px -23px rgba(9, 28, 20, .72),
+            inset 0 1px 0 rgba(255,255,255,.95);
+    }
 }
 
 /* Everything below the fold skips layout and paint until it is nearly in
@@ -1247,9 +1277,9 @@ body.product-detail-page .pd-comments__head {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: stretch;
     gap: 24px;
-    padding: clamp(23px, 3vw, 34px);
+    padding: clamp(20px, 2.5vw, 28px);
     border: 1px solid #dedfd9;
-    border-radius: 4px;
+    border-radius: 16px;
     background: #fffefb;
     box-shadow: 0 18px 38px rgba(30,42,36,.08);
 }
@@ -1290,7 +1320,7 @@ body.product-detail-page .pd-comments__head h2,
 body.product-detail-page .pd-comments--all h1 {
     margin: 10px 0 7px;
     color: var(--pdp-ink);
-    font-size: clamp(24px, 3.2vw, 38px);
+    font-size: clamp(22px, 2.7vw, 32px);
     font-weight: 950;
     line-height: 1.2;
     letter-spacing: -.035em;
@@ -1368,15 +1398,15 @@ body.product-detail-page .pd-comments__list,
 body.product-detail-page .pd-comments__list--all {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
-    margin-top: 22px;
+    gap: 14px;
+    margin-top: 16px;
 }
 
 body.product-detail-page .pd-comment {
     position: relative;
     min-width: 0;
     overflow: hidden;
-    padding: 25px 21px 20px;
+    padding: 22px 19px 18px;
     border: 1px solid #dfdfd8;
     border-radius: 2px;
     background:
@@ -1412,6 +1442,7 @@ body.product-detail-page .pd-comment::after {
 }
 
 body.product-detail-page .pd-comment__top {
+    position: relative;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -1480,8 +1511,8 @@ body.product-detail-page .pd-comment__identity small span {
 
 body.product-detail-page .pd-comment > p {
     position: relative;
-    min-height: 92px;
-    margin: 21px 0 18px;
+    min-height: 74px;
+    margin: 17px 0 15px;
     padding-inline-start: 19px;
     color: #343934;
     font-size: 12px;
