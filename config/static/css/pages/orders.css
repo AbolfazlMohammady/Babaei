@@ -1759,8 +1759,25 @@ body.account-body .sh-nav.is-top .sh-nav__link::after {
 .receipt-ledger > div {
     display: flex;
     align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
+}
+
+.receipt-meta > div dt,
+.receipt-ledger > div dt {
+    display: flex;
+    align-items: baseline;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.receipt-meta > div dt::after,
+.receipt-ledger > div dt::after {
+    content: "";
+    flex: 1 1 auto;
+    min-width: 12px;
+    margin: 0 7px;
+    border-bottom: 1px dotted rgba(23,25,27,.28);
+    translate: 0 -2px;
 }
 
 .receipt-meta dt,
