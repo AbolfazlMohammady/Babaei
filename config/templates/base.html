@@ -65,7 +65,7 @@
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}?v=6">
 
     {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'orders' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' or request.resolver_match.namespace == 'saved' %}
-    <link rel="stylesheet" href="{% static 'css/pages/shop-shell.css' %}?v=6">
+    <link rel="stylesheet" href="{% static 'css/pages/shop-shell.css' %}?v=7">
     <noscript><style>
         /* Without JS the nav cannot leave its transparent-over-hero state, so
            pin it to the solid cream surface instead. */
