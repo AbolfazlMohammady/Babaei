@@ -6,8 +6,6 @@
 
 body.cart-page {
     /* Mirror the shop shell tokens because this page uses the exact shop nav. */
-    --sh-font: var(--sh-font);
-    --sh-font-latin: var(--sh-font-latin);
     --sh-nav-h: 74px;
     --sh-gutter: clamp(18px, 4.4vw, 56px);
     --sh-shell: 1240px;
