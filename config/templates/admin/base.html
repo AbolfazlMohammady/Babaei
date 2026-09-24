@@ -52,6 +52,7 @@
     </nav>
     <div class="ba-sidebar__foot"><a href="/" target="_blank" rel="noopener"><span>↗</span> مشاهده سایت</a></div>
 </aside>
+{% endif %}
 
 <main id="content-start" class="{% if is_popup %}ba-popup{% else %}ba-main{% endif %}" tabindex="-1">
 {% if not is_popup %}
@@ -68,13 +69,10 @@
 </div>
 {% endif %}
 </main>
+
+{% if not is_popup %}
 </div>
 <footer class="ba-footer"><span>BABAEI CONTROL CENTER</span><span>© {% now "Y" %} BABAEI</span></footer>
-{% else %}
-<main id="content-start" class="ba-popup">
-{% block content %}{{ content }}{% endblock %}
-{% block sidebar %}{% endblock %}
-</main>
 {% endif %}
 
 {% block extrabody %}<script src="{% static 'js/admin/admin.js' %}?v=1"></script>{% endblock %}
