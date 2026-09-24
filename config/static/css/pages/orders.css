@@ -4,7 +4,10 @@
    ========================================================================== */
 
 body.orders-page {
-    background: var(--sh-cream, #f4f1ea) !important;
+    background:
+        radial-gradient(circle at 90% 6%, rgba(20,82,60,.045), transparent 25%),
+        radial-gradient(circle at 8% 62%, rgba(216,189,125,.045), transparent 22%),
+        var(--sh-cream, #f4f1ea) !important;
     color: var(--sh-ink, #171a1c);
     font-family: var(--sh-font, "Vazirmatn", Tahoma, Arial, sans-serif);
 }
@@ -174,8 +177,12 @@ body.orders-page {
 
 .address-choice__item input {
     position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
     opacity: 0;
-    pointer-events: none;
+    cursor: pointer;
 }
 
 .address-choice__radio {
@@ -1133,6 +1140,7 @@ body.orders-page {
     .payment-card {
         padding: 14px;
         border-radius: 17px;
+        background: linear-gradient(180deg, rgba(248,245,238,.96), rgba(241,238,230,.96));
     }
 
     .address-choice__item {
@@ -1239,4 +1247,97 @@ body.orders-page {
         size: A4;
         margin: 0;
     }
+}
+
+
+/* The same shop nav is used on order/account pages. Never paint the hero state
+   here because these pages do not own a dark hero image. */
+body.orders-page .sh-nav.is-top,
+body.account-body .sh-nav.is-top {
+    background: rgba(251,250,247,.96);
+    border-bottom-color: var(--sh-line);
+    box-shadow: 0 12px 30px -26px rgba(11,48,37,.5);
+}
+
+body.orders-page .sh-nav.is-top .sh-brand,
+body.orders-page .sh-nav.is-top .sh-nav__link,
+body.orders-page .sh-nav.is-top .sh-icon,
+body.account-body .sh-nav.is-top .sh-brand,
+body.account-body .sh-nav.is-top .sh-nav__link,
+body.account-body .sh-nav.is-top .sh-icon {
+    color: var(--sh-ink-2);
+}
+
+body.orders-page .sh-nav.is-top .sh-brand__mark,
+body.account-body .sh-nav.is-top .sh-brand__mark {
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+}
+
+body.orders-page .sh-nav.is-top .sh-brand__tagline,
+body.account-body .sh-nav.is-top .sh-brand__tagline {
+    color: var(--sh-muted);
+}
+
+body.orders-page .sh-nav.is-top .sh-icon,
+body.account-body .sh-nav.is-top .sh-icon {
+    border-color: var(--sh-line);
+}
+
+body.orders-page .sh-nav.is-top .sh-nav__link::after,
+body.account-body .sh-nav.is-top .sh-nav__link::after {
+    background: var(--sh-forest);
+}
+
+.order-card,
+.checkout-summary,
+.payment-card {
+    background:
+        linear-gradient(180deg, rgba(249,247,241,.92), rgba(243,240,232,.94));
+}
+
+.order-card::before,
+.checkout-summary::before,
+.payment-card::before {
+    content: "";
+    display: block;
+    width: 36px;
+    height: 2px;
+    margin-bottom: -7px;
+    border-radius: 999px;
+    background: rgba(20,82,60,.35);
+}
+
+.orders-hero h1 {
+    position: relative;
+    display: inline-block;
+}
+
+.orders-hero h1::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    bottom: -10px;
+    width: 44px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--sh-forest);
+}
+
+.address-choice__item {
+    background: rgba(255,255,255,.34);
+}
+
+.address-choice__item.is-selected,
+.address-choice__item:has(input:checked) {
+    border-color: rgba(20,82,60,.26);
+    background:
+        linear-gradient(135deg, rgba(20,82,60,.08), rgba(20,82,60,.025));
+    box-shadow: inset 3px 0 0 rgba(20,82,60,.55);
+}
+
+.address-choice__item:has(input:checked) .address-choice__radio {
+    border-color: var(--sh-forest);
+    background:
+        radial-gradient(circle, var(--sh-forest) 0 45%, transparent 48%);
 }
