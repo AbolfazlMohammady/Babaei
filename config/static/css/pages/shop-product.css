@@ -1425,7 +1425,7 @@ body.product-detail-page .pd-comment-form__label-row span {
 }
 body.product-detail-page .pd-rating-stars {
     display: flex;
-    flex-direction: row;
+    flex-direction: row-reverse;
     justify-content: center;
     gap: 2px;
     direction: ltr;
@@ -1449,9 +1449,7 @@ body.product-detail-page .pd-rating-stars label {
     cursor: pointer;
     transition: color 160ms ease, background 160ms ease, transform 160ms ease;
 }
-body.product-detail-page .pd-rating-stars label:hover,
-body.product-detail-page .pd-rating-stars label:has(+ input:checked),
-body.product-detail-page .pd-rating-stars input:checked + label {
+body.product-detail-page .pd-rating-stars input:checked ~ label {
     color: #c08d32;
 }
 body.product-detail-page .pd-rating-stars input:focus-visible + label {
