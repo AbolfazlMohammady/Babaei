@@ -39,11 +39,16 @@
                         <input type="radio" name="address_id" value="{{ address.pk }}" {% if selected_address_id == address.pk %}checked{% endif %} required>
                         <span class="address-choice__radio"></span>
                         <span class="address-choice__body">
-                            <strong>{{ address.title }}</strong>
-                            {% if address.is_default %}<em>پیش‌فرض</em>{% endif %}
-                            <small>{{ address.city.province.name }}، {{ address.city.name }} · {{ address.phone }}</small>
-                            <span>{{ address.description|default:"بدون توضیحات تکمیلی" }}</span>
-                            <small dir="ltr">{{ address.postal_code }}</small>
+                            <span class="address-choice__title">
+                                <strong>{{ address.title }}</strong>
+                                {% if address.is_default %}<em>پیش‌فرض</em>{% endif %}
+                            </span>
+                            <span class="address-choice__line">
+                                <span>{{ address.city.province.name }}، {{ address.city.name }}</span>
+                                <b dir="ltr">{{ address.phone }}</b>
+                            </span>
+                            <span class="address-choice__address">{{ address.description|default:"بدون توضیحات تکمیلی" }}</span>
+                            <span class="address-choice__postal"><small>کد پستی</small><b dir="ltr">{{ address.postal_code }}</b></span>
                         </span>
                     </label>
                     {% endfor %}
