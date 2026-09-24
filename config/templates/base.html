@@ -60,8 +60,9 @@
     addresses, saved items — silently fell back to Tahoma. That single fact is
     most of why those pages read as a different, older site next to the shop.
     {% endcomment %}
-    <link rel="preload" href="{% static 'fonts/vazirmatn-var.woff2' %}" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="{% static 'css/fonts.css' %}?v=3">
+    <link rel="preload" href="{% static 'fonts/el-messiri-font/ElmessiriRegular-MVYOr.otf' %}" as="font" type="font/otf" crossorigin>
+    <link rel="preload" href="{% static 'fonts/runtime-font/RuntimeRegular-m2Odx.otf' %}" as="font" type="font/otf" crossorigin>
+    <link rel="stylesheet" href="{% static 'css/fonts.css' %}?v=4">
 
     {% if request.resolver_match.namespace == 'shop' or request.resolver_match.namespace == 'orders' or request.resolver_match.namespace == 'users' and request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'verify_otp' or request.resolver_match.namespace == 'saved' %}
     <link rel="stylesheet" href="{% static 'css/pages/shop-shell.css' %}?v=5">
