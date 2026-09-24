@@ -197,19 +197,21 @@ js/storefront.js). Nothing on this page needs !important.
 
 
 
-        <section class="pd-comments pd-comments--receipt" id="comments" data-reveal aria-labelledby="product-comments-title">
-            <div class="pd-comments__head">
-                <div class="pd-comments__title">
-                    <span class="pd-comments__eyebrow">بازخورد مشتری‌ها</span>
-                    <h2 id="product-comments-title">تجربه واقعی مشتری‌ها</h2>
-                    <p>نظرهایی که درباره کیفیت، حس استفاده و انتخاب این محصول ثبت شده.</p>
+        <section class="pd-comments pd-comments--receipt{% if not featured_comments %} pd-comments--empty-state{% endif %}" id="comments" data-reveal aria-labelledby="product-comments-title">
+            {% if featured_comments %}
+                <div class="pd-comments__head">
+                    <div class="pd-comments__title">
+                        <span class="pd-comments__eyebrow">بازخورد مشتری‌ها</span>
+                        <h2 id="product-comments-title">تجربه واقعی مشتری‌ها</h2>
+                        <p>نظرهایی که درباره کیفیت، حس استفاده و انتخاب این محصول ثبت شده.</p>
+                    </div>
+                    <div class="pd-comments__rating">
+                        <strong>{{ comment_average|default:"0"|floatformat:1 }}</strong>
+                        <span class="pd-stars" aria-hidden="true">★★★★★</span>
+                        <small>{{ comment_count|default:0 }} نظر</small>
+                    </div>
                 </div>
-                <div class="pd-comments__rating">
-                    <strong>{{ comment_average|default:"0"|floatformat:1 }}</strong>
-                    <span class="pd-stars" aria-hidden="true">★★★★★</span>
-                    <small>{{ comment_count|default:0 }} نظر</small>
-                </div>
-            </div>
+            {% endif %}
 
             {% if featured_comments %}
                 <div class="pd-comments__list">
