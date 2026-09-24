@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Case, CharField, ExpressionWrapper, F, OuterRef, PositiveBigIntegerField, Subquery, Sum, When, Value
+from django.db.models import Case, CharField, ExpressionWrapper, F, OuterRef, PositiveBigIntegerField, Prefetch, Subquery, Sum, When, Value
 from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -13,7 +13,7 @@ from apps.shop.models import Product, ProductImage, ProductVariant
 
 from apps.users.models import Address
 
-from .models import Cart, CartItem, Order
+from .models import Cart, CartItem, Order, OrderItem
 from .services import (
     CART_COUNT_SESSION_KEY,
     CART_SESSION_KEY,
@@ -236,8 +236,21 @@ def orders_list_view(request):
 
 @login_required
 def order_detail_view(request, order_uuid):
+    item_qs = (
+        OrderItem.objects
+        .select_related("product")
+        .prefetch_related(
+            Prefetch(
+                "product__images",
+                queryset=ProductImage.objects.filter(
+                    image_type=ProductImage.ImageType.PRIMARY
+                ).order_by("sort_order", "id"),
+                to_attr="primary_images",
+            )
+        )
+    )
     order = get_object_or_404(
-        Order.objects.prefetch_related("items"),
+        Order.objects.prefetch_related(Prefetch("items", queryset=item_qs)),
         uuid=order_uuid,
         user=request.user,
     )
