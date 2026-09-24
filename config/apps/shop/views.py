@@ -202,8 +202,8 @@ class ShopIndexView(ListView):
         context["filter_size"] = self.request.GET.get("size", "")
         context["filter_discount"] = self.request.GET.get("discount") == "1"
         context["canonical_url"] = absolute_url(self.request, self.request.path)
-        context["og_title"] = "فروشگاه لباس و تی‌شرت | BABAEI"
-        context["og_description"] = "خرید تی‌شرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
+        context["og_title"] = "فروشگاه لباس و تیشرت | BABAEI"
+        context["og_description"] = "خرید تیشرت و لباس از BABAEI؛ انتخاب مدل، رنگ و سایز و آماده برای شخصی‌سازی."
         # Was /static/images/home/Tshirt.png: a 1.9 MB product shot at 0.75:1, so
         # link previews both pulled far too much data and cropped badly. Now a
         # purpose-built 1200x630 card (~80 KB).
