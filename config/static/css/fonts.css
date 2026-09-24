@@ -1,16 +1,19 @@
 /* ==========================================================================
-   BABAEI — Webfont
-   --------------------------------------------------------------------------
-   Vazirmatn is the reference Persian UI typeface. Until now the project asked
-   for it in three different font stacks (app.css, babaei-ui.css,
-   shop-reference.css) while never actually shipping a /* --------------------------------------------------------------------------
-   Shared palette.
+   BABAEI — Fonts & shared design tokens
+   ========================================================================== */
 
-   These lived on body.shop-page, which meant only the shop namespace could use
-   them. Every page now loads this file, so they move to :root and the shop
-   shell keeps whatever is genuinely shop-specific (nav height, gutters).
-   -------------------------------------------------------------------------- */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("../fonts/vazirmatn-var.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
+    --sh-font: "Vazirmatn", "IRANSansX", Tahoma, Arial, sans-serif;
+    --sh-font-latin: "Vazirmatn", "Helvetica Neue", Arial, sans-serif;
+
     --sh-forest: #14523c;
     --sh-forest-deep: #0e3d2d;
     --sh-forest-soft: #1d6b4e;
@@ -24,44 +27,13 @@
     --sh-ink-2: #2b3035;
     --sh-muted: #6d7278;
     --sh-line: rgba(20, 22, 26, .10);
-    /* These two were consumed by css/pages/shop-shell.css but defined
-       nowhere, so every border and radius that used them computed to
-       nothing — that is what turned the product page's save button into a
-       bare green square and left the variant chips looking unstyled. */
     --sh-line-strong: rgba(20, 22, 26, .18);
     --sh-radius-sm: 12px;
-    --sh-shadow: 0 18px 44px rgba(9, 28, 20, .10);
     --sh-radius: 18px;
+    --sh-shadow: 0 18px 44px rgba(9, 28, 20, .10);
     --sh-ease: cubic-bezier(.22, .61, .36, 1);
     --sh-dur-fast: 180ms;
     --sh-dur: 320ms;
     --sh-fast: var(--sh-dur-fast) var(--sh-ease);
     --sh-slow: var(--sh-dur) var(--sh-ease);
-}
-
-@font-face, so every
-   Persian glyph fell back to Tahoma / the Android default.
-
-   This file is the single source of truth for the webfont.
-
-   Loaded on: shop pages (via base.html, namespace-guarded).
-   Promote it site-wide by moving the <link> into base.html's global head.
-
-   Verified: 811 cmap entries, full Persian + Arabic + Latin coverage,
-   variable wght axis 100-900, Arabic joining features init/medi/fina present.
-   ========================================================================== */
-
-@font-face {
-    font-family: "Vazirmatn";
-    src: url("../fonts/vazirmatn-var.woff2") format("woff2");
-    font-weight: 100 900;
-    font-style: normal;
-    font-display: swap;
-}
-
-/* The whole shop shell reads from these two custom properties so a future
-   typeface swap is a one-line change. */
-body.shop-page {
-    --sh-font: "Vazirmatn", "IRANSansX", Tahoma, Arial, sans-serif;
-    --sh-font-latin: "Vazirmatn", "Helvetica Neue", Arial, sans-serif;
 }
