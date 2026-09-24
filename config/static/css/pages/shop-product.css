@@ -2002,6 +2002,63 @@ body.product-detail-page .pd-comments__back span {
     }
 }
 
+/* Mobile benefit cards: give each item room to breathe instead of squeezing
+   three desktop cards into a narrow row. */
+@media (max-width: 719px) {
+    body.product-detail-page .pd-perks {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 24px;
+        padding-inline: 2px;
+    }
+
+    body.product-detail-page .pd-perk {
+        grid-template-columns: 46px minmax(0, 1fr);
+        min-height: 76px;
+        padding: 13px 15px;
+        border: 1px solid rgba(20, 22, 26, .09);
+        border-radius: 17px;
+        background: #ffffff;
+        box-shadow:
+            0 12px 26px -22px rgba(9, 28, 20, .72),
+            0 1px 0 rgba(255,255,255,.98) inset;
+    }
+
+    body.product-detail-page .pd-perk + .pd-perk {
+        border-top: 1px solid rgba(20, 22, 26, .09);
+    }
+
+    body.product-detail-page .pd-perk::before {
+        inset-inline-end: 0;
+        inset-block: 12px;
+        width: 3px;
+        border-radius: 99px 0 0 99px;
+    }
+
+    body.product-detail-page .pd-perk__icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+    }
+
+    body.product-detail-page .pd-perk strong {
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    body.product-detail-page .pd-perk small {
+        margin-top: 2px;
+        font-size: 9px;
+        line-height: 1.65;
+    }
+
+    body.product-detail-page .pd-story {
+        margin-top: 22px;
+        padding: 20px 17px;
+        border-radius: 17px;
+    }
+}
+
 @media (max-width: 700px) {
     body.product-detail-page .pd-comments {
         padding: 16px;
