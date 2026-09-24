@@ -16,17 +16,19 @@
         </nav>
 
         <section class="pd-comments pd-comments--all" aria-labelledby="all-comments-title">
-            <div class="pd-comments__head">
-                <div>
-                    <span class="pd-comments__eyebrow">بازخورد مشتری‌ها</span>
-                    <h1 id="all-comments-title">همه نظرها درباره {{ product.name }}</h1>
-                    <p class="pd-comments__intro">تجربه واقعی مشتری‌ها را بخوان و اگر خرید کردی، نظر خودت را ثبت کن.</p>
+            <header class="pd-comments-all__hero">
+                <div class="pd-comments-all__hero-copy">
+                    <span class="pd-comments__eyebrow">نظرات مشتریان</span>
+                    <h1 id="all-comments-title">نظرهای واقعی درباره {{ product.name }}</h1>
+                    <p>تجربه کسانی که این محصول را خریدند و استفاده کردند.</p>
                 </div>
-                <div class="pd-comments__summary">
-                    {% if comment_average %}<strong>{{ comment_average|floatformat:1 }}</strong><span class="pd-stars" aria-label="{{ comment_average|floatformat:1 }} از ۵">★★★★★</span>{% endif %}
+                <div class="pd-comments-all__score">
+                    <span>امتیاز محصول</span>
+                    <strong>{{ comment_average|default:"0"|floatformat:1 }}</strong>
+                    <b aria-hidden="true">★★★★★</b>
                     <small>{{ comment_count }} نظر</small>
                 </div>
-            </div>
+            </header>
 
             {% if comments %}
                 <div class="pd-comments__list pd-comments__list--all">
