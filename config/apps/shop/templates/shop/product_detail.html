@@ -268,6 +268,20 @@ js/storefront.js). Nothing on this page needs !important.
 <script>
 window.BabaeiProduct={variants:{{ variant_data }},cartVariants:{{ cart_variant_data }},initialProductPrice:{{ product.display_price|default:0 }},initialComparePrice:{{ product.display_compare_price|default:0 }}};
 document.addEventListener("DOMContentLoaded",function(){
+    const comments=document.querySelector("#comments");
+    const drawer=document.querySelector("[data-comment-drawer]");
+    const writeButton=document.querySelector("[data-comment-write]");
+
+    if(comments && drawer && writeButton){
+        writeButton.addEventListener("click",function(){
+            drawer.hidden=false;
+            writeButton.setAttribute("aria-expanded","true");
+            requestAnimationFrame(function(){
+                drawer.scrollIntoView({behavior:"smooth",block:"nearest"});
+            });
+        });
+    }
+
     const form=document.querySelector("[data-comment-form]");
     if(!form) return;
     const ratingLabel=form.querySelector("[data-rating-label]");
@@ -279,7 +293,9 @@ document.addEventListener("DOMContentLoaded",function(){
     });
     const textarea=form.querySelector("textarea[name='body']");
     const counter=form.querySelector("[data-comment-count]");
-    textarea.addEventListener("input",function(){ counter.textContent=this.value.length.toLocaleString("fa-IR"); });
+    if(textarea && counter){
+        textarea.addEventListener("input",function(){ counter.textContent=this.value.length.toLocaleString("fa-IR"); });
+    }
 });
 </script>
 <script src="{% static 'js/pages/shop-product.js' %}?v=4" defer></script>
