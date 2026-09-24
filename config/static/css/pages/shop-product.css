@@ -2955,3 +2955,128 @@ body.product-detail-page .pd-studio__cta {
     body.product-detail-page .pd-studio__copy p { font-size:9px; line-height:1.8; }
     body.product-detail-page .pd-studio__cta { order:2; width:100%; min-height:38px; }
 }
+
+/* ==========================================================================
+   POLISH — compact studio + all-reviews hero
+   ========================================================================== */
+
+body.product-detail-page .pd-studio {
+    grid-template-columns: minmax(0,1fr) auto;
+    gap:24px;
+    min-height:0;
+    margin-top:22px;
+    padding:16px 22px;
+    border-radius:18px;
+}
+body.product-detail-page .pd-studio__copy h2 { font-size:20px; margin:3px 0 4px; }
+body.product-detail-page .pd-studio__copy p { font-size:10.5px; line-height:1.75; }
+body.product-detail-page .pd-studio__cta { min-height:38px; padding:0 16px; border-radius:10px; }
+body.product-detail-page .pd-studio__visual,
+body.product-detail-page .pd-studio__shirt,
+body.product-detail-page .pd-studio__label { display:none !important; }
+
+/* Dedicated all-comments page: compact editorial header instead of a giant card. */
+body.product-comments-page .pd-comments--all {
+    margin-top:clamp(18px,3vw,30px);
+    padding:clamp(14px,2.2vw,22px);
+    border:1px solid rgba(20,22,26,.09);
+    border-radius:20px;
+    background:#f6f7f4;
+    box-shadow:0 20px 46px -38px rgba(9,28,20,.55);
+}
+body.product-comments-page .pd-comments-all__hero {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 138px;
+    align-items:center;
+    gap:20px;
+    padding:20px 22px;
+    border:1px solid rgba(20,22,26,.07);
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 12px 28px -28px rgba(9,28,20,.7);
+}
+body.product-comments-page .pd-comments-all__hero-copy h1 {
+    margin:5px 0 5px;
+    color:var(--pdp-ink);
+    font-size:clamp(20px,2.7vw,29px);
+    line-height:1.35;
+}
+body.product-comments-page .pd-comments-all__hero-copy p {
+    margin:0;color:var(--pdp-muted);font-size:11px;line-height:1.9;
+}
+body.product-comments-page .pd-comments-all__score {
+    display:grid;place-items:center;align-content:center;gap:2px;
+    min-height:112px;padding:10px;border:1px solid rgba(20,82,60,.12);
+    border-radius:14px;background:#f5f2e9;text-align:center;
+}
+body.product-comments-page .pd-comments-all__score span { color:var(--pdp-muted);font-size:8px; }
+body.product-comments-page .pd-comments-all__score strong { color:var(--pdp-ink);font-size:31px;line-height:1;font-weight:900; }
+body.product-comments-page .pd-comments-all__score b { color:#c9a65b;font-size:10px;letter-spacing:1px; }
+body.product-comments-page .pd-comments-all__score small { color:var(--pdp-muted);font-size:8px; }
+body.product-comments-page .pd-comments__list--all {
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:10px !important;
+    margin-top:14px !important;
+}
+body.product-comments-page .pd-comments__list--all .pd-comment {
+    min-height:148px !important;
+}
+body.product-comments-page .pd-comments__back {
+    display:flex !important;
+    width:fit-content;
+    min-height:34px;
+    align-items:center;
+    gap:8px;
+    margin:14px auto 0 !important;
+    padding:0 14px;
+    border:1px solid rgba(20,82,60,.12);
+    border-radius:11px;
+    background:#fff;
+    color:var(--pdp-forest);
+    font-size:9px;
+    font-weight:800;
+    text-decoration:none;
+}
+@media (max-width:719px) {
+    body.product-detail-page .pd-studio {
+        grid-template-columns:minmax(0,1fr) auto;
+        gap:12px;
+        padding:13px 14px;
+        margin-top:18px;
+        border-radius:15px;
+    }
+    body.product-detail-page .pd-studio__copy h2 { font-size:15px; }
+    body.product-detail-page .pd-studio__copy p { font-size:8.5px; line-height:1.75; }
+    body.product-detail-page .pd-studio__cta { min-height:34px; padding:0 11px; font-size:8.5px; white-space:nowrap; }
+
+    body.product-comments-page .pd-comments--all {
+        margin-top:14px;
+        padding:9px;
+        border-radius:16px;
+    }
+    body.product-comments-page .pd-comments-all__hero {
+        grid-template-columns:minmax(0,1fr) 84px;
+        gap:9px;
+        padding:13px;
+        border-radius:13px;
+    }
+    body.product-comments-page .pd-comments-all__hero-copy h1 { font-size:15px; line-height:1.45; }
+    body.product-comments-page .pd-comments-all__hero-copy p { font-size:8px; line-height:1.8; }
+    body.product-comments-page .pd-comments-all__score {
+        min-height:88px;
+        padding:6px;
+        border-radius:11px;
+    }
+    body.product-comments-page .pd-comments-all__score strong { font-size:24px; }
+    body.product-comments-page .pd-comments-all__score b { font-size:8px; }
+    body.product-comments-page .pd-comments__list--all {
+        display:grid !important;
+        grid-template-columns:1fr !important;
+        gap:8px !important;
+        margin-top:9px !important;
+    }
+    body.product-comments-page .pd-comments__list--all .pd-comment {
+        min-height:128px !important;
+    }
+}
