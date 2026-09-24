@@ -58,9 +58,9 @@ body.product-detail-page {
     --pdp-muted: #5c6165;
 
     /* The one accent, straight from the shell. */
-    --pdp-forest: #14523c;
-    --pdp-forest-soft: #1d6b4e;
-    --pdp-moss: #52715f;
+    --pdp-forest: var(--sh-forest);
+    --pdp-forest-soft: var(--sh-forest-soft);
+    --pdp-moss: var(--sh-moss);
 
     --pdp-radius-card: 22px;
     --pdp-radius-control: 999px;
@@ -1046,6 +1046,102 @@ body.product-detail-page .pd-incart:focus-visible,
 body.product-detail-page .pd-studio__cta:focus-visible {
     outline: 2px solid var(--pdp-forest);
     outline-offset: 3px;
+}
+
+/* ==========================================================================
+   PROFILE PALETTE — PRODUCT DETAIL
+   Keep the product page on the same account/profile surface language:
+   forest #14523c / #1d6b4e, cream #f4f1ea / #fbfaf7,
+   1px hairlines and 16-20px card radii.
+   ========================================================================== */
+
+body.product-detail-page {
+    --pdp-stage: var(--sh-cream);
+    --pdp-panel: #f8f5ee;
+    --pdp-panel-line: var(--sh-line);
+    --pdp-forest: var(--sh-forest);
+    --pdp-forest-soft: var(--sh-forest-soft);
+    --pdp-moss: var(--sh-moss);
+    --pdp-radius-card: 18px;
+    --pdp-shadow-soft: 0 18px 40px -28px rgba(9, 28, 20, .55);
+}
+
+body.product-detail-page .pd {
+    background: var(--sh-cream);
+}
+
+body.product-detail-page .pd-perk,
+body.product-detail-page .pd-story,
+body.product-detail-page .pd-comment-form,
+body.product-detail-page .pd-comments__head {
+    background: #f8f5ee;
+    border-color: var(--sh-line);
+    box-shadow: 0 18px 40px -28px rgba(9, 28, 20, .55);
+}
+
+body.product-detail-page .pd-perk__icon {
+    background: #f4f1e9;
+    border-color: var(--sh-line);
+    color: var(--sh-forest);
+}
+
+body.product-detail-page .pd-comment {
+    background: #f8f5ee;
+    border-color: var(--sh-line);
+    box-shadow: 0 18px 40px -28px rgba(9, 28, 20, .55);
+}
+
+body.product-detail-page .pd-comment-form__rating,
+body.product-detail-page .pd-comment-form__body,
+body.product-detail-page .pd-comment-form__login {
+    background: #f4f1e9;
+    border-color: var(--sh-line);
+}
+
+body.product-detail-page .pd-comment-form__body textarea {
+    background: #fbfaf7;
+    border-color: var(--sh-line);
+}
+
+body.product-detail-page .pd-comments {
+    background: var(--sh-sand);
+    border-color: var(--sh-line);
+}
+
+body.product-detail-page .pd-comments__rating,
+body.product-detail-page .pd-comments__summary {
+    background: #f4f1e9;
+    border-color: var(--sh-line);
+}
+
+body.product-detail-page .pd-comments__all {
+    background: #f8f5ee;
+    border-color: var(--sh-line);
+}
+
+body.product-detail-page .pd-comments__empty {
+    background: #f8f5ee;
+    border-color: var(--sh-line);
+}
+
+body.product-detail-page .pd-comments__eyebrow,
+body.product-detail-page .pd-comment-form__eyebrow,
+body.product-detail-page .pd-perk__icon,
+body.product-detail-page .pd-comment-form__submit,
+body.product-detail-page .pd-comment-form__login a {
+    color: var(--sh-forest);
+}
+
+body.product-detail-page .pd-comment-form__submit,
+body.product-detail-page .pd-comment-form__login a {
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+}
+
+body.product-detail-page .pd-comment-form__submit:hover,
+body.product-detail-page .pd-comment-form__login a:hover {
+    background: var(--sh-forest-deep);
+    color: var(--sh-cream-2);
 }
 
 /* ==========================================================================
