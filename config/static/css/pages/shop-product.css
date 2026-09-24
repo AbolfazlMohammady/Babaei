@@ -1057,17 +1057,17 @@ body.product-detail-page .pd-studio__cta:focus-visible {
 @media (min-width: 720px) {
     body.product-detail-page .pd-perks {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0;
+        gap: 12px;
     }
 
     body.product-detail-page .pd-perk {
-        padding-block: 6px;
+        padding: 18px 17px;
     }
 
     body.product-detail-page .pd-perk + .pd-perk {
-        border-top: 0;
-        border-inline-start: 1px solid var(--sh-line);
-        padding-inline-start: clamp(16px, 2vw, 26px);
+        border-top: 1px solid rgba(20, 82, 60, .12);
+        border-inline-start: 0;
+        padding-inline-start: 17px;
     }
 
     body.product-detail-page .pd-studio {
