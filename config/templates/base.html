@@ -111,8 +111,6 @@
     {% endif %}
     {% include "includes/messages.html" %}
     <main>{% block content %}{% endblock %}</main>
-    {# Account, favourites and the complete order flow intentionally end
-       without the global site footer. #}
     {% if request.resolver_match.namespace != "users" and request.resolver_match.namespace != "saved" and request.resolver_match.namespace != "orders" %}
     {% include "includes/footer.html" %}
     {% endif %}
