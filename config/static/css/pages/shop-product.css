@@ -3080,3 +3080,162 @@ body.product-comments-page .pd-comments__back {
         min-height:128px !important;
     }
 }
+
+/* ==========================================================================
+   PRODUCT DETAIL — compact studio + related shelf
+   ========================================================================== */
+
+body.product-detail-page .pd-studio {
+    width:min(100%, 980px);
+    margin:24px auto 0;
+    grid-template-columns:minmax(0,1fr) auto;
+    padding:15px 20px;
+    border-radius:18px;
+    background:#f3f7f3;
+    border:1px solid rgba(20,82,60,.14);
+    box-shadow:0 14px 32px -28px rgba(9,28,20,.6);
+}
+body.product-detail-page .pd-studio__copy h2 {
+    font-size:19px;
+    margin:3px 0 3px;
+}
+body.product-detail-page .pd-studio__copy p:last-child {
+    font-size:10px;
+    line-height:1.8;
+}
+body.product-detail-page .pd-studio__cta {
+    min-height:38px;
+    padding:0 16px;
+    border-radius:11px;
+    font-size:10px;
+    white-space:nowrap;
+}
+
+/* Related products: a narrow horizontal shelf, not another full-width panel. */
+body.product-detail-page .pd-related {
+    width:min(100%, 1180px);
+    margin:30px auto 0;
+    padding:0 0 8px;
+}
+body.product-detail-page .pd-related__head {
+    display:flex;
+    align-items:end;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:12px;
+    padding:0 4px;
+}
+body.product-detail-page .pd-related__head .pd-kicker {
+    display:block;
+    margin-bottom:4px;
+    color:var(--pdp-forest);
+    font-size:8px;
+    letter-spacing:.16em;
+    font-weight:800;
+}
+body.product-detail-page .pd-related__head h2 {
+    margin:0;
+    color:var(--pdp-ink);
+    font-size:20px;
+    line-height:1.4;
+}
+body.product-detail-page .pd-related__head > a {
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    color:var(--pdp-forest);
+    font-size:9px;
+    font-weight:800;
+    text-decoration:none;
+    white-space:nowrap;
+}
+body.product-detail-page .pd-related__viewport {
+    overflow:hidden;
+    border-radius:16px;
+}
+body.product-detail-page .pd-related__track {
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    overscroll-behavior-inline:contain;
+    scroll-snap-type:x proximity;
+    padding:2px 2px 12px;
+    scrollbar-width:none;
+    direction:rtl;
+}
+body.product-detail-page .pd-related__track::-webkit-scrollbar { display:none; }
+body.product-detail-page .pd-related .shop-reference__card {
+    flex:0 0 214px;
+    width:214px;
+    scroll-snap-align:start;
+    border-radius:16px;
+    box-shadow:0 12px 26px -23px rgba(9,28,20,.7);
+}
+body.product-detail-page .pd-related .shop-reference__media {
+    aspect-ratio:4 / 4.65;
+}
+body.product-detail-page .pd-related .shop-reference__card-body {
+    padding:9px 10px;
+}
+body.product-detail-page .pd-related .shop-reference__card-info h3 {
+    font-size:10px;
+    min-height:28px;
+}
+body.product-detail-page .pd-related .shop-reference__price-row strong {
+    font-size:10px;
+}
+body.product-detail-page .pd-related .shop-reference__cart {
+    width:30px;
+    height:30px;
+}
+@media (hover:hover) {
+    body.product-detail-page .pd-related .shop-reference__card:hover {
+        transform:translateY(-3px);
+    }
+}
+@media (max-width:719px) {
+    body.product-detail-page .pd-studio {
+        width:100%;
+        margin-top:18px;
+        padding:13px 14px;
+        border-radius:15px;
+    }
+    body.product-detail-page .pd-studio__copy h2 { font-size:15px; }
+    body.product-detail-page .pd-studio__copy p:last-child { font-size:8.5px; }
+    body.product-detail-page .pd-studio__cta { min-height:34px; padding:0 11px; font-size:8.5px; }
+
+    body.product-detail-page .pd-related {
+        margin-top:22px;
+        padding-bottom:2px;
+    }
+    body.product-detail-page .pd-related__head {
+        align-items:center;
+        margin-bottom:9px;
+    }
+    body.product-detail-page .pd-related__head h2 { font-size:15px; }
+    body.product-detail-page .pd-related__head > a { font-size:8px; }
+    body.product-detail-page .pd-related__track {
+        gap:8px;
+        padding-bottom:8px;
+        margin-inline:-2px;
+        padding-inline:2px;
+    }
+    body.product-detail-page .pd-related .shop-reference__card {
+        flex-basis:158px;
+        width:158px;
+        border-radius:13px;
+    }
+    body.product-detail-page .pd-related .shop-reference__media {
+        aspect-ratio:4 / 4.7;
+    }
+    body.product-detail-page .pd-related .shop-reference__card-body {
+        padding:8px;
+    }
+    body.product-detail-page .pd-related .shop-reference__card-info h3 {
+        font-size:9px;
+        min-height:26px;
+    }
+    body.product-detail-page .pd-related .shop-reference__price-row strong {
+        font-size:9px;
+    }
+}
