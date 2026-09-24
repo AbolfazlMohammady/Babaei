@@ -53,14 +53,20 @@
     <div class="ba-sidebar__foot"><a href="/" target="_blank" rel="noopener"><span>↗</span> مشاهده سایت</a></div>
 </aside>
 
-<main id="content-start" class="ba-main" tabindex="-1">
+<main id="content-start" class="{% if is_popup %}ba-popup{% else %}ba-main{% endif %}" tabindex="-1">
+{% if not is_popup %}
 {% block nav-breadcrumbs %}<nav class="ba-breadcrumbs" aria-label="مسیر">{% block breadcrumbs %}<a href="{% url 'admin:index' %}">خانه</a>{% if title %}<span>/</span><strong>{{ title }}</strong>{% endif %}{% endblock %}</nav>{% endblock %}
 {% block messages %}{% if messages %}<div class="ba-messages" aria-live="polite">{% for message in messages %}<div class="ba-message ba-message--{{ message.tags|default:'info' }}">{{ message }}</div>{% endfor %}</div>{% endif %}{% endblock %}
 <div id="content" class="{% block coltype %}colM{% endblock %}">
     <div class="ba-page-head"><div class="ba-page-title">{% block pretitle %}{% endblock %}{% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}{% block content_subtitle %}{% if subtitle %}<p>{{ subtitle }}</p>{% endif %}{% endblock %}</div><div class="ba-page-tools">{% block object-tools %}{% endblock %}</div></div>
-    {% block content %}{{ content }}{% endblock %}
+{% endif %}
+
+{% block content %}{{ content }}{% endblock %}
+
+{% if not is_popup %}
     {% block sidebar %}{% endblock %}
 </div>
+{% endif %}
 </main>
 </div>
 <footer class="ba-footer"><span>BABAEI CONTROL CENTER</span><span>© {% now "Y" %} BABAEI</span></footer>
