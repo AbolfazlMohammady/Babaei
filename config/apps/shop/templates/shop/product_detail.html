@@ -259,7 +259,26 @@ js/storefront.js). Nothing on this page needs !important.
         <section class="pd-studio" data-reveal>
             <div class="pd-studio__copy"><p class="pd-kicker">BABAEI DESIGN STUDIO</p><h2>لیبلت را روی لباس قرار بده</h2><p>طرح لیبلت را انتخاب کن، روی لباس جابه‌جایش کن و اندازه و زاویه را همان لحظه تنظیم کن.</p></div>
             <a class="pd-studio__cta" href="{% url 'customizer:designer' product.slug %}">ورود به طراحی <span aria-hidden="true">←</span></a>
-        </section>>
+        </section>
+
+        {% if similar_products %}
+        <section class="pd-related" aria-labelledby="related-products-title" data-reveal>
+            <div class="pd-related__head">
+                <div>
+                    <span class="pd-kicker">BABAEI PICKS</span>
+                    <h2 id="related-products-title">شاید اینا هم به سلیقه‌ات بخوره</h2>
+                </div>
+                <a href="{% url 'shop:index' %}">مشاهده فروشگاه <span aria-hidden="true">←</span></a>
+            </div>
+            <div class="pd-related__viewport" data-related-scroll>
+                <div class="pd-related__track">
+                    {% for related in similar_products %}
+                        {% include "shop/includes/_catalog_card.html" with product=related %}
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
