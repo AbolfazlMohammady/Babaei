@@ -57,25 +57,25 @@ class Command(BaseCommand):
         if not products:
             raise CommandError("هیچ محصول فعالی برای ساخت کامنت تستی پیدا نشد.")
 
-        user, created = User.objects.get_or_create(
-            phone=TEST_PHONE,
-            defaults={
-                "first_name": "کاربر",
-                "last_name": "تستی",
-                "role": "customer",
-                "is_active": True,
-            },
-        )
-
-        if created:
-            user.set_unusable_password()
-            user.save(update_fields=["password"])
-
         created_count = 0
 
         for product in products:
             for index in range(comments_per_product):
                 first_name, last_name, rating, body = COMMENTS[index]
+                phone = f"+9890000000{index + 1:02d}"
+                user, created = User.objects.get_or_create(
+                    phone=phone,
+                    defaults={
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "role": "customer",
+                        "is_active": True,
+                    },
+                )
+                if created:
+                    user.set_unusable_password()
+                    user.save(update_fields=["password"])
+
                 _, was_created = ProductComment.objects.get_or_create(
                     product=product,
                     user=user,
@@ -93,8 +93,4 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 f"{created_count} کامنت تستی برای {len(products)} محصول ایجاد شد."
             )
-        )
-        self.stdout.write(
-            "کاربر تست: "
-            f"{TEST_PHONE}"
         )
