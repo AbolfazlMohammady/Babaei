@@ -82,8 +82,8 @@ body.product-detail-page {
    whole page into one sheet of paper: nothing was distinguishable.
    Both are single tokens. */
 body.product-detail-page {
-    --pdp-stage: #e7dfcf;
-    --pdp-panel: #fffdf8;
+    --pdp-stage: #f4f6f5;
+    --pdp-panel: #ffffff;
     --pdp-panel-line: rgba(31, 48, 40, .13);
 }
 
@@ -768,7 +768,7 @@ body.product-detail-page .pd-perk {
     padding: 18px 17px;
     border: 1px solid rgba(21, 81, 59, .14);
     border-radius: 18px;
-    background: #f4eee2;
+    background: #f5f7f6;
     box-shadow:
         0 14px 28px -24px rgba(9, 28, 20, .65),
         inset 0 1px 0 rgba(255,255,255,.9);
@@ -798,7 +798,7 @@ body.product-detail-page .pd-perk__icon {
     height: 44px;
     border: 1px solid rgba(20, 82, 60, .12);
     border-radius: 13px;
-    background: #fffdf8;
+    background: #ffffff;
     color: var(--pdp-forest);
     box-shadow: 0 7px 16px -14px rgba(9, 28, 20, .7);
 }
@@ -1240,7 +1240,7 @@ body.product-detail-page .pd-comments {
     background:
         radial-gradient(circle at 12% 8%, rgba(255,255,255,.42), transparent 24%),
         radial-gradient(circle at 88% 90%, rgba(20,82,60,.06), transparent 28%),
-        #ddd4c3;
+        #e9edeb;
     box-shadow:
         0 34px 90px rgba(31, 43, 36, .15),
         inset 0 1px 0 rgba(255,255,255,.58);
@@ -1348,7 +1348,7 @@ body.product-detail-page .pd-comments__summary {
     border-radius: 3px;
     background:
         repeating-linear-gradient(0deg, transparent 0 7px, rgba(42,55,47,.025) 7px 8px),
-        #f4efe4;
+        #f7f9f8;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
 }
 
@@ -1635,7 +1635,7 @@ body.product-detail-page .pd-comment-form__body {
     padding: 17px;
     border: 1px solid #e1e2dc;
     border-radius: 3px;
-    background: #f1eadc;
+    background: #f3f6f4;
 }
 
 body.product-detail-page .pd-comment-form__label-row {
