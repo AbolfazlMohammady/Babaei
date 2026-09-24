@@ -1606,3 +1606,156 @@ body.account-body .sh-nav.is-top .sh-nav__link::after {
 }
 
 /* ==========================================================================
+
+
+/* Checkout address cards — use the same type, contrast and rhythm as the shop. */
+body.orders-page,
+body.orders-page * {
+    font-family: var(--sh-font, "Vazirmatn", Tahoma, Arial, sans-serif);
+}
+
+.address-choice {
+    gap: 10px;
+}
+
+.address-choice__item {
+    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 12px;
+    min-height: 118px;
+    padding: 15px 16px;
+    border-color: rgba(20,22,26,.12);
+    border-radius: 17px;
+    background: rgba(248,245,238,.72);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.3);
+}
+
+.address-choice__item:hover {
+    border-color: rgba(20,82,60,.24);
+    background: rgba(248,245,238,.92);
+    transform: translateY(-1px);
+}
+
+.address-choice__radio {
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    border: 1px solid rgba(43,48,53,.28);
+    box-shadow: inset 0 0 0 4px var(--sh-cream-2);
+}
+
+.address-choice__item.is-selected,
+.address-choice__item:has(input:checked) {
+    border-color: rgba(20,82,60,.42);
+    background: linear-gradient(135deg, rgba(20,82,60,.09), rgba(20,82,60,.035));
+    box-shadow: inset 3px 0 0 var(--sh-forest), 0 12px 28px -24px rgba(9,28,20,.55);
+}
+
+.address-choice__item.is-selected .address-choice__radio,
+.address-choice__item:has(input:checked) .address-choice__radio {
+    border: 5px solid var(--sh-forest);
+    box-shadow: none;
+}
+
+.address-choice__body {
+    gap: 7px;
+    min-width: 0;
+    font-family: var(--sh-font, "Vazirmatn", Tahoma, Arial, sans-serif);
+}
+
+.address-choice__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.address-choice__body strong {
+    color: var(--sh-ink);
+    font-size: 13px;
+    font-weight: 850;
+    line-height: 1.5;
+}
+
+.address-choice__body em {
+    padding: 3px 8px;
+    background: rgba(20,82,60,.09);
+    color: var(--sh-forest);
+    font-size: 7.5px;
+    letter-spacing: .03em;
+}
+
+.address-choice__line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #50575d;
+    font-size: 9px;
+    line-height: 1.7;
+}
+
+.address-choice__line b {
+    color: #383f45;
+    font-size: 9px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.address-choice__address {
+    display: -webkit-box;
+    overflow: hidden;
+    color: #4d5459;
+    font-size: 9.5px;
+    line-height: 1.8;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.address-choice__postal {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    margin-top: 1px;
+    padding: 4px 7px;
+    border-radius: 8px;
+    background: rgba(20,22,26,.045);
+    direction: rtl;
+}
+
+.address-choice__postal small {
+    color: #858b90;
+    font-size: 7px;
+}
+
+.address-choice__postal b {
+    color: #353b40;
+    font-family: var(--sh-font, "Vazirmatn", Tahoma, Arial, sans-serif);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+
+/* Keep the old invoice selectors intentionally intact below this point. */
+
+@media (max-width: 640px) {
+    .address-choice__item {
+        min-height: 104px;
+        padding: 12px 13px;
+        border-radius: 14px;
+    }
+
+    .address-choice__line {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .address-choice__address {
+        -webkit-line-clamp: 2;
+    }
+
+    .address-choice__body strong {
+        font-size: 12px;
+    }
+}
