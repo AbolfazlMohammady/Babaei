@@ -1897,6 +1897,22 @@ body.product-detail-page .pd-comments__back span {
     }
 }
 
+/* No reviews yet: do not reserve space for the review summary/header. */
+body.product-detail-page .pd-comments--empty-state {
+    padding: 16px;
+}
+
+body.product-detail-page .pd-comments--empty-state .pd-comments__empty {
+    margin-top: 0;
+    min-height: 0;
+    padding: 24px 20px;
+    border-style: dashed;
+}
+
+body.product-detail-page .pd-comments--empty-state .pd-comment-form {
+    margin-top: 14px;
+}
+
 @media (max-width: 480px) {
     body.product-detail-page .pd-comments {
         padding: 12px;
