@@ -55,6 +55,7 @@
         <section class="receipt-section">
             <div class="receipt-section__title">DELIVERY / تحویل</div>
             <div class="receipt-address">
+                <strong>{{ order.shipping_title|default:"آدرس تحویل" }}</strong>
                 <span>{{ order.shipping_province }}، {{ order.shipping_city }}</span>
                 <span>{{ order.shipping_address }}</span>
                 <span dir="ltr">کد پستی: {{ order.shipping_postal_code }}</span>
