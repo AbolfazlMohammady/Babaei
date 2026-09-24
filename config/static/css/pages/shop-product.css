@@ -58,8 +58,8 @@ body.product-detail-page {
     --pdp-muted: #5c6165;
 
     /* The one accent, straight from the shell. */
-    --pdp-forest: #15513b;
-    --pdp-forest-soft: #1b6047;
+    --pdp-forest: #14523c;
+    --pdp-forest-soft: #1d6b4e;
     --pdp-moss: #52715f;
 
     --pdp-radius-card: 22px;
@@ -82,9 +82,9 @@ body.product-detail-page {
    whole page into one sheet of paper: nothing was distinguishable.
    Both are single tokens. */
 body.product-detail-page {
-    --pdp-stage: #f4f6f5;
-    --pdp-panel: #ffffff;
-    --pdp-panel-line: rgba(31, 48, 40, .13);
+    --pdp-stage: #f4f1ea;
+    --pdp-panel: #fbfaf7;
+    --pdp-panel-line: rgba(20, 22, 26, .14);
 }
 
 body.product-detail-page .pd {
@@ -786,7 +786,7 @@ body.product-detail-page .pd-perk::before {
     inset-block: 16px;
     width: 3px;
     border-radius: 99px;
-    background: #15513b;
+    background: #14523c;
 }
 
 body.product-detail-page .pd-perk::after {
@@ -813,7 +813,7 @@ body.product-detail-page .pd-perk__icon {
     border: 1px solid rgba(21, 81, 59, .12);
     border-radius: 14px;
     background: #f5f8f6;
-    color: #15513b;
+    color: #14523c;
     box-shadow: 0 8px 18px -15px rgba(9, 28, 20, .7);
 }
 
@@ -1257,7 +1257,7 @@ body.product-detail-page .pd-comments {
     background:
         radial-gradient(circle at 12% 8%, rgba(255,255,255,.42), transparent 24%),
         radial-gradient(circle at 88% 90%, rgba(20,82,60,.06), transparent 28%),
-        #e9edeb;
+        #ebe6dc;
     box-shadow:
         0 34px 90px rgba(31, 43, 36, .15),
         inset 0 1px 0 rgba(255,255,255,.58);
@@ -1365,7 +1365,7 @@ body.product-detail-page .pd-comments__summary {
     border-radius: 3px;
     background:
         repeating-linear-gradient(0deg, transparent 0 7px, rgba(42,55,47,.025) 7px 8px),
-        #f7f9f8;
+        #f5f1e8;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
 }
 
@@ -1394,7 +1394,7 @@ body.product-detail-page .pd-comments__summary small {
 
 /* Gold is reserved for rating only, so the hierarchy stays quiet. */
 body.product-detail-page .pd-stars {
-    color: #b9852f;
+    color: #d8bd7d;
     letter-spacing: .1em;
     font-size: 15px;
     line-height: 1;
@@ -1406,7 +1406,7 @@ body.product-detail-page .pd-stars--small {
     padding: 7px 9px 6px;
     border: 1px solid rgba(185,133,47,.18);
     border-radius: 999px;
-    background: #fbf7ec;
+    background: #f7f3e9;
     font-size: 11px;
 }
 
@@ -1652,7 +1652,7 @@ body.product-detail-page .pd-comment-form__body {
     padding: 17px;
     border: 1px solid #e1e2dc;
     border-radius: 3px;
-    background: #f3f6f4;
+    background: #f4f1e9;
 }
 
 body.product-detail-page .pd-comment-form__label-row {
@@ -1702,7 +1702,7 @@ body.product-detail-page .pd-rating-stars label {
 }
 
 body.product-detail-page .pd-rating-stars input:checked ~ label {
-    color: #b9852f;
+    color: #d8bd7d;
 }
 
 body.product-detail-page .pd-rating-stars input:focus-visible + label {
