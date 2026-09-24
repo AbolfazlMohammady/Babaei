@@ -111,9 +111,8 @@
     {% endif %}
     {% include "includes/messages.html" %}
     <main>{% block content %}{% endblock %}</main>
-    {% if request.resolver_match.namespace == "users" and request.resolver_match.url_name != "login" and request.resolver_match.url_name != "verify_otp" or request.resolver_match.namespace == "saved" %}
-    {% include "includes/footer.html" %}
-    {% elif request.resolver_match.namespace != "users" and request.resolver_match.namespace != "saved" %}
+    {# Account surfaces intentionally end without the global site footer. #}
+    {% if request.resolver_match.namespace != "users" and request.resolver_match.namespace != "saved" %}
         {% if request.resolver_match.namespace != "orders" or request.resolver_match.url_name != "cart" %}
     {% include "includes/footer.html" %}
         {% endif %}
