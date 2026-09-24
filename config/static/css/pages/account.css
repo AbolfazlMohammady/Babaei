@@ -71,8 +71,8 @@
    ========================================================================== */
 
 .account-body {
-    /* Account / profile uses the more formal Persian face. */
-    --sh-font: "BABAEI-AccountPersian", "Lateef", serif;
+    /* Account, addresses and favourites use exactly the same typography token
+       as the public shop. */
     font-family: var(--sh-font);
     --sh-nav-h: 74px;
     --sh-gutter: clamp(18px, 4.4vw, 56px);
