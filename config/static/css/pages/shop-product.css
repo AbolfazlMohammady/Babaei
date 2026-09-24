@@ -751,7 +751,7 @@ body.product-detail-page .pd-incart[hidden] {
 body.product-detail-page .pd-perks {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
+    gap: 14px;
     margin-top: clamp(26px, 3.6vw, 42px);
     padding: 0;
     border: 0;
@@ -761,46 +761,60 @@ body.product-detail-page .pd-perks {
 
 body.product-detail-page .pd-perk {
     position: relative;
-    display: flex;
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr);
     align-items: center;
-    gap: 14px;
-    min-height: 92px;
-    padding: 18px 17px;
-    border: 1px solid rgba(21, 81, 59, .14);
+    gap: 13px;
+    min-height: 104px;
+    padding: 18px;
+    border: 1px solid rgba(21, 81, 59, .12);
     border-radius: 18px;
-    background: #f5f7f6;
-    box-shadow:
-        0 14px 28px -24px rgba(9, 28, 20, .65),
-        inset 0 1px 0 rgba(255,255,255,.9);
+    background: #ffffff;
+    box-shadow: 0 18px 40px -30px rgba(9, 28, 20, .55);
+    overflow: hidden;
     transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
 body.product-detail-page .pd-perk + .pd-perk {
-    border-top: 1px solid rgba(20, 82, 60, .12);
+    border-top: 1px solid rgba(21, 81, 59, .12);
 }
 
 body.product-detail-page .pd-perk::before {
     content: "";
     position: absolute;
     inset-inline-start: 0;
-    inset-block: 17px;
+    inset-block: 16px;
     width: 3px;
     border-radius: 99px;
-    background: var(--pdp-forest);
+    background: #15513b;
+}
+
+body.product-detail-page .pd-perk::after {
+    content: "";
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    inset-inline-end: -74px;
+    inset-block-start: -74px;
+    border-radius: 50%;
+    background: rgba(21, 81, 59, .035);
+    pointer-events: none;
 }
 
 body.product-detail-page .pd-perk__icon {
-    flex: 0 0 44px;
+    position: relative;
+    z-index: 1;
+    flex: 0 0 46px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-    border: 1px solid rgba(20, 82, 60, .12);
-    border-radius: 13px;
-    background: #ffffff;
-    color: var(--pdp-forest);
-    box-shadow: 0 7px 16px -14px rgba(9, 28, 20, .7);
+    width: 46px;
+    height: 46px;
+    border: 1px solid rgba(21, 81, 59, .12);
+    border-radius: 14px;
+    background: #f5f8f6;
+    color: #15513b;
+    box-shadow: 0 8px 18px -15px rgba(9, 28, 20, .7);
 }
 
 body.product-detail-page .pd-perk__icon svg {
@@ -815,26 +829,24 @@ body.product-detail-page .pd-perk__icon svg {
 
 body.product-detail-page .pd-perk strong {
     display: block;
-    color: var(--pdp-ink);
+    color: #17211d;
     font-size: 13px;
     font-weight: 900;
 }
 
 body.product-detail-page .pd-perk small {
     display: block;
-    margin-top: 4px;
-    color: var(--pdp-muted);
+    margin-top: 5px;
+    color: #69736e;
     font-size: 10.5px;
     line-height: 1.8;
 }
 
 @media (hover: hover) and (pointer: fine) {
     body.product-detail-page .pd-perk:hover {
-        transform: translateY(-2px);
+        transform: translateY(-3px);
         border-color: rgba(21, 81, 59, .22);
-        box-shadow:
-            0 18px 32px -23px rgba(9, 28, 20, .72),
-            inset 0 1px 0 rgba(255,255,255,.95);
+        box-shadow: 0 22px 42px -28px rgba(9, 28, 20, .68);
     }
 }
 
@@ -849,8 +861,13 @@ body.product-detail-page .pd-studio {
 }
 
 body.product-detail-page .pd-story {
-    max-width: 74ch;
+    max-width: none;
     margin-top: clamp(26px, 3.6vw, 42px);
+    padding: clamp(22px, 3vw, 32px);
+    border: 1px solid rgba(21, 81, 59, .10);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 18px 40px -30px rgba(9, 28, 20, .55);
 }
 
 body.product-detail-page .pd-story h2 {
@@ -1057,17 +1074,17 @@ body.product-detail-page .pd-studio__cta:focus-visible {
 @media (min-width: 720px) {
     body.product-detail-page .pd-perks {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
+        gap: 14px;
     }
 
     body.product-detail-page .pd-perk {
-        padding: 18px 17px;
+        padding: 18px;
     }
 
     body.product-detail-page .pd-perk + .pd-perk {
-        border-top: 1px solid rgba(20, 82, 60, .12);
+        border-top: 1px solid rgba(21, 81, 59, .12);
         border-inline-start: 0;
-        padding-inline-start: 17px;
+        padding-inline-start: 18px;
     }
 
     body.product-detail-page .pd-studio {
