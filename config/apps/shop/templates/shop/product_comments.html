@@ -18,8 +18,9 @@
         <section class="pd-comments pd-comments--all" aria-labelledby="all-comments-title">
             <div class="pd-comments__head">
                 <div>
-                    <p class="pd-kicker">بازخورد مشتری‌ها</p>
+                    <span class="pd-comments__eyebrow">بازخورد مشتری‌ها</span>
                     <h1 id="all-comments-title">همه نظرها درباره {{ product.name }}</h1>
+                    <p class="pd-comments__intro">تجربه واقعی مشتری‌ها را بخوان و اگر خرید کردی، نظر خودت را ثبت کن.</p>
                 </div>
                 <div class="pd-comments__summary">
                     {% if comment_average %}<strong>{{ comment_average|floatformat:1 }}</strong><span class="pd-stars" aria-label="{{ comment_average|floatformat:1 }} از ۵">★★★★★</span>{% endif %}
@@ -28,12 +29,26 @@
             </div>
 
             {% if comments %}
-                <div class="pd-comments__list">
+                <div class="pd-comments__list pd-comments__list--all">
                     {% for comment in comments %}
                         <article class="pd-comment">
                             <div class="pd-comment__top">
-                                <div class="pd-comment__user"><span class="pd-comment__avatar" aria-hidden="true">{{ comment.display_name|first }}</span><div><strong>{{ comment.display_name }}</strong>{% if comment.verified_purchase %}<small>خرید تأییدشده</small>{% endif %}</div></div>
-                                {% if comment.rating %}<span class="pd-stars pd-stars--small" aria-label="{{ comment.rating }} از ۵">{% if comment.rating >= 1 %}★{% endif %}{% if comment.rating >= 2 %}★{% endif %}{% if comment.rating >= 3 %}★{% endif %}{% if comment.rating >= 4 %}★{% endif %}{% if comment.rating >= 5 %}★{% endif %}</span>{% endif %}
+                                <div class="pd-comment__user">
+                                    {% if comment.user.image %}
+                                        <img class="pd-comment__avatar pd-comment__avatar--image" src="{{ comment.user.image.url }}" alt="تصویر {{ comment.display_name }}" loading="lazy">
+                                    {% else %}
+                                        <span class="pd-comment__avatar" aria-hidden="true">{{ comment.display_name|first }}</span>
+                                    {% endif %}
+                                    <div class="pd-comment__identity">
+                                        <strong>{{ comment.display_name }}</strong>
+                                        {% if comment.verified_purchase %}<small><span aria-hidden="true">✓</span> خرید تأییدشده</small>{% endif %}
+                                    </div>
+                                </div>
+                                {% if comment.rating %}
+                                    <span class="pd-stars pd-stars--small" aria-label="{{ comment.rating }} از ۵">
+                                        {% if comment.rating >= 1 %}★{% endif %}{% if comment.rating >= 2 %}★{% endif %}{% if comment.rating >= 3 %}★{% endif %}{% if comment.rating >= 4 %}★{% endif %}{% if comment.rating >= 5 %}★{% endif %}
+                                    </span>
+                                {% endif %}
                             </div>
                             <p>{{ comment.body }}</p>
                             <time datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|date:'j F Y' }}</time>
