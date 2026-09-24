@@ -2165,3 +2165,13 @@
         transform: none !important;
     }
 }
+
+
+/* Typography contract: profile, addresses and favourites inherit the exact
+   same Persian face used by the public shop. Latin brand/code text continues
+   to use the shared Runtime rule from fonts.css. */
+body.account-body .account-page,
+body.account-body .account-sidebar,
+body.account-body .account-content {
+    font-family: var(--sh-font);
+}
