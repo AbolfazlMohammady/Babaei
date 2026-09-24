@@ -197,7 +197,7 @@ js/storefront.js). Nothing on this page needs !important.
 
 
 
-        <section class="pd-comments" id="comments" data-reveal aria-labelledby="product-comments-title">
+        <section class="pd-comments pd-comments--receipt" id="comments" data-reveal aria-labelledby="product-comments-title">
             <div class="pd-comments__head">
                 <div class="pd-comments__title">
                     <span class="pd-comments__eyebrow">بازخورد مشتری‌ها</span>
@@ -214,7 +214,7 @@ js/storefront.js). Nothing on this page needs !important.
             {% if featured_comments %}
                 <div class="pd-comments__list">
                     {% for comment in featured_comments %}
-                        <article class="pd-comment">
+                        <article class="pd-comment pd-comment--receipt">
                             <div class="pd-comment__top">
                                 <div class="pd-comment__user">
                                     {% if comment.user.image %}
