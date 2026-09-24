@@ -118,20 +118,39 @@
         <div class="order-items">
             {% for item in order.items.all %}
             <article class="order-item">
-                <div class="order-item__index">{{ forloop.counter|stringformat:"02d" }}</div>
+                <div class="order-item__index" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</div>
+                <div class="order-item__media">
+                    {% with primary=item.product.primary_images|first %}
+                        {% if primary %}
+                        <img src="{{ primary.image.url }}" alt="{{ item.product_name }}" loading="lazy">
+                        {% else %}
+                        <span class="order-item__placeholder" aria-hidden="true">B</span>
+                        {% endif %}
+                    {% endwith %}
+                </div>
                 <div class="order-item__copy">
                     <strong>{{ item.product_name }}</strong>
                     {% if item.color_name or item.size_name %}
-                    <span>{{ item.color_name }}{% if item.color_name and item.size_name %} · {% endif %}{{ item.size_name }}</span>
+                    <span class="order-item__spec">
+                        {% if item.color_name %}<b>{{ item.color_name }}</b>{% endif %}
+                        {% if item.color_name and item.size_name %}<i>•</i>{% endif %}
+                        {% if item.size_name %}<b>{{ item.size_name }}</b>{% endif %}
+                    </span>
                     {% endif %}
                     {% if item.variant_sku %}<small dir="ltr">SKU: {{ item.variant_sku }}</small>{% endif %}
                 </div>
-                <div class="order-item__qty">× {{ item.quantity }}</div>
-                <div class="order-item__unit">
-                    <span>واحد</span>
-                    <strong>{{ item.unit_price|price }}</strong>
+                <div class="order-item__qty">
+                    <span>تعداد</span>
+                    <b>× {{ item.quantity }}</b>
                 </div>
-                <strong class="order-item__price">{{ item.line_total|price }} <small>تومان</small></strong>
+                <div class="order-item__unit">
+                    <span>قیمت واحد</span>
+                    <strong>{{ item.unit_price|price }} <small>تومان</small></strong>
+                </div>
+                <div class="order-item__price">
+                    <span>جمع</span>
+                    <strong>{{ item.line_total|price }} <small>تومان</small></strong>
+                </div>
             </article>
             {% empty %}
             <div class="order-empty">موردی برای نمایش وجود ندارد.</div>
