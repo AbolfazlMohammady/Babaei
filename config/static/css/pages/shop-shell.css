@@ -1103,7 +1103,9 @@ body.shop-page.sh-no-scroll {
 }
 
 
-/* Mobile hero: text and actions have independent placement. */
+/* Mobile hero: the copy lives in the upper-left visual zone while the
+   actions stay low, just above the category rail — matching the desktop
+   composition instead of floating halfway up the hero. */
 @media (max-width: 700px) {
     body.shop-page .sh-hero__copy {
         position: static;
@@ -1117,9 +1119,10 @@ body.shop-page.sh-no-scroll {
 
     body.shop-page .sh-hero__text {
         position: absolute;
-        inset-inline-start: 16px;
-        inset-block-start: 84px;
-        width: min(58%, 220px);
+        left: 16px;
+        right: auto;
+        top: 84px;
+        width: min(56%, 220px);
         max-width: 220px;
         z-index: 3;
         text-align: right;
@@ -1141,9 +1144,12 @@ body.shop-page.sh-no-scroll {
         width: 100%;
         max-width: 220px;
         margin: 0;
+        font-family: var(--sh-font);
         font-size: clamp(30px, 8.2vw, 37px);
+        font-weight: 850;
         line-height: 1.12;
         letter-spacing: -.04em;
+        overflow-wrap: normal;
     }
 
     body.shop-page .sh-hero__text .sh-hero__lead {
@@ -1155,10 +1161,11 @@ body.shop-page.sh-no-scroll {
 
     body.shop-page .sh-hero__actions {
         position: absolute;
-        inset-inline-end: 16px;
-        inset-block-end: 108px;
-        width: min(78%, 285px);
-        max-width: 285px;
+        left: 16px;
+        right: 16px;
+        bottom: 22px;
+        width: auto;
+        max-width: none;
         margin: 0;
         z-index: 4;
     }
@@ -1166,8 +1173,9 @@ body.shop-page.sh-no-scroll {
 
 @media (max-width: 420px) {
     body.shop-page .sh-hero__text {
-        inset-inline-start: 14px;
-        inset-block-start: 78px;
+        left: 14px;
+        right: auto;
+        top: 78px;
         width: 58%;
         max-width: 205px;
     }
@@ -1178,9 +1186,10 @@ body.shop-page.sh-no-scroll {
     }
 
     body.shop-page .sh-hero__actions {
-        inset-inline-end: 14px;
-        inset-block-end: 106px;
-        width: calc(100% - 28px);
-        max-width: 286px;
+        left: 14px;
+        right: 14px;
+        bottom: 22px;
+        width: auto;
+        max-width: none;
     }
 }
