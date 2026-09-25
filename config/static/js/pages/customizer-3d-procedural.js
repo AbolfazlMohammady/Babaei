@@ -1022,7 +1022,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             text_style: style,
         };
 
-        addLayer(artwork);
+        const added = addLayer(artwork);
+        if (!added) return false;
 
         const item = layers.get(selectedId);
         if (!item?.artwork?.is_text) return false;
@@ -1110,10 +1111,18 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             return;
         }
 
-        const hit = placementHit(area);
+        let hit = placementHit(area);
+        if (!hit) {
+            // Desktop text insertion can happen without a pointer position.
+            // Fall back to the visible front-center of the shirt instead of
+            // silently dropping the new text layer.
+            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+            const centerHit = raycaster.intersectObjects(garmentMeshes, false)[0];
+            if (isValidPrintSurface(centerHit, area)) hit = centerHit;
+        }
         if (!hit) {
             status("لیبل فقط روی محدوده چاپ مجازِ جلوی لباس قرار می‌گیرد.");
-            return;
+            return false;
         }
 
         const layer = {
@@ -1152,6 +1161,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         project(item, item.surfacePoint, item.surfaceNormal);
         sync();
         document.dispatchEvent(new CustomEvent("babaei:label-added"));
+        return true;
     }
 
     function moveSelected(event) {
