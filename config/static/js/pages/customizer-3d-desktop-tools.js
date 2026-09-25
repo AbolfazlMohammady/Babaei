@@ -557,6 +557,15 @@
             popover.classList.add("desktop-tool-popover--left");
         };
 
+        document.addEventListener("babaei:selection-changed", event => {
+            const selected = Boolean(event.detail?.selected);
+            if (selected) {
+                openLabelTools();
+            } else if (currentTool === "label-tools") {
+                close();
+            }
+        });
+
         const buttons = dock.querySelectorAll("[data-desktop-tool]");
         log("BIND BUTTONS", {
             count: buttons.length,
