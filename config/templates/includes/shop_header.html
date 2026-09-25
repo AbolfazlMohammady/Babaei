@@ -9,9 +9,9 @@
    .sh-drawer   the phone drawer, driven by data-sh-burger / data-sh-drawer
 
  Link honesty:
-   `customizer:designer` is slug-bound — there is no generic designer landing
+   `customizer:designer` is product-bound — there is no generic designer landing
    page. The design entry is therefore rendered only when a product is in
-   context, and points at that product. No `href="#"` placeholders remain.
+   context, and points at that product without exposing its name in the URL. No `href="#"` placeholders remain.
 
  Categories:
    Real `shop:category` links. Those pages ship their own canonical,
@@ -40,7 +40,7 @@
                href="{% url 'shop:index' %}"
                {% if request.resolver_match.url_name == 'index' %}aria-current="page"{% endif %}>فروشگاه</a>
             {% if hero_product %}
-                <a class="sh-nav__link" href="{% url 'customizer:designer' hero_product.slug %}">طراحی اختصاصی</a>
+                <a class="sh-nav__link" href="{% url 'customizer:designer' hero_product.uuid %}">طراحی اختصاصی</a>
             {% endif %}
         </nav>
 
