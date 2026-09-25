@@ -214,8 +214,8 @@
 
         artworkGrid.innerHTML = libraryArtworks.length || uploadedArtworks.length
             ? `
-                ${libraryArtworks.length ? `<div class="artwork-library-section"><div class="artwork-library-section__title">کتابخانه لیبل‌ها</div><div class="artwork-library-section__grid">${libraryArtworks.map(renderArtworkCard).join("")}</div></div>` : ""}
-                ${uploadedArtworks.length ? `<div class="artwork-library-section artwork-library-section--uploaded"><div class="artwork-library-section__title">لیبل‌های من</div><div class="artwork-library-section__grid">${uploadedArtworks.map(renderArtworkCard).join("")}</div></div>` : ""}
+                ${libraryArtworks.length ? `<div class="artwork-library-section"><div class="artwork-library-section__title">کتابخانه لیبل‌ها</div><div class="artwork-library-section__grid artwork-grid">${libraryArtworks.map(renderArtworkCard).join("")}</div></div>` : ""}
+                ${uploadedArtworks.length ? `<div class="artwork-library-section artwork-library-section--uploaded"><div class="artwork-library-section__title">لیبل‌های من</div><div class="artwork-library-section__grid artwork-grid">${uploadedArtworks.map(renderArtworkCard).join("")}</div></div>` : ""}
             `
             : `<div class="selected-card__empty">هنوز لیبلی در کتابخانه وجود ندارد.</div>`;
 
