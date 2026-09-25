@@ -35,6 +35,8 @@
         dock.dataset.bound = "1";
         log("INIT OK: event binding begins");
 
+        let currentTool = null;
+
         const close = () => {
             log("POPOVER CLOSE");
             popover.hidden = true;
@@ -105,6 +107,7 @@
         };
 
         const openLabel = () => {
+            currentTool = "label";
             log("ACTION: label");
             const result = clone("#label-library-panel", { unhide: true });
             if (!result) return;
@@ -129,12 +132,28 @@
                     sourceUpload.click();
                 });
             }
+            const panelClose = result.node.querySelector(".label-library-close");
+            panelClose?.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+                log("LABEL LIBRARY CLOSE");
+                close();
+            });
+
             result.node.querySelector('input[type="file"]')?.remove();
 
             open("انتخاب لیبل", result.node);
         };
 
+        document.addEventListener("babaei:artwork-uploaded", event => {
+            log("ARTWORK UPLOADED", { artwork: event.detail?.artwork });
+            if (currentTool === "label" && !popover.hidden) {
+                openLabel();
+            }
+        });
+
         const openButtons = (selector, title) => {
+            currentTool = selector;
             log("ACTION: button group", { selector, title });
             const result = clone(selector);
             if (!result) return;
@@ -243,6 +262,7 @@
         };
 
         const buildTextPopover = () => {
+            currentTool = "text";
             log("ACTION: text");
 
             const textResult = clone(".desktop-text-tools");
@@ -344,6 +364,7 @@
         const openTextFont = () => buildTextPopover();
 
         const openTextColor = () => {
+            currentTool = "text-color";
             log("ACTION: text-color");
             const result = clone(".text-style-colors");
             if (!result) return;
@@ -361,6 +382,7 @@
         };
 
         const openLabelTools = () => {
+            currentTool = "label-tools";
             log("ACTION: label-tools");
             const result = clone("#selected-controls", { unhide: true });
             if (!result) return;
