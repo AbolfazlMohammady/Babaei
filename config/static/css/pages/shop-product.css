@@ -3613,3 +3613,84 @@ body.product-detail-page .pd-comments__toggle-arrow {
         font-size: 15px;
     }
 }
+
+/* ==========================================================================
+   REVIEWS — the trigger belongs to the same four-up benefit row.
+   ========================================================================== */
+
+@media (min-width: 720px) {
+    body.product-detail-page .pd-perks {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+body.product-detail-page .pd-perk--comments {
+    width: 100%;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+body.product-detail-page button.pd-perk--comments {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+body.product-detail-page .pd-perk--comments .pd-perk__summary {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: start;
+}
+
+body.product-detail-page .pd-perk--comments .pd-perk__summary::-webkit-details-marker {
+    display: none;
+}
+
+body.product-detail-page .pd-perk--comments .pd-perk__icon {
+    flex: 0 0 auto;
+}
+
+body.product-detail-page .pd-perk--comments:hover {
+    color: inherit;
+}
+
+body.product-detail-page .pd-comments[hidden] {
+    display: none !important;
+}
+
+body.product-detail-page .pd-comments--compact {
+    margin-top: 16px;
+    padding: 22px;
+    border-radius: 20px;
+}
+
+body.product-detail-page .pd-comments--compact .pd-comments__content {
+    width: 100%;
+}
+
+@media (max-width: 719px) {
+    body.product-detail-page .pd-perk--comments {
+        width: 100%;
+    }
+
+    body.product-detail-page .pd-perk--comments .pd-perk__summary {
+        grid-template-columns: 46px minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    body.product-detail-page .pd-comments--compact {
+        margin-top: 12px;
+        padding: 14px;
+        border-radius: 18px;
+    }
+}
