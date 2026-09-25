@@ -40,6 +40,7 @@
         const close = () => {
             log("POPOVER CLOSE");
             popover.hidden = true;
+            popover.classList.remove("desktop-tool-popover--left");
             popover.innerHTML = "";
         };
 
@@ -553,6 +554,7 @@
             });
 
             open("ابزارهای لیبل", result.node);
+            popover.classList.add("desktop-tool-popover--left");
         };
 
         const buttons = dock.querySelectorAll("[data-desktop-tool]");
