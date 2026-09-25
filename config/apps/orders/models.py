@@ -69,6 +69,13 @@ class CartItem(models.Model):
         null=True,
         blank=True,
     )
+    custom_design = models.ForeignKey(
+        "customizer.DesignDraft",
+        on_delete=models.PROTECT,
+        related_name="cart_items",
+        null=True,
+        blank=True,
+    )
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
     added_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -76,14 +83,29 @@ class CartItem(models.Model):
     class Meta:
         ordering = ("added_at", "id")
         constraints = [
-            models.UniqueConstraint(fields=("cart", "variant"), condition=Q(variant__isnull=False), name="unique_cart_variant_item"),
-            models.UniqueConstraint(fields=("cart", "product"), condition=Q(variant__isnull=True), name="unique_cart_product_item"),
+            models.UniqueConstraint(
+                fields=("cart", "variant"),
+                condition=Q(variant__isnull=False, custom_design__isnull=True),
+                name="unique_cart_variant_item",
+            ),
+            models.UniqueConstraint(
+                fields=("cart", "product"),
+                condition=Q(variant__isnull=True, custom_design__isnull=True),
+                name="unique_cart_product_item",
+            ),
+            models.UniqueConstraint(
+                fields=("cart", "custom_design"),
+                condition=Q(custom_design__isnull=False),
+                name="unique_cart_custom_design_item",
+            ),
             models.CheckConstraint(check=Q(quantity__gt=0), name="cart_item_quantity_gt_zero"),
         ]
         indexes = [models.Index(fields=("cart", "product")), models.Index(fields=("cart", "variant"))]
 
     @property
     def unit_price(self):
+        if self.custom_design_id:
+            return self.custom_design.total_price
         return self.variant.price if self.variant_id else self.product.base_price
 
     @property
@@ -183,6 +205,15 @@ class OrderItem(models.Model):
         null=True,
         blank=True,
     )
+    custom_design = models.ForeignKey(
+        "customizer.DesignDraft",
+        on_delete=models.PROTECT,
+        related_name="order_items",
+        null=True,
+        blank=True,
+    )
+    custom_design_code = models.CharField(max_length=40, blank=True, db_index=True)
+    custom_design_snapshot = models.JSONField(default=dict, blank=True)
 
     # Product information is intentionally snapshotted for historical accuracy.
     product_name = models.CharField(max_length=200)
