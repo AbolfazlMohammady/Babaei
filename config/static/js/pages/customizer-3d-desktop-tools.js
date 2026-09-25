@@ -242,23 +242,26 @@
             });
         };
 
-        const buildTextPopover = (focusStyle = false) => {
-            log("ACTION: text", { focusStyle });
+        const buildTextPopover = () => {
+            log("ACTION: text");
 
             const textResult = clone(".desktop-text-tools");
-            if (!textResult) return;
-
-            const editorSource = document.getElementById("desktop-text-editor");
-            const editorResult = editorSource && !editorSource.hidden
-                ? clone("#desktop-text-editor", { unhide: true })
-                : null;
+            const editorResult = clone("#desktop-text-editor", { unhide: true });
+            if (!textResult || !editorResult) return;
 
             const wrapper = document.createElement("div");
             wrapper.className = "desktop-text-popover-content";
 
             const textNode = textResult.node;
-            const input = textNode.querySelector('input[type="text"]');
-            const add = textNode.querySelector("button");
+            const input = textNode.querySelector("#desktop-text-input");
+            const add = textNode.querySelector("#desktop-text-add");
+
+            const editorNode = editorResult.node;
+            const editInput = editorNode.querySelector("#desktop-text-edit-input");
+            const sizeRange = editorNode.querySelector("#desktop-text-size");
+            const sizeValue = editorNode.querySelector("#desktop-text-size-value");
+            const curveRange = editorNode.querySelector("#desktop-text-curve");
+            const spacingRange = editorNode.querySelector("#desktop-text-spacing");
 
             const submit = () => {
                 const value = input?.value?.trim();
@@ -286,36 +289,59 @@
                 }
             });
 
-            wrapper.appendChild(textNode);
+            // The editor is shown immediately, so the first click on Aa
+            // opens both adding and editing controls in one place.
+            wireTextEditor(editorResult);
 
-            if (editorResult) {
-                const separator = document.createElement("div");
-                separator.className = "desktop-text-popover__separator";
-                wrapper.appendChild(separator);
-                wrapper.appendChild(editorResult.node);
-                wireTextEditor(editorResult);
-            }
+            wrapper.append(textNode);
+            const separator = document.createElement("div");
+            separator.className = "desktop-text-popover__separator";
+            wrapper.append(separator, editorNode);
 
-            open(editorResult ? "متن و استایل" : "افزودن متن", wrapper);
+            const syncSelection = event => {
+                const detail = event.detail || {};
+                if (!detail.isText) return;
 
-            if (focusStyle && editorResult) {
-                editorResult.node.querySelector('input[type="text"]')?.focus();
-            } else {
-                input?.focus();
-            }
+                if (editInput) editInput.value = String(detail.text || "");
+                const style = detail.textStyle || {};
+                if (sizeRange) {
+                    sizeRange.value = String(style.fontSize ?? 100);
+                    if (sizeValue) sizeValue.textContent = String(style.fontSize ?? 100);
+                }
+                if (curveRange) curveRange.value = String(style.curve ?? 0);
+                const spacing = editorNode.querySelector("#desktop-text-spacing");
+                if (spacing) spacing.value = String(style.letterSpacing ?? 0);
+
+                editorNode.querySelectorAll("[data-text-style]").forEach(button => {
+                    button.classList.toggle("is-active", button.dataset.textStyle === (style.preset || "modern"));
+                });
+                if (detail.color) {
+                    editorNode.querySelectorAll("[data-text-color]").forEach(button => {
+                        button.classList.toggle("is-active", button.dataset.textColor === detail.color);
+                    });
+                }
+            };
+
+            document.addEventListener("babaei:selection-changed", syncSelection);
+            const originalClose = close;
+            open("متن و استایل", wrapper);
+
+            // Keep the editor usable even when no text is selected yet.
+            editorNode.querySelector("#desktop-text-apply")?.addEventListener("click", () => {
+                if (!document.getElementById("desktop-text-editor")) return;
+            });
+
+            input?.focus();
+
+            // Replace the temporary listener when this popover closes.
+            const closeButton = popover.querySelector(".desktop-tool-popover__close");
+            closeButton?.addEventListener("click", () => {
+                document.removeEventListener("babaei:selection-changed", syncSelection);
+            }, { once: true });
         };
+        const openText = () => buildTextPopover();
 
-        const openText = () => buildTextPopover(false);
-
-        const openTextFont = () => {
-            const sourceEditor = document.getElementById("desktop-text-editor");
-            if (!sourceEditor || sourceEditor.hidden) {
-                log("ACTION: text-font without selected text -> open text tool");
-                buildTextPopover(false);
-                return;
-            }
-            buildTextPopover(true);
-        };
+        const openTextFont = () => buildTextPopover();
 
         const openTextColor = () => {
             log("ACTION: text-color");
@@ -377,7 +403,6 @@
                     else if (tool === "shirt-color") openButtons("#variant-color-list-right", "رنگ تیشرت");
                     else if (tool === "size") openButtons("#premium-size-list", "انتخاب سایز");
                     else if (tool === "text-font") openTextFont();
-                    else if (tool === "text-color") openTextColor();
                     else if (tool === "label-tools") openLabelTools();
                     else if (tool === "save") {
                         const save = document.getElementById("save-design");
@@ -401,7 +426,7 @@
         });
 
         window.BabaeiDesktopToolsDebug = {
-            version: "20260925-desktop-tools2",
+            version: "20260925-desktop-tools3",
             dock,
             popover,
             buttons,
