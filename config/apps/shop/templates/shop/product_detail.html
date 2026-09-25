@@ -285,7 +285,7 @@ js/storefront.js). Nothing on this page needs !important.
                 <a href="{% url 'shop:index' %}">مشاهده فروشگاه <span aria-hidden="true">←</span></a>
             </div>
             <div class="pd-related__viewport" data-related-scroll>
-                <div class="pd-related__track">
+                <div class="pd-related__track" dir="rtl">
                     {% for related in similar_products %}
                         {% include "shop/includes/_catalog_card.html" with product=related %}
                     {% endfor %}
