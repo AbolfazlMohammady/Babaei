@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Prefetch
 from django.http import JsonResponse
+from django.urls import reverse
 from django.shortcuts import get_object_or_404, render
 from django.utils.safestring import mark_safe
 from django.views import View
@@ -233,6 +234,34 @@ class SaveDesignView(View):
             message = exc.message if hasattr(exc, "message") else str(exc)
             return JsonResponse({"ok": False, "error": message}, status=422)
         return JsonResponse({"ok": True, "draft_id": str(draft.uuid), "design_code": draft.design_code, "total_price": draft.total_price})
+
+
+class AddDesignToCartView(View):
+    def post(self, request, slug):
+        product = get_object_or_404(Product, slug=slug, is_active=True, category__is_active=True)
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+            variant_id = payload.pop("variant_id", None)
+            variant = get_object_or_404(ProductVariant, id=variant_id, product=product, is_active=True) if variant_id else None
+            draft = save_design_draft(request=request, product=product, payload=payload, variant=variant)
+            from apps.orders.services import add_design_to_cart
+            add_design_to_cart(request, design=draft, quantity=1)
+            draft.status = DesignDraft.Status.CART
+            draft.save(update_fields=["status", "updated_at"])
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return JsonResponse({"ok": False, "error": "اطلاعات طراحی نامعتبر است."}, status=400)
+        except ValidationError as exc:
+            message = exc.message if hasattr(exc, "message") else str(exc)
+            return JsonResponse({"ok": False, "error": message}, status=422)
+        except ValueError as exc:
+            return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+        return JsonResponse({
+            "ok": True,
+            "design_id": str(draft.uuid),
+            "design_code": draft.design_code,
+            "total_price": draft.total_price,
+            "redirect": reverse("orders:cart"),
+        })
 
 
 class UploadArtworkView(View):
