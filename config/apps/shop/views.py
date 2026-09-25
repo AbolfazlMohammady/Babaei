@@ -89,7 +89,6 @@ def primary_image_annotations():
 
 def card_annotations(request):
     primary_image_url, primary_image_alt = primary_image_annotations()
-    gallery_images = ProductImage.objects.filter(product_id=OuterRef("pk"))
     has_variants = ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True)
     annotations = {
         "primary_image_url": primary_image_url,
@@ -146,9 +145,9 @@ class ShopSearchView(ListView):
             | Q(seo_title__icontains=query)
             | Q(seo_description__icontains=query)
             | Q(category__name__icontains=query)
-            | Q(variants__sku__icontains=query)
-            | Q(variants__color__name__icontains=query)
-            | Q(variants__size__name__icontains=query)
+            | Q(variants__is_active=True, variants__sku__icontains=query)
+            | Q(variants__is_active=True, variants__color__name__icontains=query)
+            | Q(variants__is_active=True, variants__size__name__icontains=query)
         )
 
         # AND across tokens makes searches such as "مشکی L" precise instead of
@@ -162,9 +161,9 @@ class ShopSearchView(ListView):
                 | Q(seo_title__icontains=term)
                 | Q(seo_description__icontains=term)
                 | Q(category__name__icontains=term)
-                | Q(variants__sku__icontains=term)
-                | Q(variants__color__name__icontains=term)
-                | Q(variants__size__name__icontains=term)
+                | Q(variants__is_active=True, variants__sku__icontains=term)
+                | Q(variants__is_active=True, variants__color__name__icontains=term)
+                | Q(variants__is_active=True, variants__size__name__icontains=term)
             )
             searchable &= term_q
 
@@ -182,9 +181,9 @@ class ShopSearchView(ListView):
         )
 
         variant_q = (
-            Q(variants__sku__icontains=query)
-            | Q(variants__color__name__icontains=query)
-            | Q(variants__size__name__icontains=query)
+            Q(variants__is_active=True, variants__sku__icontains=query)
+            | Q(variants__is_active=True, variants__color__name__icontains=query)
+            | Q(variants__is_active=True, variants__size__name__icontains=query)
         )
 
         variant_price, variant_compare_price, variant_max_price = price_annotations()
