@@ -6573,3 +6573,189 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
         position: static;
     }
 }
+
+
+/* Desktop icon grid: no side drawers, all primary tools live in one right dock. */
+.desktop-tool-dock,
+.desktop-tool-popover { display:none; }
+
+@media (min-width: 821px) {
+    .customizer-workspace--premium {
+        display:block !important;
+        position:relative !important;
+        overflow:hidden !important;
+        isolation:isolate;
+    }
+
+    .customizer-workspace--premium > .customizer-stage-wrap--premium {
+        width:100% !important;
+        height:100% !important;
+    }
+
+    /* Old drawer shells are kept in the DOM for existing event/state logic,
+       but are no longer rendered as visible UI on desktop. */
+    .customizer-workspace--premium > .customizer-panel--premium-left,
+    .customizer-workspace--premium > .customizer-panel--premium-right,
+    .customizer-workspace--premium > .studio-drawer-toggle {
+        display:none !important;
+    }
+
+    .customizer-workspace--premium > .studio-drawer-backdrop {
+        display:none !important;
+    }
+
+    .desktop-tool-dock {
+        position:absolute;
+        top:50%;
+        right:14px;
+        z-index:80;
+        width:112px;
+        padding:8px;
+        display:grid;
+        grid-template-columns:repeat(2, 1fr);
+        gap:8px;
+        transform:translateY(-50%);
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:20px;
+        background:rgba(12,12,14,.78);
+        box-shadow:0 18px 48px rgba(0,0,0,.48);
+        backdrop-filter:blur(16px);
+        -webkit-backdrop-filter:blur(16px);
+    }
+
+    .desktop-tool {
+        width:46px;
+        height:46px;
+        padding:0;
+        display:grid;
+        place-items:center;
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:14px;
+        background:#171719;
+        color:#ddd7cc;
+        font-size:20px;
+        line-height:1;
+        cursor:pointer;
+        transition:transform .16s ease, border-color .16s ease, background .16s ease, color .16s ease;
+    }
+
+    .desktop-tool:hover {
+        transform:translateY(-2px);
+        border-color:rgba(216,182,107,.55);
+        background:#202023;
+        color:#d8b66b;
+    }
+
+    .desktop-tool:active { transform:scale(.96); }
+    .desktop-tool--danger:hover { color:#ef7777; border-color:rgba(239,119,119,.45); }
+    .desktop-tool--save { color:#d8b66b; }
+
+    .desktop-tool-popover {
+        position:absolute;
+        top:50%;
+        right:142px;
+        z-index:81;
+        width:280px;
+        max-height:min(520px,72%);
+        overflow:auto;
+        padding:14px;
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:18px;
+        background:rgba(16,16,18,.97);
+        box-shadow:0 20px 60px rgba(0,0,0,.55);
+        backdrop-filter:blur(18px);
+        -webkit-backdrop-filter:blur(18px);
+        transform:translateY(-50%);
+    }
+
+    .desktop-tool-popover[hidden] { display:none !important; }
+    .desktop-tool-popover .premium-setting-group { margin:0 0 12px; padding:0; border:0; }
+    .desktop-tool-popover .premium-setting-group:last-child { margin-bottom:0; }
+    .desktop-tool-popover h3 { margin:0 0 9px; color:#eee9df; font-size:11px; }
+
+    .desktop-tool-popover .premium-color-list {
+        display:flex;
+        flex-wrap:wrap;
+        gap:9px;
+    }
+
+    .desktop-tool-popover .premium-color-button {
+        width:32px !important;
+        height:32px !important;
+    }
+
+    .desktop-tool-popover .premium-size-list {
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        gap:7px;
+    }
+
+    .desktop-tool-popover .premium-size-button {
+        min-width:0;
+        height:38px;
+    }
+
+    .desktop-tool-popover__title {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        margin-bottom:12px;
+        color:#eee9df;
+        font-weight:800;
+        font-size:13px;
+    }
+
+    .desktop-tool-popover__close {
+        width:28px;
+        height:28px;
+        border:1px solid #303034;
+        border-radius:9px;
+        background:#18181a;
+        color:#aaa69f;
+        cursor:pointer;
+    }
+
+    .desktop-tool-popover .desktop-text-tools,
+    .desktop-tool-popover .desktop-text-editor {
+        display:block !important;
+    }
+
+    .desktop-tool-popover .desktop-text-tools__row {
+        display:grid;
+        grid-template-columns:1fr auto;
+        gap:7px;
+    }
+
+    .desktop-tool-popover .desktop-text-editor {
+        margin-top:12px;
+        padding-top:12px;
+        border-top:1px solid #29292b;
+    }
+
+    .desktop-tool-popover .text-style-presets {
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:6px;
+        margin-top:8px;
+    }
+
+    .desktop-tool-popover .text-style-presets button {
+        min-height:34px;
+        border-radius:9px;
+    }
+
+    .desktop-tool-popover .label-library-panel {
+        display:block !important;
+        position:static !important;
+        max-height:none !important;
+        border:0 !important;
+        padding:0 !important;
+        background:transparent !important;
+        box-shadow:none !important;
+    }
+}
+
+@media (max-width:820px) {
+    .desktop-tool-dock,
+    .desktop-tool-popover { display:none !important; }
+}
