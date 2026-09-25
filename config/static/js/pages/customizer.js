@@ -540,7 +540,7 @@
 
     variantSelect.addEventListener("change", renderPrices);
 
-    saveButton.addEventListener("click", async () => {
+    if (saveButton) saveButton.addEventListener("click", async () => {
         saveButton.disabled = true;
         saveStatus.textContent = "در حال بررسی و ذخیره طراحی…";
         const payload = {
