@@ -633,7 +633,7 @@
                     else if (tool === "text-font") openTextFont();
                     else if (tool === "label-tools") openLabelTools();
                     else if (tool === "save") {
-                        const save = document.getElementById("save-design");
+                        const save = document.getElementById("add-to-cart-design");
                         log("SAVE TARGET", { found: !!save });
                         save?.click();
                     } else {
