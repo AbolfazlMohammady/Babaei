@@ -6970,6 +6970,24 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
         color:#d8b66b;
     }
 
+    .desktop-tool-popover .artwork-library-section__description {
+        display:block;
+        margin-inline-start:auto;
+        color:#77736c;
+        font-size:8px;
+        font-weight:500;
+        line-height:1.5;
+    }
+
+    .desktop-tool-popover .artwork-library-section--uploaded .upload-dropzone--premium {
+        margin-top:10px;
+    }
+
+    .desktop-tool-popover .artwork-library-section--uploaded .upload-background-option,
+    .desktop-tool-popover .artwork-library-section--uploaded .upload-status {
+        margin-inline:0;
+    }
+
     .desktop-tool-popover .artwork-library-section__chevron {
         transition:transform .18s ease;
         color:#8d8982;
