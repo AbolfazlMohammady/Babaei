@@ -3,6 +3,7 @@
 import apps.customizer.models
 from django.db import migrations, models
 import django.db.models.deletion
+from django.core.validators import MinValueValidator
 
 
 class Migration(migrations.Migration):
@@ -15,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="designdraft",
             name="base_price",
-            field=models.PositiveBigIntegerField(default=1000000, validators=[], verbose_name="قیمت پایه طراحی"),
+            field=models.PositiveBigIntegerField(default=1000000, validators=[MinValueValidator(0)], verbose_name="قیمت پایه طراحی"),
         ),
         migrations.AddField(
             model_name="designdraft",
