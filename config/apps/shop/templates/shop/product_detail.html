@@ -324,23 +324,42 @@ document.addEventListener("DOMContentLoaded",function(){
         });
     }
 
-    const relatedTrack=document.querySelector("[data-related-scroll] .pd-related__track");
-    if(relatedTrack){
-        let dragging=false;
-        let lastX=0;
-        let moved=false;
+    const relatedShelf=document.querySelector("[data-related-scroll]");
+    const relatedTrack=relatedShelf?.querySelector(".pd-related__track");
+    const relatedPrev=relatedShelf?.querySelector("[data-related-prev]");
+    const relatedNext=relatedShelf?.querySelector("[data-related-next]");
 
-        // Desktop wheel -> horizontal shelf.
+    if(relatedTrack){
+        const updateRelatedArrows=()=>{
+            const max=Math.max(0,relatedTrack.scrollWidth-relatedTrack.clientWidth);
+            // RTL scrollLeft differs between browsers, so the buttons are based
+            // on whether there is any horizontal overflow and simply scroll by
+            // one card-width in the requested direction.
+            const hasOverflow=max>4;
+            relatedPrev?.classList.toggle("is-disabled",!hasOverflow);
+            relatedNext?.classList.toggle("is-disabled",!hasOverflow);
+        };
+
+        const scrollRelated=(direction)=>{
+            const amount=Math.max(220, Math.round(relatedTrack.clientWidth*.72));
+            relatedTrack.scrollBy({left:direction*amount,behavior:"smooth"});
+        };
+
+        relatedPrev?.addEventListener("click",()=>scrollRelated(-1));
+        relatedNext?.addEventListener("click",()=>scrollRelated(1));
+
         relatedTrack.addEventListener("wheel",function(event){
-            if(Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+            if(Math.abs(event.deltaY)<=Math.abs(event.deltaX)) return;
             event.preventDefault();
             relatedTrack.scrollBy({left:event.deltaY,behavior:"auto"});
         },{passive:false});
 
-        // Desktop mouse drag. Mobile touch is intentionally untouched so
-        // the browser handles native horizontal swipe scrolling.
+        let dragging=false;
+        let lastX=0;
+        let moved=false;
+
         relatedTrack.addEventListener("mousedown",function(event){
-            if(event.button !== 0) return;
+            if(event.button!==0) return;
             dragging=true;
             moved=false;
             lastX=event.clientX;
@@ -352,7 +371,7 @@ document.addEventListener("DOMContentLoaded",function(){
             if(!dragging) return;
             const delta=event.clientX-lastX;
             if(Math.abs(delta)>2) moved=true;
-            if(delta !== 0){
+            if(delta!==0){
                 relatedTrack.scrollBy({left:-delta,behavior:"auto"});
                 lastX=event.clientX;
             }
@@ -364,17 +383,16 @@ document.addEventListener("DOMContentLoaded",function(){
             relatedTrack.classList.remove("is-dragging");
         });
 
-        relatedTrack.addEventListener("mouseleave",function(){
-            // Do not stop here: window mousemove keeps the drag alive
-            // while the pointer temporarily leaves the shelf.
-        });
-
         relatedTrack.addEventListener("click",function(event){
             if(!moved) return;
             event.preventDefault();
             event.stopPropagation();
             moved=false;
         },true);
+
+        relatedTrack.addEventListener("scroll",updateRelatedArrows,{passive:true});
+        window.addEventListener("resize",updateRelatedArrows);
+        requestAnimationFrame(updateRelatedArrows);
     }
 
     if(comments && drawer && writeButton){
