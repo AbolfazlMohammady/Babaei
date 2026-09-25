@@ -271,6 +271,25 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             loader.parse(arrayBuffer, basePath, resolve, reject);
         });
 
+        // The template starts this request before Three.js finishes loading.
+        // Reusing that response removes the network wait from the model startup path.
+        if (window.Babaei3DModelPrefetch) {
+            try {
+                const response = await window.Babaei3DModelPrefetch;
+                if (response?.ok) {
+                    const buffer = await response.arrayBuffer();
+                    if ("caches" in window) {
+                        caches.open(cacheName)
+                            .then(cache => cache.put(url, new Response(buffer.slice(0))))
+                            .catch(() => {});
+                    }
+                    return await parseArrayBuffer(buffer);
+                }
+            } catch {
+                // Continue with the existing cache/loader fallback.
+            }
+        }
+
         if ("caches" in window) {
             try {
                 const cache = await caches.open(cacheName);
