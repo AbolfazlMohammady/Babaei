@@ -99,7 +99,7 @@ class DesignerPageView(View):
         for area_map in area_maps:
             target_view = view_lookup.get(area_map.view_id)
             if target_view:
-                target_view["areas"].append({"id": area_map.area_id, "key": area_map.area.key, "name": area_map.area.name, "geometry": area_map.geometry, "max_layers": area_map.area.max_layers, "max_width_mm": float(area_map.area.max_width_mm), "max_height_mm": float(area_map.area.max_height_mm)})
+                target_view["areas"].append({"id": area_map.area_id, "key": area_map.area.key, "name": area_map.area.name, "side": area_map.area.side, "geometry": area_map.geometry, "max_layers": area_map.area.max_layers, "max_width_mm": float(area_map.area.max_width_mm), "max_height_mm": float(area_map.area.max_height_mm)})
 
         price_area_ids = {area.id for area in areas}
         artworks = list(Artwork.objects.filter(is_active=True, source=Artwork.Source.LIBRARY) .only("id", "code", "name", "image", "base_price", "background_removed").prefetch_related(Prefetch("area_prices", queryset=ArtworkAreaPrice.objects.filter(area_id__in=price_area_ids).select_related("area").only("id", "artwork_id", "area_id", "price", "area__id", "area__product_id", "area__is_active"), to_attr="designer_area_prices")).order_by("name"))
@@ -113,7 +113,7 @@ class DesignerPageView(View):
                     "code": artwork.code,
                     "name": artwork.name,
                     "image": image,
-                    "base_price": artwork.base_price,
+                    "base_price": artwork.base_price or 100000,
                     "background_removed": bool(artwork.background_removed),
                 })
             for price in getattr(artwork, "designer_area_prices", []):
@@ -134,7 +134,7 @@ class DesignerPageView(View):
             "designer_has_3d": designer_ready,
             "designer_model_count": sum(1 for item in view_data if item["model"]),
             "designer_generation": generation,
-            "designer_data": _schema({"base_price": product.base_price, "product_image": product_image, "views": view_data, "artworks": artwork_data, "prices": price_data, "variants": variant_data, "mode": "3d" if designer_ready else "2d", "generation": generation}),
+            "designer_data": _schema({"base_price": CUSTOM_DESIGN_BASE_PRICE, "product_image": product_image, "views": view_data, "artworks": artwork_data, "prices": price_data, "variants": variant_data, "mode": "3d" if designer_ready else "2d", "generation": generation}),
             "canonical_url": absolute_url(request, request.path),
             "og_title": f"طراحی {product.name} | BABAEI",
             "og_description": "محصول را تحلیل کن، مدل سه‌بعدی واقعی بساز و طرح خودت را روی سطح آن قرار بده.",
