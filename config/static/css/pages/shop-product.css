@@ -4050,7 +4050,8 @@ body.product-detail-page > .pd > .pd-inner > .pd-perks .pd-perk small {
     body.product-detail-page .pd-perks {
         width: min(1160px, calc(100% - 32px));
         margin-inline: auto;
-        transform: translateX(-10px);
+        justify-self: center;
+        transform: none;
     }
 }
 
