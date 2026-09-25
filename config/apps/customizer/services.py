@@ -239,6 +239,8 @@ def validate_design_payload(product, payload, variant=None, request=None):
         except (KeyError, TypeError, ValueError):
             raise ValidationError("یکی از ناحیه‌ها یا مختصات طراحی معتبر نیست.")
 
+        if _is_3d_forbidden_area(area):
+            raise ValidationError(f"ناحیه «{area.name}» برای چاپ روی لباس مجاز نیست.")
         if not math.isfinite(
             placement.x + placement.y + placement.width + placement.height + placement.rotation
         ):
@@ -312,7 +314,7 @@ def validate_design_payload(product, payload, variant=None, request=None):
     for item in parsed:
         artwork = item["artwork"]
         price = (
-            prices.get((artwork.id, item["area"].id), artwork.base_price)
+            prices.get((artwork.id, item["area"].id), artwork.base_price or CUSTOM_UPLOAD_PRICE)
             if artwork is not None
             else 0
         )
@@ -358,8 +360,14 @@ def save_design_draft(*, request, product, payload, variant=None):
         user=request.user if request.user.is_authenticated else None,
         session_key=request.session.session_key,
         status=DesignDraft.Status.DRAFT,
-        base_price=base_price,
-        shirt_color=str(payload.get("shirt_color", "")).strip()[:40],
+        base_price_snapshot=base_price,
+        shirt_spec={
+            "unit": "cm", "body_width": 47, "body_height": 68,
+            "shoulder_width": 36, "collar_width": 14, "collar_depth": 9,
+            "sleeve_length": 21, "sleeve_width": 16, "sleeve_drop": 23,
+            "underarm_width": 10, "print_zone": "torso_only", "front_and_back": True,
+            "shirt_color": str(payload.get("shirt_color", "")).strip()[:40],
+        },
         total_price=total_price,
         payload=normalized,
     )
@@ -374,7 +382,7 @@ def save_design_draft(*, request, product, payload, variant=None):
             artwork_id=layer["artwork_id"],
             area_id=layer["area_id"],
             side=layer["side"],
-            text=layer["text"],
+            text_content=layer["text"],
             text_style=layer["text_style"],
             x=layer["x"],
             y=layer["y"],
