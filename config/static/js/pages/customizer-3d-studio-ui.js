@@ -657,13 +657,10 @@
             if (!source) return;
             const wrapper = document.createElement("div");
             const clone = source.cloneNode(true);
-            clone.removeAttribute("id");
-            clone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
-
             const input = clone.querySelector("#desktop-text-input");
             const add = clone.querySelector("#desktop-text-add");
-            if (input) input.removeAttribute("id");
-            if (add) add.removeAttribute("id");
+            clone.removeAttribute("id");
+            clone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
             add?.addEventListener("click", () => {
                 const value = input?.value?.trim();
                 if (!value) return;
