@@ -285,8 +285,22 @@ js/storefront.js). Nothing on this page needs !important.
 window.BabaeiProduct={variants:{{ variant_data }},cartVariants:{{ cart_variant_data }},initialProductPrice:{{ product.display_price|default:0 }},initialComparePrice:{{ product.display_compare_price|default:0 }}};
 document.addEventListener("DOMContentLoaded",function(){
     const comments=document.querySelector("#comments");
+    const commentToggle=document.querySelector("[data-comment-toggle]");
     const drawer=document.querySelector("[data-comment-drawer]");
     const writeButton=document.querySelector("[data-comment-write]");
+
+    if(comments && commentToggle){
+        commentToggle.addEventListener("click",function(){
+            const isOpen=!comments.hidden;
+            comments.hidden=isOpen;
+            commentToggle.setAttribute("aria-expanded",String(!isOpen));
+            if(!isOpen){
+                requestAnimationFrame(function(){
+                    comments.scrollIntoView({behavior:"smooth",block:"start"});
+                });
+            }
+        });
+    }
 
     if(comments && drawer && writeButton){
         writeButton.addEventListener("click",function(){
