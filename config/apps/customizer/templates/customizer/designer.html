@@ -150,8 +150,8 @@
                 </div>
 
                 <button type="button" class="save-design-button premium-save-button premium-save-button--left" id="add-to-cart-design">
-                    <span>ذخیره طراحی</span>
-                    <small>ثبت طرح فعلی</small>
+                    <span>افزودن به سبد خرید</span>
+                    <small>ثبت نهایی طراحی</small>
                 </button>
                 <div id="save-status" class="save-status" aria-live="polite"></div>
             </div>
@@ -396,6 +396,20 @@
 
             <button type="button" id="mobile-text-add" class="mobile-text-sheet__add">افزودن متن به تیشرت</button>
         </div>
+
+        <div class="designer-cart-confirm" id="designer-cart-confirm" hidden>
+            <button type="button" class="designer-cart-confirm__backdrop" data-cart-confirm-cancel aria-label="بستن"></button>
+            <section class="designer-cart-confirm__dialog" role="dialog" aria-modal="true" aria-labelledby="designer-cart-confirm-title">
+                <button type="button" class="designer-cart-confirm__close" data-cart-confirm-cancel aria-label="بستن">×</button>
+                <span class="designer-cart-confirm__eyebrow">BABAEI · CART</span>
+                <h2 id="designer-cart-confirm-title">افزودن طراحی به سبد خرید</h2>
+                <p>طرح فعلی با رنگ و سایز انتخاب‌شده ثبت می‌شود. می‌خواهی آن را به سبد خرید اضافه کنی؟</p>
+                <div class="designer-cart-confirm__actions">
+                    <button type="button" class="designer-cart-confirm__cancel" data-cart-confirm-cancel>انصراف</button>
+                    <button type="button" class="designer-cart-confirm__submit" id="designer-cart-confirm-submit">افزودن به سبد خرید</button>
+                </div>
+            </section>
+        </div>
     </main>
 {% endif %}
 </div>
@@ -408,7 +422,7 @@
 {% if designer_has_3d %}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
 <script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260925-phase2-cart21"></script>
-<script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260925-desktop-tools5" defer></script>
+<script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260925-desktop-tools6" defer></script>
 <script src="{% static 'js/pages/customizer-3d-desktop-tools.js' %}?v=20260925-phase2-cart20" defer></script>
 <script src="{% static 'js/pages/customizer-3d-mobile-nav.js' %}?v=20260925-1" defer></script>
 {% endif %}
