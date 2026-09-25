@@ -3997,6 +3997,7 @@ body.product-detail-page .pd-related__track.is-dragging * {
 body.product-detail-page > .pd > .pd-inner > .pd-perks {
     width: min(100%, 760px);
     margin: 22px auto 0;
+    transform: translateX(-90px);
     grid-template-columns: repeat(3, minmax(0,1fr));
     gap: 10px;
 }
@@ -4027,6 +4028,7 @@ body.product-detail-page > .pd > .pd-inner > .pd-perks .pd-perk small {
     body.product-detail-page > .pd > .pd-inner > .pd-perks {
         width: 100%;
         margin-top: 14px;
+        transform: none;
         grid-template-columns: 1fr;
         gap: 8px;
     }
