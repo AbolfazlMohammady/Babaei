@@ -3628,7 +3628,7 @@ body.product-detail-page .pd-comments__toggle-arrow {
 
 @media (min-width: 720px) {
     body.product-detail-page .pd-perks {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
