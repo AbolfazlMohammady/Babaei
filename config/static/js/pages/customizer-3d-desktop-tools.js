@@ -470,7 +470,14 @@
                 { name: "آبی", hex: "#3b82f6" },
             ];
 
-            extraColors.forEach(({ name, hex }) => {
+            // Keep the three requested shirt colors visible even if the source
+            // palette is rendered with a limited set of swatches.
+            const existing = new Set(
+                Array.from(wrapper.querySelectorAll("button[data-color]"))
+                    .map(button => String(button.dataset.color || "").trim().toLowerCase())
+            );
+
+            extraColors.filter(({ name }) => !existing.has(name.toLowerCase())).forEach(({ name, hex }) => {
                 const button = document.createElement("button");
                 button.type = "button";
                 button.className = "premium-color-button";
