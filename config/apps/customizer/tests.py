@@ -103,7 +103,7 @@ def test_variant_is_required_if_product_has_variants(product, configured_designe
 
 
 def test_designer_page_and_save_endpoint(client, product, configured_designer):
-    response = client.get(reverse("customizer:designer", kwargs={"slug": product.slug}))
+    response = client.get(reverse("customizer:designer", kwargs={"product_ref": str(product.uuid)}))
     assert response.status_code == 200
 
     _, area, artwork = configured_designer
