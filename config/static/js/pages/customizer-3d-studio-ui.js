@@ -52,7 +52,10 @@
             seen.add(item.size);
             return true;
         });
-        sizeHost.innerHTML = sizes.map(item => `<button type="button" class="premium-size-button ${Number(item.stock) <= 0 ? "is-disabled" : ""}" data-size="${esc(item.size)}">${esc(item.size)}</button>`).join("");
+        sizeHost.innerHTML = sizes.map(item => {
+            const hasStock = variants.some(variant => variant.size === item.size && Number(variant.stock) > 0);
+            return `<button type="button" class="premium-size-button ${hasStock ? "" : "is-disabled"}" data-size="${esc(item.size)}">${esc(item.size)}</button>`;
+        }).join("");
         sizeHost.querySelectorAll("button:not(.is-disabled)").forEach(button => button.addEventListener("click", () => {
             const color = select ? variants.find(item => String(item.id) === String(select.value))?.color : null;
             const variant = variants.find(item => item.size === button.dataset.size && item.color === color && Number(item.stock) > 0)
@@ -141,7 +144,9 @@
     });
 
     document.querySelectorAll("[data-drawer-close]").forEach(button => {
-        button.addEventListener("click", () => {
+        button.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
             setDrawer(button.dataset.drawerClose, false);
         });
     });
