@@ -15,6 +15,8 @@
 
         const dock = document.getElementById("desktop-tool-dock");
         const popover = document.getElementById("desktop-tool-popover");
+        const selectedToolsButton = document.getElementById("desktop-selected-tools-button");
+
 
         log("DOM CHECK", {
             dock: !!dock,
@@ -567,6 +569,17 @@
         });
 
         const buttons = dock.querySelectorAll("[data-desktop-tool]");
+        selectedToolsButton?.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (document.querySelector("#selected-controls:not([hidden])")) {
+                openLabelTools();
+            } else {
+                log("SELECTED TOOLS CLICK: no selected artwork");
+            }
+        });
+
+
         log("BIND BUTTONS", {
             count: buttons.length,
             tools: Array.from(buttons).map(button => button.dataset.desktopTool),
