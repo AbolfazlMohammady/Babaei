@@ -6966,8 +6966,37 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
         background:#1a191b;
     }
 
-    .desktop-tool-popover .artwork-library-section--uploaded .artwork-library-section__toggle {
-        color:#d8b66b;
+    .desktop-tool-popover .artwork-library-section--uploaded .artwork-library-section__toggle,
+    .desktop-tool-popover .artwork-library-section--library .artwork-library-section__toggle {
+        color:#eee9df;
+    }
+
+    /* The label popover itself must not become a third scroll container.
+       Only the visible label collection gets a scrollbar. */
+    .desktop-tool-popover:has(.label-library-panel) {
+        overflow:hidden !important;
+    }
+
+    .desktop-tool-popover:has(.label-library-panel) > .label-library-panel {
+        max-height:none !important;
+        overflow:visible !important;
+        background:#0d0d0f !important;
+    }
+
+    .desktop-tool-popover:has(.label-library-panel) .artwork-library-section__grid {
+        max-height:390px;
+        overflow-y:auto;
+        overflow-x:hidden;
+        overscroll-behavior:contain;
+        scrollbar-width:thin;
+    }
+
+    .desktop-tool-popover:has(.label-library-panel) .artwork-library-section--uploaded .artwork-library-section__grid {
+        max-height:300px;
+    }
+
+    .desktop-tool-popover:has(.label-library-panel) .artwork-library-section__grid[hidden] {
+        display:none !important;
     }
 
     .desktop-tool-popover .artwork-library-section__description {
