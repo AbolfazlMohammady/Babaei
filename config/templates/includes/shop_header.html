@@ -47,6 +47,9 @@
         <span class="sh-nav__spacer"></span>
 
         <div class="sh-nav__actions">
+            <button type="button" class="sh-icon sh-search-trigger" data-sh-search-open aria-controls="sh-search-panel" aria-expanded="false" aria-label="جستجوی محصولات">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+            </button>
             <a class="sh-icon" href="{% url 'users:profile' %}" aria-label="حساب کاربری">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20.5c.9-3.6 3.1-5.4 7-5.4s6.1 1.8 7 5.4"></path></svg>
             </a>
@@ -84,6 +87,14 @@
             </a>
             <button type="button" class="sh-icon sh-drawer__close" data-sh-drawer-close aria-label="بستن منو">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+            </button>
+        </div>
+
+        <div class="sh-drawer__search">
+            <button type="button" data-sh-search-open aria-controls="sh-search-panel" aria-expanded="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+                <span>جستجوی محصولات</span>
+                <b aria-hidden="true">جستجو</b>
             </button>
         </div>
 
@@ -128,5 +139,35 @@
             {% endif %}
         </div>
 
+    <div class="sh-search-panel" id="sh-search-panel" data-sh-search-panel aria-hidden="true">
+        <button type="button" class="sh-search-panel__scrim" data-sh-search-close aria-label="بستن جستجو"></button>
+        <section class="sh-search-panel__card" role="dialog" aria-modal="true" aria-labelledby="sh-search-title">
+            <div class="sh-search-panel__top">
+                <div>
+                    <span class="sh-search-panel__eyebrow">BABAEI / SEARCH</span>
+                    <h2 id="sh-search-title">چی می‌خوای پیدا کنی؟</h2>
+                    <p>نام محصول، رنگ، سایز، دسته‌بندی یا کد SKU را جستجو کن.</p>
+                </div>
+                <button type="button" class="sh-icon sh-search-panel__close" data-sh-search-close aria-label="بستن جستجو">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+                </button>
+            </div>
+
+            <form class="sh-search-form" action="{% url 'shop:search' %}" method="get" role="search">
+                <label class="sh-search-form__field">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+                    <input type="search" name="q" value="{{ search_query|default:'' }}" placeholder="مثلاً: تیشرت مشکی L" autocomplete="off" enterkeyhint="search" data-sh-search-input>
+                </label>
+                <button type="submit" class="sh-search-form__submit">
+                    <span>جستجو</span><b aria-hidden="true">←</b>
+                </button>
+            </form>
+
+            <div class="sh-search-panel__hint">
+                <span>نتایج فقط بعد از ارسال جستجو بارگذاری می‌شوند.</span>
+                <span>نام · دسته‌بندی · رنگ · سایز · SKU</span>
+            </div>
+        </section>
+    </div>
     </aside>
 </div>
