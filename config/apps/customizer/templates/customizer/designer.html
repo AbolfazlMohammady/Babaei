@@ -25,7 +25,7 @@
 <div class="customizer-shell customizer-shell--premium" id="customizer"
      data-product-slug="{{ product.slug }}"
      data-save-url="{% url 'customizer:save_design' product.slug %}"
-         data-cart-url="{% url 'orders:custom_design_cart_add' product.slug %}"
+         data-cart-url="{% url 'customizer:add_to_cart' product.slug %}"
          data-cart-page-url="{% url 'orders:cart' %}"
      data-upload-url="{% url 'customizer:upload_artwork' product.slug %}">
     <header class="customizer-header customizer-header--studio">
