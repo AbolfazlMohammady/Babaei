@@ -10,13 +10,14 @@
 {% block og_title %}{{ og_title }}{% endblock %}
 {% block og_description %}{{ og_description }}{% endblock %}
 {% block og_image %}{% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}">{% endif %}{% endblock %}
-{% block extra_head %}<script type="application/ld+json">{{ designer_schema }}</script>{% endblock %}
+{% block extra_head %}<link rel="preload" href="{% static 'Glb/whit_t_shirt.glb' %}" as="fetch" type="model/gltf-binary" crossorigin>
+<script type="application/ld+json">{{ designer_schema }}</script>{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260919-5">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260919-3">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260920-mobile2">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260925-studio1">
 {% endblock %}
 
 {% block content %}
@@ -70,6 +71,69 @@
                         <button type="button" data-action="rotate-right" title="چرخش راست"><b>↷</b><span>چرخش</span></button>
                         <button type="button" data-action="center-label" title="مرکز کردن"><b>⊙</b><span>مرکز</span></button>
                         <button type="button" data-action="delete" title="حذف لیبل"><b>×</b><span>حذف</span></button>
+                    </div>
+                    <div class="selected-label-tools__colors" aria-label="رنگ طرح">
+                        <div class="selected-label-tools__colors-head">
+                            <span>رنگ طرح</span>
+                            <small>رنگ چاپ انتخاب‌شده</small>
+                        </div>
+                        <div class="selected-label-tools__swatches">
+                            <button type="button" data-layer-color="#ffffff" style="--swatch:#ffffff" aria-label="سفید"></button>
+                            <button type="button" data-layer-color="#111111" style="--swatch:#111111" aria-label="مشکی"></button>
+                            <button type="button" data-layer-color="#e53935" style="--swatch:#e53935" aria-label="قرمز"></button>
+                            <button type="button" data-layer-color="#f59e0b" style="--swatch:#f59e0b" aria-label="نارنجی"></button>
+                            <button type="button" data-layer-color="#22c55e" style="--swatch:#22c55e" aria-label="سبز"></button>
+                            <button type="button" data-layer-color="#3b82f6" style="--swatch:#3b82f6" aria-label="آبی"></button>
+                            <button type="button" data-layer-color="#8b5cf6" style="--swatch:#8b5cf6" aria-label="بنفش"></button>
+                        </div>
+                    </div>
+                    <div class="desktop-text-tools">
+                        <div class="desktop-text-tools__head">
+                            <div>
+                                <span>افزودن متن</span>
+                                <small>متن دلخواهت را روی تیشرت قرار بده.</small>
+                            </div>
+                            <span class="desktop-text-tools__icon" aria-hidden="true">T</span>
+                        </div>
+                        <div class="desktop-text-tools__row">
+                            <input id="desktop-text-input" type="text" maxlength="60" autocomplete="off" placeholder="مثلاً BABAEI">
+                            <button type="button" id="desktop-text-add" aria-label="افزودن متن">افزودن</button>
+                        </div>
+                    </div>
+
+                    <div class="desktop-text-editor" id="desktop-text-editor" hidden>
+                        <div class="desktop-text-editor__head">
+                            <div>
+                                <span>طراحی متن انتخاب‌شده</span>
+                                <small>فونت، خمیدگی و فاصله حروف را تنظیم کن.</small>
+                            </div>
+                        </div>
+                        <input id="desktop-text-edit-input" type="text" maxlength="60" autocomplete="off" placeholder="متن">
+                        <div class="text-style-presets" id="desktop-text-style-presets" aria-label="استایل متن">
+                            <button type="button" data-text-style="modern">مدرن</button>
+                            <button type="button" data-text-style="classic">کلاسیک</button>
+                            <button type="button" data-text-style="impact">بولد</button>
+                            <button type="button" data-text-style="mono">تایپ</button>
+                            <button type="button" data-text-style="elegant">ظریف</button>
+                        </div>
+                        <label class="text-style-range">
+                            <span><b>خمیدگی</b><output id="desktop-text-curve-value">0</output></span>
+                            <input id="desktop-text-curve" type="range" min="-80" max="80" value="0" step="1">
+                        </label>
+                        <label class="text-style-range">
+                            <span><b>فاصله حروف</b><output id="desktop-text-spacing-value">0</output></span>
+                            <input id="desktop-text-spacing" type="range" min="-2" max="12" value="0" step="1">
+                        </label>
+                        <div class="text-style-colors" aria-label="رنگ متن">
+                            <button type="button" data-text-color="#ffffff" style="--swatch:#ffffff" aria-label="سفید"></button>
+                            <button type="button" data-text-color="#111111" style="--swatch:#111111" aria-label="مشکی"></button>
+                            <button type="button" data-text-color="#e53935" style="--swatch:#e53935" aria-label="قرمز"></button>
+                            <button type="button" data-text-color="#f59e0b" style="--swatch:#f59e0b" aria-label="نارنجی"></button>
+                            <button type="button" data-text-color="#22c55e" style="--swatch:#22c55e" aria-label="سبز"></button>
+                            <button type="button" data-text-color="#3b82f6" style="--swatch:#3b82f6" aria-label="آبی"></button>
+                            <button type="button" data-text-color="#8b5cf6" style="--swatch:#8b5cf6" aria-label="بنفش"></button>
+                        </div>
+                        <button type="button" class="desktop-text-editor__apply" id="desktop-text-apply">اعمال تغییرات متن</button>
                     </div>
                     <div class="selected-label-tools__hint">اندازه، زاویه و موقعیت را از همین بخش کنترل کن.</div>
                 </div>
@@ -144,35 +208,169 @@
             <div class="price-breakdown" id="price-breakdown"></div>
         </aside>
         <button type="button" class="studio-drawer-toggle studio-drawer-toggle--right" id="studio-drawer-right-toggle" aria-label="باز کردن تنظیمات محصول" aria-expanded="false" title="تنظیمات محصول">
-            <span class="studio-drawer-toggle__icon" aria-hidden="true"></span><span class="studio-drawer-toggle__label">رنگ و سایز</span>
+            <span class="studio-drawer-toggle__icon" aria-hidden="true">›</span><span class="studio-drawer-toggle__label">رنگ و سایز</span>
         </button>
+
+        
+        <div class="mobile-customizer-menu" id="mobile-customizer-menu">
+            <button type="button" class="mobile-customizer-menu__toggle" id="mobile-customizer-menu-toggle"
+                    aria-label="باز کردن ابزارهای طراحی" aria-expanded="false" aria-controls="mobile-customizer-toolbar">
+                <span class="mobile-customizer-menu__toggle-icon" aria-hidden="true">☰</span>
+                <span class="mobile-customizer-menu__toggle-label">ابزارها</span>
+            </button>
+<div class="mobile-customizer-toolbar" id="mobile-customizer-toolbar" role="toolbar" aria-label="ابزارهای طراحی">
+            <button type="button" class="mobile-customizer-action" data-mobile-action="product">
+                <span class="mobile-customizer-action__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M7 4.5 9.2 3h5.6L17 4.5l2.5 1.8-2 3-1.7-1.1v11.3H8.2V8.2L6.5 9.3l-2-3L7 4.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.2 3c.3 2.1 1.2 3.2 2.8 3.2S14.5 5.1 14.8 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </span>
+                <strong>رنگ</strong>
+            </button>
+            <button type="button" class="mobile-customizer-action" data-mobile-action="artwork">
+                <span class="mobile-customizer-action__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4" width="17" height="16" rx="3" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="9" r="1.6" fill="currentColor"/><path d="m5.5 17 4.2-4.1 3.2 3 2.2-2.2 3.4 3.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <strong>طرح</strong>
+            </button>
+            <button type="button" class="mobile-customizer-action" data-mobile-action="text">
+                <span class="mobile-customizer-action__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M5 5h14M12 5v14M8.5 19h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </span>
+                <strong>متن</strong>
+            </button>
+            <button type="button" class="mobile-customizer-action" data-mobile-action="tools">
+                <span class="mobile-customizer-action__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h10M17 7h3M4 12h3M10 12h10M4 17h10M17 17h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="15.5" cy="7" r="2" stroke="currentColor" stroke-width="1.7"/><circle cx="8" cy="12" r="2" stroke="currentColor" stroke-width="1.7"/><circle cx="15.5" cy="17" r="2" stroke="currentColor" stroke-width="1.7"/></svg>
+                </span>
+                <strong>ویرایش</strong>
+            </button>
+        </div>
+        </div>
+        <nav class="mobile-context-toolbar" id="mobile-context-toolbar" aria-label="ابزارهای سریع طرح انتخاب‌شده" hidden>
+            <button type="button" class="mobile-context-action" data-mobile-context="color">
+                <span class="mobile-context-action__icon">●</span><strong>رنگ</strong><small>رنگ طرح</small>
+            </button>
+            <button type="button" class="mobile-context-action" data-mobile-context="text">
+                <span class="mobile-context-action__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M5 5h14M12 5v14M8.5 19h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </span>
+                <strong>متن</strong><small>افزودن متن</small>
+            </button>
+            <button type="button" class="mobile-context-action" data-mobile-context="background">
+                <span class="mobile-context-action__icon">◐</span><strong>پس‌زمینه</strong><small>رنگ لباس</small>
+            </button>
+            <button type="button" class="mobile-context-action" data-mobile-context="edit">
+                <span class="mobile-context-action__icon">↗</span><strong>ویرایش</strong><small>جابجایی و اندازه</small>
+            </button>
+        </nav>
+
+        <section class="mobile-selection-toolbar" id="mobile-selection-toolbar" aria-label="ویرایش دقیق طرح" hidden>
+            <div class="mobile-selection-toolbar__head">
+                <div>
+                    <small>ویرایش طرح</small>
+                    <strong>موقعیت و اندازه</strong>
+                </div>
+                <button type="button" class="mobile-selection-close" data-mobile-selection="done" aria-label="بستن ویرایش">×</button>
+            </div>
+            <div class="mobile-selection-toolbar__position" aria-label="جابجایی طرح">
+                <button type="button" data-action="move-left"><span>←</span><small>چپ</small></button>
+                <button type="button" data-action="move-right"><span>→</span><small>راست</small></button>
+                <button type="button" data-action="move-up"><span>↑</span><small>بالا</small></button>
+                <button type="button" data-action="move-down"><span>↓</span><small>پایین</small></button>
+            </div>
+            <div class="mobile-selection-toolbar__secondary">
+                <button type="button" data-action="scale-down"><span>−</span><small>کوچک</small></button>
+                <button type="button" data-action="scale-up"><span>＋</span><small>بزرگ</small></button>
+                <button type="button" data-action="rotate-left"><span>↶</span><small>چرخش</small></button>
+                <button type="button" data-action="rotate-right"><span>↷</span><small>چرخش</small></button>
+                <button type="button" data-action="center-label"><span>⊙</span><small>مرکز</small></button>
+                <button type="button" class="mobile-selection-delete" data-action="delete"><span>⌫</span><small>حذف</small></button>
+            </div>
+        </section>
+
+        <div class="mobile-color-sheet" id="mobile-color-sheet" hidden>
+            <div class="mobile-color-sheet__head">
+                <div>
+                    <small id="mobile-color-sheet-mode">ویرایش طرح</small>
+                    <strong id="mobile-color-sheet-title">رنگ طرح</strong>
+                </div>
+                <button type="button" id="mobile-color-sheet-close" aria-label="بستن">×</button>
+            </div>
+            <div class="mobile-color-sheet__section">
+                <span>رنگ</span>
+                <div class="mobile-color-swatches" id="mobile-color-swatches">
+                    <button type="button" data-layer-color="#ffffff" style="--swatch:#ffffff" aria-label="سفید"></button>
+                    <button type="button" data-layer-color="#111111" style="--swatch:#111111" aria-label="مشکی"></button>
+                    <button type="button" data-layer-color="#e53935" style="--swatch:#e53935" aria-label="قرمز"></button>
+                    <button type="button" data-layer-color="#f59e0b" style="--swatch:#f59e0b" aria-label="نارنجی"></button>
+                    <button type="button" data-layer-color="#facc15" style="--swatch:#facc15" aria-label="زرد"></button>
+                    <button type="button" data-layer-color="#22c55e" style="--swatch:#22c55e" aria-label="سبز"></button>
+                    <button type="button" data-layer-color="#3b82f6" style="--swatch:#3b82f6" aria-label="آبی"></button>
+                    <button type="button" data-layer-color="#8b5cf6" style="--swatch:#8b5cf6" aria-label="بنفش"></button>
+                </div>
+                <label class="mobile-color-custom">
+                    <span>رنگ دلخواه</span>
+                    <input id="mobile-layer-color-custom" type="color" value="#ffffff" aria-label="انتخاب رنگ دلخواه">
+                </label>
+            </div>
+            <div class="mobile-color-sheet__section mobile-color-sheet__section--range">
+                <div><span>شدت / شفافیت</span><output id="mobile-layer-opacity-value">100%</output></div>
+                <input id="mobile-layer-opacity" type="range" min="20" max="100" value="100" step="1" aria-label="شدت رنگ">
+            </div>
+            <button type="button" class="mobile-color-sheet__done" id="mobile-color-sheet-done">انجام شد</button>
+        </div>
+
+        <div class="mobile-text-sheet" id="mobile-text-sheet" hidden>
+            <div class="mobile-text-sheet__head">
+                <div>
+                    <small id="mobile-text-sheet-mode">افزودن به لباس</small>
+                    <strong id="mobile-text-sheet-title">متن خودت را بنویس</strong>
+                </div>
+                <button type="button" id="mobile-text-close" aria-label="بستن">×</button>
+            </div>
+            <textarea id="mobile-text-input" maxlength="60" placeholder="مثلاً: BABAEI"></textarea>
+
+            <div class="mobile-text-style">
+                <div class="mobile-text-style__title">استایل متن</div>
+                <div class="text-style-presets" aria-label="استایل متن">
+                    <button type="button" data-text-style="modern">مدرن</button>
+                    <button type="button" data-text-style="classic">کلاسیک</button>
+                    <button type="button" data-text-style="impact">بولد</button>
+                    <button type="button" data-text-style="mono">تایپ</button>
+                    <button type="button" data-text-style="elegant">ظریف</button>
+                </div>
+                <label class="text-style-range">
+                    <span><b>خمیدگی</b><output id="mobile-text-curve-value">0</output></span>
+                    <input id="mobile-text-curve" type="range" min="-80" max="80" value="0" step="1">
+                </label>
+                <label class="text-style-range">
+                    <span><b>فاصله حروف</b><output id="mobile-text-spacing-value">0</output></span>
+                    <input id="mobile-text-spacing" type="range" min="-2" max="12" value="0" step="1">
+                </label>
+                <div class="text-style-colors" aria-label="رنگ متن">
+                    <button type="button" data-text-color="#ffffff" style="--swatch:#ffffff" aria-label="سفید"></button>
+                    <button type="button" data-text-color="#111111" style="--swatch:#111111" aria-label="مشکی"></button>
+                    <button type="button" data-text-color="#e53935" style="--swatch:#e53935" aria-label="قرمز"></button>
+                    <button type="button" data-text-color="#f59e0b" style="--swatch:#f59e0b" aria-label="نارنجی"></button>
+                    <button type="button" data-text-color="#22c55e" style="--swatch:#22c55e" aria-label="سبز"></button>
+                    <button type="button" data-text-color="#3b82f6" style="--swatch:#3b82f6" aria-label="آبی"></button>
+                    <button type="button" data-text-color="#8b5cf6" style="--swatch:#8b5cf6" aria-label="بنفش"></button>
+                </div>
+            </div>
+
+            <button type="button" id="mobile-text-add" class="mobile-text-sheet__add">افزودن متن به تیشرت</button>
+        </div>
     </main>
-    {% endif %}
+{% endif %}
 </div>
 
 <script id="designer-data" type="application/json">{{ designer_data }}</script>
-{% if designer_has_3d %}
-<script>
-(() => {
-    try {
-        const data = JSON.parse(document.getElementById("designer-data")?.textContent || "{}");
-        const modelUrl = data.views?.find(view => view.model)?.model;
-        if (!modelUrl) return;
-        window.Babaei3DModelPrefetch = fetch(modelUrl, {
-            credentials: "same-origin",
-            cache: "force-cache",
-        });
-    } catch (_) {}
-})();
-</script>
-{% endif %}
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/pages/customizer.js' %}?v=20260919-4" defer></script>
 {% if designer_has_3d %}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
-<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260919-6"></script>
-<script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260919-4" defer></script>
+<script type="module" src="{% static 'js/pages/customizer-3d-procedural.js' %}?v=20260920-text2"></script>
+<script src="{% static 'js/pages/customizer-3d-studio-ui.js' %}?v=20260920-text1" defer></script>
 {% endif %}
 {% endblock %}
