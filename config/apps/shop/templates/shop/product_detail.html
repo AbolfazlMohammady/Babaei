@@ -329,24 +329,27 @@ document.addEventListener("DOMContentLoaded",function(){
         let startScroll=0;
         let moved=false;
 
+        // Mouse wheel: desktop behaves like a horizontal shelf.
         relatedTrack.addEventListener("wheel",function(event){
             if(Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
             event.preventDefault();
-            relatedTrack.scrollBy({left:event.deltaY,behavior:"auto"});
+            relatedTrack.scrollLeft += event.deltaY;
         },{passive:false});
 
+        // Desktop: drag the shelf with the mouse, exactly like a touch swipe.
+        // Touch/pen are left to the browser's native horizontal scrolling.
         relatedTrack.addEventListener("pointerdown",function(event){
-            if(event.pointerType === "mouse" && event.button !== 0) return;
+            if(event.pointerType !== "mouse" || event.button !== 0) return;
             dragging=true;
             moved=false;
             startX=event.clientX;
             startScroll=relatedTrack.scrollLeft;
             relatedTrack.classList.add("is-dragging");
-            if(relatedTrack.setPointerCapture) relatedTrack.setPointerCapture(event.pointerId);
+            relatedTrack.setPointerCapture?.(event.pointerId);
         });
 
         relatedTrack.addEventListener("pointermove",function(event){
-            if(!dragging) return;
+            if(!dragging || event.pointerType !== "mouse") return;
             const distance=event.clientX-startX;
             if(Math.abs(distance)>5) moved=true;
             relatedTrack.scrollLeft=startScroll-distance;
@@ -356,20 +359,23 @@ document.addEventListener("DOMContentLoaded",function(){
             if(!dragging) return;
             dragging=false;
             relatedTrack.classList.remove("is-dragging");
-            if(event && relatedTrack.hasPointerCapture && relatedTrack.hasPointerCapture(event.pointerId)){
+            if(event?.pointerId !== undefined && relatedTrack.hasPointerCapture?.(event.pointerId)){
                 relatedTrack.releasePointerCapture(event.pointerId);
             }
         };
+
         relatedTrack.addEventListener("pointerup",stopDrag);
         relatedTrack.addEventListener("pointercancel",stopDrag);
-        relatedTrack.addEventListener("lostpointercapture",function(){ dragging=false; relatedTrack.classList.remove("is-dragging"); });
+        relatedTrack.addEventListener("lostpointercapture",function(){
+            dragging=false;
+            relatedTrack.classList.remove("is-dragging");
+        });
 
         relatedTrack.addEventListener("click",function(event){
-            if(moved){
-                event.preventDefault();
-                event.stopPropagation();
-                moved=false;
-            }
+            if(!moved) return;
+            event.preventDefault();
+            event.stopPropagation();
+            moved=false;
         },true);
     }
 
