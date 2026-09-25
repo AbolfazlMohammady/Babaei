@@ -1280,7 +1280,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 : "";
         }
 
-        let total = currentVariant ? Number(currentVariant.price) : basePrice;
+        let total = basePrice;
         const lines = [`<div class="price-line"><span>تیشرت</span><strong>${money(total)} تومان</strong></div>`];
 
         layers.forEach(item => {
