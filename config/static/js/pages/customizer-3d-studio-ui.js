@@ -182,6 +182,8 @@
     const mobileTextSpacingValue = document.getElementById("mobile-text-spacing-value");
     const desktopTextEditor = document.getElementById("desktop-text-editor");
     const desktopTextEditInput = document.getElementById("desktop-text-edit-input");
+    const desktopTextSize = document.getElementById("desktop-text-size");
+    const desktopTextSizeValue = document.getElementById("desktop-text-size-value");
     const desktopTextCurve = document.getElementById("desktop-text-curve");
     const desktopTextCurveValue = document.getElementById("desktop-text-curve-value");
     const desktopTextSpacing = document.getElementById("desktop-text-spacing");
@@ -195,6 +197,7 @@
         fontFamily: "Arial, Tahoma, sans-serif",
         fontWeight: 700,
         fontStyle: "normal",
+        fontSize: 100,
         curve: 0,
         letterSpacing: 0,
     };
@@ -211,6 +214,7 @@
         return {
             ...(draftTextStyle || {}),
             ...style,
+            fontSize: Math.max(60, Math.min(160, Number(style.fontSize ?? draftTextStyle.fontSize ?? 100))),
             curve: Math.max(-80, Math.min(80, Number(style.curve ?? draftTextStyle.curve ?? 0))),
             letterSpacing: Math.max(-2, Math.min(12, Number(style.letterSpacing ?? draftTextStyle.letterSpacing ?? 0))),
         };
@@ -224,6 +228,8 @@
         if (mobileTextCurveValue) mobileTextCurveValue.textContent = String(next.curve);
         if (mobileTextSpacing) mobileTextSpacing.value = String(next.letterSpacing);
         if (mobileTextSpacingValue) mobileTextSpacingValue.textContent = String(next.letterSpacing);
+        if (desktopTextSize) desktopTextSize.value = String(next.fontSize);
+        if (desktopTextSizeValue) desktopTextSizeValue.textContent = String(next.fontSize);
         if (desktopTextCurve) desktopTextCurve.value = String(next.curve);
         if (desktopTextCurveValue) desktopTextCurveValue.textContent = String(next.curve);
         if (desktopTextSpacing) desktopTextSpacing.value = String(next.letterSpacing);
@@ -435,6 +441,7 @@
 
     wireTextRange(mobileTextCurve, mobileTextCurveValue, "curve");
     wireTextRange(mobileTextSpacing, mobileTextSpacingValue, "letterSpacing");
+    wireTextRange(desktopTextSize, desktopTextSizeValue, "fontSize");
     wireTextRange(desktopTextCurve, desktopTextCurveValue, "curve");
     wireTextRange(desktopTextSpacing, desktopTextSpacingValue, "letterSpacing");
 
