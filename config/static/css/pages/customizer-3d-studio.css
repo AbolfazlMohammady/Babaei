@@ -1093,6 +1093,34 @@ body.customizer-page > footer {
 
 /* Mobile: the editor becomes a native-feeling stacked studio. */
 @media (max-width: 820px) {
+    .label-library-panel {
+        background:#0d0d0f !important;
+        border-color:#29292b !important;
+    }
+
+    .label-library-grid {
+        background:#0d0d0f !important;
+    }
+
+    .label-library-grid .artwork-card {
+        background:#151517 !important;
+        border-color:#2b2b2e !important;
+        color:#eee9df !important;
+    }
+
+    .label-library-grid .artwork-card__visual,
+    .label-library-grid .artwork-card img {
+        background:#08080a !important;
+    }
+
+    .label-library-grid .artwork-card strong {
+        color:#eee9df !important;
+    }
+
+    .label-library-grid .artwork-card small {
+        color:#d8b66b !important;
+    }
+
     body.customizer-page {
         padding-bottom: 0 !important;
     }
@@ -6695,15 +6723,52 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
         gap:0;
     }
 
+    .desktop-tool--label {
+        background:transparent !important;
+        color:#f0ece4 !important;
+        border-color:transparent !important;
+        box-shadow:none !important;
+    }
+
+    .desktop-tool--label:hover,
+    .desktop-tool--label:focus-visible {
+        background:rgba(216,182,107,.12) !important;
+        color:#f3eadc !important;
+        border-color:rgba(216,182,107,.18) !important;
+    }
+
+    .desktop-tool--label svg {
+        width:24px;
+        height:24px;
+        display:block;
+    }
+
     .desktop-tool-popover .desktop-text-tools {
         margin-top:0;
-        padding:0;
-        border:0;
-        background:transparent;
+        padding:12px;
+        border:1px solid rgba(255,255,255,.08);
+        border-radius:15px;
+        background:linear-gradient(180deg,#1c1c1f,#111113);
+        box-shadow:0 14px 35px rgba(0,0,0,.25);
+    }
+
+    .desktop-tool-popover .desktop-text-tools__head {
+        margin-bottom:10px;
+    }
+
+    .desktop-tool-popover .desktop-text-tools__head span {
+        color:#f2ede5;
+        font-size:12px;
+        font-weight:900;
+    }
+
+    .desktop-tool-popover .desktop-text-tools__head small {
+        color:#77746f;
+        font-size:8px;
     }
 
     .desktop-tool-popover .desktop-text-tools__row {
-        grid-template-columns:minmax(0,1fr) 78px;
+        grid-template-columns:minmax(0,1fr) 82px;
         align-items:stretch;
     }
 
