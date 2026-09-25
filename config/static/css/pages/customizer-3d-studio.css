@@ -7335,3 +7335,96 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
         right:82px !important;
     }
 }
+
+
+/* Final cart confirmation — independent from designer drawers/popovers. */
+.designer-cart-confirm[hidden]{display:none!important}
+.designer-cart-confirm{
+    position:fixed;
+    inset:0;
+    z-index:99990;
+    display:grid;
+    place-items:center;
+    padding:24px;
+    direction:rtl;
+}
+.designer-cart-confirm__backdrop{
+    position:absolute;
+    inset:0;
+    border:0;
+    background:rgba(0,0,0,.72);
+    backdrop-filter:blur(8px);
+    cursor:pointer;
+}
+.designer-cart-confirm__dialog{
+    position:relative;
+    z-index:1;
+    width:min(460px,100%);
+    padding:30px;
+    border:1px solid rgba(216,182,107,.24);
+    border-radius:24px;
+    background:#101010;
+    color:#f4f0e8;
+    box-shadow:0 30px 90px rgba(0,0,0,.5);
+    text-align:right;
+}
+.designer-cart-confirm__close{
+    position:absolute;
+    inset-block-start:14px;
+    inset-inline-start:14px;
+    width:34px;
+    height:34px;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:10px;
+    background:rgba(255,255,255,.04);
+    color:#aaa;
+    font-size:20px;
+    cursor:pointer;
+}
+.designer-cart-confirm__eyebrow{
+    display:block;
+    margin-bottom:9px;
+    color:#d8b66b;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.16em;
+    direction:ltr;
+}
+.designer-cart-confirm__dialog h2{
+    margin:0 0 10px;
+    font-size:20px;
+}
+.designer-cart-confirm__dialog p{
+    margin:0;
+    color:#aaa;
+    line-height:1.9;
+    font-size:13px;
+}
+.designer-cart-confirm__actions{
+    display:flex;
+    gap:10px;
+    margin-top:24px;
+}
+.designer-cart-confirm__actions button{
+    flex:1;
+    min-height:48px;
+    border-radius:13px;
+    font:inherit;
+    font-weight:800;
+    cursor:pointer;
+}
+.designer-cart-confirm__cancel{
+    border:1px solid rgba(255,255,255,.12);
+    background:transparent;
+    color:#ccc;
+}
+.designer-cart-confirm__submit{
+    border:1px solid #d8b66b;
+    background:#d8b66b;
+    color:#111;
+}
+@media(max-width:600px){
+    .designer-cart-confirm{padding:16px}
+    .designer-cart-confirm__dialog{padding:25px 20px;border-radius:20px}
+    .designer-cart-confirm__actions{flex-direction:column-reverse}
+}
