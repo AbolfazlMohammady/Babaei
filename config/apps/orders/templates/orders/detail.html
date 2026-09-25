@@ -120,6 +120,9 @@
             <article class="order-item">
                 <div class="order-item__index" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</div>
                 <div class="order-item__media">
+                    {% if item.custom_design and item.custom_design.preview_front %}
+                    <img src="{{ item.custom_design.preview_front.url }}" alt="پیش‌نمایش طراحی {{ item.custom_design.design_code }}" loading="lazy">
+                    {% else %}
                     {% with primary=item.product.primary_images|first %}
                         {% if primary %}
                         <img src="{{ primary.image.url }}" alt="{{ item.product_name }}" loading="lazy">
@@ -127,6 +130,7 @@
                         <span class="order-item__placeholder" aria-hidden="true">B</span>
                         {% endif %}
                     {% endwith %}
+                    {% endif %}
                 </div>
                 <div class="order-item__copy">
                     <strong>{{ item.product_name }}</strong>
