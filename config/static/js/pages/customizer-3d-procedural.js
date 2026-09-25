@@ -735,19 +735,29 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         };
     }
 
+    function surfaceSide(normal) {
+        return normal.clone().normalize().dot(frontAxis) >= 0 ? "front" : "back";
+    }
+
+    function areaForSurfaceSide(side, fallbackArea) {
+        const explicitSides = areas.some(area => area.side === "front") && areas.some(area => area.side === "back");
+        if (!explicitSides) return fallbackArea;
+        return areas.find(area => is3DPrintableArea(area) && area.side === side) || fallbackArea;
+    }
+
     function isValidPrintSurface(hit, area) {
         if (!hit || !area) return false;
 
         const normal = hitNormal(hit);
+        const side = surfaceSide(normal);
+        const explicitSides = areas.some(item => item.side === "front") && areas.some(item => item.side === "back");
 
-        // A 3D garment has two printable faces. The front points toward +Z
-        // and the back toward -Z. Do not force the selected 2D print-area
-        // polygon here, because that polygon belongs to the front artwork map
-        // and would incorrectly block the back of the GLB.
-        //
-        // Keep the surface roughly facing the front/back direction so the
-        // decal cannot be placed on the inside of the collar or on steep
-        // side-facing surfaces.
+        // When the backend defines separate front/back print areas, keep the
+        // layer bound to the correct production area. If only one shared area
+        // exists, both faces remain valid and the persisted layer.side tells us
+        // which face the customer actually used.
+        if (explicitSides && area.side && area.side !== side) return false;
+
         return Math.abs(normal.dot(frontAxis)) >= 0.35;
     }
 
@@ -1098,13 +1108,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     });
 
     function addLayer(artworkOrId) {
-        // Uploaded artworks are added to the legacy customizer state after
-        // designer-data has already been parsed by this module. Accept the
-        // fresh artwork object so newly uploaded images can be placed in 3D.
-        const artwork = typeof artworkOrId === "object" && artworkOrId
-            ? artworkOrId
-            : artworkById(artworkOrId);
-        const area = areaById(activeAreaId);
+        const artwork = typeof artworkOrId === "object" && artworkOrId ? artworkOrId : artworkById(artworkOrId);
+        let area = areaById(activeAreaId);
 
         if (!artwork || !area || !is3DPrintableArea(area)) {
             status("این ناحیه برای چاپ سه‌بعدی لیبل قابل استفاده نیست.");
@@ -1113,18 +1118,33 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         let hit = placementHit(area);
         if (!hit) {
-            // Desktop text insertion can happen without a pointer position.
-            // Fall back to the visible front-center of the shirt instead of
-            // silently dropping the new text layer.
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
             const centerHit = raycaster.intersectObjects(garmentMeshes, false)[0];
             if (isValidPrintSurface(centerHit, area)) hit = centerHit;
         }
+
         if (!hit) {
-            status("لیبل فقط روی محدوده چاپ مجازِ جلوی لباس قرار می‌گیرد.");
+            // If the active area belongs to the other side, retry using the
+            // production area for the face currently visible on the GLB.
+            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+            const centerHit = raycaster.intersectObjects(garmentMeshes, false)[0];
+            if (centerHit) {
+                const side = surfaceSide(hitNormal(centerHit));
+                const sideArea = areaForSurfaceSide(side, area);
+                if (sideArea.id !== area.id) {
+                    area = sideArea;
+                    hit = placementHit(area);
+                }
+            }
+        }
+
+        if (!hit) {
+            status("لیبل فقط روی بدنه مجاز لباس قرار می‌گیرد.");
             return false;
         }
 
+        const side = surfaceSide(hitNormal(hit));
+        area = areaForSurfaceSide(side, area);
         const layer = {
             id: nextId++,
             artwork_id: artwork.id,
@@ -1139,6 +1159,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             z_index: layers.size,
             text: artwork.is_text ? String(artwork.name || "TEXT") : null,
             text_style: artwork.is_text ? normalizeTextStyle(artwork.text_style || {}) : null,
+            side,
         };
 
         const item = {
