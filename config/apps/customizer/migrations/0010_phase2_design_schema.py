@@ -28,10 +28,10 @@ class Migration(migrations.Migration):
             name="design_code",
             field=models.CharField(
                 db_index=True,
-                default=apps.customizer.models._design_code,
+                default=None,
                 editable=False,
                 max_length=40,
-                unique=True,
+                null=True,
                 verbose_name="کد طراحی",
             ),
         ),
