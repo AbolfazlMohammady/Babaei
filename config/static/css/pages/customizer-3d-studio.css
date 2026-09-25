@@ -6650,7 +6650,8 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
     .desktop-tool--danger:hover { color:#ef7777; border-color:rgba(239,119,119,.45); }
     .desktop-tool--save { color:#d8b66b; }
 
-    .desktop-tool-popover {
+        .desktop-tool-popover {
+        display:block;
         position:absolute;
         top:50%;
         right:142px;
