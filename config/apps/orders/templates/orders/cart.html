@@ -22,8 +22,10 @@
             <div class="cart-products__list" id="products">
                 {% for item in items %}
                 <article class="cart-product-card" data-cart-item data-cart-id="{{ item.id }}" data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
-                    <a class="cart-product-card__image" href="{{ item.product.get_absolute_url }}" aria-label="{{ item.product.name }}">
-                        {% if item.primary_image_url %}
+                    <a class="cart-product-card__image" href="{% if item.custom_design %}{% url 'orders:checkout' %}{% else %}{{ item.product.get_absolute_url }}{% endif %}" aria-label="{% if item.custom_design %}طراحی سفارشی {{ item.custom_design.design_code }}{% else %}{{ item.product.name }}{% endif %}">
+                        {% if item.custom_design and item.custom_design.preview_front %}
+                        <img src="{{ item.custom_design.preview_front.url }}" alt="پیش‌نمایش طراحی {{ item.custom_design.design_code }}" loading="lazy" decoding="async">
+                        {% elif item.primary_image_url %}
                         <img src="{{ item.primary_image_url }}" alt="{{ item.primary_image_alt|default:item.product.name }}" loading="lazy" decoding="async">
                         {% else %}
                         <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ item.product.name }}" loading="lazy" decoding="async">
@@ -33,8 +35,8 @@
                     <div class="cart-product-card__info">
                         <div class="cart-product-card__title-row">
                             <div class="cart-product-card__title">
-                                <h2>{{ item.product.name }}</h2>
-                                <span>{{ item.product.category.name }}</span>
+                                <h2>{% if item.custom_design %}طراحی سفارشی{% else %}{{ item.product.name }}{% endif %}</h2>
+                                <span>{% if item.custom_design %}{{ item.custom_design.design_code }}{% else %}{{ item.product.category.name }}{% endif %}</span>
                             </div>
                             <span class="cart-product-card__price">{{ item.unit_price|price }} تومان</span>
                         </div>
@@ -124,8 +126,8 @@
                     <div class="cart-line__content">
                         <div class="cart-line__top">
                             <div class="cart-line__identity">
-                                <span class="cart-line__name">{{ item.product.name }}</span>
-                                <span class="cart-line__category">{{ item.product.category.name }}</span>
+                                <span class="cart-line__name">{% if item.custom_design %}طراحی سفارشی{% else %}{{ item.product.name }}{% endif %}</span>
+                                <span class="cart-line__category">{% if item.custom_design %}{{ item.custom_design.design_code }}{% else %}{{ item.product.category.name }}{% endif %}</span>
                             </div>
                         </div>
 
