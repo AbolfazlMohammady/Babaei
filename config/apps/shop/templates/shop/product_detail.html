@@ -325,50 +325,46 @@ document.addEventListener("DOMContentLoaded",function(){
     const relatedTrack=document.querySelector("[data-related-scroll] .pd-related__track");
     if(relatedTrack){
         let dragging=false;
-        let startX=0;
-        let startScroll=0;
+        let lastX=0;
         let moved=false;
 
-        // Mouse wheel: desktop behaves like a horizontal shelf.
+        // Desktop wheel -> horizontal shelf.
         relatedTrack.addEventListener("wheel",function(event){
             if(Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
             event.preventDefault();
-            relatedTrack.scrollLeft += event.deltaY;
+            relatedTrack.scrollBy({left:event.deltaY,behavior:"auto"});
         },{passive:false});
 
-        // Desktop: drag the shelf with the mouse, exactly like a touch swipe.
-        // Touch/pen are left to the browser's native horizontal scrolling.
-        relatedTrack.addEventListener("pointerdown",function(event){
-            if(event.pointerType !== "mouse" || event.button !== 0) return;
+        // Desktop mouse drag. Mobile touch is intentionally untouched so
+        // the browser handles native horizontal swipe scrolling.
+        relatedTrack.addEventListener("mousedown",function(event){
+            if(event.button !== 0) return;
             dragging=true;
             moved=false;
-            startX=event.clientX;
-            startScroll=relatedTrack.scrollLeft;
+            lastX=event.clientX;
             relatedTrack.classList.add("is-dragging");
-            relatedTrack.setPointerCapture?.(event.pointerId);
+            event.preventDefault();
         });
 
-        relatedTrack.addEventListener("pointermove",function(event){
-            if(!dragging || event.pointerType !== "mouse") return;
-            const distance=event.clientX-startX;
-            if(Math.abs(distance)>5) moved=true;
-            relatedTrack.scrollLeft=startScroll-distance;
+        window.addEventListener("mousemove",function(event){
+            if(!dragging) return;
+            const delta=event.clientX-lastX;
+            if(Math.abs(delta)>2) moved=true;
+            if(delta !== 0){
+                relatedTrack.scrollLeft -= delta;
+                lastX=event.clientX;
+            }
         });
 
-        const stopDrag=function(event){
+        window.addEventListener("mouseup",function(){
             if(!dragging) return;
             dragging=false;
             relatedTrack.classList.remove("is-dragging");
-            if(event?.pointerId !== undefined && relatedTrack.hasPointerCapture?.(event.pointerId)){
-                relatedTrack.releasePointerCapture(event.pointerId);
-            }
-        };
+        });
 
-        relatedTrack.addEventListener("pointerup",stopDrag);
-        relatedTrack.addEventListener("pointercancel",stopDrag);
-        relatedTrack.addEventListener("lostpointercapture",function(){
-            dragging=false;
-            relatedTrack.classList.remove("is-dragging");
+        relatedTrack.addEventListener("mouseleave",function(){
+            // Do not stop here: window mousemove keeps the drag alive
+            // while the pointer temporarily leaves the shelf.
         });
 
         relatedTrack.addEventListener("click",function(event){
