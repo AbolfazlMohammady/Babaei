@@ -577,12 +577,13 @@
     };
 
 
-    // Desktop tool dock: expose the real design tools as a compact icon grid.
+    // Desktop tool dock: one event path for desktop; never depend on the
+    // media-query state at script evaluation time. This prevents the dock from
+    // rendering while its click handlers are skipped.
     const desktopDock = document.getElementById("desktop-tool-dock");
     const desktopPopover = document.getElementById("desktop-tool-popover");
-    const desktopMedia = window.matchMedia("(min-width: 821px)");
 
-    if (desktopDock && desktopPopover && desktopMedia.matches) {
+    if (desktopDock && desktopPopover) {
         const closeDesktopPopover = () => {
             desktopPopover.hidden = true;
             desktopPopover.innerHTML = "";
@@ -605,7 +606,7 @@
             desktopPopover.hidden = false;
         };
 
-        const cloneGroup = (selector) => {
+        const cloneGroup = selector => {
             const source = document.querySelector(selector);
             if (!source) return null;
             const clone = source.cloneNode(true);
@@ -615,15 +616,30 @@
         };
 
         const showLabelLibrary = () => {
-            const panel = document.getElementById("label-library-panel");
-            if (!panel) return;
-            const trigger = document.getElementById("label-library-trigger");
-            if (panel.hidden) {
-                trigger?.click();
-            } else {
-                panel.hidden = true;
-                trigger?.setAttribute("aria-expanded", "false");
+            const source = document.getElementById("label-library-panel");
+            if (!source) return;
+            const clone = source.cloneNode(true);
+            clone.removeAttribute("id");
+            clone.removeAttribute("hidden");
+            clone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
+
+            const sourceButtons = source.querySelectorAll("#artwork-grid button, .artwork-grid button");
+            clone.querySelectorAll("#artwork-grid button, .artwork-grid button").forEach((button, index) => {
+                button.addEventListener("click", () => {
+                    sourceButtons[index]?.click();
+                    closeDesktopPopover();
+                });
+            });
+
+            const sourceUpload = source.querySelector("#artwork-upload");
+            const upload = clone.querySelector('input[type="file"]');
+            const dropzone = clone.querySelector(".upload-dropzone");
+            if (dropzone && sourceUpload) {
+                dropzone.addEventListener("click", () => sourceUpload.click());
             }
+            upload?.remove();
+
+            showDesktopPopover("انتخاب لیبل", clone);
         };
 
         const showShirtColor = () => {
@@ -636,7 +652,7 @@
                     closeDesktopPopover();
                 });
             });
-            showDesktopPopover("رنگ تیشرت", group.clone.closest(".premium-setting-group") || group.clone);
+            showDesktopPopover("رنگ تیشرت", group.clone);
         };
 
         const showSize = () => {
@@ -649,13 +665,12 @@
                     closeDesktopPopover();
                 });
             });
-            showDesktopPopover("انتخاب سایز", group.clone.closest(".premium-setting-group") || group.clone);
+            showDesktopPopover("انتخاب سایز", group.clone);
         };
 
         const showText = () => {
             const source = document.querySelector(".desktop-text-tools");
             if (!source) return;
-            const wrapper = document.createElement("div");
             const clone = source.cloneNode(true);
             const input = clone.querySelector("#desktop-text-input");
             const add = clone.querySelector("#desktop-text-add");
@@ -664,16 +679,19 @@
             add?.addEventListener("click", () => {
                 const value = input?.value?.trim();
                 if (!value) return;
-                document.dispatchEvent(new CustomEvent("babaei:add-text", { detail: { text: value } }));
+                const realAdd = document.getElementById("desktop-text-add");
+                const realInput = document.getElementById("desktop-text-input");
+                if (realInput) realInput.value = value;
+                realAdd?.click();
                 closeDesktopPopover();
             });
             input?.addEventListener("keydown", event => {
-                if (event.key !== "Enter") return;
-                event.preventDefault();
-                add?.click();
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    add?.click();
+                }
             });
-            wrapper.appendChild(clone);
-            showDesktopPopover("افزودن متن", wrapper);
+            showDesktopPopover("افزودن متن", clone);
             input?.focus();
         };
 
@@ -687,19 +705,20 @@
 
             clone.querySelectorAll("[data-text-style]").forEach(button => {
                 button.addEventListener("click", () => {
-                    document.querySelector('[data-text-style="' + button.dataset.textStyle + '"]')?.click();
+                    const real = document.querySelector('[data-text-style="' + button.dataset.textStyle + '"]');
+                    if (real && real !== button) real.click();
                     closeDesktopPopover();
                 });
             });
 
-            const ranges = clone.querySelectorAll("input[type='range']");
-            const sourceRanges = source.querySelectorAll("input[type='range']");
+            const ranges = clone.querySelectorAll("input[type="range"]");
+            const sourceRanges = source.querySelectorAll("input[type="range"]");
             ranges.forEach((range, index) => {
                 range.addEventListener("input", () => {
-                    const sourceRange = sourceRanges[index];
-                    if (!sourceRange) return;
-                    sourceRange.value = range.value;
-                    sourceRange.dispatchEvent(new Event("input", { bubbles: true }));
+                    const real = sourceRanges[index];
+                    if (!real) return;
+                    real.value = range.value;
+                    real.dispatchEvent(new Event("input", { bubbles: true }));
                 });
             });
 
@@ -710,8 +729,6 @@
             const source = document.querySelector(".text-style-colors");
             if (!source) return;
             const clone = source.cloneNode(true);
-            clone.removeAttribute("id");
-            clone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
             const sourceButtons = source.querySelectorAll("[data-text-color]");
             clone.querySelectorAll("[data-text-color]").forEach((button, index) => {
                 button.addEventListener("click", () => {
@@ -740,16 +757,18 @@
         };
 
         desktopDock.querySelectorAll("[data-desktop-tool]").forEach(button => {
-            button.addEventListener("click", () => {
+            button.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
                 const tool = button.dataset.desktopTool;
                 if (tool === "label") showLabelLibrary();
-                if (tool === "text") showText();
-                if (tool === "shirt-color") showShirtColor();
-                if (tool === "size") showSize();
-                if (tool === "text-font") showTextFont();
-                if (tool === "text-color") showTextColor();
-                if (tool === "label-tools") showLabelTools();
-                if (tool === "save") document.getElementById("save-design")?.click();
+                else if (tool === "text") showText();
+                else if (tool === "shirt-color") showShirtColor();
+                else if (tool === "size") showSize();
+                else if (tool === "text-font") showTextFont();
+                else if (tool === "text-color") showTextColor();
+                else if (tool === "label-tools") showLabelTools();
+                else if (tool === "save") document.getElementById("save-design")?.click();
             });
         });
     }
