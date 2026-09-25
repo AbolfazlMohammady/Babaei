@@ -673,3 +673,19 @@ body.customizer-page {
         width: 142px !important;
     }
 }
+
+
+@media (min-width: 1024px) {
+    body.customizer-page .customizer-panel--premium-left .studio-drawer-close,
+    body.customizer-page .customizer-panel--premium-right .studio-drawer-close {
+        display: none !important;
+    }
+
+    body.customizer-page .customizer-panel--premium-left .studio-tools-panel__heading {
+        margin-bottom: 8px;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .panel-heading {
+        margin-bottom: 4px;
+    }
+}
