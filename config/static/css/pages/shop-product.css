@@ -4134,3 +4134,87 @@ body.product-detail-page .pd-related .shop-reference__badge--discount {
         touch-action: pan-x;
     }
 }
+
+
+/* ==========================================================================
+   RELATED PRODUCTS — RTL scroll + catalog badge parity
+   ========================================================================== */
+body.product-detail-page .pd-related__track {
+    direction: rtl;
+    flex-direction: row;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+}
+
+body.product-detail-page .pd-related__track > * {
+    direction: rtl;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+}
+
+/* Mirror the exact catalog badge language: dark sale badge, green featured
+   badge, and a clean stacked position when both are present. */
+body.product-detail-page .pd-related .shop-reference__badge {
+    z-index: 8;
+    min-width: 38px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    font-size: 9.5px;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+body.product-detail-page .pd-related .shop-reference__badge--new {
+    background: var(--sh-forest);
+    color: var(--sh-cream-2);
+    border: 0;
+}
+
+body.product-detail-page .pd-related .shop-reference__badge--discount {
+    top: 10px;
+    background: var(--sh-ink);
+    color: var(--sh-cream-2);
+    border: 0;
+}
+
+body.product-detail-page .pd-related .shop-reference__badge--new + .shop-reference__badge--discount {
+    top: 40px;
+}
+
+@media (max-width: 719px) {
+    body.product-detail-page .pd-related__track {
+        direction: rtl;
+        flex-direction: row;
+        justify-content: flex-start;
+        margin-inline: -4px;
+        padding-inline: 4px;
+    }
+
+    body.product-detail-page .pd-related__track > * {
+        flex: 0 0 154px;
+    }
+
+    body.product-detail-page .pd-related .shop-reference__badge {
+        top: 8px;
+        inset-inline-start: 8px;
+        min-width: 34px;
+        padding: 5px 7px;
+        font-size: 8.5px;
+    }
+
+    body.product-detail-page .pd-related .shop-reference__badge--discount {
+        top: 8px;
+    }
+
+    body.product-detail-page .pd-related .shop-reference__badge--new + .shop-reference__badge--discount {
+        top: 37px;
+    }
+}
