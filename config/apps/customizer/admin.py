@@ -136,13 +136,13 @@ class DesignerViewAdmin(CustomizerAdminMixin, admin.ModelAdmin):
 
 @admin.register(PrintArea)
 class PrintAreaAdmin(CustomizerAdminMixin, admin.ModelAdmin):
-    list_display = ("product", "name", "key", "max_width_mm", "max_height_mm", "max_layers", "status_badge")
+    list_display = ("product", "name", "key", "side", "max_width_mm", "max_height_mm", "max_layers", "status_badge")
     list_filter = ("is_active", "product")
     search_fields = ("product__name", "name", "key")
     autocomplete_fields = ("product",)
     inlines = (PrintAreaViewInline,)
     fieldsets = (
-        ("ناحیه چاپ", {"fields": ("product", "key", "name", "is_active", "sort_order")}),
+        ("ناحیه چاپ", {"fields": ("product", "key", "name", "side", "is_active", "sort_order")}),
         ("محدودیت چاپ", {"fields": ("max_width_mm", "max_height_mm", "max_layers")}),
     )
 
