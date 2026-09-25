@@ -215,10 +215,38 @@
 
         artworkGrid.innerHTML = libraryArtworks.length || uploadedArtworks.length
             ? `
-                ${libraryArtworks.length ? `<div class="artwork-library-section"><div class="artwork-library-section__title">کتابخانه لیبل‌ها</div><div class="artwork-library-section__grid artwork-grid">${libraryArtworks.map(renderArtworkCard).join("")}</div></div>` : ""}
-                ${uploadedArtworks.length ? `<div class="artwork-library-section artwork-library-section--uploaded"><div class="artwork-library-section__title">لیبل‌های من</div><div class="artwork-library-section__grid artwork-grid">${uploadedArtworks.map(renderArtworkCard).join("")}</div></div>` : ""}
+                ${libraryArtworks.length ? `
+                    <section class="artwork-library-section artwork-library-section--collapsible" data-artwork-section="library">
+                        <button type="button" class="artwork-library-section__toggle" aria-expanded="true">
+                            <span>کتابخانه لیبل‌ها</span><span class="artwork-library-section__chevron">⌄</span>
+                        </button>
+                        <div class="artwork-library-section__grid artwork-grid">
+                            ${libraryArtworks.map(renderArtworkCard).join("")}
+                        </div>
+                    </section>` : ""}
+                ${uploadedArtworks.length ? `
+                    <section class="artwork-library-section artwork-library-section--uploaded artwork-library-section--collapsible" data-artwork-section="uploaded">
+                        <button type="button" class="artwork-library-section__toggle" aria-expanded="false">
+                            <span>لیبل‌های من</span><span class="artwork-library-section__chevron">⌄</span>
+                        </button>
+                        <div class="artwork-library-section__grid artwork-grid" hidden>
+                            ${uploadedArtworks.map(renderArtworkCard).join("")}
+                        </div>
+                    </section>` : ""}
             `
             : `<div class="selected-card__empty">هنوز لیبلی در کتابخانه وجود ندارد.</div>`;
+
+        artworkGrid.querySelectorAll("[data-artwork-section] .artwork-library-section__toggle").forEach((toggle) => {
+            toggle.addEventListener("click", () => {
+                const section = toggle.closest("[data-artwork-section]");
+                const grid = section?.querySelector(".artwork-library-section__grid");
+                if (!grid) return;
+                const isOpen = !grid.hidden;
+                grid.hidden = isOpen;
+                toggle.setAttribute("aria-expanded", String(!isOpen));
+                section.classList.toggle("is-open", !isOpen);
+            });
+        });
 
         artworkGrid.querySelectorAll(".artwork-card").forEach((button) => button.addEventListener("click", () => {
             const artworkId = Number(button.dataset.artworkId);
