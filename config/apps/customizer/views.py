@@ -17,7 +17,7 @@ from apps.shop.models import Product, ProductImage, ProductVariant
 
 from .models import Artwork, ArtworkAreaPrice, DesignDraft, DesignerView as DesignerViewModel, PrintArea, PrintAreaView, Product3DAsset
 from .product_3d import product_images, refresh_product_asset, source_signature
-from .services import CUSTOMIZER_BASE_PRICE, create_uploaded_artwork, save_design_draft
+from .services import CUSTOMIZER_BASE_PRICE, GARMENT_PRODUCTION_SPEC, create_uploaded_artwork, save_design_draft
 from .tasks import prepare_product_3d
 
 
@@ -135,7 +135,7 @@ class DesignerPageView(View):
             "designer_has_3d": designer_ready,
             "designer_model_count": sum(1 for item in view_data if item["model"]),
             "designer_generation": generation,
-            "designer_data": _schema({"base_price": CUSTOMIZER_BASE_PRICE, "product_image": product_image, "views": view_data, "artworks": artwork_data, "prices": price_data, "variants": variant_data, "mode": "3d" if designer_ready else "2d", "generation": generation}),
+            "designer_data": _schema({"base_price": CUSTOMIZER_BASE_PRICE, "garment_spec": GARMENT_PRODUCTION_SPEC, "product_image": product_image, "views": view_data, "artworks": artwork_data, "prices": price_data, "variants": variant_data, "mode": "3d" if designer_ready else "2d", "generation": generation}),
             "canonical_url": absolute_url(request, request.path),
             "og_title": "استودیو طراحی سه‌بعدی | BABAEI",
             "og_description": "محصول را تحلیل کن، مدل سه‌بعدی واقعی بساز و طرح خودت را روی سطح آن قرار بده.",
