@@ -577,6 +577,109 @@
     };
 
 
+    // Desktop tool dock: replace the old side drawers with a compact icon grid.
+    const desktopDock = document.getElementById("desktop-tool-dock");
+    const desktopPopover = document.getElementById("desktop-tool-popover");
+    const desktopMedia = window.matchMedia("(min-width: 821px)");
+
+    if (desktopDock && desktopPopover) {
+        const closeDesktopPopover = () => {
+            desktopPopover.hidden = true;
+            desktopPopover.innerHTML = "";
+        };
+
+        const showDesktopPopover = (title, contentNode) => {
+            desktopPopover.innerHTML = "";
+            const head = document.createElement("div");
+            head.className = "desktop-tool-popover__title";
+            head.innerHTML = `<span>${title}</span><button type="button" class="desktop-tool-popover__close" aria-label="بستن">×</button>`;
+            desktopPopover.appendChild(head);
+            desktopPopover.appendChild(contentNode);
+            desktopPopover.hidden = false;
+            head.querySelector("button")?.addEventListener("click", closeDesktopPopover);
+        };
+
+        const moveNodeIntoPopover = (node, title) => {
+            if (!node) return;
+            showDesktopPopover(title, node);
+        };
+
+        if (desktopMedia.matches) {
+            const labelPanel = document.getElementById("label-library-panel");
+            if (labelPanel && workspace && labelPanel.parentElement !== workspace) {
+                workspace.appendChild(labelPanel);
+                labelPanel.classList.add("desktop-floating-label-library");
+            }
+
+            desktopDock.querySelectorAll("[data-desktop-action]").forEach(button => {
+                button.addEventListener("click", () => {
+                    const action = button.dataset.desktopAction;
+                    if (action === "save") {
+                        document.getElementById("save-design")?.click();
+                        return;
+                    }
+                    document.querySelector(`[data-action="${action}"]`)?.click();
+                });
+            });
+
+            desktopDock.querySelectorAll("[data-desktop-tool]").forEach(button => {
+                button.addEventListener("click", () => {
+                    const tool = button.dataset.desktopTool;
+
+                    if (tool === "label") {
+                        document.getElementById("label-library-trigger")?.click();
+                        return;
+                    }
+
+                    if (tool === "color") {
+                        const group = document.getElementById("variant-color-list-right")?.closest(".premium-setting-group");
+                        if (group) {
+                            const clone = group.cloneNode(true);
+                            clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+                            showDesktopPopover("رنگ تیشرت", clone);
+                        }
+                        return;
+                    }
+
+                    if (tool === "size") {
+                        const group = document.getElementById("premium-size-list")?.closest(".premium-setting-group");
+                        if (group) {
+                            const clone = group.cloneNode(true);
+                            clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+                            clone.querySelectorAll("button").forEach((proxy, index) => {
+                                proxy.addEventListener("click", () => {
+                                    document.getElementById("premium-size-list")?.querySelectorAll("button")[index]?.click();
+                                    closeDesktopPopover();
+                                });
+                            });
+                            showDesktopPopover("انتخاب سایز", clone);
+                        }
+                        return;
+                    }
+
+                    if (tool === "text") {
+                        const wrapper = document.createElement("div");
+                        const tools = document.querySelector(".desktop-text-tools");
+                        const editor = document.getElementById("desktop-text-editor");
+                        if (tools) wrapper.appendChild(tools);
+                        if (editor) wrapper.appendChild(editor);
+                        showDesktopPopover("ابزار متن", wrapper);
+                    }
+                });
+            });
+
+            desktopDock.querySelector('[data-desktop-tool="color"]')?.addEventListener("click", () => {
+                const buttons = desktopPopover.querySelectorAll(".premium-color-button");
+                buttons.forEach((proxy, index) => {
+                    proxy.addEventListener("click", () => {
+                        document.getElementById("variant-color-list-right")?.querySelectorAll("button")[index]?.click();
+                        closeDesktopPopover();
+                    });
+                });
+            });
+        }
+    }
+
     const current = variants.find(item => String(item.id) === String(select?.value)) || variants.find(item => Number(item.stock) > 0) || variants[0];
     if (current) chooseVariant(current);
 })();
