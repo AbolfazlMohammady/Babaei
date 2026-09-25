@@ -42,7 +42,8 @@
         {% if cart_item_count %}<span class="sh-dock__badge">{{ cart_item_count|default:0 }}</span>{% endif %}
     </a>
 
-    <a class="sh-dock__item" href="{% url 'shop:index' %}#products" data-sh-dock-item>
+    <a class="sh-dock__item" href="{% url 'shop:search' %}" data-sh-dock-item
+       {% if ns == 'shop' and url_name == 'search' %}aria-current="page"{% endif %}>
         <span class="sh-dock__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
         </span>
