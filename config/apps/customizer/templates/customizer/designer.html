@@ -151,6 +151,21 @@
 </div>
 
 <script id="designer-data" type="application/json">{{ designer_data }}</script>
+{% if designer_has_3d %}
+<script>
+(() => {
+    try {
+        const data = JSON.parse(document.getElementById("designer-data")?.textContent || "{}");
+        const modelUrl = data.views?.find(view => view.model)?.model;
+        if (!modelUrl) return;
+        window.Babaei3DModelPrefetch = fetch(modelUrl, {
+            credentials: "same-origin",
+            cache: "force-cache",
+        });
+    } catch (_) {}
+})();
+</script>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
