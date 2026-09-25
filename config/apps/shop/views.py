@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 
 from django.conf import settings
 from django.core.cache import cache
@@ -102,6 +103,137 @@ def card_annotations(request):
     else:
         annotations["is_favorite"] = Value(False)
     return annotations
+
+
+class ShopSearchView(ListView):
+    template_name = "shop/search.html"
+    context_object_name = "products"
+    paginate_by = 12
+
+    @staticmethod
+    def _normalize(value):
+        value = (value or "").strip().lower()
+        value = value.replace("ي", "ی").replace("ى", "ی").replace("ك", "ک")
+        value = value.replace("ة", "ه")
+        value = value.replace("ۀ", "ه")
+        value = value.replace("\u200c", " ")
+        value = re.sub(r"[\u064b-\u065f\u0670]", "", value)
+        value = re.sub(r"[\u0660-\u0669]", lambda m: str(ord(m.group()) - 0x0660), value)
+        value = re.sub(r"[\u06f0-\u06f9]", lambda m: str(ord(m.group()) - 0x06f0), value)
+        value = re.sub(r"[^\w\s\-]", " ", value, flags=re.UNICODE)
+        return re.sub(r"\s+", " ", value).strip()
+
+    def get_queryset(self):
+        raw_query = self.request.GET.get("q", "")
+        query = self._normalize(raw_query)
+
+        # Opening the search page, opening the navbar search, and an empty
+        # submission must not touch Product at all. QuerySet.none() stays lazy
+        # and Django can render it without issuing a catalogue SELECT.
+        if not query:
+            return Product.objects.none()
+
+        # A phrase is kept intact for exact/contains ranking, while each token
+        # must independently match at least one searchable product field.
+        phrase_variants = {query, query.replace(" ", ""), query.replace(" ", "\u200c")}
+        terms = [term for term in query.split(" ") if len(term) >= 1][:8]
+
+        searchable = (
+            Q(name__icontains=query)
+            | Q(slug__icontains=query)
+            | Q(short_description__icontains=query)
+            | Q(description__icontains=query)
+            | Q(seo_title__icontains=query)
+            | Q(seo_description__icontains=query)
+            | Q(category__name__icontains=query)
+            | Q(variants__sku__icontains=query)
+            | Q(variants__color__name__icontains=query)
+            | Q(variants__size__name__icontains=query)
+        )
+
+        # AND across tokens makes searches such as "مشکی L" precise instead of
+        # returning every row that happens to contain either word.
+        for term in terms:
+            term_q = (
+                Q(name__icontains=term)
+                | Q(slug__icontains=term)
+                | Q(short_description__icontains=term)
+                | Q(description__icontains=term)
+                | Q(seo_title__icontains=term)
+                | Q(seo_description__icontains=term)
+                | Q(category__name__icontains=term)
+                | Q(variants__sku__icontains=term)
+                | Q(variants__color__name__icontains=term)
+                | Q(variants__size__name__icontains=term)
+            )
+            searchable &= term_q
+
+        exact_q = Q()
+        for variant in phrase_variants:
+            exact_q |= Q(name__iexact=variant) | Q(slug__iexact=variant)
+
+        starts_q = Q(name__istartswith=query) | Q(slug__istartswith=query)
+        category_q = Q(category__name__icontains=query)
+        description_q = (
+            Q(short_description__icontains=query)
+            | Q(description__icontains=query)
+            | Q(seo_title__icontains=query)
+            | Q(seo_description__icontains=query)
+        )
+
+        variant_q = (
+            Q(variants__sku__icontains=query)
+            | Q(variants__color__name__icontains=query)
+            | Q(variants__size__name__icontains=query)
+        )
+
+        variant_price, variant_compare_price, variant_max_price = price_annotations()
+
+        return (
+            Product.objects.filter(
+                is_active=True,
+                category__is_active=True,
+            )
+            .filter(searchable)
+            .select_related("category")
+            .annotate(
+                search_exact=Case(
+                    When(exact_q, then=1000),
+                    When(starts_q, then=800),
+                    When(category_q, then=500),
+                    When(variant_q, then=450),
+                    When(description_q, then=300),
+                    default=100,
+                    output_field=IntegerField(),
+                ),
+                **card_annotations(self.request),
+                listed_price=variant_price,
+                listed_compare_price=variant_compare_price,
+                listed_max_price=variant_max_price,
+            )
+            .prefetch_related(
+                Prefetch(
+                    "images",
+                    queryset=ProductImage.objects.filter(
+                        image_type=ProductImage.ImageType.PRIMARY
+                    ).order_by("sort_order", "id")[:1],
+                    to_attr="card_images",
+                )
+            )
+            .distinct()
+            .order_by("-search_exact", "-is_featured", "-created_at", "id")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = get_active_categories()
+        context["has_dark_hero"] = False
+        context["search_query"] = self._normalize(self.request.GET.get("q", ""))
+        context["search_has_query"] = bool(context["search_query"])
+        context["canonical_url"] = absolute_url(self.request, self.request.path)
+        context["og_title"] = "جستجوی محصولات | BABAEI"
+        context["og_description"] = "جستجوی دقیق محصولات، تیشرت‌ها و لباس‌های BABAEI."
+        return context
 
 
 class ShopIndexView(ListView):
