@@ -46,7 +46,7 @@
             popover.innerHTML = "";
         };
 
-        const open = (title, node) => {
+        const open = (title, node, side = "right") => {
             log("POPOVER OPEN", {
                 title,
                 node: node?.className || node?.tagName || null,
@@ -54,9 +54,12 @@
 
             popover.innerHTML = "";
 
-            // Only the selected-label tools belong on the left side.
-            // Every regular desktop tool must open beside the right-side grid.
+            // Regular tools always open beside the right-side grid.
+            // Only the dedicated selected-label tools panel is allowed on the left.
             popover.classList.remove("desktop-tool-popover--left");
+            if (side === "left") {
+                popover.classList.add("desktop-tool-popover--left");
+            }
 
             const header = document.createElement("div");
             header.className = "desktop-tool-popover__title";
@@ -559,8 +562,7 @@
                 });
             });
 
-            open("ابزارهای لیبل", result.node);
-            popover.classList.add("desktop-tool-popover--left");
+            open("ابزارهای لیبل", result.node, "left");
         };
 
         document.addEventListener("babaei:selection-changed", event => {
