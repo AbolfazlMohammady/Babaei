@@ -16,7 +16,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260925-desktop-tools11">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260925-desktop-tools12">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260920-15">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d-mobile-nav.css' %}?v=20260925-1">
 {% endblock %}
@@ -118,6 +118,10 @@
                             <button type="button" data-text-style="elegant">ظریف</button>
                         </div>
                         <label class="text-style-range">
+                            <span><b>اندازه متن</b><output id="desktop-text-size-value">100</output></span>
+                            <input id="desktop-text-size" type="range" min="60" max="160" value="100" step="1">
+                        </label>
+                        <label class="text-style-range">
                             <span><b>خمیدگی</b><output id="desktop-text-curve-value">0</output></span>
                             <input id="desktop-text-curve" type="range" min="-80" max="80" value="0" step="1">
                         </label>
@@ -151,8 +155,7 @@
             <button type="button" class="desktop-tool desktop-tool--label" data-desktop-tool="label" title="لیبل" aria-label="ابزار لیبل"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4" width="17" height="16" rx="3" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="9" r="1.6" fill="currentColor"/><path d="m5.5 17 4.2-4.1 3.2 3 2.2-2.2 3.4 3.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
             <button type="button" class="desktop-tool" data-desktop-tool="shirt-color" title="رنگ تیشرت" aria-label="رنگ تیشرت"><span>●</span></button>
             <button type="button" class="desktop-tool" data-desktop-tool="size" title="سایز تیشرت" aria-label="انتخاب سایز"><span>↔</span></button>
-            <button type="button" class="desktop-tool" data-desktop-tool="text-font" title="متن و استایل" aria-label="فونت و استایل متن"><span>Aa</span></button>
-            <button type="button" class="desktop-tool" data-desktop-tool="text-color" title="رنگ متن" aria-label="رنگ متن"><span>A•</span></button>
+            <button type="button" class="desktop-tool" data-desktop-tool="text-font" title="متن و استایل" aria-label="متن و استایل متن"><span>Aa</span></button>
             <button type="button" class="desktop-tool" data-desktop-tool="label-tools" title="ابزارهای لیبل انتخاب‌شده" aria-label="ابزارهای لیبل انتخاب‌شده"><span>⚙</span></button>
             <button type="button" class="desktop-tool desktop-tool--save" data-desktop-tool="save" title="ذخیره طراحی" aria-label="ذخیره طراحی"><span>✓</span></button>
         </div>
