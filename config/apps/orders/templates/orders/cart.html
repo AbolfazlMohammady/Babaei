@@ -114,8 +114,10 @@
                 {% for item in items %}
                 <article class="cart-line" data-cart-item data-cart-id="{{ item.id }}" data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
                     <div class="cart-line__visual">
-                        <a href="{{ item.product.get_absolute_url }}" class="cart-line__image" aria-label="{{ item.product.name }}">
-                            {% if item.primary_image_url %}
+                        <a href="{% if item.custom_design %}{% url 'orders:checkout' %}{% else %}{{ item.product.get_absolute_url }}{% endif %}" class="cart-line__image" aria-label="{% if item.custom_design %}طراحی سفارشی {{ item.custom_design.design_code }}{% else %}{{ item.product.name }}{% endif %}">
+                            {% if item.custom_design and item.custom_design.preview_front %}
+                            <img src="{{ item.custom_design.preview_front.url }}" alt="پیش‌نمایش طراحی {{ item.custom_design.design_code }}" loading="lazy" decoding="async">
+                            {% elif item.primary_image_url %}
                             <img src="{{ item.primary_image_url }}" alt="{{ item.primary_image_alt|default:item.product.name }}" loading="lazy" decoding="async">
                             {% else %}
                             <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ item.product.name }}" loading="lazy" decoding="async">
