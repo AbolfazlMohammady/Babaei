@@ -563,9 +563,9 @@
             const selected = Boolean(event.detail?.selected);
             if (selected) {
                 openLabelTools();
-            } else if (currentTool === "label-tools") {
-                close();
             }
+            // Keep the desktop selected-item tools visible even when nothing is selected.
+            // The controls themselves remain disabled/empty until a layer is selected.
         });
 
         const buttons = dock.querySelectorAll("[data-desktop-tool]");
