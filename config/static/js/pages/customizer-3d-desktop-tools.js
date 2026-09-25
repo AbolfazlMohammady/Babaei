@@ -99,6 +99,11 @@
             return { source, node };
         };
 
+        const dispatch = (name, detail = {}) => {
+            log("DISPATCH", { name, detail });
+            document.dispatchEvent(new CustomEvent(name, { detail }));
+        };
+
         const openLabel = () => {
             log("ACTION: label");
             const result = clone("#label-library-panel", { unhide: true });
@@ -108,8 +113,10 @@
             result.node.querySelectorAll(".artwork-grid button").forEach((button, index) => {
                 button.addEventListener("click", event => {
                     event.preventDefault();
+                    event.stopPropagation();
+                    log("LABEL SELECT", { index });
                     sourceButtons[index]?.click();
-                    close();
+                    // Keep the library open. The user closes it explicitly with ×.
                 });
             });
 
@@ -118,6 +125,7 @@
             if (sourceUpload && uploadButton) {
                 uploadButton.addEventListener("click", event => {
                     event.preventDefault();
+                    event.stopPropagation();
                     sourceUpload.click();
                 });
             }
@@ -135,21 +143,122 @@
             result.node.querySelectorAll("button").forEach((button, index) => {
                 button.addEventListener("click", event => {
                     event.preventDefault();
+                    event.stopPropagation();
                     sourceButtons[index]?.click();
-                    close();
+                    // Keep the tool card open until the explicit × is pressed.
                 });
             });
 
             open(title, result.node);
         };
 
-        const openText = () => {
-            log("ACTION: text");
-            const result = clone(".desktop-text-tools");
-            if (!result) return;
+        const wireTextEditor = (editorResult) => {
+            if (!editorResult) return;
 
-            const input = result.node.querySelector("#desktop-text-input");
-            const add = result.node.querySelector("#desktop-text-add");
+            const source = editorResult.source;
+            const node = editorResult.node;
+            const editInput = node.querySelector('input[type="text"]');
+            const sourceEditInput = source.querySelector("#desktop-text-edit-input");
+            const apply = node.querySelector(".desktop-text-editor__apply");
+            const sourceApply = source.querySelector("#desktop-text-apply");
+
+            if (editInput && sourceEditInput) {
+                editInput.value = sourceEditInput.value || "";
+            }
+
+            node.querySelectorAll("[data-text-style]").forEach(button => {
+                button.addEventListener("click", event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const selector = '[data-text-style="' +
+                        CSS.escape(button.dataset.textStyle || "") +
+                        '"]';
+                    const original = Array.from(document.querySelectorAll(selector))
+                        .find(item => item !== button);
+
+                    log("TEXT STYLE SELECT", { style: button.dataset.textStyle });
+                    original?.click();
+                });
+            });
+
+            const sourceRanges = source.querySelectorAll('input[type="range"]');
+            node.querySelectorAll('input[type="range"]').forEach((range, index) => {
+                range.addEventListener("input", () => {
+                    const original = sourceRanges[index];
+                    if (!original) return;
+
+                    original.value = range.value;
+                    original.dispatchEvent(new Event("input", { bubbles: true }));
+                });
+            });
+
+            node.querySelectorAll("[data-text-color]").forEach(button => {
+                button.addEventListener("click", event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const color = button.dataset.textColor;
+                    const original = Array.from(document.querySelectorAll("[data-text-color]"))
+                        .find(item => item !== button && item.dataset.textColor === color);
+
+                    log("TEXT COLOR SELECT", { color });
+                    original?.click();
+                });
+            });
+
+            apply?.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const value = editInput?.value?.trim();
+                if (!value) {
+                    editInput?.focus();
+                    return;
+                }
+
+                const sourceColor = Array.from(document.querySelectorAll("[data-text-color].is-active"))
+                    .find(item => item.dataset.textColor)?.dataset.textColor || "#ffffff";
+
+                const style = {
+                    preset: Array.from(document.querySelectorAll("[data-text-style].is-active"))
+                        .find(item => item.dataset.textStyle)?.dataset.textStyle || "modern",
+                    curve: Number(source.querySelector("#desktop-text-curve")?.value || 0),
+                    letterSpacing: Number(source.querySelector("#desktop-text-spacing")?.value || 0),
+                };
+
+                log("TEXT APPLY", { value, style, color: sourceColor });
+                dispatch("babaei:update-text", {
+                    text: value,
+                    style,
+                    color: sourceColor,
+                });
+            });
+
+            editInput?.addEventListener("keydown", event => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                apply?.click();
+            });
+        };
+
+        const buildTextPopover = (focusStyle = false) => {
+            log("ACTION: text", { focusStyle });
+
+            const textResult = clone(".desktop-text-tools");
+            if (!textResult) return;
+
+            const editorSource = document.getElementById("desktop-text-editor");
+            const editorResult = editorSource && !editorSource.hidden
+                ? clone("#desktop-text-editor", { unhide: true })
+                : null;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "desktop-text-popover-content";
+
+            const textNode = textResult.node;
+            const input = textNode.querySelector('input[type="text"]');
+            const add = textNode.querySelector("button");
 
             const submit = () => {
                 const value = input?.value?.trim();
@@ -158,15 +267,15 @@
                     return;
                 }
 
-                const realInput = document.getElementById("desktop-text-input");
-                const realAdd = document.getElementById("desktop-text-add");
-                if (realInput) realInput.value = value;
-                realAdd?.click();
-                close();
+                log("TEXT ADD", { value });
+                dispatch("babaei:add-text", { text: value });
+                if (input) input.value = "";
+                input?.focus();
             };
 
             add?.addEventListener("click", event => {
                 event.preventDefault();
+                event.stopPropagation();
                 submit();
             });
 
@@ -177,45 +286,35 @@
                 }
             });
 
-            open("افزودن متن", result.node);
-            input?.focus();
+            wrapper.appendChild(textNode);
+
+            if (editorResult) {
+                const separator = document.createElement("div");
+                separator.className = "desktop-text-popover__separator";
+                wrapper.appendChild(separator);
+                wrapper.appendChild(editorResult.node);
+                wireTextEditor(editorResult);
+            }
+
+            open(editorResult ? "متن و استایل" : "افزودن متن", wrapper);
+
+            if (focusStyle && editorResult) {
+                editorResult.node.querySelector('input[type="text"]')?.focus();
+            } else {
+                input?.focus();
+            }
         };
 
+        const openText = () => buildTextPopover(false);
+
         const openTextFont = () => {
-            log("ACTION: text-font");
-            const result = clone("#desktop-text-editor", { unhide: true });
-            if (!result) return;
-
-            result.node.querySelectorAll("[data-text-style]").forEach(button => {
-                button.addEventListener("click", event => {
-                    event.preventDefault();
-                    const selector = '[data-text-style="' + CSS.escape(button.dataset.textStyle || "") + '"]';
-                    const originals = document.querySelectorAll(selector);
-                    const original = Array.from(originals).find(item => item !== button);
-                    original?.click();
-                    close();
-                });
-            });
-
-            const sourceRanges = result.source.querySelectorAll('input[type="range"]');
-            result.node.querySelectorAll('input[type="range"]').forEach((range, index) => {
-                range.addEventListener("input", () => {
-                    const original = sourceRanges[index];
-                    if (!original) return;
-                    original.value = range.value;
-                    original.dispatchEvent(new Event("input", { bubbles: true }));
-                });
-            });
-
-            const sourceApply = result.source.querySelector("#desktop-text-apply");
-            const apply = result.node.querySelector(".desktop-text-editor__apply");
-            apply?.addEventListener("click", event => {
-                event.preventDefault();
-                sourceApply?.click();
-                close();
-            });
-
-            open("فونت و استایل متن", result.node);
+            const sourceEditor = document.getElementById("desktop-text-editor");
+            if (!sourceEditor || sourceEditor.hidden) {
+                log("ACTION: text-font without selected text -> open text tool");
+                buildTextPopover(false);
+                return;
+            }
+            buildTextPopover(true);
         };
 
         const openTextColor = () => {
@@ -227,8 +326,8 @@
             result.node.querySelectorAll("[data-text-color]").forEach((button, index) => {
                 button.addEventListener("click", event => {
                     event.preventDefault();
+                    event.stopPropagation();
                     originals[index]?.click();
-                    close();
                 });
             });
 
@@ -244,8 +343,8 @@
             result.node.querySelectorAll("[data-action]").forEach((button, index) => {
                 button.addEventListener("click", event => {
                     event.preventDefault();
+                    event.stopPropagation();
                     originals[index]?.click();
-                    close();
                 });
             });
 
@@ -294,28 +393,15 @@
             });
         });
 
-        document.addEventListener("click", event => {
-            if (popover.hidden) return;
-            if (popover.contains(event.target) || dock.contains(event.target)) return;
-
-            log("OUTSIDE CLICK", {
-                target: event.target?.tagName,
-                id: event.target?.id || null,
-                className: event.target?.className || null,
-            });
-
-            close();
-        });
-
+        // Desktop popovers are intentionally modal-like: they stay open until
+        // the explicit × button is pressed or another desktop tool replaces them.
         document.addEventListener("keydown", event => {
-            if (event.key === "Escape") {
-                log("ESCAPE");
-                close();
-            }
+            if (event.key !== "Escape" || popover.hidden) return;
+            log("ESCAPE IGNORED: close with ×");
         });
 
         window.BabaeiDesktopToolsDebug = {
-            version: "20260925-debug1",
+            version: "20260925-desktop-tools2",
             dock,
             popover,
             buttons,
