@@ -6656,8 +6656,8 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
         top:50%;
         right:142px;
         z-index:81;
-        width:280px;
-        max-height:min(520px,72%);
+        width:340px;
+        max-height:min(680px,82%);
         overflow:auto;
         padding:14px;
         border:1px solid rgba(255,255,255,.10);
@@ -6670,6 +6670,66 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
     }
 
     .desktop-tool-popover[hidden] { display:none !important; }
+    .desktop-tool-popover .label-library-panel {
+        background:#101012 !important;
+    }
+
+    .desktop-tool-popover .label-library-grid {
+        max-height:520px !important;
+        background:#101012;
+    }
+
+    .desktop-tool-popover .label-library-grid .artwork-card {
+        background:#151517 !important;
+        border-color:#2d2d30 !important;
+        color:#eee9df !important;
+    }
+
+    .desktop-tool-popover .label-library-grid .artwork-card__visual {
+        background:#09090b !important;
+    }
+
+    .desktop-tool-popover .desktop-text-popover-content {
+        display:flex;
+        flex-direction:column;
+        gap:0;
+    }
+
+    .desktop-tool-popover .desktop-text-tools {
+        margin-top:0;
+        padding:0;
+        border:0;
+        background:transparent;
+    }
+
+    .desktop-tool-popover .desktop-text-tools__row {
+        grid-template-columns:minmax(0,1fr) 78px;
+        align-items:stretch;
+    }
+
+    .desktop-tool-popover .desktop-text-tools__row input {
+        min-width:0;
+        height:42px;
+        box-sizing:border-box;
+    }
+
+    .desktop-tool-popover .desktop-text-tools__row button {
+        min-height:42px;
+        border-radius:10px;
+    }
+
+    .desktop-text-popover__separator {
+        height:1px;
+        margin:14px 0;
+        background:#29292b;
+    }
+
+    .desktop-tool-popover .desktop-text-editor {
+        margin-top:0;
+        padding:0;
+        border-top:0;
+    }
+
     .desktop-tool-popover .premium-setting-group { margin:0 0 12px; padding:0; border:0; }
     .desktop-tool-popover .premium-setting-group:last-child { margin-bottom:0; }
     .desktop-tool-popover h3 { margin:0 0 9px; color:#eee9df; font-size:11px; }
