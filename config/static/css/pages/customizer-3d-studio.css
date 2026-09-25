@@ -6722,6 +6722,36 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
     }
 
     .desktop-tool-popover[hidden] { display:none !important; }
+    .desktop-tool-popover--left {
+        left:14px !important;
+        right:auto !important;
+        width:360px !important;
+        max-width:min(360px, calc(100% - 170px)) !important;
+    }
+
+    .desktop-tool-popover--left .selected-label-tools,
+    .desktop-tool-popover--left #selected-controls {
+        width:100%;
+        background:#101012 !important;
+        border:1px solid rgba(255,255,255,.08);
+        border-radius:16px;
+        padding:12px;
+        box-sizing:border-box;
+    }
+
+    .desktop-tool-popover--left .selected-label-tools__controls,
+    .desktop-tool-popover--left .selected-label-tools__swatches,
+    .desktop-tool-popover--left .text-style-presets {
+        display:grid !important;
+        gap:8px;
+    }
+
+    .desktop-tool-popover--left .selected-label-tools__controls button,
+    .desktop-tool-popover--left .text-style-presets button {
+        min-height:44px;
+        border-radius:12px;
+    }
+
     .desktop-tool-popover .label-library-panel {
         background:#101012 !important;
     }
