@@ -9,7 +9,7 @@ from django.db import transaction
 from django.db.models import Prefetch
 from django.http import JsonResponse
 from django.urls import reverse
-from django.shortcuts import get_object_or_404, render, reverse
+from django.shortcuts import get_object_or_404, render
 from django.utils.safestring import mark_safe
 from django.views import View
 
