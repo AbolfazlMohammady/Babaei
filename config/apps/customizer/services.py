@@ -319,7 +319,7 @@ def remove_background(file_obj):
         raise ValidationError("حذف خودکار پس‌زمینه انجام نشد؛ لطفاً دوباره تلاش کنید.") from exc
 
 
-def create_uploaded_artwork(*, request, uploaded_file):
+def create_uploaded_artwork(*, request, uploaded_file, remove_background=False):
     if uploaded_file.size > MAX_ARTWORK_UPLOAD_BYTES:
         raise ValidationError("حجم تصویر باید حداکثر ۸ مگابایت باشد.")
     if not request.session.session_key:
@@ -354,11 +354,13 @@ def create_uploaded_artwork(*, request, uploaded_file):
     )
     artwork.slug = f"upload-{uuid.uuid4().hex}"
     artwork.original_image.save(uploaded_file.name, uploaded_file, save=False)
-    if has_alpha:
-        uploaded_file.seek(0)
-        artwork.image.save(uploaded_file.name, uploaded_file, save=False)
-    else:
+    if remove_background:
         processed = remove_background(uploaded_file)
         artwork.image.save(f"{artwork.uuid}.png", ContentFile(processed), save=False)
+        artwork.background_removed = True
+    else:
+        uploaded_file.seek(0)
+        artwork.image.save(uploaded_file.name, uploaded_file, save=False)
+        artwork.background_removed = has_alpha
     artwork.save()
     return artwork
