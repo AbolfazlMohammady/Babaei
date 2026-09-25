@@ -196,12 +196,15 @@ js/storefront.js). Nothing on this page needs !important.
             <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.2 19 6v6c0 4.2-2.9 7.6-7 8.8-4.1-1.2-7-4.6-7-8.8V6l7-2.8Z"></path><path d="m9 12.1 2.2 2.2 4.3-4.4"></path></svg></span><span><strong>کیفیت قابل لمس</strong><small>انتخاب‌شده برای استفاده‌ی روزمره</small></span></div>
             <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.2 7.4h9.3v9.2H3.2z"></path><path d="M12.5 10.4h3.9l3.4 3.5v2.7h-7.3z"></path><path d="M6.6 19.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z"></path><path d="M16.6 19.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z"></path></svg></span><span><strong>ارسال مطمئن</strong><small>بسته‌بندی تمیز و قابل پیگیری</small></span></div>
             <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 20 3.4-.8L19 7.6a2.3 2.3 0 0 0-3.3-3.3L4.1 16.6 4 20Z"></path><path d="m13.4 6.9 3.3 3.3"></path></svg></span><span><strong>ساخته‌شده برای تو</strong><small>امکان شخصی‌سازی در استودیو طراحی</small></span></div>
-            <details class="pd-perk pd-perk--comments" id="comments">
-                <summary class="pd-perk__summary">
-                    <span class="pd-perk__icon" aria-hidden="true">✦</span>
-                    <span><strong>نظرات مشتریان</strong><small>{{ comment_count|default:0 }} نظر{% if comment_count %} · امتیاز {{ comment_average|default:"0"|floatformat:1 }} از ۵{% endif %}</small></span>
-                </summary>
-                <div class="pd-comments__content">
+            <button type="button" class="pd-perk pd-perk--comments" data-comment-toggle aria-controls="comments" aria-expanded="false">
+                <span class="pd-perk__icon" aria-hidden="true">✦</span>
+                <span><strong>نظرات مشتریان</strong><small>{{ comment_count|default:0 }} نظر{% if comment_count %} · امتیاز {{ comment_average|default:"0"|floatformat:1 }} از ۵{% endif %}</small></span>
+            </button>
+        </section>
+
+        {% if product.description %}<section class="pd-story" data-reveal><h2>توضیحات محصول</h2><div class="pd-story__body">{{ product.description|linebreaks }}</div></section>{% endif %}
+        <section class="pd-comments pd-comments--compact" id="comments" hidden data-reveal>
+            <div class="pd-comments__content">
                     <div class="pd-comments__toolbar">
                         <div><span class="pd-comments__eyebrow">بازخورد مشتری‌ها</span><h2>نظرهایی که تجربه خرید را واقعی می‌کنند.</h2></div>
                         <button type="button" class="pd-comments__write" data-comment-write><span>نوشتن نظر</span><b aria-hidden="true">←</b></button>
@@ -247,10 +250,7 @@ js/storefront.js). Nothing on this page needs !important.
                         </div>
                     </div>
                 </div>
-            </details>
         </section>
-
-        {% if product.description %}<section class="pd-story" data-reveal><h2>توضیحات محصول</h2><div class="pd-story__body">{{ product.description|linebreaks }}</div></section>{% endif %}
 
 
 
