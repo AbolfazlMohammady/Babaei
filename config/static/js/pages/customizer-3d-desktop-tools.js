@@ -125,6 +125,24 @@
                 libraryToggle.appendChild(description);
             }
 
+            result.node.querySelectorAll("[data-artwork-section] .artwork-library-section__toggle").forEach(toggle => {
+                toggle.addEventListener("click", event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const section = toggle.closest("[data-artwork-section]");
+                    const grid = section?.querySelector(".artwork-library-section__grid");
+                    if (!grid) return;
+                    const isOpen = !grid.hidden;
+                    grid.hidden = isOpen;
+                    toggle.setAttribute("aria-expanded", String(!isOpen));
+                    section.classList.toggle("is-open", !isOpen);
+                    log("LABEL SECTION TOGGLE", {
+                        section: section.dataset.artworkSection,
+                        open: !isOpen,
+                    });
+                });
+            });
+
             const sourceButtons = result.source.querySelectorAll(".artwork-grid button");
             result.node.querySelectorAll(".artwork-grid button").forEach((button, index) => {
                 button.addEventListener("click", event => {
