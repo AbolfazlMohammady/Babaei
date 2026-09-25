@@ -12,12 +12,15 @@ from django.views.decorators.http import require_POST
 from apps.shop.models import Product, ProductImage, ProductVariant
 
 from apps.users.models import Address
+from apps.customizer.models import DesignDraft
+from apps.customizer.services import save_design_draft
 
 from .models import Cart, CartItem, Order, OrderItem
 from .services import (
     CART_COUNT_SESSION_KEY,
     CART_SESSION_KEY,
     add_to_cart,
+    add_design_to_cart,
     clear_cart,
     create_order_from_cart,
     get_active_cart,
@@ -43,7 +46,7 @@ def _remember_cart_count(request, count):
 
 
 def _cart_totals(cart, request=None):
-    unit_price = Case(When(variant__isnull=False, then=F("variant__price")), default=F("product__base_price"), output_field=PositiveBigIntegerField())
+    unit_price = Case(When(custom_design__isnull=False, then=F("custom_design__total_price")), When(variant__isnull=False, then=F("variant__price")), default=F("product__base_price"), output_field=PositiveBigIntegerField())
     line_total = ExpressionWrapper(F("quantity") * unit_price, output_field=PositiveBigIntegerField())
     totals = cart.items.aggregate(count=Sum("quantity", default=0), subtotal=Sum(line_total, default=0))
     count = _remember_cart_count(request, totals["count"] or 0) if request is not None else totals["count"] or 0
@@ -66,7 +69,7 @@ def _cart_items_queryset(request):
     )
     queryset = (
         CartItem.objects
-        .select_related("cart", "product__category", "variant__color", "variant__size")
+        .select_related("cart", "product__category", "variant__color", "variant__size", "custom_design")
         .annotate(primary_image_url=primary_image_url, primary_image_alt=primary_image_alt)
     )
     user_id = request.session.get(AUTH_USER_SESSION_KEY)
@@ -87,6 +90,33 @@ def cart_view(request):
     hero_product = items[0].product if items else None
     return render(request, "orders/cart.html", {"cart": cart, "items": items, "item_count": item_count, "subtotal": subtotal, "hero_product": hero_product})
 
+
+@require_POST
+def custom_design_cart_add_view(request, slug):
+    product = get_object_or_404(Product.objects.select_related("category"), slug=slug, is_active=True, category__is_active=True)
+    try:
+        import json
+        if request.content_type.startswith("multipart/form-data"):
+            payload = json.loads(request.POST.get("payload", "{}"))
+            preview_front = request.FILES.get("preview_front")
+            preview_back = request.FILES.get("preview_back")
+        else:
+            payload = json.loads(request.body.decode("utf-8"))
+            preview_front = preview_back = None
+        variant_id = payload.pop("variant_id", None)
+        variant = get_object_or_404(ProductVariant, id=variant_id, product=product, is_active=True) if variant_id else None
+        design = save_design_draft(request=request, product=product, payload=payload, variant=variant)
+        if preview_front:
+            design.preview_front.save(f"{design.design_code}-front.webp", preview_front, save=False)
+        if preview_back:
+            design.preview_back.save(f"{design.design_code}-back.webp", preview_back, save=False)
+        if preview_front or preview_back:
+            design.save(update_fields=["preview_front", "preview_back", "updated_at"])
+        item = add_design_to_cart(request, design=design, quantity=1)
+    except Exception as exc:
+        return JsonResponse({"ok": False, "message": str(exc) or "طراحی قابل افزودن به سبد نیست."}, status=400)
+    totals = _cart_totals(item.cart, request)
+    return JsonResponse({"ok": True, **totals, "item_id": item.id, "design_id": str(design.uuid), "design_code": design.design_code, "total_price": design.total_price, "message": "طراحی با موفقیت به سبد خرید اضافه شد."})
 
 @require_POST
 def cart_add_view(request):
