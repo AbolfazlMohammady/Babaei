@@ -175,7 +175,7 @@
     <script src="{% static 'js/app.js' %}" defer></script>
     <script src="{% static 'js/components.js' %}?v=3" defer></script>
     {% if request.resolver_match.namespace == "users" and request.resolver_match.url_name != "login" and request.resolver_match.url_name != "verify_otp" or request.resolver_match.namespace == "saved" or request.resolver_match.namespace != "users" and request.resolver_match.namespace != "saved" and request.resolver_match.namespace != "orders" or request.resolver_match.namespace != "orders" and request.resolver_match.url_name != "cart" %}
-    <script src="{% static 'js/footer.js' %}?v=1" defer></script>
+    <script src="{% static 'js/footer.js' %}?v=2" defer></script>
     {% endif %}
     {% endif %}
     {% block site_optional_js %}
