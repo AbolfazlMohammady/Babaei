@@ -6913,6 +6913,7 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
     }
 
     .desktop-tool-popover .artwork-library-section {
+        grid-column:1 / -1;
         margin-bottom:14px;
     }
 
