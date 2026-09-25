@@ -3993,35 +3993,41 @@ body.product-detail-page .pd-related__track.is-dragging * {
 }
 
 
-/* Product perks live in the buy column on desktop. */
-@media (min-width: 760px) {
-    body.product-detail-page .pd-info > .pd-perks {
-        width: 100%;
-        margin: 22px 0 0;
-        grid-template-columns: repeat(3, minmax(0,1fr));
-        gap: 9px;
-    }
-    body.product-detail-page .pd-info > .pd-perks .pd-perk {
-        min-height: 76px;
-        padding: 12px 10px;
-        grid-template-columns: 34px minmax(0,1fr);
-        gap: 8px;
-        border-radius: 14px;
-    }
-    body.product-detail-page .pd-info > .pd-perks .pd-perk__icon {
-        width: 34px;
-        height: 34px;
-        border-radius: 11px;
-    }
-    body.product-detail-page .pd-info > .pd-perks .pd-perk strong {
-        font-size: 10px;
-    }
-    body.product-detail-page .pd-info > .pd-perks .pd-perk small {
-        font-size: 7.5px;
-    }
+/* Product perks sit below the full product stage, centered above the description. */
+body.product-detail-page > .pd > .pd-inner > .pd-perks {
+    width: min(100%, 760px);
+    margin: 22px auto 0;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 10px;
 }
+
+body.product-detail-page > .pd > .pd-inner > .pd-perks .pd-perk {
+    min-height: 76px;
+    padding: 12px 10px;
+    grid-template-columns: 34px minmax(0,1fr);
+    gap: 8px;
+    border-radius: 14px;
+}
+
+body.product-detail-page > .pd > .pd-inner > .pd-perks .pd-perk__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+}
+
+body.product-detail-page > .pd > .pd-inner > .pd-perks .pd-perk strong {
+    font-size: 10px;
+}
+
+body.product-detail-page > .pd > .pd-inner > .pd-perks .pd-perk small {
+    font-size: 7.5px;
+}
+
 @media (max-width: 759px) {
-    body.product-detail-page .pd-info > .pd-perks {
+    body.product-detail-page > .pd > .pd-inner > .pd-perks {
+        width: 100%;
         margin-top: 14px;
+        grid-template-columns: 1fr;
+        gap: 8px;
     }
 }
