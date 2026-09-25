@@ -203,12 +203,11 @@ class SaveDesignView(View):
         try:
             if request.content_type.startswith("multipart/form-data"):
                 payload = json.loads(request.POST.get("payload", "{}"))
-                preview = request.FILES.get("preview")
                 preview_front = request.FILES.get("preview_front")
                 preview_back = request.FILES.get("preview_back")
             else:
                 payload = json.loads(request.body.decode("utf-8"))
-                preview = preview_front = preview_back = None
+                preview_front = preview_back = None
             if not isinstance(payload, dict):
                 raise ValidationError("اطلاعات طراحی نامعتبر است.")
             variant_id = payload.pop("variant_id", None)
@@ -220,14 +219,12 @@ class SaveDesignView(View):
                     if isinstance(raw_layer, dict) and raw_layer.get("three_d"):
                         normalized_layer["three_d"] = raw_layer["three_d"]
                 draft.save(update_fields=["payload", "updated_at"])
-            if preview:
-                draft.preview_image.save(f"{draft.design_code}.png", preview, save=False)
             if preview_front:
                 draft.preview_front.save(f"{draft.design_code}-front.webp", preview_front, save=False)
             if preview_back:
                 draft.preview_back.save(f"{draft.design_code}-back.webp", preview_back, save=False)
-            if preview or preview_front or preview_back:
-                draft.save(update_fields=["preview_image", "preview_front", "preview_back", "updated_at"])
+            if preview_front or preview_back:
+                draft.save(update_fields=["preview_front", "preview_back", "updated_at"])
         except (json.JSONDecodeError, UnicodeDecodeError):
             return JsonResponse({"ok": False, "error": "اطلاعات طراحی نامعتبر است."}, status=400)
         except ValidationError as exc:
