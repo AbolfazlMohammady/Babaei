@@ -3694,3 +3694,245 @@ body.product-detail-page .pd-comments--compact .pd-comments__content {
         border-radius: 18px;
     }
 }
+
+
+/* ==========================================================================
+   PRODUCT DETAIL — special actions under the description
+   ========================================================================== */
+
+body.product-detail-page .pd-special-grid {
+    width: min(100%, 980px);
+    margin: 20px auto 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+body.product-detail-page .pd-special-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) 32px;
+    align-items: center;
+    gap: 13px;
+    min-height: 116px;
+    padding: 16px 18px;
+    border: 1px solid rgba(20,22,26,.09);
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at 8% 18%, rgba(20,82,60,.055) 0 2px, transparent 2.5px),
+        linear-gradient(180deg,#fff 0%,#fbfaf6 100%);
+    color: var(--pdp-ink);
+    text-align: start;
+    text-decoration: none;
+    box-shadow: 0 16px 34px -30px rgba(9,28,20,.78);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+
+body.product-detail-page .pd-special-card::after {
+    content: "";
+    position: absolute;
+    inset-inline: 18px;
+    bottom: 11px;
+    border-bottom: 1px dashed rgba(20,22,26,.11);
+    pointer-events: none;
+}
+
+body.product-detail-page .pd-special-card::before {
+    content: "BABAEI";
+    position: absolute;
+    top: 9px;
+    inset-inline-start: 18px;
+    color: rgba(20,82,60,.28);
+    font-size: 6px;
+    font-weight: 900;
+    letter-spacing: .22em;
+    pointer-events: none;
+}
+
+body.product-detail-page .pd-special-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(20,82,60,.18);
+    box-shadow: 0 20px 38px -28px rgba(9,28,20,.72);
+}
+
+body.product-detail-page .pd-special-card:focus-visible {
+    outline: 2px solid var(--pdp-forest);
+    outline-offset: 3px;
+}
+
+body.product-detail-page button.pd-special-card {
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+}
+
+body.product-detail-page .pd-special-card__edge {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block: 13px;
+    width: 3px;
+    border-radius: 99px 0 0 99px;
+    background: var(--pdp-forest);
+}
+
+body.product-detail-page .pd-special-card--studio .pd-special-card__edge {
+    background: #c6a75b;
+}
+
+body.product-detail-page .pd-special-card__icon {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: var(--pdp-forest);
+    color: #fff;
+}
+
+body.product-detail-page .pd-special-card--studio .pd-special-card__icon {
+    background: #f0e8d4;
+    color: #765e2d;
+}
+
+body.product-detail-page .pd-special-card__icon svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+body.product-detail-page .pd-special-card__copy {
+    display: grid;
+    min-width: 0;
+    gap: 3px;
+}
+
+body.product-detail-page .pd-special-card__eyebrow {
+    color: var(--pdp-forest);
+    font-size: 7px;
+    line-height: 1.2;
+    font-weight: 900;
+    letter-spacing: .13em;
+}
+
+body.product-detail-page .pd-special-card--studio .pd-special-card__eyebrow {
+    color: #80672f;
+}
+
+body.product-detail-page .pd-special-card__copy strong {
+    font-size: 14px;
+    line-height: 1.55;
+    font-weight: 900;
+}
+
+body.product-detail-page .pd-special-card__copy small {
+    color: var(--pdp-muted);
+    font-size: 9px;
+    line-height: 1.75;
+}
+
+body.product-detail-page .pd-special-card__arrow {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f0f3ef;
+    color: var(--pdp-forest);
+    font-size: 16px;
+    transition: transform .2s ease;
+}
+
+body.product-detail-page .pd-special-card--studio .pd-special-card__arrow {
+    background: #f6f0e3;
+    color: #80672f;
+}
+
+body.product-detail-page .pd-special-card:hover .pd-special-card__arrow {
+    transform: translateX(-3px);
+}
+
+body.product-detail-page .pd-comments--compact {
+    width: min(100%, 980px);
+    margin: 14px auto 0;
+}
+
+body.product-detail-page .pd-related__track {
+    cursor: grab;
+    touch-action: pan-x;
+    user-select: none;
+}
+
+body.product-detail-page .pd-related__track.is-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
+}
+
+body.product-detail-page .pd-related__track.is-dragging * {
+    cursor: grabbing;
+}
+
+@media (max-width: 719px) {
+    body.product-detail-page .pd-special-grid {
+        grid-template-columns: 1fr;
+        gap: 9px;
+        margin-top: 14px;
+    }
+
+    body.product-detail-page .pd-special-card {
+        grid-template-columns: 42px minmax(0,1fr) 29px;
+        min-height: 96px;
+        padding: 13px 14px;
+        border-radius: 15px;
+        gap: 10px;
+    }
+
+    body.product-detail-page .pd-special-card::after {
+        inset-inline: 14px;
+        bottom: 9px;
+    }
+
+    body.product-detail-page .pd-special-card::before {
+        top: 7px;
+        inset-inline-start: 14px;
+        font-size: 5px;
+    }
+
+    body.product-detail-page .pd-special-card__edge {
+        inset-block: 10px;
+    }
+
+    body.product-detail-page .pd-special-card__icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+    }
+
+    body.product-detail-page .pd-special-card__copy strong {
+        font-size: 12px;
+    }
+
+    body.product-detail-page .pd-special-card__copy small {
+        font-size: 8px;
+    }
+
+    body.product-detail-page .pd-special-card__eyebrow {
+        font-size: 6px;
+    }
+
+    body.product-detail-page .pd-special-card__arrow {
+        width: 29px;
+        height: 29px;
+        font-size: 14px;
+    }
+
+    body.product-detail-page .pd-comments--compact {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
