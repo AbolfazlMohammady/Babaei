@@ -497,6 +497,7 @@
             open("رنگ تیشرت", wrapper);
         };
 
+            // Desktop text controls are complete: add/edit/style/color are wired in one popover.
         const openText = () => buildTextPopover();
 
         const openTextFont = () => buildTextPopover();
