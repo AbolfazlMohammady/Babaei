@@ -375,3 +375,301 @@ body.customizer-page {
         top: max(8px, env(safe-area-inset-top)) !important;
     }
 }
+
+
+/* =========================================================
+   STUDIO UI PASS — side workspaces + compact mobile launcher
+   ========================================================= */
+
+/* Desktop: tools and label library stay in their own workspaces.
+   The 3D garment remains the primary visual area. */
+@media (min-width: 1024px) {
+    body.customizer-page .customizer-shell--premium {
+        width: min(1560px, calc(100% - 28px));
+    }
+
+    body.customizer-page .customizer-workspace--premium {
+        grid-template-columns: minmax(280px, 310px) minmax(0, 1fr) minmax(300px, 330px) !important;
+        min-height: min(760px, calc(100vh - 112px));
+        height: min(760px, calc(100vh - 112px));
+        overflow: hidden;
+        border-radius: 20px;
+    }
+
+    body.customizer-page .customizer-workspace--premium > .customizer-panel {
+        position: relative !important;
+        inset: auto !important;
+        width: auto !important;
+        max-width: none !important;
+        height: 100% !important;
+        max-height: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        overflow-y: auto !important;
+        z-index: 4 !important;
+        border-radius: 0 !important;
+    }
+
+    body.customizer-page .customizer-panel--premium-left {
+        border-right: 1px solid rgba(255,255,255,.09) !important;
+        padding: 18px 16px !important;
+    }
+
+    body.customizer-page .customizer-panel--premium-right {
+        border-left: 1px solid rgba(255,255,255,.09) !important;
+        padding: 18px 16px !important;
+    }
+
+    body.customizer-page .studio-drawer-toggle,
+    body.customizer-page .studio-drawer-backdrop {
+        display: none !important;
+    }
+
+    /* The label library is the primary right-hand workspace on desktop. */
+    body.customizer-page .customizer-panel--premium-right .panel-heading h2 {
+        font-size: 20px;
+        letter-spacing: -.02em;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .label-library-card {
+        margin-top: 14px;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .label-library-trigger {
+        display: none !important;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .label-library-panel[hidden] {
+        display: block !important;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .label-library-panel {
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 16px;
+        background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015));
+        padding: 14px;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .label-library-panel__head {
+        margin-bottom: 12px;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .label-library-panel__head strong {
+        font-size: 14px;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .artwork-grid--premium {
+        max-height: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .artwork-card {
+        min-height: 118px;
+        border-radius: 12px;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .upload-dropzone--premium {
+        min-height: 72px;
+        margin-top: 10px;
+        border-radius: 12px;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .premium-setting-group {
+        margin-top: 16px;
+        padding-top: 16px;
+    }
+
+    body.customizer-page .customizer-panel--premium-right .premium-label-summary,
+    body.customizer-page .customizer-panel--premium-right .price-breakdown {
+        margin-top: 12px;
+    }
+
+    body.customizer-page .customizer-panel--premium-left .studio-tools-panel__heading,
+    body.customizer-page .customizer-panel--premium-right .panel-heading {
+        position: sticky;
+        top: -18px;
+        z-index: 5;
+        padding-bottom: 12px;
+        background: linear-gradient(180deg, #131315 0%, rgba(19,19,21,.96) 78%, rgba(19,19,21,0) 100%);
+    }
+
+    body.customizer-page .customizer-panel--premium-left .selected-label-tools {
+        padding-top: 4px;
+    }
+
+    body.customizer-page .customizer-panel--premium-left .desktop-text-tools,
+    body.customizer-page .customizer-panel--premium-left .desktop-text-editor {
+        border-radius: 14px;
+    }
+}
+
+/* Mobile: no bottom navigation-style toolbar and no side drawer toggles.
+   A single floating launcher on the right opens the same working actions. */
+@media (max-width: 1023px) {
+    body.customizer-page .studio-drawer-toggle {
+        display: none !important;
+    }
+
+    body.customizer-page .mobile-customizer-menu {
+        position: fixed !important;
+        top: 50% !important;
+        right: max(10px, env(safe-area-inset-right)) !important;
+        z-index: 260 !important;
+        width: 48px;
+        transform: translateY(-50%);
+        direction: rtl;
+        pointer-events: none;
+    }
+
+    body.customizer-page .mobile-customizer-menu__toggle {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        gap: 1px;
+        padding: 0;
+        border: 1px solid rgba(216,182,107,.35);
+        border-radius: 15px;
+        background: rgba(15,15,17,.94);
+        color: #e3c57d;
+        box-shadow: 0 12px 30px rgba(0,0,0,.38);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        cursor: pointer;
+        pointer-events: auto;
+        transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    body.customizer-page .mobile-customizer-menu__toggle:active {
+        transform: scale(.95);
+    }
+
+    body.customizer-page .mobile-customizer-menu__toggle-icon {
+        font-size: 17px;
+        line-height: 1;
+    }
+
+    body.customizer-page .mobile-customizer-menu__toggle-label {
+        font-size: 7px;
+        line-height: 1;
+        color: #9d978c;
+    }
+
+    body.customizer-page .mobile-customizer-toolbar {
+        position: absolute !important;
+        top: 50% !important;
+        right: 58px !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: 148px !important;
+        min-height: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        padding: 8px !important;
+        border: 1px solid rgba(255,255,255,.09) !important;
+        border-radius: 16px !important;
+        background: rgba(16,16,18,.96) !important;
+        box-shadow: 0 18px 40px rgba(0,0,0,.46) !important;
+        transform: translate(8px, -50%) scale(.96) !important;
+        transform-origin: right center !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transition: opacity .16s ease, transform .16s ease, visibility .16s ease !important;
+        z-index: 261 !important;
+    }
+
+    body.customizer-page .mobile-customizer-menu.is-open .mobile-customizer-toolbar {
+        transform: translate(0, -50%) scale(1) !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+
+    body.customizer-page .mobile-customizer-action {
+        width: 100% !important;
+        min-height: 44px !important;
+        display: grid !important;
+        grid-template-columns: 30px 1fr !important;
+        align-items: center !important;
+        justify-items: start !important;
+        gap: 8px !important;
+        padding: 7px 9px !important;
+        border: 1px solid rgba(255,255,255,.07) !important;
+        border-radius: 11px !important;
+        background: #171719 !important;
+        color: #d8d2c8 !important;
+        text-align: right !important;
+    }
+
+    body.customizer-page .mobile-customizer-action__icon {
+        width: 30px !important;
+        height: 30px !important;
+        display: grid !important;
+        place-items: center !important;
+        border-radius: 9px !important;
+        background: #222225 !important;
+        color: #d8b66b !important;
+    }
+
+    body.customizer-page .mobile-customizer-action strong {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+    }
+
+    body.customizer-page .mobile-customizer-action:active {
+        background: #202023 !important;
+        border-color: rgba(216,182,107,.35) !important;
+    }
+
+    body.customizer-page .mobile-customizer-menu.is-open .mobile-customizer-menu__toggle {
+        border-color: rgba(216,182,107,.7);
+        background: #1b1b1e;
+    }
+
+    body.customizer-page .mobile-customizer-menu.is-open .mobile-customizer-menu__toggle-icon {
+        font-size: 0;
+    }
+
+    body.customizer-page .mobile-customizer-menu.is-open .mobile-customizer-menu__toggle-icon::before {
+        content: "×";
+        font-size: 22px;
+        line-height: 1;
+    }
+
+    body.customizer-page .mobile-customizer-menu .mobile-customizer-toolbar.is-hidden {
+        display: flex !important;
+    }
+
+    /* The floating launcher replaces the old navigation-like bottom dock. */
+    body.customizer-page .mobile-customizer-toolbar {
+        margin: 0 !important;
+    }
+
+    body.customizer-page .customizer-panel--premium-left,
+    body.customizer-page .customizer-panel--premium-right {
+        width: min(92vw, 360px) !important;
+    }
+}
+
+/* Keep the launcher compact on very narrow phones. */
+@media (max-width: 430px) {
+    body.customizer-page .mobile-customizer-menu {
+        right: max(8px, env(safe-area-inset-right)) !important;
+    }
+
+    body.customizer-page .mobile-customizer-menu__toggle {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+    }
+
+    body.customizer-page .mobile-customizer-toolbar {
+        right: 54px !important;
+        width: 142px !important;
+    }
+}
