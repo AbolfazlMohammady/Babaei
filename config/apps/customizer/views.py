@@ -9,7 +9,7 @@ from django.db import transaction
 from django.db.models import Prefetch
 from django.http import JsonResponse
 from django.urls import reverse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, reverse
 from django.utils.safestring import mark_safe
 from django.views import View
 
@@ -237,14 +237,29 @@ class AddDesignToCartView(View):
     def post(self, request, slug):
         product = get_object_or_404(Product, slug=slug, is_active=True, category__is_active=True)
         try:
-            payload = json.loads(request.body.decode("utf-8"))
+            if request.content_type.startswith("multipart/form-data"):
+                payload = json.loads(request.POST.get("payload", "{}"))
+                preview_front = request.FILES.get("preview_front")
+                preview_back = request.FILES.get("preview_back")
+            else:
+                payload = json.loads(request.body.decode("utf-8"))
+                preview_front = preview_back = None
+            if not isinstance(payload, dict):
+                raise ValidationError("اطلاعات طراحی نامعتبر است.")
             variant_id = payload.pop("variant_id", None)
             variant = get_object_or_404(ProductVariant, id=variant_id, product=product, is_active=True) if variant_id else None
-            draft = save_design_draft(request=request, product=product, payload=payload, variant=variant)
             from apps.orders.services import add_design_to_cart
-            add_design_to_cart(request, design=draft, quantity=1)
-            draft.status = DesignDraft.Status.CART
-            draft.save(update_fields=["status", "updated_at"])
+            with transaction.atomic():
+                draft = save_design_draft(request=request, product=product, payload=payload, variant=variant)
+                if preview_front:
+                    draft.preview_front.save(f"{draft.design_code}-front.webp", preview_front, save=False)
+                if preview_back:
+                    draft.preview_back.save(f"{draft.design_code}-back.webp", preview_back, save=False)
+                if preview_front or preview_back:
+                    draft.save(update_fields=["preview_front", "preview_back", "updated_at"])
+                add_design_to_cart(request, design=draft, quantity=1)
+                draft.status = DesignDraft.Status.CART
+                draft.save(update_fields=["status", "updated_at"])
         except (json.JSONDecodeError, UnicodeDecodeError):
             return JsonResponse({"ok": False, "error": "اطلاعات طراحی نامعتبر است."}, status=400)
         except ValidationError as exc:
