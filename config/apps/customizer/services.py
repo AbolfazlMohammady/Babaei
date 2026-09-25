@@ -16,7 +16,8 @@ from .models import Artwork, ArtworkAreaPrice, DesignDraft, DesignLayer, PrintAr
 
 EPSILON = 1e-7
 MAX_ARTWORK_UPLOAD_BYTES = 8 * 1024 * 1024
-CUSTOM_UPLOAD_PRICE = 0
+CUSTOM_UPLOAD_PRICE = 100000
+CUSTOMIZER_BASE_PRICE = 1000000
 
 
 def _is_3d_forbidden_area(area):
@@ -165,12 +166,16 @@ def _accessible_artwork_queryset(*, artwork_ids, request):
 def validate_design_payload(product, payload, variant=None, request=None):
     if not isinstance(payload, dict):
         raise ValidationError("اطلاعات طراحی نامعتبر است.")
+
     raw_layers = payload.get("layers", [])
     if not isinstance(raw_layers, list) or len(raw_layers) > 30:
-        raise ValidationError("تعداد یا ساختار لیبل‌های طراحی نامعتبر است.")
-    is_3d_preview = payload.get("preview_mode") == "3d_glb_tshirt"
+        raise ValidationError("تعداد یا ساختار لایه‌های طراحی نامعتبر است.")
 
-    if variant is not None and (variant.product_id != product.id or not variant.is_active or variant.stock_quantity <= 0):
+    if variant is not None and (
+        variant.product_id != product.id
+        or not variant.is_active
+        or variant.stock_quantity <= 0
+    ):
         raise ValidationError("رنگ و سایز انتخاب‌شده موجود نیست.")
     if variant is None and product.variants.filter(is_active=True).exists():
         raise ValidationError("لطفاً رنگ و سایز لباس را انتخاب کنید.")
@@ -179,103 +184,204 @@ def validate_design_payload(product, payload, variant=None, request=None):
     views = {view.id: view for view in product.designer_views.filter(is_active=True)}
     maps = {
         (item.area_id, item.view_id): item
-        for item in PrintAreaView.objects.filter(area__product=product, area__is_active=True, view__is_active=True).select_related("area", "view")
+        for item in PrintAreaView.objects.filter(
+            area__product=product,
+            area__is_active=True,
+            view__is_active=True,
+        ).select_related("area", "view")
     }
 
     artwork_ids = []
     for raw in raw_layers:
         if not isinstance(raw, dict):
-            raise ValidationError("ساختار یکی از لیبل‌ها نامعتبر است.")
+            raise ValidationError("ساختار یکی از لایه‌ها نامعتبر است.")
+        if str(raw.get("type", "artwork")) == "text":
+            continue
         try:
             artwork_ids.append(int(raw["artwork_id"]))
         except (KeyError, TypeError, ValueError):
             raise ValidationError("یکی از لیبل‌های انتخاب‌شده معتبر نیست.")
 
-    artworks = {a.id: a for a in _accessible_artwork_queryset(artwork_ids=artwork_ids, request=request)}
+    artworks = {
+        a.id: a
+        for a in _accessible_artwork_queryset(
+            artwork_ids=artwork_ids,
+            request=request,
+        )
+    }
     prices = {
         (row.artwork_id, row.area_id): row.price
-        for row in ArtworkAreaPrice.objects.filter(artwork_id__in=artworks, area_id__in=areas)
+        for row in ArtworkAreaPrice.objects.filter(
+            artwork_id__in=artworks,
+            area_id__in=areas,
+        )
     }
 
     parsed = []
     for raw in raw_layers:
+        layer_type = str(raw.get("type", "artwork")).lower()
+        if layer_type not in {"artwork", "text"}:
+            raise ValidationError("نوع لایه طراحی نامعتبر است.")
+
         try:
             area = areas[int(raw["area_id"])]
-            artwork = artworks[int(raw["artwork_id"])]
-            if is_3d_preview and _is_3d_forbidden_area(area):
-                raise ValidationError(f"ناحیه «{area.name}» برای چاپ سه‌بعدی لیبل مجاز نیست.")
+            side = str(raw.get("side", "front")).lower()
+            if side not in {"front", "back"}:
+                raise ValidationError("سمت لباس نامعتبر است.")
+
             placement = Placement(
-                x=float(raw["x"]), y=float(raw["y"]), width=float(raw["width"]),
-                height=float(raw["height"]), rotation=float(raw.get("rotation", 0)),
+                x=float(raw["x"]),
+                y=float(raw["y"]),
+                width=float(raw["width"]),
+                height=float(raw["height"]),
+                rotation=float(raw.get("rotation", 0)),
             )
         except (KeyError, TypeError, ValueError):
-            raise ValidationError("یکی از لیبل‌ها یا ناحیه‌های انتخاب‌شده معتبر نیست.")
-        if not math.isfinite(placement.x + placement.y + placement.width + placement.height + placement.rotation):
-            raise ValidationError("مختصات لیبل نامعتبر است.")
-        parsed.append({"area": area, "artwork": artwork, "placement": placement})
+            raise ValidationError("یکی از ناحیه‌ها یا مختصات طراحی معتبر نیست.")
+
+        if not math.isfinite(
+            placement.x + placement.y + placement.width + placement.height + placement.rotation
+        ):
+            raise ValidationError("مختصات لایه نامعتبر است.")
+
+        artwork = None
+        text = ""
+        text_style = {}
+
+        if layer_type == "artwork":
+            try:
+                artwork = artworks[int(raw["artwork_id"])]
+            except (KeyError, TypeError, ValueError):
+                raise ValidationError("یکی از لیبل‌های انتخاب‌شده معتبر نیست.")
+            if not artwork.is_active:
+                raise ValidationError("این لیبل دیگر فعال نیست.")
+        else:
+            text = str(raw.get("text", "")).strip()[:120]
+            if not text:
+                raise ValidationError("متن طراحی نمی‌تواند خالی باشد.")
+            raw_style = raw.get("text_style", {})
+            text_style = raw_style if isinstance(raw_style, dict) else {}
+
+        parsed.append({
+            "area": area,
+            "artwork": artwork,
+            "side": side,
+            "layer_type": layer_type,
+            "text": text,
+            "text_style": text_style,
+            "placement": placement,
+        })
 
     counts = {}
     for item in parsed:
-        counts[item["area"].id] = counts.get(item["area"].id, 0) + 1
-    for area_id, count in counts.items():
+        key = (item["side"], item["area"].id)
+        counts[key] = counts.get(key, 0) + 1
+    for (side, area_id), count in counts.items():
         if count > areas[area_id].max_layers:
-            raise ValidationError(f"تعداد لیبل‌های ناحیه «{areas[area_id].name}» بیش از حد مجاز است.")
+            raise ValidationError(
+                f"تعداد لایه‌های سمت «{side}» در ناحیه «{areas[area_id].name}» بیش از حد مجاز است."
+            )
 
-    for area_id, area in areas.items():
-        area_layers = [item for item in parsed if item["area"].id == area_id]
-        if not area_layers:
-            continue
-        for view in views.values():
-            view_map = maps.get((area_id, view.id))
-            if not view_map:
+    for side in ("front", "back"):
+        for area_id, area in areas.items():
+            area_layers = [
+                item for item in parsed
+                if item["side"] == side and item["area"].id == area_id
+            ]
+            if not area_layers:
                 continue
-            existing = []
-            for item in area_layers:
-                validate_placement(area, view_map, item["placement"], existing)
-                existing.append(_to_canvas_placement(item["placement"], view_map.geometry))
 
-    total = variant.price if variant is not None else product.base_price
+            # The garment's production maps are shared by front/back when the
+            # same print area is mapped to both views. The side is persisted
+            # separately so the order snapshot remains unambiguous.
+            for view in views.values():
+                view_map = maps.get((area_id, view.id))
+                if not view_map:
+                    continue
+                existing = []
+                for item in area_layers:
+                    validate_placement(area, view_map, item["placement"], existing)
+                    existing.append(
+                        _to_canvas_placement(item["placement"], view_map.geometry)
+                    )
+
+    base_price = int(getattr(settings, "CUSTOMIZER_BASE_PRICE", CUSTOMIZER_BASE_PRICE))
+    total = base_price
+
+    normalized_layers = []
     for item in parsed:
-        total += prices.get((item["artwork"].id, item["area"].id), item["artwork"].base_price)
+        artwork = item["artwork"]
+        price = (
+            prices.get((artwork.id, item["area"].id), artwork.base_price)
+            if artwork is not None
+            else 0
+        )
+        total += int(price)
+        normalized_layers.append({
+            "type": item["layer_type"],
+            "artwork_id": artwork.id if artwork is not None else None,
+            "artwork_code": artwork.code if artwork is not None else None,
+            "artwork_name": artwork.name if artwork is not None else None,
+            "price": int(price),
+            "area_id": item["area"].id,
+            "area_key": item["area"].key,
+            "area_name": item["area"].name,
+            "side": item["side"],
+            "x": round(item["placement"].x, 6),
+            "y": round(item["placement"].y, 6),
+            "width": round(item["placement"].width, 6),
+            "height": round(item["placement"].height, 6),
+            "rotation": round(item["placement"].rotation, 4),
+            "text": item["text"],
+            "text_style": item["text_style"],
+        })
 
     normalized = {
-        "version": 1,
+        "version": 2,
         "coordinate_space": "print_area_bbox",
-        "layers": [
-            {
-                "artwork_id": item["artwork"].id,
-                "area_id": item["area"].id,
-                "x": round(item["placement"].x, 6),
-                "y": round(item["placement"].y, 6),
-                "width": round(item["placement"].width, 6),
-                "height": round(item["placement"].height, 6),
-                "rotation": round(item["placement"].rotation, 4),
-            }
-            for item in parsed
-        ],
+        "base_price": base_price,
+        "layers": normalized_layers,
     }
-    return normalized, total
+    return normalized, total, base_price
 
 
 @transaction.atomic
 def save_design_draft(*, request, product, payload, variant=None):
     if not request.session.session_key:
         request.session.create()
-    normalized, total_price = validate_design_payload(product, payload, variant=variant, request=request)
+    normalized, total_price, base_price = validate_design_payload(
+        product, payload, variant=variant, request=request
+    )
     draft = DesignDraft.objects.create(
         product=product,
         variant=variant,
         user=request.user if request.user.is_authenticated else None,
         session_key=request.session.session_key,
         status=DesignDraft.Status.DRAFT,
+        base_price=base_price,
+        shirt_color=str(payload.get("shirt_color", "")).strip()[:40],
         total_price=total_price,
         payload=normalized,
     )
     DesignLayer.objects.bulk_create([
         DesignLayer(
-            draft=draft, artwork_id=layer["artwork_id"], area_id=layer["area_id"],
-            x=layer["x"], y=layer["y"], width=layer["width"], height=layer["height"],
-            rotation=layer["rotation"], z_index=index,
+            draft=draft,
+            layer_type=(
+                DesignLayer.LayerType.TEXT
+                if layer["type"] == "text"
+                else DesignLayer.LayerType.ARTWORK
+            ),
+            artwork_id=layer["artwork_id"],
+            area_id=layer["area_id"],
+            side=layer["side"],
+            text=layer["text"],
+            text_style=layer["text_style"],
+            x=layer["x"],
+            y=layer["y"],
+            width=layer["width"],
+            height=layer["height"],
+            rotation=layer["rotation"],
+            z_index=index,
         )
         for index, layer in enumerate(normalized["layers"])
     ])
