@@ -33,7 +33,7 @@ js/storefront.js). Nothing on this page needs !important.
 {% block extra_css %}{% endblock %}
 {% block site_optional_css %}
 <link rel="stylesheet" href="{% static 'css/storefront.css' %}?v=10">
-<link rel="stylesheet" href="{% static 'css/pages/shop-product.css' %}?v=9">
+<link rel="stylesheet" href="{% static 'css/pages/shop-product.css' %}?v=13">
 {% endblock %}
 
 {% block content %}
@@ -285,7 +285,7 @@ js/storefront.js). Nothing on this page needs !important.
                 <a href="{% url 'shop:index' %}">مشاهده فروشگاه <span aria-hidden="true">←</span></a>
             </div>
             <div class="pd-related__viewport" data-related-scroll>
-                <div class="pd-related__track">
+                <div class="pd-related__track" dir="rtl">
                     {% for related in similar_products %}
                         {% include "shop/includes/_catalog_card.html" with product=related %}
                     {% endfor %}
@@ -328,7 +328,7 @@ document.addEventListener("DOMContentLoaded",function(){
         relatedTrack.addEventListener("wheel",function(event){
             if(Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
             event.preventDefault();
-            relatedTrack.scrollBy({left:event.deltaY,behavior:"auto"});
+            relatedTrack.scrollBy({left:-event.deltaY,behavior:"auto"});
         },{passive:false});
 
         // Desktop mouse drag. Mobile touch is intentionally untouched so
