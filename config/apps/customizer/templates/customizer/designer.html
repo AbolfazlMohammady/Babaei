@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}طراحی {{ product.name }} | BABAEI{% endblock %}
+{% block title %}استودیو طراحی سه‌بعدی | BABAEI{% endblock %}
 {% block meta_description %}{{ og_description }}{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ canonical_url }}">{% endblock %}
 {% block common_page_css %}{% endblock %}
@@ -26,6 +26,7 @@
      data-product-slug="{{ product.slug }}"
      data-save-url="{% url 'customizer:save_design' product.slug %}"
          data-cart-url="{% url 'orders:custom_design_cart_add' product.slug %}"
+         data-cart-page-url="{% url 'orders:cart' %}"
      data-upload-url="{% url 'customizer:upload_artwork' product.slug %}">
     <header class="customizer-header customizer-header--studio">
         <div class="customizer-header__identity">
