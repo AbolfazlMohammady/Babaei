@@ -192,7 +192,7 @@ class DesignDraftAdmin(CustomizerAdminMixin, admin.ModelAdmin):
     list_filter = ("status", "product", "updated_at")
     search_fields = ("uuid", "design_code", "product__name", "user__phone", "session_key")
     autocomplete_fields = ("product", "variant", "user")
-    readonly_fields = ("uuid", "design_code", "payload", "total_price", "created_at", "updated_at", "preview_large", "preview_front_large", "preview_back_large")
+    readonly_fields = ("uuid", "design_code", "payload", "total_price", "created_at", "updated_at", "preview_front_large", "preview_back_large")
     inlines = (DesignLayerInline,)
     date_hierarchy = "updated_at"
     fieldsets = (
@@ -204,9 +204,9 @@ class DesignDraftAdmin(CustomizerAdminMixin, admin.ModelAdmin):
 
     @admin.display(description="پیش‌نمایش")
     def preview(self, obj):
-        if not obj.preview_image:
+        if not obj.preview_front:
             return format_html('<span class="ba-thumb ba-thumb--empty">—</span>')
-        return format_html('<img class="ba-thumb ba-thumb--artwork" src="{}" alt="">', obj.preview_image.url)
+        return format_html('<img class="ba-thumb ba-thumb--artwork" src="{}" alt="">', obj.preview_front.url)
 
     @admin.display(description="کد طراحی")
     def design_code(self, obj):
@@ -231,12 +231,6 @@ class DesignDraftAdmin(CustomizerAdminMixin, admin.ModelAdmin):
     @admin.display(description="شناسه")
     def uuid_short(self, obj):
         return str(obj.uuid)[:8]
-
-    @admin.display(description="تصویر طرح")
-    def preview_large(self, obj):
-        if not obj.preview_image:
-            return "پیش‌نمایش ثبت نشده"
-        return format_html('<img class="ba-artwork-preview" src="{}" alt="">', obj.preview_image.url)
 
     @admin.display(description="وضعیت")
     def status_badge(self, obj):
