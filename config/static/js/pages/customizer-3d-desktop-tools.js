@@ -337,15 +337,18 @@
             wrapper.className = "desktop-text-popover-content";
 
             const textNode = textResult.node;
-            const input = textNode.querySelector("#desktop-text-input");
-            const add = textNode.querySelector("#desktop-text-add");
+            // clone() strips IDs to avoid duplicate IDs in the DOM.
+            const input = textNode.querySelector('.desktop-text-tools__row input[type="text"]');
+            const add = textNode.querySelector(".desktop-text-tools__row button");
 
             const editorNode = editorResult.node;
-            const editInput = editorNode.querySelector("#desktop-text-edit-input");
-            const sizeRange = editorNode.querySelector("#desktop-text-size");
-            const sizeValue = editorNode.querySelector("#desktop-text-size-value");
-            const curveRange = editorNode.querySelector("#desktop-text-curve");
-            const spacingRange = editorNode.querySelector("#desktop-text-spacing");
+            const editInput = editorNode.querySelector('.desktop-text-editor > input[type="text"]');
+            const ranges = editorNode.querySelectorAll('.text-style-range input[type="range"]');
+            const outputs = editorNode.querySelectorAll(".text-style-range output");
+            const sizeRange = ranges[0];
+            const sizeValue = outputs[0];
+            const curveRange = ranges[1];
+            const spacingRange = ranges[2];
 
             const submit = () => {
                 const value = input?.value?.trim();
@@ -370,10 +373,14 @@
                 // the active UI. Add directly through the 3D API so the new text
                 // layer is created immediately, then fall back to the event bridge
                 // for older/customizer builds.
+                let added = false;
                 if (window.BabaeiCustomizer3D?.isReady?.() && window.BabaeiCustomizer3D?.addText) {
-                    const added = window.BabaeiCustomizer3D.addText(value, style, sourceColor);
-                    log("TEXT ADD RESULT", { added });
-                } else {
+                    added = Boolean(window.BabaeiCustomizer3D.addText(value, style, sourceColor));
+                    log("TEXT ADD RESULT", { added, via: "BabaeiCustomizer3D" });
+                }
+
+                if (!added) {
+                    log("TEXT ADD FALLBACK", { via: "babaei:add-text" });
                     dispatch("babaei:add-text", { text: value, style, color: sourceColor });
                 }
 
