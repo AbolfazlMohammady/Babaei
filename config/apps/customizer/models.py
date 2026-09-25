@@ -138,8 +138,13 @@ class DesignerView(models.Model):
 
 
 class PrintArea(models.Model):
+    class Side(models.TextChoices):
+        FRONT = "front", _("جلو")
+        BACK = "back", _("پشت")
+
     product = models.ForeignKey("shop.Product", on_delete=models.CASCADE, related_name="print_areas", verbose_name=_("محصول"))
     key = models.SlugField(_("کلید ناحیه"), max_length=70, allow_unicode=True)
+    side = models.CharField(_("سمت لباس"), max_length=10, choices=Side.choices, default=Side.FRONT, db_index=True)
     name = models.CharField(_("نام ناحیه"), max_length=100)
     max_width_mm = models.DecimalField(_("حداکثر عرض چاپ (mm)"), max_digits=7, decimal_places=2, default=100)
     max_height_mm = models.DecimalField(_("حداکثر ارتفاع چاپ (mm)"), max_digits=7, decimal_places=2, default=100)
