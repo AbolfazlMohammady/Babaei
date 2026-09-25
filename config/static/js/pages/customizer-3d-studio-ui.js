@@ -163,27 +163,6 @@
     });
 
     const mobileToolbar = document.getElementById("mobile-customizer-toolbar");
-    const mobileMenu = document.getElementById("mobile-customizer-menu");
-    const mobileMenuToggle = document.getElementById("mobile-customizer-menu-toggle");
-
-    function setMobileMenu(open) {
-        if (!mobileMenu || !mobileMenuToggle) return;
-        mobileMenu.classList.toggle("is-open", open);
-        mobileMenuToggle.setAttribute("aria-expanded", String(open));
-        mobileMenuToggle.setAttribute("aria-label", open ? "بستن ابزارهای طراحی" : "باز کردن ابزارهای طراحی");
-    }
-
-    mobileMenuToggle?.addEventListener("click", event => {
-        event.preventDefault();
-        event.stopPropagation();
-        setMobileMenu(!mobileMenu.classList.contains("is-open"));
-    });
-
-    document.addEventListener("click", event => {
-        if (!mobileMenu?.classList.contains("is-open")) return;
-        if (mobileMenu.contains(event.target)) return;
-        setMobileMenu(false);
-    });
     const mobileSelectionToolbar = document.getElementById("mobile-selection-toolbar");
     const mobileContextToolbar = document.getElementById("mobile-context-toolbar");
     const mobileTextSheet = document.getElementById("mobile-text-sheet");
@@ -341,7 +320,6 @@
 
     document.querySelectorAll("[data-mobile-action]").forEach(button => {
         button.addEventListener("click", () => {
-            setMobileMenu(false);
             const action = button.dataset.mobileAction;
             if (action === "product") setDrawer("right", true);
             if (action === "artwork") {
@@ -569,7 +547,6 @@
 
     document.addEventListener("keydown", event => {
         if (event.key !== "Escape") return;
-        setMobileMenu(false);
         if (mobileColorSheet && !mobileColorSheet.hidden) {
             closeMobileColorSheet();
             return;
