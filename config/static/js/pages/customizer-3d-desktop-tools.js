@@ -462,22 +462,21 @@
             const result = clone("#variant-color-list-right");
             if (!result) return;
 
-            const sourceButtons = result.source.querySelectorAll("button");
             const wrapper = result.node;
-            const extraColors = [
-                { name: "قرمز", hex: "#ef4444" },
-                { name: "سبز", hex: "#22c55e" },
-                { name: "آبی", hex: "#3b82f6" },
+            // Use textile-friendly, slightly muted colors so the fabric shading
+            // and highlights remain visible instead of looking neon/flat.
+            const shirtColors = [
+                { name: "مشکی", hex: "#151719" },
+                { name: "سفید", hex: "#f1f0ec" },
+                { name: "خاکستری", hex: "#686b70" },
+                { name: "قرمز", hex: "#a7353b" },
+                { name: "سبز", hex: "#35634b" },
+                { name: "آبی", hex: "#365d88" },
             ];
 
-            // Keep the three requested shirt colors visible even if the source
-            // palette is rendered with a limited set of swatches.
-            const existing = new Set(
-                Array.from(wrapper.querySelectorAll("button[data-color]"))
-                    .map(button => String(button.dataset.color || "").trim().toLowerCase())
-            );
+            wrapper.innerHTML = "";
 
-            extraColors.filter(({ name }) => !existing.has(name.toLowerCase())).forEach(({ name, hex }) => {
+            shirtColors.forEach(({ name, hex }) => {
                 const button = document.createElement("button");
                 button.type = "button";
                 button.className = "premium-color-button";
@@ -485,26 +484,37 @@
                 button.dataset.color = name;
                 button.title = name;
                 button.setAttribute("aria-label", name);
+
                 button.addEventListener("click", event => {
                     event.preventDefault();
                     event.stopPropagation();
+
                     const setColor = window.BabaeiCustomizer3D?.setShirtColor;
-                    if (typeof setColor === "function") {
-                        setColor(hex);
-                        wrapper.querySelectorAll("button").forEach(item => item.classList.remove("is-active"));
-                        button.classList.add("is-active");
-                        log("SHIRT COLOR SET", { name, hex });
-                    } else {
+                    if (typeof setColor !== "function") {
                         warn("SHIRT COLOR API UNAVAILABLE", { name, hex });
+                        return;
                     }
+
+                    setColor(hex);
+                    wrapper.querySelectorAll("button").forEach(item => item.classList.remove("is-active"));
+                    button.classList.add("is-active");
+                    log("SHIRT COLOR SET", { name, hex });
                 });
+
                 wrapper.appendChild(button);
             });
+
+            const current = shirtColors.find(color => {
+                const active = result.source.querySelector("button.is-active");
+                return active?.dataset.color === color.name;
+            });
+            if (current) {
+                wrapper.querySelector(`button[data-color="${CSS.escape(current.name)}"]`)?.classList.add("is-active");
+            }
 
             open("رنگ تیشرت", wrapper);
         };
 
-            // Desktop text controls are complete: add/edit/style/color are wired in one popover.
         const openText = () => buildTextPopover();
 
         const openTextFont = () => buildTextPopover();
