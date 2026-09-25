@@ -188,16 +188,16 @@ class Product3DSourceAdmin(CustomizerAdminMixin, admin.ModelAdmin):
 
 @admin.register(DesignDraft)
 class DesignDraftAdmin(CustomizerAdminMixin, admin.ModelAdmin):
-    list_display = ("preview", "uuid_short", "product", "variant", "user", "status_badge", "total_price_display", "updated_at")
+    list_display = ("preview", "design_code", "product", "variant", "status_badge", "base_price_display", "total_price_display", "updated_at")
     list_filter = ("status", "product", "updated_at")
-    search_fields = ("uuid", "product__name", "user__phone", "session_key")
+    search_fields = ("uuid", "design_code", "product__name", "user__phone", "session_key")
     autocomplete_fields = ("product", "variant", "user")
-    readonly_fields = ("uuid", "payload", "total_price", "created_at", "updated_at", "preview_large")
+    readonly_fields = ("uuid", "design_code", "payload", "total_price", "created_at", "updated_at", "preview_large", "preview_front_large", "preview_back_large")
     inlines = (DesignLayerInline,)
     date_hierarchy = "updated_at"
     fieldsets = (
-        ("طرح", {"fields": ("preview_large", "uuid", "product", "variant", "user", "session_key", "status")}),
-        ("مبلغ", {"fields": ("total_price",)}),
+        ("طرح", {"fields": ("preview_large", "preview_front_large", "preview_back_large", "uuid", "design_code", "product", "variant", "user", "session_key", "status", "shirt_color")}),
+        ("مبلغ", {"fields": ("base_price", "total_price")}),
         ("داده طرح", {"fields": ("payload",), "classes": ("collapse",)}),
         ("زمان‌ها", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
@@ -207,6 +207,26 @@ class DesignDraftAdmin(CustomizerAdminMixin, admin.ModelAdmin):
         if not obj.preview_image:
             return format_html('<span class="ba-thumb ba-thumb--empty">—</span>')
         return format_html('<img class="ba-thumb ba-thumb--artwork" src="{}" alt="">', obj.preview_image.url)
+
+    @admin.display(description="کد طراحی")
+    def design_code(self, obj):
+        return obj.design_code
+
+    @admin.display(description="قیمت پایه")
+    def base_price_display(self, obj):
+        return format_html('{} <small>تومان</small>', f'{obj.base_price:,}')
+
+    @admin.display(description="پیش‌نمایش جلو")
+    def preview_front_large(self, obj):
+        if not obj.preview_front:
+            return "ثبت نشده"
+        return format_html('<img class="ba-artwork-preview" src="{}" alt="">', obj.preview_front.url)
+
+    @admin.display(description="پیش‌نمایش پشت")
+    def preview_back_large(self, obj):
+        if not obj.preview_back:
+            return "ثبت نشده"
+        return format_html('<img class="ba-artwork-preview" src="{}" alt="">', obj.preview_back.url)
 
     @admin.display(description="شناسه")
     def uuid_short(self, obj):
@@ -246,7 +266,7 @@ class ArtworkAreaPriceAdmin(CustomizerAdminMixin, admin.ModelAdmin):
 
 @admin.register(DesignLayer)
 class DesignLayerAdmin(CustomizerAdminMixin, admin.ModelAdmin):
-    list_display = ("draft", "artwork", "area", "position_display", "size_display", "rotation", "z_index")
+    list_display = ("draft", "layer_type", "artwork", "side", "area", "position_display", "size_display", "rotation", "z_index")
     search_fields = ("draft__uuid", "artwork__name", "area__name")
     autocomplete_fields = ("draft", "artwork", "area")
     readonly_fields = ("draft", "artwork", "area", "x", "y", "width", "height", "rotation", "z_index")
