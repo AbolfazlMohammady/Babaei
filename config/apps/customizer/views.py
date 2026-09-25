@@ -15,7 +15,7 @@ from django.views import View
 
 from apps.shop.models import Product, ProductImage, ProductVariant
 
-from .models import Artwork, ArtworkAreaPrice, DesignerView as DesignerViewModel, PrintArea, PrintAreaView, Product3DAsset
+from .models import Artwork, ArtworkAreaPrice, DesignDraft, DesignerView as DesignerViewModel, PrintArea, PrintAreaView, Product3DAsset
 from .product_3d import product_images, refresh_product_asset, source_signature
 from .services import CUSTOMIZER_BASE_PRICE, create_uploaded_artwork, save_design_draft
 from .tasks import prepare_product_3d
