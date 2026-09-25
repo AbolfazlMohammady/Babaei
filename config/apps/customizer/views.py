@@ -4,6 +4,7 @@ import json
 import uuid
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Prefetch
@@ -11,6 +12,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, render
 from django.utils.safestring import mark_safe
+from django.utils.decorators import method_decorator
 from django.views import View
 
 from apps.shop.models import Product, ProductImage, ProductVariant
@@ -35,7 +37,7 @@ def _file_url(request, field):
     if not field or not getattr(field, "name", None):
         return None
     try:
-        return absolute_url(request, field.url)
+        return request.build_absolute_uri(field.url)
     except (ValueError, OSError):
         return None
 
@@ -76,6 +78,7 @@ def _generation_payload(product):
     }
 
 
+@method_decorator(login_required, name="dispatch")
 class DesignerPageView(View):
     template_name = "customizer/designer.html"
 
