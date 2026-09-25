@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import random
 import re
 
 from django.conf import settings
@@ -21,6 +22,28 @@ from apps.saved.models import FavoriteProduct
 AUTH_USER_SESSION_KEY = "_auth_user_id"
 CATEGORY_NAV_CACHE_KEY = "babaei:shop:active-categories:v2"
 CATEGORY_NAV_CACHE_TTL = 300
+SIMILAR_PRODUCT_IDS_CACHE_KEY = "babaei:shop:active-product-ids:v1"
+SIMILAR_PRODUCT_IDS_CACHE_TTL = 300
+
+
+def get_random_similar_product_ids(exclude_product_id, limit=8):
+    """Return a small random sample without database ORDER BY RANDOM()."""
+    candidate_ids = cache.get(SIMILAR_PRODUCT_IDS_CACHE_KEY)
+    if candidate_ids is None:
+        candidate_ids = list(
+            Product.objects.filter(
+                is_active=True,
+                category__is_active=True,
+            ).values_list("id", flat=True)
+        )
+        cache.set(SIMILAR_PRODUCT_IDS_CACHE_KEY, candidate_ids, SIMILAR_PRODUCT_IDS_CACHE_TTL)
+
+    candidate_ids = [product_id for product_id in candidate_ids if product_id != exclude_product_id]
+    if len(candidate_ids) > limit:
+        return random.sample(candidate_ids, limit)
+    return candidate_ids
+
+
 
 
 def get_active_categories():
@@ -519,10 +542,27 @@ class ProductDetailView(DetailView):
         context["featured_comments"] = list(approved_comments[:3])
         context["comment_count"] = comment_summary["count"] or 0
         context["comment_average"] = comment_summary["average"]
-        # A small horizontal shelf below the product details. Keep it lightweight:
-        # reuse the catalog card data and show a handful of random active products.
-        similar_variant_price, similar_variant_compare_price, similar_variant_max_price = price_annotations()
-        similar_annotations = card_annotations(self.request)
+        # Keep the related shelf random without making the database sort the
+        # entire product table on every product-page request.
+        similar_ids = get_random_similar_product_ids(self.object.pk, limit=8)
+        similar_variant_price, similar_variant_compare_price, _ = price_annotations()
+        similar_has_variants = Exists(
+            ProductVariant.objects.filter(product_id=OuterRef("pk"), is_active=True)
+        )
+        similar_is_favorite = (
+            Exists(
+                FavoriteProduct.objects.filter(
+                    user_id=self.request.user.id,
+                    product_id=OuterRef("pk"),
+                )
+            )
+            if self.request.user.is_authenticated
+            else Value(False)
+        )
+        similar_annotations = {
+            "has_variants": similar_has_variants,
+            "is_favorite": similar_is_favorite,
+        }
         similar_images = ProductImage.objects.annotate(
             type_priority=Case(
                 When(image_type=ProductImage.ImageType.PRIMARY, then=0),
@@ -530,19 +570,25 @@ class ProductDetailView(DetailView):
                 output_field=IntegerField(),
             )
         ).order_by("type_priority", "sort_order", "id")[:2]
-        context["similar_products"] = list(
-            Product.objects.filter(is_active=True, category__is_active=True)
-            .exclude(pk=self.object.pk)
-            .select_related("category")
-            .annotate(
-                listed_price=similar_variant_price,
-                listed_compare_price=similar_variant_compare_price,
-                listed_max_price=similar_variant_max_price,
-                **similar_annotations,
+
+        if similar_ids:
+            rank = Case(
+                *[When(pk=product_id, then=position) for position, product_id in enumerate(similar_ids)],
+                output_field=IntegerField(),
             )
-            .prefetch_related(Prefetch("images", queryset=similar_images, to_attr="card_images"))
-            .order_by("?")[:8]
-        )
+            context["similar_products"] = list(
+                Product.objects.filter(pk__in=similar_ids)
+                .select_related("category")
+                .annotate(
+                    listed_price=similar_variant_price,
+                    listed_compare_price=similar_variant_compare_price,
+                    **similar_annotations,
+                )
+                .prefetch_related(Prefetch("images", queryset=similar_images, to_attr="card_images"))
+                .order_by(rank)
+            )
+        else:
+            context["similar_products"] = []
         context["cart_variant_data"] = schema_json({str(variant.id): (variant.cart_quantity or 0) for variant in offers})
         context["variant_data"] = schema_json([{ "id": variant.id, "color_id": variant.color_id, "color": variant.color.name, "color_hex": variant.color.hex_code, "size_id": variant.size_id, "size": variant.size.name, "price": variant.price, "compare_at_price": variant.compare_at_price, "stock": variant.stock_quantity, "sku": variant.sku } for variant in offers])
         if offers:
