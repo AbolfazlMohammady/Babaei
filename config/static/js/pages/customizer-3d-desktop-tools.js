@@ -306,19 +306,9 @@
                 // the active UI. Add directly through the 3D API so the new text
                 // layer is created immediately, then fall back to the event bridge
                 // for older/customizer builds.
-                if (window.BabaeiCustomizer3D?.isReady?.() && window.BabaeiCustomizer3D?.addArtwork) {
-                    window.BabaeiCustomizer3D.addArtwork({
-                        id: `text-${Date.now()}`,
-                        name: value,
-                        code: "TEXT",
-                        image: "",
-                        base_price: 0,
-                        is_text: true,
-                        text_style: style,
-                    });
-                    document.dispatchEvent(new CustomEvent("babaei:update-text", {
-                        detail: { text: value, style, color: sourceColor },
-                    }));
+                if (window.BabaeiCustomizer3D?.isReady?.() && window.BabaeiCustomizer3D?.addText) {
+                    const added = window.BabaeiCustomizer3D.addText(value, style, sourceColor);
+                    log("TEXT ADD RESULT", { added });
                 } else {
                     dispatch("babaei:add-text", { text: value, style, color: sourceColor });
                 }
