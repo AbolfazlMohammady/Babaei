@@ -184,8 +184,6 @@ js/storefront.js). Nothing on this page needs !important.
                     <button id="add-to-cart-button" class="pd-buy__button" type="submit"{% if product.active_variants %} disabled{% endif %}>افزودن به سبد خرید</button>
                     <a id="product-in-cart" class="pd-incart" href="{% url 'orders:cart' %}" hidden><span>این مدل در سبد خرید است</span><strong data-product-in-cart-quantity></strong><small>مشاهده سبد خرید ←</small></a>
                 </form>
-            </article>
-        </div>
 
         {% comment %}
         The same three promises the numbered strip carried, as an icon list. The
@@ -197,6 +195,8 @@ js/storefront.js). Nothing on this page needs !important.
             <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.2 7.4h9.3v9.2H3.2z"></path><path d="M12.5 10.4h3.9l3.4 3.5v2.7h-7.3z"></path><path d="M6.6 19.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z"></path><path d="M16.6 19.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z"></path></svg></span><span><strong>ارسال مطمئن</strong><small>بسته‌بندی تمیز و قابل پیگیری</small></span></div>
             <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 20 3.4-.8L19 7.6a2.3 2.3 0 0 0-3.3-3.3L4.1 16.6 4 20Z"></path><path d="m13.4 6.9 3.3 3.3"></path></svg></span><span><strong>ساخته‌شده برای تو</strong><small>امکان شخصی‌سازی در استودیو طراحی</small></span></div>
         </section>
+            </article>
+        </div>
 
         {% if product.description %}<section class="pd-story" data-reveal><h2>توضیحات محصول</h2><div class="pd-story__body">{{ product.description|linebreaks }}</div></section>{% endif %}
 
