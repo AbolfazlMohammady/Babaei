@@ -137,10 +137,10 @@ class DesignerPageView(View):
             "designer_generation": generation,
             "designer_data": _schema({"base_price": CUSTOM_DESIGN_BASE_PRICE, "product_image": product_image, "views": view_data, "artworks": artwork_data, "prices": price_data, "variants": variant_data, "mode": "3d" if designer_ready else "2d", "generation": generation}),
             "canonical_url": absolute_url(request, request.path),
-            "og_title": f"طراحی {product.name} | BABAEI",
+            "og_title": "استودیو طراحی سه‌بعدی | BABAEI",
             "og_description": "محصول را تحلیل کن، مدل سه‌بعدی واقعی بساز و طرح خودت را روی سطح آن قرار بده.",
             "og_image_url": first_background,
-            "designer_schema": _schema({"@context": "https://schema.org", "@type": "WebPage", "name": f"طراحی {product.name}", "url": absolute_url(request, request.path), "isPartOf": {"@type": "WebSite", "name": "BABAEI", "url": settings.SITE_URL}, "inLanguage": "fa-IR"}),
+            "designer_schema": _schema({"@context": "https://schema.org", "@type": "WebPage", "name": "استودیو طراحی سه‌بعدی", "url": absolute_url(request, request.path), "isPartOf": {"@type": "WebSite", "name": "BABAEI", "url": settings.SITE_URL}, "inLanguage": "fa-IR"}),
         }
         return render(request, self.template_name, context)
 
