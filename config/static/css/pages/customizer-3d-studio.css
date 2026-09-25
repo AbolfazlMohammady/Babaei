@@ -6939,6 +6939,48 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
     .desktop-tool-popover .artwork-library-section {
         grid-column:1 / -1;
         margin-bottom:14px;
+        min-width:0;
+    }
+
+    .desktop-tool-popover .artwork-library-section__toggle {
+        width:100%;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        padding:10px 8px;
+        margin:0 0 8px;
+        border:1px solid #2a292b;
+        border-radius:10px;
+        background:#151517;
+        color:#eee9df;
+        font:inherit;
+        font-size:11px;
+        font-weight:900;
+        cursor:pointer;
+        text-align:right;
+    }
+
+    .desktop-tool-popover .artwork-library-section__toggle:hover {
+        border-color:#4a463d;
+        background:#1a191b;
+    }
+
+    .desktop-tool-popover .artwork-library-section--uploaded .artwork-library-section__toggle {
+        color:#d8b66b;
+    }
+
+    .desktop-tool-popover .artwork-library-section__chevron {
+        transition:transform .18s ease;
+        color:#8d8982;
+    }
+
+    .desktop-tool-popover .artwork-library-section.is-open .artwork-library-section__chevron {
+        transform:rotate(180deg);
+    }
+
+    .desktop-tool-popover .artwork-library-section__grid[hidden] {
+        display:none !important;
     }
 
     .desktop-tool-popover .artwork-library-section__title {
