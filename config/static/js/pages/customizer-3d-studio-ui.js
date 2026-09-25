@@ -711,7 +711,7 @@
                 });
             });
 
-            const ranges = clone.querySelectorAll("input[type="range"]");
+            const ranges = clone.querySelectorAll('input[type="range"]');
             const sourceRanges = source.querySelectorAll("input[type="range"]");
             ranges.forEach((range, index) => {
                 range.addEventListener("input", () => {
