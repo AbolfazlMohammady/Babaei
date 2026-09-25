@@ -55,6 +55,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             fontFamily: String(style.fontFamily || preset.fontFamily),
             fontWeight: Number(style.fontWeight || preset.fontWeight),
             fontStyle: style.fontStyle === "italic" ? "italic" : preset.fontStyle,
+            fontSize: Math.max(60, Math.min(160, Number(style.fontSize ?? 100))),
             curve: Math.max(-80, Math.min(80, Number(style.curve ?? 0))),
             letterSpacing: Math.max(-2, Math.min(12, Number(style.letterSpacing ?? 0))),
         };
@@ -65,7 +66,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const safeColor = /^#[0-9a-f]{6}$/i.test(String(color || "")) ? color : "#ffffff";
         const style = normalizeTextStyle(rawStyle);
         const length = Math.max(1, String(text || "").length);
-        const fontSize = length <= 12 ? 118 : length <= 20 ? 102 : length <= 34 ? 86 : 72;
+        const baseFontSize = length <= 12 ? 118 : length <= 20 ? 102 : length <= 34 ? 86 : 72;
+        const fontSize = baseFontSize * (style.fontSize / 100);
         const curve = style.curve;
         const controlY = 225 - curve * 1.45;
         const pathId = `babaei-text-path-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
