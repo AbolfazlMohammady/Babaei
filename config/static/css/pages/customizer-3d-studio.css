@@ -6743,9 +6743,9 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
     .desktop-tool-popover--left {
         left:14px !important;
         right:auto !important;
-        width:320px !important;
-        max-width:min(320px, calc(100% - 170px)) !important;
-        padding:12px !important;
+        width:280px !important;
+        max-width:min(280px, calc(100% - 170px)) !important;
+        padding:14px !important;
     }
 
     .desktop-tool-popover--left .desktop-tool-popover__close {
@@ -6777,7 +6777,7 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
 
     .desktop-tool-popover--left .selected-label-tools__controls {
         grid-template-columns:repeat(2,minmax(0,1fr));
-        gap:10px !important;
+        gap:11px !important;
     }
 
     .desktop-tool-popover--left .selected-label-tools__controls button,
