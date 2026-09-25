@@ -1084,6 +1084,30 @@ body.customizer-page > footer {
 .upload-dropzone--premium {
     margin-top: 9px;
 }
+.upload-background-option {
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:start;
+    gap:6px 8px;
+    margin-top:9px;
+    padding:9px 10px;
+    border:1px solid #2d2d30;
+    border-radius:10px;
+    background:#151517;
+    color:#ddd7cc;
+    font-size:9px;
+    line-height:1.5;
+    cursor:pointer;
+}
+.upload-background-option input {
+    margin:2px 0 0;
+    accent-color:#d8b66b;
+}
+.upload-background-option small {
+    grid-column:2;
+    color:#77746f;
+    font-size:8px;
+}
 .premium-selected-artwork {
     display: none !important;
 }
