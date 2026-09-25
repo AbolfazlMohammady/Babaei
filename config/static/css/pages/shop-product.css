@@ -3871,6 +3871,9 @@ body.product-detail-page .pd-comments--compact {
 }
 
 body.product-detail-page .pd-related__track {
+    display: flex;
+    flex-direction: row;
+    direction: ltr;
     cursor: grab;
     touch-action: pan-x;
     -webkit-overflow-scrolling: touch;
@@ -3878,8 +3881,16 @@ body.product-detail-page .pd-related__track {
     user-select: none;
     overflow-x: auto;
     overflow-y: hidden;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
     pointer-events: auto;
     scrollbar-width: none;
+    scroll-snap-type: x proximity;
+}
+body.product-detail-page .pd-related__track > * {
+    direction: rtl;
+    flex: 0 0 auto;
 }
 body.product-detail-page .pd-related__track::-webkit-scrollbar {
     display: none;
@@ -3978,5 +3989,39 @@ body.product-detail-page .pd-related__track.is-dragging * {
     body.product-detail-page .pd-comments--compact {
         width: 100%;
         margin-top: 10px;
+    }
+}
+
+
+/* Product perks live in the buy column on desktop. */
+@media (min-width: 760px) {
+    body.product-detail-page .pd-info > .pd-perks {
+        width: 100%;
+        margin: 22px 0 0;
+        grid-template-columns: repeat(3, minmax(0,1fr));
+        gap: 9px;
+    }
+    body.product-detail-page .pd-info > .pd-perks .pd-perk {
+        min-height: 76px;
+        padding: 12px 10px;
+        grid-template-columns: 34px minmax(0,1fr);
+        gap: 8px;
+        border-radius: 14px;
+    }
+    body.product-detail-page .pd-info > .pd-perks .pd-perk__icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+    }
+    body.product-detail-page .pd-info > .pd-perks .pd-perk strong {
+        font-size: 10px;
+    }
+    body.product-detail-page .pd-info > .pd-perks .pd-perk small {
+        font-size: 7.5px;
+    }
+}
+@media (max-width: 759px) {
+    body.product-detail-page .pd-info > .pd-perks {
+        margin-top: 14px;
     }
 }
