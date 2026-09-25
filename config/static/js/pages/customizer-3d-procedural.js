@@ -1003,21 +1003,20 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         }).catch(() => status("تصویر لیبل برای پیش‌نمایش بارگذاری نشد."));
     }
 
-    document.addEventListener("babaei:add-text", event => {
-        const text = String(event.detail?.text || "").trim().slice(0, 60);
-        if (!text) return;
+    function addText(textValue, rawStyle = {}, rawColor = "#ffffff") {
+        const text = String(textValue || "").trim().slice(0, 60);
+        if (!text) return false;
 
-        const style = normalizeTextStyle(event.detail?.style || {});
-        const color = /^#[0-9a-f]{6}$/i.test(String(event.detail?.color || ""))
-            ? String(event.detail.color)
+        const style = normalizeTextStyle(rawStyle);
+        const color = /^#[0-9a-f]{6}$/i.test(String(rawColor || ""))
+            ? String(rawColor)
             : "#ffffff";
 
-        const image = textArtworkSvg(text, color, style);
         const artwork = {
             id: `text-${Date.now()}`,
             name: text,
             code: "TEXT",
-            image,
+            image: textArtworkSvg(text, color, style),
             base_price: 0,
             is_text: true,
             text_style: style,
@@ -1026,14 +1025,23 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         addLayer(artwork);
 
         const item = layers.get(selectedId);
-        if (item?.artwork?.is_text) {
-            item.layer.text = text;
-            item.layer.text_style = style;
-            item.layer.color = color;
-            item.artwork.text_style = style;
-        }
+        if (!item?.artwork?.is_text) return false;
 
+        item.layer.text = text;
+        item.layer.text_style = style;
+        item.layer.color = color;
+        item.artwork.text_style = style;
+        project(item, item.surfacePoint, item.surfaceNormal);
         sync();
+        return true;
+    }
+
+    document.addEventListener("babaei:add-text", event => {
+        addText(
+            event.detail?.text,
+            event.detail?.style || {},
+            event.detail?.color || "#ffffff"
+        );
     });
 
     document.addEventListener("babaei:update-text", event => {
@@ -1575,5 +1583,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         isReady: () => Boolean(garment && garmentMeshes.length),
         setMode: mode => document.querySelector(`[data-mode="${mode}"]`)?.click(),
         addArtwork: addLayer,
+        addText,
     };
 })();
