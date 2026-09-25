@@ -39,11 +39,30 @@
 
         let currentTool = null;
 
+        let leftPopover = document.getElementById("desktop-label-tools-popover");
+        if (!leftPopover) {
+            leftPopover = document.createElement("div");
+            leftPopover.id = "desktop-label-tools-popover";
+            leftPopover.className = "desktop-tool-popover desktop-tool-popover--left";
+            leftPopover.hidden = true;
+            (dock.closest(".customizer-workspace--premium") || document.body).appendChild(leftPopover);
+        }
+
+        const closeLeftPopover = () => {
+            leftPopover.hidden = true;
+            leftPopover.innerHTML = "";
+        };
+
         const close = () => {
             log("POPOVER CLOSE");
             popover.hidden = true;
             popover.classList.remove("desktop-tool-popover--left");
             popover.innerHTML = "";
+            // The selected-label tools panel is independent and stays visible
+            // while regular right-side tools are being used.
+            if (currentTool === "label-tools") {
+                closeLeftPopover();
+            }
         };
 
         const open = (title, node, side = "right") => {
@@ -562,7 +581,18 @@
                 });
             });
 
-            open("ابزارهای لیبل", result.node, "left");
+            leftPopover.innerHTML = "";
+            const title = document.createElement("div");
+            title.className = "desktop-tool-popover__title";
+            const titleText = document.createElement("span");
+            titleText.textContent = "ابزارهای لیبل";
+            title.append(titleText);
+            leftPopover.append(title, result.node);
+            leftPopover.hidden = false;
+            log("LEFT LABEL TOOLS OPEN", {
+                hidden: leftPopover.hidden,
+                display: getComputedStyle(leftPopover).display,
+            });
         };
 
         document.addEventListener("babaei:selection-changed", event => {
