@@ -1636,6 +1636,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                     variant_id: document.getElementById("variant-select")?.value || null,
                     version: 2,
                     preview_mode: "3d_glb_tshirt",
+                    garment_spec: data.garment_spec || null,
                     shirt_color: currentVariant?.color || currentVariant?.hex || "",
                     layers: saveLayers(),
                 };
