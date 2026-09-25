@@ -3994,11 +3994,18 @@ body.product-detail-page .pd-related__track.is-dragging * {
 
 
 /* Product perks sit below the full product stage, centered above the description. */
-body.product-detail-page > .pd > .pd-inner > .pd-perks {
-    width: min(100%, 760px);
-    margin: 22px auto 0;
-    grid-template-columns: repeat(3, minmax(0,1fr));
-    gap: 10px;
+@media (min-width: 760px) {
+    body.product-detail-page > .pd > .pd-inner > .pd-perks {
+        width: 760px;
+        max-width: calc(100% - 120px);
+        margin: 22px 0 0;
+        margin-inline: 0;
+        position: relative;
+        inset-inline-start: 50%;
+        transform: translateX(-50%);
+        grid-template-columns: repeat(3, minmax(0,1fr));
+        gap: 10px;
+    }
 }
 
 body.product-detail-page > .pd > .pd-inner > .pd-perks .pd-perk {
