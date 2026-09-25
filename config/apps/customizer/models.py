@@ -92,7 +92,7 @@ class Artwork(models.Model):
     source = models.CharField(_("منبع"), max_length=20, choices=Source.choices, default=Source.LIBRARY)
     processing_status = models.CharField(_("وضعیت پردازش"), max_length=20, choices=ProcessingStatus.choices, default=ProcessingStatus.READY)
     background_removed = models.BooleanField(_("پس‌زمینه حذف شده"), default=True)
-    base_price = models.PositiveBigIntegerField(_("قیمت پایه لیبل"), default=0, validators=[MinValueValidator(0)])
+    base_price = models.PositiveBigIntegerField(_("قیمت پایه لیبل"), default=100000, validators=[MinValueValidator(0)])
     min_width_px = models.PositiveIntegerField(_("حداقل عرض فایل"), default=500)
     is_active = models.BooleanField(_("فعال"), default=True, db_index=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True, related_name="customizer_artworks", verbose_name=_("مالک"))
