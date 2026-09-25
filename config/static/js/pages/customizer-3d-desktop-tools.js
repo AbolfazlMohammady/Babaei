@@ -357,14 +357,17 @@
                     return;
                 }
 
-                const sourceColor = Array.from(document.querySelectorAll("[data-text-color].is-active"))
-                    .find(item => item.dataset.textColor)?.dataset.textColor || "#ffffff";
+                const sourceColor = Array.from(editorNode.querySelectorAll("[data-text-color].is-active"))
+                    .find(item => item.dataset.textColor)?.dataset.textColor
+                    || Array.from(document.querySelectorAll("[data-text-color].is-active"))
+                        .find(item => item.dataset.textColor)?.dataset.textColor
+                    || "#ffffff";
                 const style = {
-                    preset: Array.from(document.querySelectorAll("[data-text-style].is-active"))
+                    preset: Array.from(editorNode.querySelectorAll("[data-text-style].is-active"))
                         .find(item => item.dataset.textStyle)?.dataset.textStyle || "modern",
-                    fontSize: Number(source.querySelector("#desktop-text-size")?.value || 100),
-                    curve: Number(source.querySelector("#desktop-text-curve")?.value || 0),
-                    letterSpacing: Number(source.querySelector("#desktop-text-spacing")?.value || 0),
+                    fontSize: Number(sizeRange?.value || 100),
+                    curve: Number(curveRange?.value || 0),
+                    letterSpacing: Number(spacingRange?.value || 0),
                 };
 
                 log("TEXT ADD", { value, style, color: sourceColor });
@@ -421,8 +424,9 @@
                     if (sizeValue) sizeValue.textContent = String(style.fontSize ?? 100);
                 }
                 if (curveRange) curveRange.value = String(style.curve ?? 0);
-                const spacing = editorNode.querySelector("#desktop-text-spacing");
-                if (spacing) spacing.value = String(style.letterSpacing ?? 0);
+                if (spacingRange) spacingRange.value = String(style.letterSpacing ?? 0);
+                if (outputs[1]) outputs[1].textContent = String(style.curve ?? 0);
+                if (outputs[2]) outputs[2].textContent = String(style.letterSpacing ?? 0);
 
                 editorNode.querySelectorAll("[data-text-style]").forEach(button => {
                     button.classList.toggle("is-active", button.dataset.textStyle === (style.preset || "modern"));
