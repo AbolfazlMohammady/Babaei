@@ -1592,6 +1592,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         getPayload: saveLayers,
         isReady: () => Boolean(garment && garmentMeshes.length),
         setMode: mode => document.querySelector(`[data-mode="${mode}"]`)?.click(),
+        setShirtColor: setColor,
         addArtwork: addLayer,
         addText,
     };
