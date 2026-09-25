@@ -3864,7 +3864,9 @@ body.product-detail-page .pd-comments--compact {
 
 body.product-detail-page .pd-related__track {
     cursor: grab;
-    touch-action: pan-x;
+    touch-action: pan-x pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
     user-select: none;
 }
 
@@ -3875,6 +3877,30 @@ body.product-detail-page .pd-related__track.is-dragging {
 
 body.product-detail-page .pd-related__track.is-dragging * {
     cursor: grabbing;
+}
+
+@media (max-width: 719px) {
+    body.product-detail-page .pd-related__viewport {
+        overflow: visible;
+    }
+
+    body.product-detail-page .pd-related__track {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        overflow-x: auto;
+        overflow-y: hidden;
+        touch-action: pan-x;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+        padding-inline: 4px;
+        margin-inline: -4px;
+    }
+
+    body.product-detail-page .pd-related__track > * {
+        flex: 0 0 154px;
+    }
 }
 
 @media (max-width: 719px) {
