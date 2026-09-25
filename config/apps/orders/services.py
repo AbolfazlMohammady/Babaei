@@ -150,19 +150,19 @@ def add_design_to_cart(request, *, design: DesignDraft, quantity=1) -> CartItem:
         raise ValueError("این طراحی متعلق به نشست فعلی نیست.")
     with transaction.atomic():
         cart = get_active_cart(request)
-        item = CartItem.objects.filter(cart=cart, design=design).select_for_update().first()
+        item = CartItem.objects.filter(cart=cart, custom_design=design).select_for_update().first()
         if item:
             item.quantity += quantity
             item.save(update_fields=("quantity", "updated_at"))
         else:
-            item = CartItem.objects.create(cart=cart, product=design.product, variant=design.variant, design=design, quantity=quantity)
+            item = CartItem.objects.create(cart=cart, product=design.product, variant=design.variant, custom_design=design, quantity=quantity)
     return item
 
-def add_to_cart(request, *, product, variant=None, design=None, quantity=1) -> CartItem:
+def add_to_cart(request, *, product, variant=None, custom_design=None, quantity=1) -> CartItem:
     quantity = int(quantity)
     if quantity < 1:
         raise ValueError("تعداد باید حداقل ۱ باشد.")
-    if design is not None and (design.product_id != product.id or design.status not in {"draft", "cart"}):
+    if custom_design is not None and (custom_design.product_id != product.id or custom_design.status not in {"draft", "cart"}):
         raise ValueError("طراحی انتخاب‌شده معتبر نیست.")
     with transaction.atomic():
         cart = get_active_cart(request)
@@ -176,7 +176,7 @@ def add_to_cart(request, *, product, variant=None, design=None, quantity=1) -> C
                 raise ValueError("تعداد انتخاب‌شده بیشتر از موجودی است.")
         elif product.variants.filter(is_active=True).exists():
             raise ValueError("لطفاً رنگ و سایز محصول را انتخاب کنید.")
-        lookup = {"cart": cart, "design": design} if design is not None else {"cart": cart, "product": product, "variant": variant, "design": None}
+        lookup = {"cart": cart, "custom_design": custom_design} if custom_design is not None else {"cart": cart, "product": product, "variant": variant, "custom_design": None}
         item, created = CartItem.objects.select_for_update().get_or_create(**lookup, defaults={"quantity": quantity})
         if not created:
             new_quantity = item.quantity + quantity
@@ -260,12 +260,10 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
             design = item.custom_design
             if not product.is_active or not product.category.is_active:
                 raise ValueError("این لباس دیگر قابل سفارش نیست.")
-            if design is not None and (design.status not in {"draft", "cart"} or design.product_id != product.id):
+            if design is not None and (design.status not in {DesignDraft.Status.DRAFT, DesignDraft.Status.CART} or design.product_id != product.id):
                 raise ValueError("طراحی این آیتم دیگر قابل سفارش نیست.")
 
             if design is not None:
-                if design.status not in {DesignDraft.Status.DRAFT, DesignDraft.Status.CART}:
-                    raise ValueError("یکی از طراحی‌های سفارشی دیگر قابل سفارش نیست.")
                 if design.user_id and design.user_id != user.id:
                     raise ValueError("طراحی سفارشی متعلق به این کاربر نیست.")
                 unit_price = design.total_price
@@ -275,6 +273,7 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                     "design_code": design.design_code,
                     "base_price": design.base_price,
                     "total_price": design.total_price,
+                    "shirt_color": design.shirt_color,
                     "variant_id": design.variant_id,
                 })
                 order_rows.append({
@@ -293,13 +292,7 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                 continue
 
             variant = None
-            if design is not None:
-                unit_price = design.total_price
-                compare_at_price = None
-                variant_sku = ""
-                color_name = ""
-                size_name = ""
-            elif item.variant_id:
+            if item.variant_id:
                 variant = (
                     ProductVariant.objects
                     .select_for_update()
@@ -315,7 +308,7 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                 variant_sku = variant.sku
                 color_name = variant.color.name
                 size_name = variant.size.name
-            elif design is None:
+            else:
                 unit_price = product.base_price
                 compare_at_price = product.compare_at_price
                 variant_sku = ""
@@ -333,10 +326,9 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                 "color_name": color_name,
                 "size_name": size_name,
                 "line_total": line_total,
-                "custom_design": design,
+                "custom_design": None,
                 "custom_design_snapshot": {},
             })
-
         order = Order.objects.create(
             user=user,
             status=Order.Status.PENDING,
