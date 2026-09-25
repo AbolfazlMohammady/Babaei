@@ -3628,7 +3628,7 @@ body.product-detail-page .pd-comments__toggle-arrow {
 
 @media (min-width: 720px) {
     body.product-detail-page .pd-perks {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
@@ -3994,18 +3994,11 @@ body.product-detail-page .pd-related__track.is-dragging * {
 
 
 /* Product perks sit below the full product stage, centered above the description. */
-@media (min-width: 760px) {
-    body.product-detail-page > .pd > .pd-inner > .pd-perks {
-        width: 760px;
-        max-width: calc(100% - 120px);
-        margin: 22px 0 0;
-        margin-inline: 0;
-        position: relative;
-        inset-inline-start: 50%;
-        transform: translateX(-50%);
-        grid-template-columns: repeat(3, minmax(0,1fr));
-        gap: 10px;
-    }
+body.product-detail-page > .pd > .pd-inner > .pd-perks {
+    width: min(100%, 760px);
+    margin: 22px auto 0;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 10px;
 }
 
 body.product-detail-page > .pd > .pd-inner > .pd-perks .pd-perk {
@@ -4034,187 +4027,7 @@ body.product-detail-page > .pd > .pd-inner > .pd-perks .pd-perk small {
     body.product-detail-page > .pd > .pd-inner > .pd-perks {
         width: 100%;
         margin-top: 14px;
-        transform: none;
         grid-template-columns: 1fr;
         gap: 8px;
-    }
-}
-
-
-/* ==========================================================================
-   FINAL PRODUCT DETAIL POLISH
-   ========================================================================== */
-
-/* The three reassurance cards sit as one centered unit on desktop. */
-@media (min-width: 941px) {
-    body.product-detail-page .pd-perks {
-        width: min(1160px, calc(100% - 32px));
-        margin-inline: auto;
-        justify-self: center;
-        transform: none;
-    }
-}
-
-/* Related products use the same visual labels as the main shop catalog.
-   These rules are explicit here because the product page intentionally does
-   not load the full catalog stylesheet. */
-body.product-detail-page .pd-related .shop-reference__badge--new {
-    background: var(--sh-forest);
-    color: var(--sh-cream-2);
-    border: 1px solid rgba(255,255,255,.16);
-    box-shadow: 0 8px 18px -13px rgba(9,28,20,.9);
-}
-
-body.product-detail-page .pd-related .shop-reference__badge--discount {
-    background: #f4e5c6;
-    color: #765727;
-    border: 1px solid rgba(118,87,39,.16);
-    box-shadow: 0 8px 18px -13px rgba(80,60,28,.55);
-}
-
-@media (max-width: 719px) {
-    body.product-detail-page .pd-related .shop-reference__badge {
-        top: 8px;
-        inset-inline-start: 8px;
-        min-width: 34px;
-        max-width: calc(100% - 46px);
-        padding: 5px 7px;
-        border-radius: 999px;
-        font-size: 8px;
-        line-height: 1.15;
-    }
-
-    body.product-detail-page .pd-related .shop-reference__badge--discount {
-        top: 38px;
-    }
-
-    body.product-detail-page .pd-related .shop-reference__favorite-form {
-        top: 8px;
-        inset-inline-end: 8px;
-    }
-
-    body.product-detail-page .pd-related .shop-reference__favorite {
-        width: 30px;
-        height: 30px;
-    }
-
-    body.product-detail-page .pd-related .shop-reference__favorite svg {
-        width: 15px;
-        height: 15px;
-    }
-
-    body.product-detail-page .pd-related .shop-reference__card-info h3 {
-        font-size: 10.5px;
-        min-height: 32px;
-        line-height: 1.5;
-    }
-
-    body.product-detail-page .pd-related .shop-reference__price-row strong {
-        font-size: 10.5px;
-    }
-
-    body.product-detail-page .pd-related .shop-reference__price-row span {
-        font-size: 8px;
-    }
-
-    body.product-detail-page .pd-related .shop-reference__cart {
-        width: 31px;
-        height: 31px;
-        border-radius: 9px;
-    }
-
-    /* RTL shelf: keep the first product on the right and preserve native
-       right-to-left swipe/scroll semantics on touch devices. */
-    body.product-detail-page .pd-related__track {
-        direction: rtl;
-        flex-direction: row;
-        justify-content: flex-start;
-        overflow-x: auto;
-        overscroll-behavior-inline: contain;
-        touch-action: pan-x;
-    }
-}
-
-
-/* ==========================================================================
-   RELATED PRODUCTS — RTL scroll + catalog badge parity
-   ========================================================================== */
-body.product-detail-page .pd-related__track {
-    direction: rtl;
-    flex-direction: row;
-    justify-content: flex-start;
-    width: 100%;
-    min-width: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    touch-action: pan-x;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-}
-
-body.product-detail-page .pd-related__track > * {
-    direction: rtl;
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-}
-
-/* Mirror the exact catalog badge language: dark sale badge, green featured
-   badge, and a clean stacked position when both are present. */
-body.product-detail-page .pd-related .shop-reference__badge {
-    z-index: 8;
-    min-width: 38px;
-    padding: 5px 8px;
-    border-radius: 999px;
-    font-size: 9.5px;
-    font-weight: 800;
-    line-height: 1;
-    white-space: nowrap;
-}
-
-body.product-detail-page .pd-related .shop-reference__badge--new {
-    background: var(--sh-forest);
-    color: var(--sh-cream-2);
-    border: 0;
-}
-
-body.product-detail-page .pd-related .shop-reference__badge--discount {
-    top: 10px;
-    background: var(--sh-ink);
-    color: var(--sh-cream-2);
-    border: 0;
-}
-
-body.product-detail-page .pd-related .shop-reference__badge--new + .shop-reference__badge--discount {
-    top: 40px;
-}
-
-@media (max-width: 719px) {
-    body.product-detail-page .pd-related__track {
-        direction: rtl;
-        flex-direction: row;
-        justify-content: flex-start;
-        margin-inline: -4px;
-        padding-inline: 4px;
-    }
-
-    body.product-detail-page .pd-related__track > * {
-        flex: 0 0 154px;
-    }
-
-    body.product-detail-page .pd-related .shop-reference__badge {
-        top: 8px;
-        inset-inline-start: 8px;
-        min-width: 34px;
-        padding: 5px 7px;
-        font-size: 8.5px;
-    }
-
-    body.product-detail-page .pd-related .shop-reference__badge--discount {
-        top: 8px;
-    }
-
-    body.product-detail-page .pd-related .shop-reference__badge--new + .shop-reference__badge--discount {
-        top: 37px;
     }
 }
