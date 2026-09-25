@@ -3864,10 +3864,20 @@ body.product-detail-page .pd-comments--compact {
 
 body.product-detail-page .pd-related__track {
     cursor: grab;
-    touch-action: pan-x pinch-zoom;
+    touch-action: pan-x;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
     user-select: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    pointer-events: auto;
+    scrollbar-width: none;
+}
+body.product-detail-page .pd-related__track::-webkit-scrollbar {
+    display: none;
+}
+body.product-detail-page .pd-related__track > * {
+    pointer-events: auto;
 }
 
 body.product-detail-page .pd-related__track.is-dragging {
