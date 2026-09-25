@@ -455,6 +455,48 @@
                 document.removeEventListener("babaei:selection-changed", syncSelection);
             }, { once: true });
         };
+        const openShirtColors = () => {
+            currentTool = "shirt-color";
+            log("ACTION: shirt-color");
+
+            const result = clone("#variant-color-list-right");
+            if (!result) return;
+
+            const sourceButtons = result.source.querySelectorAll("button");
+            const wrapper = result.node;
+            const extraColors = [
+                { name: "قرمز", hex: "#ef4444" },
+                { name: "سبز", hex: "#22c55e" },
+                { name: "آبی", hex: "#3b82f6" },
+            ];
+
+            extraColors.forEach(({ name, hex }) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "premium-color-button";
+                button.style.setProperty("--swatch", hex);
+                button.dataset.color = name;
+                button.title = name;
+                button.setAttribute("aria-label", name);
+                button.addEventListener("click", event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const setColor = window.BabaeiCustomizer3D?.setShirtColor;
+                    if (typeof setColor === "function") {
+                        setColor(hex);
+                        wrapper.querySelectorAll("button").forEach(item => item.classList.remove("is-active"));
+                        button.classList.add("is-active");
+                        log("SHIRT COLOR SET", { name, hex });
+                    } else {
+                        warn("SHIRT COLOR API UNAVAILABLE", { name, hex });
+                    }
+                });
+                wrapper.appendChild(button);
+            });
+
+            open("رنگ تیشرت", wrapper);
+        };
+
         const openText = () => buildTextPopover();
 
         const openTextFont = () => buildTextPopover();
@@ -518,7 +560,7 @@
                 try {
                     if (tool === "label") openLabel();
                     else if (tool === "text") openText();
-                    else if (tool === "shirt-color") openButtons("#variant-color-list-right", "رنگ تیشرت");
+                    else if (tool === "shirt-color") openShirtColors();
                     else if (tool === "size") openButtons("#premium-size-list", "انتخاب سایز");
                     else if (tool === "text-font") openTextFont();
                     else if (tool === "label-tools") openLabelTools();
