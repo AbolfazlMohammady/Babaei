@@ -18,6 +18,20 @@ EPSILON = 1e-7
 MAX_ARTWORK_UPLOAD_BYTES = 8 * 1024 * 1024
 CUSTOM_UPLOAD_PRICE = 100000
 CUSTOMIZER_BASE_PRICE = 1000000
+GARMENT_PRODUCTION_SPEC = {
+    "unit": "cm",
+    "body": {"width": 47, "height": 68},
+    "shoulder_width": 36,
+    "collar": {"width": 14, "depth": 9},
+    "sleeves": {
+        "top_length": 21,
+        "edge_length": 16,
+        "armhole_curve": 23,
+        "outer_width": 10,
+    },
+    "body_side_length": 46,
+    "print_surface": "body_only",
+}
 
 
 def _is_3d_forbidden_area(area):
@@ -341,6 +355,7 @@ def validate_design_payload(product, payload, variant=None, request=None):
     normalized = {
         "version": 2,
         "coordinate_space": "print_area_bbox",
+        "garment_spec": GARMENT_PRODUCTION_SPEC,
         "base_price": base_price,
         "shirt_spec": {"unit": "cm", "body_width": 47, "body_height": 68, "shoulder_width": 36, "collar_width": 14, "collar_depth": 9, "sleeve_length": 21, "sleeve_width": 16, "sleeve_drop": 23, "underarm_width": 10, "print_zone": "torso_only", "front_and_back": True},
         "layers": normalized_layers,
