@@ -21,6 +21,7 @@
     const saveStatus = document.getElementById("save-status");
     const uploadInput = document.getElementById("artwork-upload");
     const uploadStatus = document.getElementById("upload-status");
+    const removeBackgroundInput = document.getElementById("artwork-remove-background");
     const selectedControls = document.getElementById("selected-controls");
     const zoomLabel = document.getElementById("zoom-label");
 
@@ -540,9 +541,13 @@
     uploadInput.addEventListener("change", async () => {
         const file = uploadInput.files?.[0];
         if (!file) return;
-        uploadStatus.textContent = "در حال آماده‌سازی تصویر و حذف پس‌زمینه…";
+        const removeBackground = Boolean(removeBackgroundInput?.checked);
+        uploadStatus.textContent = removeBackground
+            ? "در حال آماده‌سازی تصویر و حذف پس‌زمینه…"
+            : "در حال آپلود تصویر…";
         const form = new FormData();
         form.append("image", file);
+        form.append("remove_background", removeBackground ? "1" : "0");
         try {
             const response = await fetch(root.dataset.uploadUrl, { method: "POST", headers: { "X-CSRFToken": getCookie("csrftoken") }, credentials: "same-origin", body: form });
             const result = await response.json();
