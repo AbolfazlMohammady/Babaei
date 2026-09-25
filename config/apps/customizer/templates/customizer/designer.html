@@ -25,6 +25,7 @@
 <div class="customizer-shell customizer-shell--premium" id="customizer"
      data-product-slug="{{ product.slug }}"
      data-save-url="{% url 'customizer:save_design' product.slug %}"
+         data-cart-url="{% url 'orders:custom_design_cart_add' product.slug %}"
      data-upload-url="{% url 'customizer:upload_artwork' product.slug %}">
     <header class="customizer-header customizer-header--studio">
         <div class="customizer-header__identity">
@@ -170,7 +171,7 @@
             <button type="button" class="desktop-tool" data-desktop-tool="text-font" title="متن و استایل" aria-label="متن و استایل متن">
                 <span class="desktop-tool__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 18 10.5 5h3L19 18M7.2 13h9.6" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/><path d="M17 6h3M18.5 4.5v3" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/></svg></span>
             </button>
-            <button type="button" class="desktop-tool desktop-tool--save" data-desktop-tool="save" title="ذخیره طراحی" aria-label="ذخیره طراحی">
+            <button type="button" class="desktop-tool desktop-tool--save" data-desktop-tool="save" title="افزودن به سبد خرید" aria-label="افزودن طراحی به سبد خرید">
                 <span class="desktop-tool__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h11l3 3v13H5V4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 4v6h7V4M8 20v-6h8v6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m10 17 1.5 1.5L14.5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             </button>
         </div>
