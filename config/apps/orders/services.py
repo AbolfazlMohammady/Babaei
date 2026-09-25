@@ -244,7 +244,7 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                 "product__category",
                 "variant__color",
                 "variant__size",
-                "design",
+                "custom_design",
             )
             .select_for_update()
             .order_by("added_at", "id")
@@ -257,7 +257,7 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
 
         for item in items:
             product = item.product
-            design = item.design
+            design = item.custom_design
             if not product.is_active or not product.category.is_active:
                 raise ValueError("این لباس دیگر قابل سفارش نیست.")
             if design is not None and (design.status not in {"draft", "cart"} or design.product_id != product.id):
@@ -287,8 +287,8 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                     "color_name": getattr(getattr(design.variant, "color", None), "name", "") if design.variant_id else "",
                     "size_name": getattr(getattr(design.variant, "size", None), "name", "") if design.variant_id else "",
                     "line_total": line_total,
-                    "design": design,
-                    "design_snapshot": snapshot,
+                    "custom_design": design,
+                    "custom_design_snapshot": snapshot,
                 })
                 subtotal += line_total
                 continue
@@ -362,7 +362,7 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                 order=order,
                 product=row["cart_item"].product,
                 variant=row["variant"],
-                product_name=(row["design"].design_code if row.get("design") else row["cart_item"].product.name),
+                product_name=(row["custom_design"].design_code if row.get("custom_design") else row["cart_item"].product.name),
                 variant_sku=row["variant_sku"],
                 color_name=row["color_name"],
                 size_name=row["size_name"],
@@ -418,7 +418,7 @@ def process_manual_payment(*, order, success):
             variant.stock_quantity -= item.quantity
             variant.save(update_fields=["stock_quantity"])
 
-        design_ids = [item.design_id for item in order_items if item.design_id]
+        design_ids = [item.custom_design_id for item in order_items if item.custom_design_id]
         if design_ids:
             DesignDraft.objects.filter(
                 id__in=design_ids,
