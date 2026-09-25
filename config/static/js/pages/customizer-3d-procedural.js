@@ -1301,26 +1301,106 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         renderAreas();
     }
 
+    function layerSide(item) {
+        if (!item?.normal || !garment) return "front";
+        const localNormal = item.normal.clone().applyQuaternion(garment.quaternion.clone().invert()).normalize();
+        return localNormal.z >= 0 ? "front" : "back";
+    }
+
+    function imageFromSource(src) {
+        return new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = reject;
+            image.crossOrigin = "anonymous";
+            image.src = src;
+        });
+    }
+
+    function canvasBlob(canvas, type = "image/webp", quality = 0.88) {
+        return new Promise(resolve => canvas.toBlob(resolve, type, quality));
+    }
+
+    async function build2DPreview(side) {
+        const view = (data.views || []).find(item => {
+            const value = `${item.key || ""} ${item.name || ""}`.toLowerCase();
+            return side === "front"
+                ? /(front|جلو|رو)/i.test(value)
+                : /(back|پشت)/i.test(value);
+        }) || (side === "front" ? data.views?.[0] : null);
+        if (!view?.background) return null;
+
+        const background = await imageFromSource(view.background);
+        const canvas = document.createElement("canvas");
+        const scale = Math.min(1, 1800 / Math.max(background.naturalWidth || background.width, background.naturalHeight || background.height));
+        canvas.width = Math.max(1, Math.round((background.naturalWidth || background.width) * scale));
+        canvas.height = Math.max(1, Math.round((background.naturalHeight || background.height) * scale));
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+
+        const viewAreas = view.areas || [];
+        const areaByIdLocal = id => viewAreas.find(area => Number(area.id) === Number(id));
+        const sideLayers = Array.from(layers.values()).filter(item => layerSide(item) === side);
+
+        for (const item of sideLayers) {
+            const area = areaByIdLocal(item.layer.area_id);
+            const geometry = area?.geometry || [];
+            if (geometry.length < 3) continue;
+            const xs = geometry.map(point => Number(point.x));
+            const ys = geometry.map(point => Number(point.y));
+            const minX = Math.min(...xs), maxX = Math.max(...xs);
+            const minY = Math.min(...ys), maxY = Math.max(...ys);
+            const areaWidth = Math.max(maxX - minX, 0.0001);
+            const areaHeight = Math.max(maxY - minY, 0.0001);
+            const x = (minX + item.layer.x * areaWidth) * canvas.width;
+            const y = (minY + item.layer.y * areaHeight) * canvas.height;
+            const width = item.layer.width * areaWidth * canvas.width;
+            const height = item.layer.height * areaHeight * canvas.height;
+
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(Number(item.layer.rotation || 0) * Math.PI / 180);
+            if (item.artwork?.is_text) {
+                const style = normalizeTextStyle(item.layer.text_style || item.artwork.text_style || {});
+                ctx.fillStyle = item.layer.color || "#ffffff";
+                ctx.font = `${style.fontStyle} ${style.fontWeight} ${Math.max(12, height * 0.48)}px ${style.fontFamily}`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(String(item.layer.text || item.artwork.name || ""), 0, 0, Math.max(width, 20));
+            } else if (item.artwork?.image) {
+                try {
+                    const artworkImage = await imageFromSource(item.artwork.image);
+                    ctx.globalAlpha = Number(item.layer.opacity ?? 1);
+                    ctx.drawImage(artworkImage, -width / 2, -height / 2, width, height);
+                } catch (error) {
+                    console.warn("2D artwork preview failed", error);
+                }
+            }
+            ctx.restore();
+        }
+        return canvasBlob(canvas);
+    }
+
     function saveLayers() {
         return Array.from(layers.values()).map(item => {
             const productionPlacement = areaRelativePlacement(item);
+            const side = layerSide(item);
             return {
                 ...item.layer,
+                type: item.artwork?.is_text ? "text" : "artwork",
+                side,
                 x: productionPlacement?.x ?? item.layer.x,
                 y: productionPlacement?.y ?? item.layer.y,
                 color: item.layer.color || "#ffffff",
                 opacity: Number(item.layer.opacity ?? 1),
-                text: item.artwork?.is_text
-                    ? String(item.layer.text || item.artwork.name || "")
-                    : null,
-                text_style: item.artwork?.is_text
-                    ? normalizeTextStyle(item.layer.text_style || item.artwork.text_style || {})
-                    : null,
+                text: item.artwork?.is_text ? String(item.layer.text || item.artwork.name || "") : null,
+                text_style: item.artwork?.is_text ? normalizeTextStyle(item.layer.text_style || item.artwork.text_style || {}) : null,
                 three_d: {
                     position: item.position?.toArray().map(value => Number(value.toFixed(6))) || null,
                     normal: item.normal?.toArray().map(value => Number(value.toFixed(6))) || null,
                     mesh: item.target?.name || null,
                     size: item.size?.toArray().map(value => Number(value.toFixed(6))) || null,
+                    side,
                     mode: "glb_surface_decal",
                     template: "babaei_tshirt_glb_v1",
                     model: "Glb/whit_t_shirt.glb",
@@ -1519,37 +1599,45 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             render();
         });
 
-        document.getElementById("save-design")?.addEventListener("click", async event => {
+        document.getElementById("add-to-cart-design")?.addEventListener("click", async event => {
             event.preventDefault();
             event.stopImmediatePropagation();
-
             const button = event.currentTarget;
             button.disabled = true;
-            status("در حال ذخیره طراحی…");
-
+            status("در حال آماده‌سازی طراحی…");
             try {
-                const response = await fetch(root.dataset.saveUrl, {
+                const [frontPreview, backPreview] = await Promise.all([
+                    build2DPreview("front"),
+                    build2DPreview("back"),
+                ]);
+                const payload = {
+                    variant_id: document.getElementById("variant-select")?.value || null,
+                    version: 2,
+                    preview_mode: "3d_glb_tshirt",
+                    shirt_color: currentVariant?.color || currentVariant?.hex || "",
+                    layers: saveLayers(),
+                };
+                const form = new FormData();
+                form.append("payload", JSON.stringify(payload));
+                if (frontPreview) form.append("preview_front", frontPreview, "front.webp");
+                if (backPreview) form.append("preview_back", backPreview, "back.webp");
+                const response = await fetch(root.dataset.cartUrl, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "X-CSRFToken": csrf() },
+                    headers: { "X-CSRFToken": csrf() },
                     credentials: "same-origin",
-                    body: JSON.stringify({
-                        variant_id: document.getElementById("variant-select")?.value || null,
-                        version: 3,
-                        preview_mode: "3d_glb_tshirt",
-                        layers: saveLayers(),
-                    }),
+                    body: form,
                 });
-
                 const result = await response.json();
-                if (!response.ok || !result.ok) throw new Error(result.error || "ذخیره طراحی انجام نشد.");
-                status(`طراحی ذخیره شد · کد ${String(result.draft_id).slice(0, 8)}`);
+                if (!response.ok || !result.ok) throw new Error(result.message || result.error || "افزودن طراحی به سبد انجام نشد.");
+                status(`طراحی ${String(result.design_code || "")} به سبد اضافه شد.`);
+                window.location.href = "/cart/";
             } catch (error) {
-                status(error.message || "ذخیره طراحی انجام نشد.");
+                console.error("custom design cart failed", error);
+                status(error.message || "افزودن طراحی به سبد انجام نشد.");
             } finally {
                 button.disabled = false;
             }
-        }, { capture: true });
-    }
+        }, { capture: true });  }
 
     async function init() {
         setupScene();
