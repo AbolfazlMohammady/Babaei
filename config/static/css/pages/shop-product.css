@@ -3357,12 +3357,20 @@ body.product-detail-page .pd-related .shop-reference__badge {
     top: 10px;
     inset-inline-start: 10px;
     min-width: 38px;
+    max-width: calc(100% - 56px);
     padding: 5px 8px;
     border-radius: 999px;
     font-size: 9px;
     font-weight: 800;
     line-height: 1;
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.product-detail-page .pd-related .shop-reference__badge--discount {
+    top: 42px;
 }
 
 body.product-detail-page .pd-related .shop-reference__card-body {
