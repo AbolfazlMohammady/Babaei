@@ -1630,7 +1630,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 const result = await response.json();
                 if (!response.ok || !result.ok) throw new Error(result.message || result.error || "افزودن طراحی به سبد انجام نشد.");
                 status(`طراحی ${String(result.design_code || "")} به سبد اضافه شد.`);
-                window.location.href = "/cart/";
+                window.location.href = root.dataset.cartPageUrl || "/cart/";
             } catch (error) {
                 console.error("custom design cart failed", error);
                 status(error.message || "افزودن طراحی به سبد انجام نشد.");
