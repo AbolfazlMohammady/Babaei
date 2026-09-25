@@ -328,7 +328,7 @@ document.addEventListener("DOMContentLoaded",function(){
         relatedTrack.addEventListener("wheel",function(event){
             if(Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
             event.preventDefault();
-            relatedTrack.scrollBy({left:event.deltaY,behavior:"auto"});
+            relatedTrack.scrollBy({left:-event.deltaY,behavior:"auto"});
         },{passive:false});
 
         // Desktop mouse drag. Mobile touch is intentionally untouched so
