@@ -1,6 +1,5 @@
 from django.db import migrations, models
-from django.db.models import Q
-
+from django.core.validators import MinValueValidator
 
 def set_default_artwork_price(apps, schema_editor):
     Artwork = apps.get_model("customizer", "Artwork")
@@ -20,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="artwork",
             name="base_price",
-            field=models.PositiveBigIntegerField(default=100000, validators=[], verbose_name="قیمت پایه لیبل"),
+            field=models.PositiveBigIntegerField(default=100000, validators=[MinValueValidator(0)], verbose_name="قیمت پایه لیبل"),
         ),
         migrations.RunPython(set_default_artwork_price, migrations.RunPython.noop),
     ]
