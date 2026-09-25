@@ -569,16 +569,6 @@
         });
 
         const buttons = dock.querySelectorAll("[data-desktop-tool]");
-        selectedToolsButton?.addEventListener("click", event => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (document.querySelector("#selected-controls:not([hidden])")) {
-                openLabelTools();
-            } else {
-                log("SELECTED TOOLS CLICK: no selected artwork");
-            }
-        });
-
 
         log("BIND BUTTONS", {
             count: buttons.length,
