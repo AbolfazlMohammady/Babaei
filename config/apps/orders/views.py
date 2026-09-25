@@ -268,7 +268,7 @@ def orders_list_view(request):
 def order_detail_view(request, order_uuid):
     item_qs = (
         OrderItem.objects
-        .select_related("product")
+        .select_related("product", "custom_design")
         .prefetch_related(
             Prefetch(
                 "product__images",
