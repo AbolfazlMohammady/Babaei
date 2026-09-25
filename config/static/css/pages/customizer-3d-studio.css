@@ -7328,3 +7328,10 @@ body.customizer-page.customizer-mobile-sheet-open .designer-3d-hint {
         font-size:7px;
     }
 }
+
+
+@media (min-width: 821px) {
+    .customizer-workspace--premium > #desktop-tool-popover {
+        right:82px !important;
+    }
+}
