@@ -106,7 +106,7 @@
             document.dispatchEvent(new CustomEvent(name, { detail }));
         };
 
-        const openLabel = () => {
+        const openLabel = (focusUploaded = false) => {
             currentTool = "label";
             log("ACTION: label");
             const result = clone("#label-library-panel", { unhide: true });
@@ -125,6 +125,21 @@
                 libraryToggle.appendChild(description);
             }
 
+            const librarySectionNode = result.node.querySelector('[data-artwork-section="library"]');
+            const uploadedSectionNode = result.node.querySelector('[data-artwork-section="uploaded"]');
+            const setSectionState = (section, openState) => {
+                const toggle = section?.querySelector(".artwork-library-section__toggle");
+                const grid = section?.querySelector(".artwork-library-section__grid");
+                if (!toggle || !grid) return;
+                grid.hidden = !openState;
+                toggle.setAttribute("aria-expanded", String(openState));
+                section.classList.toggle("is-open", openState);
+            };
+
+            // Exactly one label group is expanded at a time.
+            setSectionState(librarySectionNode, !focusUploaded);
+            setSectionState(uploadedSectionNode, focusUploaded);
+
             result.node.querySelectorAll("[data-artwork-section] .artwork-library-section__toggle").forEach(toggle => {
                 toggle.addEventListener("click", event => {
                     event.preventDefault();
@@ -133,9 +148,16 @@
                     const grid = section?.querySelector(".artwork-library-section__grid");
                     if (!grid) return;
                     const isOpen = !grid.hidden;
-                    grid.hidden = isOpen;
-                    toggle.setAttribute("aria-expanded", String(!isOpen));
-                    section.classList.toggle("is-open", !isOpen);
+                    const nextOpen = isOpen ? false : true;
+                    const sibling = section.parentElement?.querySelector(
+                        '[data-artwork-section].is-open'
+                    );
+                    if (nextOpen && sibling && sibling !== section) {
+                        setSectionState(sibling, false);
+                    }
+                    grid.hidden = !nextOpen;
+                    toggle.setAttribute("aria-expanded", String(nextOpen));
+                    section.classList.toggle("is-open", nextOpen);
                     log("LABEL SECTION TOGGLE", {
                         section: section.dataset.artworkSection,
                         open: !isOpen,
@@ -190,7 +212,7 @@
         document.addEventListener("babaei:artwork-uploaded", event => {
             log("ARTWORK UPLOADED", { artwork: event.detail?.artwork });
             if (currentTool === "label" && !popover.hidden) {
-                openLabel();
+                openLabel(true);
             }
         });
 
