@@ -16,7 +16,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260925-text-add-fix22">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260925-studio-header17">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260920-15">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d-mobile-nav.css' %}?v=20260925-1">
 {% endblock %}
@@ -26,9 +26,13 @@
      data-product-slug="{{ product.slug }}"
      data-save-url="{% url 'customizer:save_design' product.slug %}"
      data-upload-url="{% url 'customizer:upload_artwork' product.slug %}">
-    <header class="customizer-header">
-        <div>
-            <h1>طراحی تیشرت</h1>
+    <header class="customizer-header customizer-header--studio">
+        <div class="customizer-header__identity">
+            <div class="customizer-header__title">
+                <span class="customizer-header__eyebrow">BABAEI · 3D STUDIO</span>
+                <h1>طراحی تیشرت</h1>
+            </div>
+            <span class="designer-3d-badge designer-3d-badge--header"><i></i> طراحی سه‌بعدی</span>
         </div>
         <div class="customizer-price-card" aria-live="polite"><span>قیمت نهایی</span><strong id="designer-total">—</strong><small>تومان</small></div>
     </header>
@@ -174,7 +178,6 @@
         <section class="customizer-stage-wrap customizer-stage-wrap--premium" aria-label="محیط سه‌بعدی طراحی">
             <div class="customizer-stage customizer-stage--premium" id="stage-shell">
                 <div class="designer-3d-stage" id="designer-3d-stage" data-model-url="{% static 'Glb/whit_t_shirt.glb' %}" aria-label="پیش‌نمایش سه‌بعدی تیشرت">
-                    <div class="designer-3d-topbar"><span class="designer-3d-badge"><i></i> تیشرت سه‌بعدی</span></div>
                     <canvas id="designer-3d-canvas"></canvas>
                     <div class="designer-3d-loading" id="designer-3d-loading">در حال بارگذاری مدل سه‌بعدی…</div>
                     <div class="designer-3d-hint" id="designer-3d-hint">با ماوس/لمس مدل را بچرخان · برای انتخاب لیبل روی آن کلیک کن</div>
