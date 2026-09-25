@@ -1621,10 +1621,39 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             render();
         });
 
+        const cartConfirm = document.getElementById("designer-cart-confirm");
+        const cartConfirmSubmit = document.getElementById("designer-cart-confirm-submit");
+        const closeCartConfirm = () => {
+            if (cartConfirm) cartConfirm.hidden = true;
+            document.body.classList.remove("designer-cart-confirm-open");
+        };
+        cartConfirm?.querySelectorAll("[data-cart-confirm-cancel]").forEach(control => {
+            control.addEventListener("click", event => {
+                event.preventDefault();
+                closeCartConfirm();
+            });
+        });
+        cartConfirmSubmit?.addEventListener("click", event => {
+            event.preventDefault();
+            const button = document.getElementById("add-to-cart-design");
+            if (!button) return;
+            button.dataset.cartConfirmed = "1";
+            closeCartConfirm();
+            button.click();
+        });
+
         document.getElementById("add-to-cart-design")?.addEventListener("click", async event => {
             event.preventDefault();
             event.stopImmediatePropagation();
             const button = event.currentTarget;
+            if (button.dataset.cartConfirmed !== "1") {
+                if (cartConfirm) {
+                    cartConfirm.hidden = false;
+                    document.body.classList.add("designer-cart-confirm-open");
+                }
+                return;
+            }
+            button.dataset.cartConfirmed = "";
             button.disabled = true;
             status("در حال آماده‌سازی طراحی…");
             try {
