@@ -43,15 +43,6 @@ def _design_preview_path(instance, filename):
     return f"customizer/designs/{instance.uuid}/previews/{uuid.uuid4().hex}{extension}"
 
 
-def _design_code():
-    return f"DSN-{uuid.uuid4().hex[:12].upper()}"
-
-
-def _design_preview_path(instance, filename):
-    extension = Path(filename).suffix.lower() or ".webp"
-    return f"customizer/designs/{instance.uuid}/{uuid.uuid4().hex}{extension}"
-
-
 def _mask_image_path(instance, filename):
     extension = Path(filename).suffix.lower() or ".webp"
     return f"customizer/masks/{instance.product.uuid}/{instance.key}/{uuid.uuid4().hex}{extension}"
@@ -211,9 +202,10 @@ class DesignDraft(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True, related_name="design_drafts")
     session_key = models.CharField(max_length=64, blank=True, db_index=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT, db_index=True)
-    base_price_snapshot = models.PositiveBigIntegerField(_("قیمت پایه طراحی"), default=1000000)
+    base_price = models.PositiveBigIntegerField(_("قیمت پایه طراحی"), default=1000000, validators=[MinValueValidator(0)])
+    shirt_color = models.CharField(_("رنگ لباس"), max_length=40, blank=True)
     total_price = models.PositiveBigIntegerField(default=0)
-    shirt_spec = models.JSONField(_("مشخصات هندسی لباس"), default=dict, blank=True)
+    confirmed_at = models.DateTimeField(_("زمان نهایی شدن"), null=True, blank=True)
     payload = models.JSONField(default=dict, blank=True)
     preview_front = models.ImageField(_("پیش‌نمایش دوبعدی جلو"), upload_to=_design_preview_path, blank=True, null=True)
     preview_back = models.ImageField(_("پیش‌نمایش دوبعدی پشت"), upload_to=_design_preview_path, blank=True, null=True)
@@ -242,10 +234,7 @@ class DesignLayer(models.Model):
     area = models.ForeignKey(PrintArea, on_delete=models.PROTECT, related_name="design_layers")
     layer_type = models.CharField(_("نوع لایه"), max_length=20, choices=LayerType.choices, default=LayerType.ARTWORK)
     side = models.CharField(_("سمت لباس"), max_length=10, choices=Side.choices, default=Side.FRONT)
-    artwork_code_snapshot = models.CharField(_("کد لیبل"), max_length=40, blank=True)
-    artwork_name_snapshot = models.CharField(_("نام لیبل"), max_length=160, blank=True)
-    price_snapshot = models.PositiveBigIntegerField(_("قیمت لحظه طراحی"), default=0)
-    text_content = models.TextField(_("متن کاربر"), blank=True)
+    text = models.CharField(_("متن"), max_length=120, blank=True)
     text_style = models.JSONField(_("استایل متن"), default=dict, blank=True)
     x = models.FloatField(_("مرکز X"), validators=[MinValueValidator(0), MaxValueValidator(1)])
     y = models.FloatField(_("مرکز Y"), validators=[MinValueValidator(0), MaxValueValidator(1)])
@@ -269,7 +258,7 @@ class DesignLayer(models.Model):
                 raise ValidationError(_("این لیبل دیگر فعال نیست."))
 
     def __str__(self):
-        return f"{self.draft.design_code} / {self.artwork_name_snapshot or self.text_content or self.layer_type}"
+        return f"{self.draft.design_code} / {self.text or (self.artwork.name if self.artwork_id else self.layer_type)}"
 
 
 from .ai_models import Product3DAsset, Product3DSource
