@@ -351,7 +351,7 @@ document.addEventListener("DOMContentLoaded",function(){
             const delta=event.clientX-lastX;
             if(Math.abs(delta)>2) moved=true;
             if(delta !== 0){
-                relatedTrack.scrollLeft -= delta;
+                relatedTrack.scrollBy({left:-delta,behavior:"auto"});
                 lastX=event.clientX;
             }
         });
