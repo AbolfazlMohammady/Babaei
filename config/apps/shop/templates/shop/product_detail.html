@@ -97,17 +97,6 @@ js/storefront.js). Nothing on this page needs !important.
                 </div>
             </section>
 
-        {% comment %}
-        The same three promises the numbered strip carried, as an icon list. The
-        01 / 02 / 03 numerals were decoration on a page whose hierarchy already
-        comes from the type scale.
-        {% endcomment %}
-        <section class="pd-perks" data-reveal aria-label="مزیت‌های خرید">
-            <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.2 19 6v6c0 4.2-2.9 7.6-7 8.8-4.1-1.2-7-4.6-7-8.8V6l7-2.8Z"></path><path d="m9 12.1 2.2 2.2 4.3-4.4"></path></svg></span><span><strong>کیفیت قابل لمس</strong><small>انتخاب‌شده برای استفاده‌ی روزمره</small></span></div>
-            <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.2 7.4h9.3v9.2H3.2z"></path><path d="M12.5 10.4h3.9l3.4 3.5v2.7h-7.3z"></path><path d="M6.6 19.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z"></path><path d="M16.6 19.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z"></path></svg></span><span><strong>ارسال مطمئن</strong><small>بسته‌بندی تمیز و قابل پیگیری</small></span></div>
-            <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 20 3.4-.8L19 7.6a2.3 2.3 0 0 0-3.3-3.3L4.1 16.6 4 20Z"></path><path d="m13.4 6.9 3.3 3.3"></path></svg></span><span><strong>ساخته‌شده برای تو</strong><small>امکان شخصی‌سازی در استودیو طراحی</small></span></div>
-        </section>
-
             <article class="pd-info">
                 {% comment %}
                 The eyebrow is now the category the product actually sits in,
@@ -197,6 +186,17 @@ js/storefront.js). Nothing on this page needs !important.
                 </form>
             </article>
         </div>
+
+        {% comment %}
+        The same three promises the numbered strip carried, as an icon list. The
+        01 / 02 / 03 numerals were decoration on a page whose hierarchy already
+        comes from the type scale.
+        {% endcomment %}
+        <section class="pd-perks" data-reveal aria-label="مزیت‌های خرید">
+            <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.2 19 6v6c0 4.2-2.9 7.6-7 8.8-4.1-1.2-7-4.6-7-8.8V6l7-2.8Z"></path><path d="m9 12.1 2.2 2.2 4.3-4.4"></path></svg></span><span><strong>کیفیت قابل لمس</strong><small>انتخاب‌شده برای استفاده‌ی روزمره</small></span></div>
+            <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.2 7.4h9.3v9.2H3.2z"></path><path d="M12.5 10.4h3.9l3.4 3.5v2.7h-7.3z"></path><path d="M6.6 19.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z"></path><path d="M16.6 19.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z"></path></svg></span><span><strong>ارسال مطمئن</strong><small>بسته‌بندی تمیز و قابل پیگیری</small></span></div>
+            <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 20 3.4-.8L19 7.6a2.3 2.3 0 0 0-3.3-3.3L4.1 16.6 4 20Z"></path><path d="m13.4 6.9 3.3 3.3"></path></svg></span><span><strong>ساخته‌شده برای تو</strong><small>امکان شخصی‌سازی در استودیو طراحی</small></span></div>
+        </section>
 
         {% if product.description %}<section class="pd-story" data-reveal><h2>توضیحات محصول</h2><div class="pd-story__body">{{ product.description|linebreaks }}</div></section>{% endif %}
 
@@ -289,13 +289,11 @@ js/storefront.js). Nothing on this page needs !important.
                 <a href="{% url 'shop:index' %}">مشاهده فروشگاه <span aria-hidden="true">←</span></a>
             </div>
             <div class="pd-related__viewport" data-related-scroll>
-                <button type="button" class="pd-related__arrow pd-related__arrow--prev" data-related-prev aria-label="محصولات قبلی">‹</button>
                 <div class="pd-related__track">
                     {% for related in similar_products %}
                         {% include "shop/includes/_catalog_card.html" with product=related %}
                     {% endfor %}
                 </div>
-                <button type="button" class="pd-related__arrow pd-related__arrow--next" data-related-next aria-label="محصولات بعدی">›</button>
             </div>
         </section>
         {% endif %}
@@ -324,42 +322,23 @@ document.addEventListener("DOMContentLoaded",function(){
         });
     }
 
-    const relatedShelf=document.querySelector("[data-related-scroll]");
-    const relatedTrack=relatedShelf?.querySelector(".pd-related__track");
-    const relatedPrev=relatedShelf?.querySelector("[data-related-prev]");
-    const relatedNext=relatedShelf?.querySelector("[data-related-next]");
-
+    const relatedTrack=document.querySelector("[data-related-scroll] .pd-related__track");
     if(relatedTrack){
-        const updateRelatedArrows=()=>{
-            const max=Math.max(0,relatedTrack.scrollWidth-relatedTrack.clientWidth);
-            // RTL scrollLeft differs between browsers, so the buttons are based
-            // on whether there is any horizontal overflow and simply scroll by
-            // one card-width in the requested direction.
-            const hasOverflow=max>4;
-            relatedPrev?.classList.toggle("is-disabled",!hasOverflow);
-            relatedNext?.classList.toggle("is-disabled",!hasOverflow);
-        };
-
-        const scrollRelated=(direction)=>{
-            const amount=Math.max(220, Math.round(relatedTrack.clientWidth*.72));
-            relatedTrack.scrollBy({left:direction*amount,behavior:"smooth"});
-        };
-
-        relatedPrev?.addEventListener("click",()=>scrollRelated(-1));
-        relatedNext?.addEventListener("click",()=>scrollRelated(1));
-
-        relatedTrack.addEventListener("wheel",function(event){
-            if(Math.abs(event.deltaY)<=Math.abs(event.deltaX)) return;
-            event.preventDefault();
-            relatedTrack.scrollBy({left:event.deltaY,behavior:"auto"});
-        },{passive:false});
-
         let dragging=false;
         let lastX=0;
         let moved=false;
 
+        // Desktop wheel -> horizontal shelf.
+        relatedTrack.addEventListener("wheel",function(event){
+            if(Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+            event.preventDefault();
+            relatedTrack.scrollBy({left:event.deltaY,behavior:"auto"});
+        },{passive:false});
+
+        // Desktop mouse drag. Mobile touch is intentionally untouched so
+        // the browser handles native horizontal swipe scrolling.
         relatedTrack.addEventListener("mousedown",function(event){
-            if(event.button!==0) return;
+            if(event.button !== 0) return;
             dragging=true;
             moved=false;
             lastX=event.clientX;
@@ -371,7 +350,7 @@ document.addEventListener("DOMContentLoaded",function(){
             if(!dragging) return;
             const delta=event.clientX-lastX;
             if(Math.abs(delta)>2) moved=true;
-            if(delta!==0){
+            if(delta !== 0){
                 relatedTrack.scrollBy({left:-delta,behavior:"auto"});
                 lastX=event.clientX;
             }
@@ -383,16 +362,17 @@ document.addEventListener("DOMContentLoaded",function(){
             relatedTrack.classList.remove("is-dragging");
         });
 
+        relatedTrack.addEventListener("mouseleave",function(){
+            // Do not stop here: window mousemove keeps the drag alive
+            // while the pointer temporarily leaves the shelf.
+        });
+
         relatedTrack.addEventListener("click",function(event){
             if(!moved) return;
             event.preventDefault();
             event.stopPropagation();
             moved=false;
         },true);
-
-        relatedTrack.addEventListener("scroll",updateRelatedArrows,{passive:true});
-        window.addEventListener("resize",updateRelatedArrows);
-        requestAnimationFrame(updateRelatedArrows);
     }
 
     if(comments && drawer && writeButton){
