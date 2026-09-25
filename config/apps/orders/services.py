@@ -1,4 +1,4 @@
-undefinedfrom __future__ import annotations
+from __future__ import annotations
 
 from django.db import transaction
 
@@ -158,6 +158,7 @@ def add_design_to_cart(request, *, design: DesignDraft, quantity=1) -> CartItem:
             item = CartItem.objects.create(cart=cart, product=design.product, variant=design.variant, custom_design=design, quantity=quantity)
     return item
 
+
 def add_to_cart(request, *, product, variant=None, custom_design=None, quantity=1) -> CartItem:
     quantity = int(quantity)
     if quantity < 1:
@@ -224,7 +225,6 @@ def clear_cart(request) -> None:
     cart = get_active_cart(request)
     cart.items.all().delete()
     invalidate_product_cart_cache(request)
-
 
 
 def create_order_from_cart(*, user, cart, address, customer_note=""):
@@ -329,6 +329,7 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                 "custom_design": None,
                 "custom_design_snapshot": {},
             })
+
         order = Order.objects.create(
             user=user,
             status=Order.Status.PENDING,
@@ -412,7 +413,6 @@ def process_manual_payment(*, order, success):
 
         design_ids = [item.custom_design_id for item in order_items if item.custom_design_id]
         if design_ids:
-            from django.utils import timezone
             DesignDraft.objects.filter(
                 id__in=design_ids,
                 status__in=[DesignDraft.Status.DRAFT, DesignDraft.Status.CART],
