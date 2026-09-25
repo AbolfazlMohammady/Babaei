@@ -196,13 +196,38 @@ js/storefront.js). Nothing on this page needs !important.
             <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.2 19 6v6c0 4.2-2.9 7.6-7 8.8-4.1-1.2-7-4.6-7-8.8V6l7-2.8Z"></path><path d="m9 12.1 2.2 2.2 4.3-4.4"></path></svg></span><span><strong>کیفیت قابل لمس</strong><small>انتخاب‌شده برای استفاده‌ی روزمره</small></span></div>
             <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.2 7.4h9.3v9.2H3.2z"></path><path d="M12.5 10.4h3.9l3.4 3.5v2.7h-7.3z"></path><path d="M6.6 19.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z"></path><path d="M16.6 19.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z"></path></svg></span><span><strong>ارسال مطمئن</strong><small>بسته‌بندی تمیز و قابل پیگیری</small></span></div>
             <div class="pd-perk"><span class="pd-perk__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 20 3.4-.8L19 7.6a2.3 2.3 0 0 0-3.3-3.3L4.1 16.6 4 20Z"></path><path d="m13.4 6.9 3.3 3.3"></path></svg></span><span><strong>ساخته‌شده برای تو</strong><small>امکان شخصی‌سازی در استودیو طراحی</small></span></div>
-            <button type="button" class="pd-perk pd-perk--comments" data-comment-toggle aria-controls="comments" aria-expanded="false">
-                <span class="pd-perk__icon" aria-hidden="true">✦</span>
-                <span><strong>نظرات مشتریان</strong><small>{{ comment_count|default:0 }} نظر{% if comment_count %} · امتیاز {{ comment_average|default:"0"|floatformat:1 }} از ۵{% endif %}</small></span>
-            </button>
         </section>
 
         {% if product.description %}<section class="pd-story" data-reveal><h2>توضیحات محصول</h2><div class="pd-story__body">{{ product.description|linebreaks }}</div></section>{% endif %}
+
+        <section class="pd-special-grid" aria-label="تجربه محصول و طراحی">
+            <button type="button" class="pd-special-card pd-special-card--comments" data-comment-toggle aria-controls="comments" aria-expanded="false">
+                <span class="pd-special-card__edge" aria-hidden="true"></span>
+                <span class="pd-special-card__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M5 5.5h14v10H9l-4 3v-13Z"></path><path d="M8.2 9.4h7.6"></path><path d="M8.2 12.5h5.1"></path></svg>
+                </span>
+                <span class="pd-special-card__copy">
+                    <span class="pd-special-card__eyebrow">REAL EXPERIENCES</span>
+                    <strong>نظرات مشتریان</strong>
+                    <small>{{ comment_count|default:0 }} نظر{% if comment_count %} · امتیاز {{ comment_average|default:"0"|floatformat:1 }} از ۵{% endif %}</small>
+                </span>
+                <span class="pd-special-card__arrow" aria-hidden="true">←</span>
+            </button>
+
+            <a class="pd-special-card pd-special-card--studio" href="{% url 'customizer:designer' product.slug %}">
+                <span class="pd-special-card__edge" aria-hidden="true"></span>
+                <span class="pd-special-card__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="m4 20 3.4-.8L19 7.6a2.3 2.3 0 0 0-3.3-3.3L4.1 16.6 4 20Z"></path><path d="m13.4 6.9 3.3 3.3"></path></svg>
+                </span>
+                <span class="pd-special-card__copy">
+                    <span class="pd-special-card__eyebrow">BABAEI DESIGN STUDIO</span>
+                    <strong>لیبلت را روی لباس قرار بده</strong>
+                    <small>جای لیبل، اندازه و زاویه را همان لحظه تنظیم کن.</small>
+                </span>
+                <span class="pd-special-card__arrow" aria-hidden="true">←</span>
+            </a>
+        </section>
+
         <section class="pd-comments pd-comments--compact" id="comments" hidden data-reveal>
             <div class="pd-comments__content">
                     <div class="pd-comments__toolbar">
@@ -254,11 +279,6 @@ js/storefront.js). Nothing on this page needs !important.
 
 
 
-        <section class="pd-studio" data-reveal>
-            <div class="pd-studio__copy"><p class="pd-kicker">BABAEI DESIGN STUDIO</p><h2>لیبلت را روی لباس قرار بده</h2><p>طرح لیبلت را انتخاب کن، روی لباس جابه‌جایش کن و اندازه و زاویه را همان لحظه تنظیم کن.</p></div>
-            <a class="pd-studio__cta" href="{% url 'customizer:designer' product.slug %}">ورود به طراحی <span aria-hidden="true">←</span></a>
-        </section>
-
         {% if similar_products %}
         <section class="pd-related" aria-labelledby="related-products-title" data-reveal>
             <div class="pd-related__head">
@@ -300,6 +320,57 @@ document.addEventListener("DOMContentLoaded",function(){
                 });
             }
         });
+    }
+
+    const relatedTrack=document.querySelector("[data-related-scroll] .pd-related__track");
+    if(relatedTrack){
+        let dragging=false;
+        let startX=0;
+        let startScroll=0;
+        let moved=false;
+
+        relatedTrack.addEventListener("wheel",function(event){
+            if(Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+            event.preventDefault();
+            relatedTrack.scrollBy({left:event.deltaY,behavior:"auto"});
+        },{passive:false});
+
+        relatedTrack.addEventListener("pointerdown",function(event){
+            if(event.pointerType === "mouse" && event.button !== 0) return;
+            dragging=true;
+            moved=false;
+            startX=event.clientX;
+            startScroll=relatedTrack.scrollLeft;
+            relatedTrack.classList.add("is-dragging");
+            if(relatedTrack.setPointerCapture) relatedTrack.setPointerCapture(event.pointerId);
+        });
+
+        relatedTrack.addEventListener("pointermove",function(event){
+            if(!dragging) return;
+            const distance=event.clientX-startX;
+            if(Math.abs(distance)>5) moved=true;
+            relatedTrack.scrollLeft=startScroll-distance;
+        });
+
+        const stopDrag=function(event){
+            if(!dragging) return;
+            dragging=false;
+            relatedTrack.classList.remove("is-dragging");
+            if(event && relatedTrack.hasPointerCapture && relatedTrack.hasPointerCapture(event.pointerId)){
+                relatedTrack.releasePointerCapture(event.pointerId);
+            }
+        };
+        relatedTrack.addEventListener("pointerup",stopDrag);
+        relatedTrack.addEventListener("pointercancel",stopDrag);
+        relatedTrack.addEventListener("lostpointercapture",function(){ dragging=false; relatedTrack.classList.remove("is-dragging"); });
+
+        relatedTrack.addEventListener("click",function(event){
+            if(moved){
+                event.preventDefault();
+                event.stopPropagation();
+                moved=false;
+            }
+        },true);
     }
 
     if(comments && drawer && writeButton){
