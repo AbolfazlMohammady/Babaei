@@ -1352,8 +1352,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             const minY = Math.min(...ys), maxY = Math.max(...ys);
             const areaWidth = Math.max(maxX - minX, 0.0001);
             const areaHeight = Math.max(maxY - minY, 0.0001);
-            const x = (minX + item.layer.x * areaWidth) * canvas.width;
-            const y = (minY + item.layer.y * areaHeight) * canvas.height;
+            const placement = areaRelativePlacement(item) || { x: item.layer.x, y: item.layer.y };
+            const x = (minX + placement.x * areaWidth) * canvas.width;
+            const y = (minY + placement.y * areaHeight) * canvas.height;
             const width = item.layer.width * areaWidth * canvas.width;
             const height = item.layer.height * areaHeight * canvas.height;
 
