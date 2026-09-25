@@ -194,21 +194,29 @@
 
     function renderArtworks() {
         const activeArea = areaById(activeAreaId);
-        artworkGrid.innerHTML = artworks.length
-            ? artworks.map((artwork) => {
-                const key = activeArea ? `${artwork.id}:${activeArea.id}` : "";
-                const areaPrice = key && Object.prototype.hasOwnProperty.call(prices, key)
-                    ? Number(prices[key])
-                    : Number(artwork.base_price || 0);
-                return `<button type="button" class="artwork-card" data-artwork-id="${artwork.id}">
-                    <span class="artwork-card__visual"><img src="${escapeHtml(artwork.image)}" alt="" loading="lazy"></span>
-                    <span class="artwork-card__info">
-                        <strong>${escapeHtml(artwork.name)}</strong>
-                        <small class="artwork-card__code">${escapeHtml(artwork.code || "LBL")}</small>
-                        <small>${formatPrice(areaPrice)} تومان</small>
-                    </span>
-                </button>`;
-            }).join("")
+        const libraryArtworks = artworks.filter((artwork) => !artwork.is_uploaded);
+        const uploadedArtworks = artworks.filter((artwork) => artwork.is_uploaded);
+
+        const renderArtworkCard = (artwork) => {
+            const key = activeArea ? `${artwork.id}:${activeArea.id}` : "";
+            const areaPrice = key && Object.prototype.hasOwnProperty.call(prices, key)
+                ? Number(prices[key])
+                : Number(artwork.base_price || 0);
+            return `<button type="button" class="artwork-card ${artwork.is_uploaded ? "artwork-card--uploaded" : ""}" data-artwork-id="${artwork.id}">
+                <span class="artwork-card__visual"><img src="${escapeHtml(artwork.image)}" alt="" loading="lazy"></span>
+                <span class="artwork-card__info">
+                    <strong>${escapeHtml(artwork.name)}</strong>
+                    <small class="artwork-card__code">${escapeHtml(artwork.is_uploaded ? "لیبل من" : (artwork.code || "LBL"))}</small>
+                    <small>${formatPrice(areaPrice)} تومان</small>
+                </span>
+            </button>`;
+        };
+
+        artworkGrid.innerHTML = libraryArtworks.length || uploadedArtworks.length
+            ? `
+                ${libraryArtworks.length ? `<div class="artwork-library-section"><div class="artwork-library-section__title">کتابخانه لیبل‌ها</div><div class="artwork-library-section__grid">${libraryArtworks.map(renderArtworkCard).join("")}</div></div>` : ""}
+                ${uploadedArtworks.length ? `<div class="artwork-library-section artwork-library-section--uploaded"><div class="artwork-library-section__title">لیبل‌های من</div><div class="artwork-library-section__grid">${uploadedArtworks.map(renderArtworkCard).join("")}</div></div>` : ""}
+            `
             : `<div class="selected-card__empty">هنوز لیبلی در کتابخانه وجود ندارد.</div>`;
 
         artworkGrid.querySelectorAll(".artwork-card").forEach((button) => button.addEventListener("click", () => {
@@ -539,8 +547,10 @@
             const response = await fetch(root.dataset.uploadUrl, { method: "POST", headers: { "X-CSRFToken": getCookie("csrftoken") }, credentials: "same-origin", body: form });
             const result = await response.json();
             if (!response.ok || !result.ok) throw new Error(result.error || "آپلود انجام نشد.");
+            result.artwork.is_uploaded = true;
             artworks.push(result.artwork);
             renderArtworks();
+            document.dispatchEvent(new CustomEvent("babaei:artwork-uploaded", { detail: { artwork: result.artwork } }));
             uploadStatus.textContent = result.artwork.background_removed ? "تصویر آماده شد." : "تصویر آپلود شد.";
             uploadInput.value = "";
         } catch (error) {
