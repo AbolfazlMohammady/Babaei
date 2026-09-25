@@ -54,6 +54,10 @@
 
             popover.innerHTML = "";
 
+            // Only the selected-label tools belong on the left side.
+            // Every regular desktop tool must open beside the right-side grid.
+            popover.classList.remove("desktop-tool-popover--left");
+
             const header = document.createElement("div");
             header.className = "desktop-tool-popover__title";
 
