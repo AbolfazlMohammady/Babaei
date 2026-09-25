@@ -238,7 +238,7 @@ class UploadArtworkView(View):
             artwork = create_uploaded_artwork(
                 request=request,
                 uploaded_file=uploaded,
-                remove_background=remove_background,
+                strip_background=remove_background,
             )
         except ValidationError as exc:
             message = exc.message if hasattr(exc, "message") else str(exc)
