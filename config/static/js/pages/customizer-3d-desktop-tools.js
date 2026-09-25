@@ -640,6 +640,11 @@
             },
         };
 
+        // Desktop selected-item tools stay visible on the left; they are the direct editing surface.
+        if (window.innerWidth >= 821) {
+            openLabelTools();
+        }
+
         log("READY: desktop tools fully bound");
         log("DEBUG: run BabaeiDesktopToolsDebug.inspect() in console");
     }
