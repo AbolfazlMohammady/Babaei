@@ -40,6 +40,15 @@ def _design_code():
 
 def _design_preview_path(instance, filename):
     extension = Path(filename).suffix.lower() or ".webp"
+    return f"customizer/designs/{instance.uuid}/previews/{uuid.uuid4().hex}{extension}"
+
+
+def _design_code():
+    return f"DSN-{uuid.uuid4().hex[:12].upper()}"
+
+
+def _design_preview_path(instance, filename):
+    extension = Path(filename).suffix.lower() or ".webp"
     return f"customizer/designs/{instance.uuid}/{uuid.uuid4().hex}{extension}"
 
 
