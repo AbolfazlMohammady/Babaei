@@ -83,7 +83,8 @@
                 {% for item in items %}
                 <article class="checkout-item">
                     <div>
-                        <strong>{{ item.product.name }}</strong>
+                        <strong>{% if item.custom_design %}طراحی سفارشی{% else %}{{ item.product.name }}{% endif %}</strong>
+                        {% if item.custom_design %}<small>{{ item.custom_design.design_code }}</small>{% endif %}
                         {% if item.variant %}
                         <small>{{ item.variant.color.name }} · {{ item.variant.size.name }}</small>
                         {% endif %}
