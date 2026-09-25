@@ -58,7 +58,54 @@
     }
 
     /* ======================================================================
-       2. Mobile drawer
+       2. Navbar search
+       ---------------------------------------------------------------------
+       Local UI only. There is no AJAX/autocomplete/debounce request while the
+       user types. Product search happens only after the GET form is submitted.
+       ==================================================================== */
+
+    const searchPanel = document.querySelector("[data-sh-search-panel]");
+    const searchOpeners = document.querySelectorAll("[data-sh-search-open]");
+    const searchClosers = document.querySelectorAll("[data-sh-search-close]");
+    const searchInput = searchPanel?.querySelector("[data-sh-search-input]");
+
+    if (searchPanel && searchOpeners.length) {
+        const setSearchOpen = (open) => {
+            searchPanel.classList.toggle("is-open", open);
+            searchPanel.setAttribute("aria-hidden", String(!open));
+            searchOpeners.forEach((button) => button.setAttribute("aria-expanded", String(open)));
+
+            if (open) {
+                document.body.classList.add("sh-no-scroll");
+                window.setTimeout(() => searchInput?.focus(), 70);
+            } else if (!document.querySelector("[data-sh-drawer].is-open")) {
+                document.body.classList.remove("sh-no-scroll");
+            }
+        };
+
+        searchOpeners.forEach((button) => {
+            button.addEventListener("click", () => setSearchOpen(true));
+        });
+
+        searchClosers.forEach((button) => {
+            button.addEventListener("click", () => setSearchOpen(false));
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (!searchPanel.classList.contains("is-open")) return;
+            if (event.key === "Escape") {
+                event.preventDefault();
+                setSearchOpen(false);
+            }
+        });
+
+        searchPanel.querySelector("form")?.addEventListener("submit", () => {
+            document.body.classList.remove("sh-no-scroll");
+        });
+    }
+
+    /* ======================================================================
+       3. Mobile drawer
        ==================================================================== */
 
     const drawer = document.querySelector("[data-sh-drawer]");
