@@ -82,8 +82,19 @@ def _generation_payload(product):
 class DesignerPageView(View):
     template_name = "customizer/designer.html"
 
-    def get(self, request, slug):
-        product = get_object_or_404(Product.objects.select_related("category"), slug=slug, is_active=True, category__is_active=True)
+    def get(self, request, product_ref):
+        try:
+            product_uuid = uuid.UUID(str(product_ref))
+        except (ValueError, AttributeError, TypeError):
+            product_uuid = None
+
+        product_qs = Product.objects.select_related("category").filter(is_active=True, category__is_active=True)
+        if product_uuid:
+            product = get_object_or_404(product_qs, uuid=product_uuid)
+        else:
+            # Legacy links containing the product slug remain valid, while all
+            # new generated links use the opaque product UUID.
+            product = get_object_or_404(product_qs, slug=product_ref)
         raw_views = list(DesignerViewModel.objects.filter(product=product, is_active=True).exclude(background_image="").order_by("sort_order", "id"))
         views = [view for view in raw_views if _file_url(request, view.background_image)]
         areas = list(PrintArea.objects.filter(product=product, is_active=True).order_by("sort_order", "id"))
