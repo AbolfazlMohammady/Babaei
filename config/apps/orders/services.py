@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.db import transaction
 
 from .models import Cart, CartItem, Order, OrderItem
+from apps.customizer.models import DesignDraft
 
 
 CART_SESSION_KEY = "babaei_cart_session"
@@ -115,6 +116,28 @@ def merge_guest_cart(request, user) -> None:
     request._babaei_cart_item_count = merged_count
 
 
+def add_design_to_cart(request, *, design: DesignDraft, quantity=1) -> CartItem:
+    quantity = int(quantity)
+    if quantity < 1:
+        raise ValueError("تعداد باید حداقل ۱ باشد.")
+    if design.status != DesignDraft.Status.DRAFT:
+        raise ValueError("این طراحی دیگر قابل افزودن به سبد نیست.")
+    session_key = _ensure_session_key(request)
+    user_id = _authenticated_user_id(request)
+    if design.user_id and str(design.user_id) != str(user_id):
+        raise ValueError("این طراحی متعلق به کاربر دیگری است.")
+    if not design.user_id and design.session_key != session_key:
+        raise ValueError("این طراحی متعلق به نشست فعلی نیست.")
+    with transaction.atomic():
+        cart = get_active_cart(request)
+        item = CartItem.objects.filter(cart=cart, custom_design=design).select_for_update().first()
+        if item:
+            item.quantity += quantity
+            item.save(update_fields=("quantity", "updated_at"))
+        else:
+            item = CartItem.objects.create(cart=cart, product=design.product, variant=design.variant, custom_design=design, quantity=quantity)
+    return item
+
 def add_to_cart(request, *, product, variant=None, quantity=1) -> CartItem:
     quantity = int(quantity)
     if quantity < 1:
@@ -213,6 +236,42 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
             if not product.is_active or not product.category.is_active:
                 raise ValueError(f"محصول «{product.name}» دیگر قابل سفارش نیست.")
 
+            if item.custom_design_id:
+                design = (
+                    DesignDraft.objects.select_for_update()
+                    .select_related("product", "variant")
+                    .prefetch_related("layers__artwork")
+                    .get(pk=item.custom_design_id)
+                )
+                if design.status != DesignDraft.Status.DRAFT:
+                    raise ValueError("یکی از طراحی‌های سفارشی دیگر قابل سفارش نیست.")
+                if design.user_id != user.id:
+                    raise ValueError("طراحی سفارشی متعلق به این کاربر نیست.")
+                unit_price = design.total_price
+                line_total = unit_price * item.quantity
+                snapshot = dict(design.payload or {})
+                snapshot.update({
+                    "design_code": design.design_code,
+                    "base_price": design.base_price,
+                    "total_price": design.total_price,
+                    "shirt_color": design.shirt_color,
+                    "variant_id": design.variant_id,
+                })
+                order_rows.append({
+                    "cart_item": item,
+                    "variant": design.variant,
+                    "unit_price": unit_price,
+                    "compare_at_price": None,
+                    "variant_sku": getattr(design.variant, "sku", "") if design.variant_id else "",
+                    "color_name": getattr(getattr(design.variant, "color", None), "name", "") if design.variant_id else "",
+                    "size_name": getattr(getattr(design.variant, "size", None), "name", "") if design.variant_id else "",
+                    "line_total": line_total,
+                    "custom_design": design,
+                    "custom_design_snapshot": snapshot,
+                })
+                subtotal += line_total
+                continue
+
             variant = None
             if item.variant_id:
                 variant = (
@@ -275,7 +334,10 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                 order=order,
                 product=row["cart_item"].product,
                 variant=row["variant"],
-                product_name=row["cart_item"].product.name,
+                custom_design=row.get("custom_design"),
+                custom_design_code=row["custom_design"].design_code if row.get("custom_design") else "",
+                custom_design_snapshot=row.get("custom_design_snapshot", {}),
+                product_name=(row["custom_design"].design_code if row.get("custom_design") else row["cart_item"].product.name),
                 variant_sku=row["variant_sku"],
                 color_name=row["color_name"],
                 size_name=row["size_name"],
@@ -328,10 +390,18 @@ def process_manual_payment(*, order, success):
             variant.stock_quantity -= item.quantity
             variant.save(update_fields=["stock_quantity"])
 
+        paid_designs = list(
+            locked_order.items.filter(custom_design__isnull=False).values_list("custom_design_id", flat=True)
+        )
         locked_order.payment_status = Order.PaymentStatus.PAID
         locked_order.status = Order.Status.PAID
         locked_order.payment_reference = f"MANUAL-{locked_order.number}"
         locked_order.paid_at = timezone.now()
+        if paid_designs:
+            DesignDraft.objects.filter(id__in=paid_designs, status=DesignDraft.Status.DRAFT).update(
+                status=DesignDraft.Status.CONFIRMED, confirmed_at=timezone.now()
+            )
+
         locked_order.save(
             update_fields=[
                 "payment_status",
