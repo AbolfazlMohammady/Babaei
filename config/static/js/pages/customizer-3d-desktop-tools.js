@@ -112,6 +112,19 @@
             const result = clone("#label-library-panel", { unhide: true });
             if (!result) return;
 
+            // The desktop popover already has its own single × in the header.
+            // Remove the old panel header so there is no second close button.
+            result.node.querySelector(".label-library-panel__head")?.remove();
+
+            const librarySection = result.node.querySelector('[data-artwork-section="library"]');
+            const libraryToggle = librarySection?.querySelector(".artwork-library-section__toggle");
+            if (libraryToggle) {
+                const description = document.createElement("small");
+                description.className = "artwork-library-section__description";
+                description.textContent = "یک لیبل انتخاب کن تا روی لباس قرار بگیرد.";
+                libraryToggle.appendChild(description);
+            }
+
             const sourceButtons = result.source.querySelectorAll(".artwork-grid button");
             result.node.querySelectorAll(".artwork-grid button").forEach((button, index) => {
                 button.addEventListener("click", event => {
@@ -119,9 +132,20 @@
                     event.stopPropagation();
                     log("LABEL SELECT", { index });
                     sourceButtons[index]?.click();
-                    // Keep the library open. The user closes it explicitly with ×.
+                    // Keep the library popover open. The user closes it explicitly with ×.
                 });
             });
+
+            // Keep the upload controls inside the separate "لیبل‌های من" box.
+            const uploadedSection = result.node.querySelector('[data-artwork-section="uploaded"]');
+            const uploadDropzone = result.node.querySelector(".upload-dropzone");
+            const backgroundOption = result.node.querySelector(".upload-background-option");
+            const uploadStatus = result.node.querySelector("#upload-status");
+            if (uploadedSection && uploadDropzone) {
+                uploadedSection.append(uploadDropzone);
+                if (backgroundOption) uploadedSection.append(backgroundOption);
+                if (uploadStatus) uploadedSection.append(uploadStatus);
+            }
 
             const sourceUpload = result.source.querySelector("#artwork-upload");
             const uploadButton = result.node.querySelector(".upload-dropzone");
