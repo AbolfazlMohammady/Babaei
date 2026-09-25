@@ -467,7 +467,7 @@
             // and highlights remain visible instead of looking neon/flat.
             const shirtColors = [
                 { name: "مشکی", hex: "#151719" },
-                { name: "سفید", hex: "#f1f0ec" },
+                { name: "سفید", hex: "#d7d5ce" },
                 { name: "خاکستری", hex: "#686b70" },
                 { name: "قرمز", hex: "#a7353b" },
                 { name: "سبز", hex: "#35634b" },
