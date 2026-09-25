@@ -121,13 +121,3 @@ if (document.readyState === "loading") {
 } else {
     setupSiteFooter();
 }
-/* Run now when the document is already parsed — which it is, because this file
-   is loaded with `defer` — and wait for the event only when it is not. This
-   block used to wait on DOMContentLoaded unconditionally, and when that event
-   has already fired the listener never runs: no reveal arming, no scroll-linked
-   depth, no magnetic pills, with nothing in the console to say so. */
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupSiteFooter, { once: true });
-} else {
-    setupSiteFooter();
-}
