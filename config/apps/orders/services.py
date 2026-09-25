@@ -334,7 +334,8 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                 "color_name": color_name,
                 "size_name": size_name,
                 "line_total": line_total,
-                "design": design,
+                "custom_design": design,
+                "custom_design_snapshot": {},
             })
 
         order = Order.objects.create(
@@ -370,9 +371,9 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                 compare_at_price=row["compare_at_price"],
                 quantity=row["cart_item"].quantity,
                 line_total=row["line_total"],
-                design=row.get("design"),
-                design_code=row["design"].design_code if row.get("design") else "",
-                design_snapshot=row.get("design_snapshot", {}),
+                custom_design=row.get("custom_design"),
+                custom_design_code=row["custom_design"].design_code if row.get("custom_design") else "",
+                custom_design_snapshot=row.get("custom_design_snapshot", {}),
             )
             for row in order_rows
         ])
