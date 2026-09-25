@@ -23,8 +23,12 @@
                 {% for item in items %}
                 <article class="cart-product-card" data-cart-item data-cart-id="{{ item.id }}" data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
                     <a class="cart-product-card__image" href="{% if item.custom_design %}{% url 'orders:checkout' %}{% else %}{{ item.product.get_absolute_url }}{% endif %}" aria-label="{% if item.custom_design %}طراحی سفارشی {{ item.custom_design.design_code }}{% else %}{{ item.product.name }}{% endif %}">
-                        {% if item.custom_design and item.custom_design.preview_front %}
-                        <img src="{{ item.custom_design.preview_front.url }}" alt="پیش‌نمایش طراحی {{ item.custom_design.design_code }}" loading="lazy" decoding="async">
+                        {% if item.custom_design %}
+                            {% if item.custom_design.preview_front %}
+                            <img src="{{ item.custom_design.preview_front.url }}" alt="پیش‌نمایش طراحی {{ item.custom_design.design_code }}" loading="lazy" decoding="async">
+                            {% else %}
+                            <img src="{% static 'images/home/Tshirt.png' %}" alt="پیش‌نمایش طراحی {{ item.custom_design.design_code }}" loading="lazy" decoding="async">
+                            {% endif %}
                         {% elif item.primary_image_url %}
                         <img src="{{ item.primary_image_url }}" alt="{{ item.primary_image_alt|default:item.product.name }}" loading="lazy" decoding="async">
                         {% else %}
