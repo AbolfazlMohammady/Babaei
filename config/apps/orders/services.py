@@ -1,4 +1,4 @@
-from __future__ import annotations
+undefinedfrom __future__ import annotations
 
 from django.db import transaction
 
@@ -273,9 +273,8 @@ def create_order_from_cart(*, user, cart, address, customer_note=""):
                 snapshot = dict(design.payload or {})
                 snapshot.update({
                     "design_code": design.design_code,
-                    "base_price": design.base_price_snapshot,
+                    "base_price": design.base_price,
                     "total_price": design.total_price,
-                    "shirt_spec": design.shirt_spec,
                     "variant_id": design.variant_id,
                 })
                 order_rows.append({
@@ -421,10 +420,11 @@ def process_manual_payment(*, order, success):
 
         design_ids = [item.custom_design_id for item in order_items if item.custom_design_id]
         if design_ids:
+            from django.utils import timezone
             DesignDraft.objects.filter(
                 id__in=design_ids,
                 status__in=[DesignDraft.Status.DRAFT, DesignDraft.Status.CART],
-            ).update(status=DesignDraft.Status.CONFIRMED)
+            ).update(status=DesignDraft.Status.CONFIRMED, confirmed_at=timezone.now())
 
         locked_order.payment_status = Order.PaymentStatus.PAID
         locked_order.status = Order.Status.PAID
