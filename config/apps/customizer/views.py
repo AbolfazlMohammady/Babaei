@@ -233,8 +233,13 @@ class UploadArtworkView(View):
         uploaded = request.FILES.get("image")
         if not uploaded:
             return JsonResponse({"ok": False, "error": "تصویری انتخاب نشده است."}, status=400)
+        remove_background = request.POST.get("remove_background") in {"1", "true", "on", "yes"}
         try:
-            artwork = create_uploaded_artwork(request=request, uploaded_file=uploaded)
+            artwork = create_uploaded_artwork(
+                request=request,
+                uploaded_file=uploaded,
+                remove_background=remove_background,
+            )
         except ValidationError as exc:
             message = exc.message if hasattr(exc, "message") else str(exc)
             return JsonResponse({"ok": False, "error": message}, status=422)
