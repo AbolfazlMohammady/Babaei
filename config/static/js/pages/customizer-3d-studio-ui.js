@@ -577,12 +577,12 @@
     };
 
 
-    // Desktop tool dock: replace the old side drawers with a compact icon grid.
+    // Desktop tool dock: expose the real design tools as a compact icon grid.
     const desktopDock = document.getElementById("desktop-tool-dock");
     const desktopPopover = document.getElementById("desktop-tool-popover");
     const desktopMedia = window.matchMedia("(min-width: 821px)");
 
-    if (desktopDock && desktopPopover) {
+    if (desktopDock && desktopPopover && desktopMedia.matches) {
         const closeDesktopPopover = () => {
             desktopPopover.hidden = true;
             desktopPopover.innerHTML = "";
@@ -592,92 +592,169 @@
             desktopPopover.innerHTML = "";
             const head = document.createElement("div");
             head.className = "desktop-tool-popover__title";
-            head.innerHTML = `<span>${title}</span><button type="button" class="desktop-tool-popover__close" aria-label="بستن">×</button>`;
-            desktopPopover.appendChild(head);
-            desktopPopover.appendChild(contentNode);
+            const titleNode = document.createElement("span");
+            titleNode.textContent = title;
+            const close = document.createElement("button");
+            close.type = "button";
+            close.className = "desktop-tool-popover__close";
+            close.setAttribute("aria-label", "بستن");
+            close.textContent = "×";
+            close.addEventListener("click", closeDesktopPopover);
+            head.append(titleNode, close);
+            desktopPopover.append(head, contentNode);
             desktopPopover.hidden = false;
-            head.querySelector("button")?.addEventListener("click", closeDesktopPopover);
         };
 
-        const moveNodeIntoPopover = (node, title) => {
-            if (!node) return;
-            showDesktopPopover(title, node);
+        const cloneGroup = (selector) => {
+            const source = document.querySelector(selector);
+            if (!source) return null;
+            const clone = source.cloneNode(true);
+            clone.removeAttribute("id");
+            clone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
+            return { source, clone };
         };
 
-        if (desktopMedia.matches) {
-            const labelPanel = document.getElementById("label-library-panel");
-            if (labelPanel && workspace && labelPanel.parentElement !== workspace) {
-                workspace.appendChild(labelPanel);
-                labelPanel.classList.add("desktop-floating-label-library");
+        const showLabelLibrary = () => {
+            const panel = document.getElementById("label-library-panel");
+            if (!panel) return;
+            const trigger = document.getElementById("label-library-trigger");
+            if (panel.hidden) {
+                trigger?.click();
+            } else {
+                panel.hidden = true;
+                trigger?.setAttribute("aria-expanded", "false");
             }
+        };
 
-            desktopDock.querySelectorAll("[data-desktop-action]").forEach(button => {
+        const showShirtColor = () => {
+            const group = cloneGroup("#variant-color-list-right");
+            if (!group) return;
+            const sourceButtons = group.source.querySelectorAll("button");
+            group.clone.querySelectorAll("button").forEach((button, index) => {
                 button.addEventListener("click", () => {
-                    const action = button.dataset.desktopAction;
-                    if (action === "save") {
-                        document.getElementById("save-design")?.click();
-                        return;
-                    }
-                    document.querySelector(`[data-action="${action}"]`)?.click();
+                    sourceButtons[index]?.click();
+                    closeDesktopPopover();
                 });
             });
+            showDesktopPopover("رنگ تیشرت", group.clone.closest(".premium-setting-group") || group.clone);
+        };
 
-            desktopDock.querySelectorAll("[data-desktop-tool]").forEach(button => {
+        const showSize = () => {
+            const group = cloneGroup("#premium-size-list");
+            if (!group) return;
+            const sourceButtons = group.source.querySelectorAll("button");
+            group.clone.querySelectorAll("button").forEach((button, index) => {
                 button.addEventListener("click", () => {
-                    const tool = button.dataset.desktopTool;
+                    sourceButtons[index]?.click();
+                    closeDesktopPopover();
+                });
+            });
+            showDesktopPopover("انتخاب سایز", group.clone.closest(".premium-setting-group") || group.clone);
+        };
 
-                    if (tool === "label") {
-                        document.getElementById("label-library-trigger")?.click();
-                        return;
-                    }
+        const showText = () => {
+            const source = document.querySelector(".desktop-text-tools");
+            if (!source) return;
+            const wrapper = document.createElement("div");
+            const clone = source.cloneNode(true);
+            clone.removeAttribute("id");
+            clone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
 
-                    if (tool === "color") {
-                        const group = document.getElementById("variant-color-list-right")?.closest(".premium-setting-group");
-                        if (group) {
-                            const clone = group.cloneNode(true);
-                            clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
-                            showDesktopPopover("رنگ تیشرت", clone);
-                        }
-                        return;
-                    }
+            const input = clone.querySelector("#desktop-text-input");
+            const add = clone.querySelector("#desktop-text-add");
+            if (input) input.removeAttribute("id");
+            if (add) add.removeAttribute("id");
+            add?.addEventListener("click", () => {
+                const value = input?.value?.trim();
+                if (!value) return;
+                document.dispatchEvent(new CustomEvent("babaei:add-text", { detail: { text: value } }));
+                closeDesktopPopover();
+            });
+            input?.addEventListener("keydown", event => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                add?.click();
+            });
+            wrapper.appendChild(clone);
+            showDesktopPopover("افزودن متن", wrapper);
+            input?.focus();
+        };
 
-                    if (tool === "size") {
-                        const group = document.getElementById("premium-size-list")?.closest(".premium-setting-group");
-                        if (group) {
-                            const clone = group.cloneNode(true);
-                            clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
-                            clone.querySelectorAll("button").forEach((proxy, index) => {
-                                proxy.addEventListener("click", () => {
-                                    document.getElementById("premium-size-list")?.querySelectorAll("button")[index]?.click();
-                                    closeDesktopPopover();
-                                });
-                            });
-                            showDesktopPopover("انتخاب سایز", clone);
-                        }
-                        return;
-                    }
+        const showTextFont = () => {
+            const source = document.getElementById("desktop-text-editor");
+            if (!source) return;
+            const clone = source.cloneNode(true);
+            clone.removeAttribute("id");
+            clone.removeAttribute("hidden");
+            clone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
 
-                    if (tool === "text") {
-                        const wrapper = document.createElement("div");
-                        const tools = document.querySelector(".desktop-text-tools");
-                        const editor = document.getElementById("desktop-text-editor");
-                        if (tools) wrapper.appendChild(tools);
-                        if (editor) wrapper.appendChild(editor);
-                        showDesktopPopover("ابزار متن", wrapper);
-                    }
+            clone.querySelectorAll("[data-text-style]").forEach(button => {
+                button.addEventListener("click", () => {
+                    document.querySelector('[data-text-style="' + button.dataset.textStyle + '"]')?.click();
+                    closeDesktopPopover();
                 });
             });
 
-            desktopDock.querySelector('[data-desktop-tool="color"]')?.addEventListener("click", () => {
-                const buttons = desktopPopover.querySelectorAll(".premium-color-button");
-                buttons.forEach((proxy, index) => {
-                    proxy.addEventListener("click", () => {
-                        document.getElementById("variant-color-list-right")?.querySelectorAll("button")[index]?.click();
-                        closeDesktopPopover();
-                    });
+            const ranges = clone.querySelectorAll("input[type='range']");
+            const sourceRanges = source.querySelectorAll("input[type='range']");
+            ranges.forEach((range, index) => {
+                range.addEventListener("input", () => {
+                    const sourceRange = sourceRanges[index];
+                    if (!sourceRange) return;
+                    sourceRange.value = range.value;
+                    sourceRange.dispatchEvent(new Event("input", { bubbles: true }));
                 });
             });
-        }
+
+            showDesktopPopover("فونت و استایل متن", clone);
+        };
+
+        const showTextColor = () => {
+            const source = document.querySelector(".text-style-colors");
+            if (!source) return;
+            const clone = source.cloneNode(true);
+            clone.removeAttribute("id");
+            clone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
+            const sourceButtons = source.querySelectorAll("[data-text-color]");
+            clone.querySelectorAll("[data-text-color]").forEach((button, index) => {
+                button.addEventListener("click", () => {
+                    sourceButtons[index]?.click();
+                    closeDesktopPopover();
+                });
+            });
+            showDesktopPopover("رنگ متن", clone);
+        };
+
+        const showLabelTools = () => {
+            const source = document.getElementById("selected-controls");
+            if (!source) return;
+            const clone = source.cloneNode(true);
+            clone.removeAttribute("id");
+            clone.removeAttribute("hidden");
+            clone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
+            const sourceButtons = source.querySelectorAll("[data-action]");
+            clone.querySelectorAll("[data-action]").forEach((button, index) => {
+                button.addEventListener("click", () => {
+                    sourceButtons[index]?.click();
+                    closeDesktopPopover();
+                });
+            });
+            showDesktopPopover("ابزارهای لیبل", clone);
+        };
+
+        desktopDock.querySelectorAll("[data-desktop-tool]").forEach(button => {
+            button.addEventListener("click", () => {
+                const tool = button.dataset.desktopTool;
+                if (tool === "label") showLabelLibrary();
+                if (tool === "text") showText();
+                if (tool === "shirt-color") showShirtColor();
+                if (tool === "size") showSize();
+                if (tool === "text-font") showTextFont();
+                if (tool === "text-color") showTextColor();
+                if (tool === "label-tools") showLabelTools();
+                if (tool === "save") document.getElementById("save-design")?.click();
+            });
+        });
     }
 
     const current = variants.find(item => String(item.id) === String(select?.value)) || variants.find(item => Number(item.stock) > 0) || variants[0];
