@@ -1658,14 +1658,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             event.preventDefault();
             event.stopImmediatePropagation();
             const button = event.currentTarget;
-            if (button.dataset.cartConfirmed !== "1") {
-                if (cartConfirm) {
-                    cartConfirm.hidden = false;
-                    document.body.classList.add("designer-cart-confirm-open");
-                }
+
+            if (!currentVariant?.id || Number(currentVariant.stock) <= 0) {
+                status("لطفاً یک رنگ و سایز موجود را انتخاب کنید.");
                 return;
             }
-            button.dataset.cartConfirmed = "";
+
             button.disabled = true;
             status("در حال آماده‌سازی طراحی…");
             try {
@@ -1683,7 +1681,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                     ? previewResults[1].value
                     : null;
                 const payload = {
-                    variant_id: document.getElementById("variant-select")?.value || null,
+                    variant_id: currentVariant?.id || document.getElementById("variant-select")?.value || null,
                     version: 2,
                     preview_mode: "3d_glb_tshirt",
                     garment_spec: data.garment_spec || null,
@@ -1700,8 +1698,24 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                     credentials: "same-origin",
                     body: form,
                 });
-                const result = await response.json();
-                if (!response.ok || !result.ok) throw new Error(result.message || result.error || "افزودن طراحی به سبد انجام نشد.");
+
+                const responseText = await response.text();
+                let result = {};
+                try {
+                    result = responseText ? JSON.parse(responseText) : {};
+                } catch {
+                    result = {};
+                }
+
+                if (!response.ok || !result.ok) {
+                    const serverMessage =
+                        result.message ||
+                        result.error ||
+                        (response.status === 403
+                            ? "درخواست توسط امنیت سایت رد شد. صفحه را یک‌بار تازه‌سازی کنید."
+                            : ("افزودن به سبد انجام نشد (خطای " + response.status + ")."));
+                    throw new Error(serverMessage);
+                }
                 status(`طراحی ${String(result.design_code || "")} به سبد اضافه شد.`);
                 window.location.href = root.dataset.cartPageUrl || "/cart/";
             } catch (error) {
@@ -1710,7 +1724,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             } finally {
                 button.disabled = false;
             }
-        }, { capture: true });  }
+        });  }
 
     async function init() {
         setupScene();
