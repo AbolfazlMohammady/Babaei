@@ -381,7 +381,7 @@ body.customizer-page {
 .customizer-back-button {
     position: absolute;
     top: 18px;
-    right: 18px;
+    right: 180px;
     z-index: 80;
     display: inline-flex;
     align-items: center;
