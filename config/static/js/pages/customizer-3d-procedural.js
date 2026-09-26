@@ -145,7 +145,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function csrf() {
         const token = document.cookie.split(";").map(item => item.trim()).find(item => item.startsWith("csrftoken="));
-        return token ? decodeURIComponent(token.slice(10)) : "";
+        if (token) return decodeURIComponent(token.slice(10));
+
+        return document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
     }
 
     function setupScene() {
@@ -1439,6 +1441,16 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function bind() {
+        document.getElementById("customizer-back-button")?.addEventListener("click", () => {
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+
+            const fallbackUrl = root.dataset.productUrl;
+            if (fallbackUrl) window.location.assign(fallbackUrl);
+        });
+
         canvas.addEventListener("pointerdown", event => {
             const intersections = garmentHits(event);
             const decal = raycaster.intersectObjects(
