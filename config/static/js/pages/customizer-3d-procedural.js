@@ -1405,6 +1405,27 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         return canvasBlob(canvas);
     }
 
+    function build3DPreview() {
+        return new Promise(resolve => {
+            if (!renderer || !scene || !camera || !canvas || !garment) {
+                resolve(null);
+                return;
+            }
+
+            try {
+                render();
+                canvas.toBlob(
+                    blob => resolve(blob || null),
+                    "image/webp",
+                    0.88
+                );
+            } catch (error) {
+                console.warn("3D cart preview failed", error);
+                resolve(null);
+            }
+        });
+    }
+
     function saveLayers() {
         return Array.from(layers.values()).map(item => {
             const productionPlacement = areaRelativePlacement(item);
@@ -1659,6 +1680,16 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             event.stopImmediatePropagation();
             const button = event.currentTarget;
 
+            if (button.dataset.cartConfirmed !== "1") {
+                if (cartConfirm) {
+                    cartConfirm.hidden = false;
+                    document.body.classList.add("designer-cart-confirm-open");
+                }
+                return;
+            }
+
+            button.dataset.cartConfirmed = "";
+
             if (!currentVariant?.id || Number(currentVariant.stock) <= 0) {
                 status("لطفاً یک رنگ و سایز موجود را انتخاب کنید.");
                 return;
@@ -1667,19 +1698,12 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             button.disabled = true;
             status("در حال آماده‌سازی طراحی…");
             try {
-                // A preview is optional for cart persistence. If canvas/image
-                // rendering fails (for example because a product view image is
-                // unavailable), do not block the actual add-to-cart request.
-                const previewResults = await Promise.allSettled([
-                    build2DPreview("front"),
-                    build2DPreview("back"),
-                ]);
-                const frontPreview = previewResults[0].status === "fulfilled"
-                    ? previewResults[0].value
-                    : null;
-                const backPreview = previewResults[1].status === "fulfilled"
-                    ? previewResults[1].value
-                    : null;
+                // The cart preview must represent the actual 3D design.
+                // Product/background images can belong to a completely different
+                // product (for example a cap), so they are never used as the
+                // custom-design thumbnail.
+                const frontPreview = await build3DPreview();
+                const backPreview = null;
                 const payload = {
                     variant_id: currentVariant?.id || document.getElementById("variant-select")?.value || null,
                     version: 2,
