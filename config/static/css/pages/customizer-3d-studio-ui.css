@@ -377,47 +377,17 @@ body.customizer-page {
 }
 
 
-/* Compact studio back navigation. */
-.customizer-back-button {
-    position: absolute;
-    top: 18px;
-    right: 180px;
-    z-index: 80;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    min-height: 36px;
-    padding: 0 11px;
-    border: 1px solid #2d2d30;
-    border-radius: 10px;
-    background: rgba(17,17,19,.86);
-    color: #d8d3ca;
-    cursor: pointer;
-    font: inherit;
-    font-size: 10px;
-    font-weight: 700;
-    direction: rtl;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+
+/* Back navigation belongs directly below the desktop tool grid. */
+.desktop-tool--back {
+    margin-top: 2px;
 }
-.customizer-back-button svg {
-    width: 15px;
-    height: 15px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-.customizer-back-button:hover {
-    border-color: #d8b66b;
-    color: #f1eadf;
+.desktop-tool--back .desktop-tool__icon svg {
+    width: 18px;
+    height: 18px;
 }
 @media (max-width: 820px) {
-    .customizer-back-button {
-        top: 10px;
-        right: 10px;
-        min-height: 34px;
-        padding-inline: 10px;
+    .desktop-tool--back {
+        display: none !important;
     }
 }
