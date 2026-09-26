@@ -46,22 +46,61 @@
 
     function renderSizes() {
         if (!sizeHost) return;
+
         const seen = new Set();
         const sizes = variants.filter(item => {
-            if (seen.has(item.size)) return false;
+            if (!item.size || seen.has(item.size)) return false;
             seen.add(item.size);
             return true;
         });
+
+        // A size must stay selectable as long as the product has an active
+        // variant for it. Stock is checked when the design is actually added
+        // to the cart; disabling the UI here made valid sizes impossible to
+        // choose when stock data was zero/stale.
         sizeHost.innerHTML = sizes.map(item => {
-            const hasStock = variants.some(variant => variant.size === item.size && Number(variant.stock) > 0);
-            return `<button type="button" class="premium-size-button ${hasStock ? "" : "is-disabled"}" data-size="${esc(item.size)}">${esc(item.size)}</button>`;
+            const sizeVariants = variants.filter(
+                variant => variant.size === item.size
+            );
+            const hasStock = sizeVariants.some(
+                variant => Number(variant.stock) > 0
+            );
+            return `<button type="button"
+                class="premium-size-button${hasStock ? "" : " is-out-of-stock"}"
+                data-size="${esc(item.size)}"
+                title="${hasStock ? esc(item.size) : esc(item.size + " — ناموجود")}"
+                aria-label="${hasStock ? esc(item.size) : esc(item.size + " — ناموجود")}">
+                ${esc(item.size)}
+            </button>`;
         }).join("");
-        sizeHost.querySelectorAll("button:not(.is-disabled)").forEach(button => button.addEventListener("click", () => {
-            const color = select ? variants.find(item => String(item.id) === String(select.value))?.color : null;
-            const variant = variants.find(item => item.size === button.dataset.size && item.color === color && Number(item.stock) > 0)
-                || variants.find(item => item.size === button.dataset.size && Number(item.stock) > 0);
-            chooseVariant(variant);
-        }));
+
+        sizeHost.querySelectorAll("button").forEach(button => {
+            button.addEventListener("click", () => {
+                const selected = select
+                    ? variants.find(item => String(item.id) === String(select.value))
+                    : null;
+                const sameColor = variants.find(item =>
+                    item.size === button.dataset.size &&
+                    item.color === selected?.color &&
+                    Number(item.stock) > 0
+                );
+                const anyInStock = variants.find(item =>
+                    item.size === button.dataset.size &&
+                    Number(item.stock) > 0
+                );
+                const sameColorAnyStock = variants.find(item =>
+                    item.size === button.dataset.size &&
+                    item.color === selected?.color
+                );
+                const anyVariant = variants.find(item =>
+                    item.size === button.dataset.size
+                );
+
+                // Prefer an in-stock variant, but never make the size
+                // unclickable just because inventory data is currently zero.
+                chooseVariant(sameColor || anyInStock || sameColorAnyStock || anyVariant);
+            });
+        });
     }
 
     function renderViews() {
