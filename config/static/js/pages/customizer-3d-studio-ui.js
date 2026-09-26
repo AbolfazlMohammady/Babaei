@@ -79,6 +79,10 @@
                 const selected = select
                     ? variants.find(item => String(item.id) === String(select.value))
                     : null;
+
+                // Only select a real in-stock variant. Otherwise the UI can
+                // show a size as selected while the cart API correctly rejects
+                // the out-of-stock variant.
                 const sameColor = variants.find(item =>
                     item.size === button.dataset.size &&
                     item.color === selected?.color &&
@@ -88,19 +92,11 @@
                     item.size === button.dataset.size &&
                     Number(item.stock) > 0
                 );
-                const sameColorAnyStock = variants.find(item =>
-                    item.size === button.dataset.size &&
-                    item.color === selected?.color
-                );
-                const anyVariant = variants.find(item =>
-                    item.size === button.dataset.size
-                );
 
-                // Prefer an in-stock variant, but never make the size
-                // unclickable just because inventory data is currently zero.
-                chooseVariant(sameColor || anyInStock || sameColorAnyStock || anyVariant);
+                if (!sameColor && !anyInStock) return;
+                chooseVariant(sameColor || anyInStock);
             });
-        });
+        });;
     }
 
     function renderViews() {
