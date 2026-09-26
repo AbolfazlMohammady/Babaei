@@ -1563,8 +1563,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         });
 
         document.getElementById("variant-select")?.addEventListener("change", event => {
-            currentVariant = variants.find(variant => String(variant.id) === String(event.target.value)) || null;
-            setColor(currentVariant?.hex || "#ffffff");
+            const variant = variants.find(item => String(item.id) === String(event.target.value)) || null;
+            currentVariant = variant;
+            setColor(variant?.hex || "#ffffff");
             sync();
         });
 
@@ -1690,10 +1691,17 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
             button.dataset.cartConfirmed = "";
 
-            if (!currentVariant?.id || Number(currentVariant.stock) <= 0) {
+            // Always resolve the variant from the visible selector at submit time.
+            // This prevents a visual-only color change from leaving the cart on an older variant.
+            const selectedVariant = variants.find(
+                variant => String(variant.id) === String(document.getElementById("variant-select")?.value)
+            ) || currentVariant;
+
+            if (!selectedVariant?.id || Number(selectedVariant.stock) <= 0) {
                 status("لطفاً یک رنگ و سایز موجود را انتخاب کنید.");
                 return;
             }
+            currentVariant = selectedVariant;
 
             button.disabled = true;
             status("در حال آماده‌سازی طراحی…");
@@ -1705,11 +1713,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 const frontPreview = await build3DPreview();
                 const backPreview = null;
                 const payload = {
-                    variant_id: currentVariant?.id || document.getElementById("variant-select")?.value || null,
+                    variant_id: selectedVariant.id,
                     version: 2,
                     preview_mode: "3d_glb_tshirt",
                     garment_spec: data.garment_spec || null,
-                    shirt_color: currentVariant?.color || currentVariant?.hex || "",
+                    shirt_color: selectedVariant.color || selectedVariant.hex || "",
                     layers: saveLayers(),
                 };
                 const form = new FormData();
@@ -1792,6 +1800,17 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         isReady: () => Boolean(garment && garmentMeshes.length),
         setMode: mode => document.querySelector(`[data-mode="${mode}"]`)?.click(),
         setShirtColor: setColor,
+        setVariant: variantId => {
+            const variant = variants.find(item => String(item.id) === String(variantId));
+            if (!variant) return false;
+            currentVariant = variant;
+            const select = document.getElementById("variant-select");
+            if (select) select.value = String(variant.id);
+            setColor(variant.hex || "#ffffff");
+            sync();
+            return true;
+        },
+        getVariant: () => currentVariant ? { ...currentVariant } : null,
         addArtwork: addLayer,
         addText,
     };
