@@ -159,6 +159,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             antialias: true,
             alpha: true,
             powerPreference: "high-performance",
+            // The cart preview is captured from this canvas after an explicit render.
+            // Keeping the drawing buffer makes that one-time capture reliable.
+            preserveDrawingBuffer: true,
         });
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1412,16 +1415,32 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 return;
             }
 
+            let settled = false;
+            const finish = blob => {
+                if (settled) return;
+                settled = true;
+                resolve(blob || null);
+            };
+
+            // Never let thumbnail generation make the cart button look broken.
+            // The preview is best-effort, while the cart request remains the
+            // actual critical operation.
+            const timeout = window.setTimeout(() => finish(null), 1500);
+
             try {
                 render();
                 canvas.toBlob(
-                    blob => resolve(blob || null),
+                    blob => {
+                        window.clearTimeout(timeout);
+                        finish(blob);
+                    },
                     "image/webp",
                     0.88
                 );
             } catch (error) {
+                window.clearTimeout(timeout);
                 console.warn("3D cart preview failed", error);
-                resolve(null);
+                finish(null);
             }
         });
     }
