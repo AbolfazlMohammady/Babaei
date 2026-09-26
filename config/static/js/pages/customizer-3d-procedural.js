@@ -766,7 +766,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         return Math.abs(normal.dot(frontAxis)) >= 0.35;
     }
 
-    function placementHit(area, labelWidth = 0.35, labelHeight = 0.25) {
+    function placementHit(area, labelWidth = 0.35, labelHeight = 0.25, desiredSide = null) {
         if (!area || !camera || !garment) return null;
 
         const center = areaCenter(area);
@@ -778,16 +778,18 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const baseX = bounds.minX + center.x * width;
         const baseY = bounds.maxY - center.y * height;
 
-        // The backend rejects overlapping labels. Pick a free position for each
-        // new label instead of putting every new decal at exactly 50% / 50%.
+        // The backend rejects overlapping labels. The old 0.16 NDC step was
+        // smaller than a default 0.35 print-area label, so the second label
+        // could still overlap the first one and the server correctly rejected
+        // the whole cart request. Use positions that leave real clearance.
         const candidates = [
             [0, 0],
-            [-0.16, 0], [0.16, 0],
-            [0, -0.16], [0, 0.16],
-            [-0.30, 0], [0.30, 0],
+            [-0.22, 0], [0.22, 0],
             [0, -0.30], [0, 0.30],
-            [-0.16, -0.16], [0.16, -0.16],
-            [-0.16, 0.16], [0.16, 0.16],
+            [-0.22, -0.30], [0.22, -0.30],
+            [-0.22, 0.30], [0.22, 0.30],
+            [-0.38, 0], [0.38, 0],
+            [0, -0.42], [0, 0.42],
         ];
 
         const overlapsExisting = (hit, side) => {
@@ -829,6 +831,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             if (!isValidPrintSurface(hit, area)) continue;
 
             const side = surfaceSide(hitNormal(hit));
+            if (desiredSide && side !== desiredSide) continue;
             if (!overlapsExisting(hit, side)) return hit;
         }
 
@@ -1163,26 +1166,32 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             return;
         }
 
-        let hit = placementHit(area, 0.35, 0.25);
+        // Resolve the print area from the surface currently facing the user
+        // before placing the label. This is important for back-side artwork:
+        // the active UI area can still be the front area while the camera is
+        // looking at the back of the shirt.
+        raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+        const centerHit = raycaster.intersectObjects(garmentMeshes, false)[0];
+        if (centerHit) {
+            const cameraSide = surfaceSide(hitNormal(centerHit));
+            area = areaForSurfaceSide(cameraSide, area);
+        }
+
+        const desiredSide = area?.side || null;
+        let hit = placementHit(area, 0.35, 0.25, desiredSide);
+
+        // If the center ray did not give us a usable surface, keep the selected
+        // area and try its collision-aware candidates. Never bypass the
+        // collision check for a second/third label.
         if (!hit && layers.size === 0) {
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-            const centerHit = raycaster.intersectObjects(garmentMeshes, false)[0];
-            if (isValidPrintSurface(centerHit, area)) hit = centerHit;
+            const fallbackHit = raycaster.intersectObjects(garmentMeshes, false)[0];
+            if (isValidPrintSurface(fallbackHit, area)) hit = fallbackHit;
         }
 
         if (!hit) {
-            // If the active area belongs to the other side, retry there with
-            // the same collision-aware placement rules.
-            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-            const centerHit = raycaster.intersectObjects(garmentMeshes, false)[0];
-            if (centerHit) {
-                const side = surfaceSide(hitNormal(centerHit));
-                const sideArea = areaForSurfaceSide(side, area);
-                if (sideArea.id !== area.id) {
-                    area = sideArea;
-                    hit = placementHit(area, 0.35, 0.25);
-                }
-            }
+            status("فضای کافی برای قرار دادن لیبل روی این سمت لباس وجود ندارد.");
+            return false;
         }
 
         if (!hit) {
