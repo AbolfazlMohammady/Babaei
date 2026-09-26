@@ -512,53 +512,31 @@
             if (!result) return;
 
             const wrapper = result.node;
-            // Use textile-friendly, slightly muted colors so the fabric shading
-            // and highlights remain visible instead of looking neon/flat.
-            const shirtColors = [
-                { name: "مشکی", hex: "#151719" },
-                { name: "سفید", hex: "#d7d5ce" },
-                { name: "خاکستری", hex: "#686b70" },
-                { name: "قرمز", hex: "#a7353b" },
-                { name: "سبز", hex: "#35634b" },
-                { name: "آبی", hex: "#365d88" },
-            ];
+            // Forward the desktop palette to the real variant buttons.
+            // Do not call setShirtColor() directly here: that only changes the
+            // Three.js material and leaves currentVariant stale, which made a
+            // later size click silently restore the old color.
+            const originals = result.source.querySelectorAll("button[data-color]");
+            const buttons = wrapper.querySelectorAll("button[data-color]");
 
-            wrapper.innerHTML = "";
-
-            shirtColors.forEach(({ name, hex }) => {
-                const button = document.createElement("button");
-                button.type = "button";
-                button.className = "premium-color-button";
-                button.style.setProperty("--swatch", hex);
-                button.dataset.color = name;
-                button.title = name;
-                button.setAttribute("aria-label", name);
-
+            buttons.forEach((button, index) => {
                 button.addEventListener("click", event => {
                     event.preventDefault();
                     event.stopPropagation();
 
-                    const setColor = window.BabaeiCustomizer3D?.setShirtColor;
-                    if (typeof setColor !== "function") {
-                        warn("SHIRT COLOR API UNAVAILABLE", { name, hex });
-                        return;
-                    }
+                    const original = originals[index];
+                    if (!original) return;
 
-                    setColor(hex);
-                    wrapper.querySelectorAll("button").forEach(item => item.classList.remove("is-active"));
+                    original.click();
+                    buttons.forEach(item => item.classList.remove("is-active"));
                     button.classList.add("is-active");
-                    log("SHIRT COLOR SET", { name, hex });
                 });
-
-                wrapper.appendChild(button);
             });
 
-            const current = shirtColors.find(color => {
-                const active = result.source.querySelector("button.is-active");
-                return active?.dataset.color === color.name;
-            });
-            if (current) {
-                wrapper.querySelector(`button[data-color="${CSS.escape(current.name)}"]`)?.classList.add("is-active");
+            const activeOriginal = result.source.querySelector("button.is-active[data-color]");
+            if (activeOriginal) {
+                wrapper.querySelector(`button[data-color="${CSS.escape(activeOriginal.dataset.color || "")}"]`)
+                    ?.classList.add("is-active");
             }
 
             open("رنگ تیشرت", wrapper);
