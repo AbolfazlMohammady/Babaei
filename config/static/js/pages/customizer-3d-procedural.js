@@ -1657,10 +1657,19 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             button.disabled = true;
             status("در حال آماده‌سازی طراحی…");
             try {
-                const [frontPreview, backPreview] = await Promise.all([
+                // A preview is optional for cart persistence. If canvas/image
+                // rendering fails (for example because a product view image is
+                // unavailable), do not block the actual add-to-cart request.
+                const previewResults = await Promise.allSettled([
                     build2DPreview("front"),
                     build2DPreview("back"),
                 ]);
+                const frontPreview = previewResults[0].status === "fulfilled"
+                    ? previewResults[0].value
+                    : null;
+                const backPreview = previewResults[1].status === "fulfilled"
+                    ? previewResults[1].value
+                    : null;
                 const payload = {
                     variant_id: document.getElementById("variant-select")?.value || null,
                     version: 2,
