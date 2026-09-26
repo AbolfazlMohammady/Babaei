@@ -766,7 +766,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         return Math.abs(normal.dot(frontAxis)) >= 0.35;
     }
 
-    function placementHit(area) {
+    function placementHit(area, labelWidth = 0.35, labelHeight = 0.25) {
         if (!area || !camera || !garment) return null;
 
         const center = areaCenter(area);
@@ -777,17 +777,59 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const height = Math.max(bounds.maxY - bounds.minY, 0.1);
         const baseX = bounds.minX + center.x * width;
         const baseY = bounds.maxY - center.y * height;
+
+        // The backend rejects overlapping labels. Pick a free position for each
+        // new label instead of putting every new decal at exactly 50% / 50%.
         const candidates = [
-            [0, 0], [0.04, 0], [-0.04, 0], [0, 0.04], [0, -0.04],
-            [0.07, 0], [-0.07, 0], [0, 0.07], [0, -0.07],
+            [0, 0],
+            [-0.16, 0], [0.16, 0],
+            [0, -0.16], [0, 0.16],
+            [-0.30, 0], [0.30, 0],
+            [0, -0.30], [0, 0.30],
+            [-0.16, -0.16], [0.16, -0.16],
+            [-0.16, 0.16], [0.16, 0.16],
         ];
+
+        const overlapsExisting = (hit, side) => {
+            const normalized = normalizedGarmentPoint(hit?.point);
+            const geometry = Array.isArray(area.geometry) ? area.geometry : [];
+            if (!normalized || geometry.length < 3) return false;
+
+            const xs = geometry.map(point => Number(point.x));
+            const ys = geometry.map(point => Number(point.y));
+            const minX = Math.min(...xs);
+            const maxX = Math.max(...xs);
+            const minY = Math.min(...ys);
+            const maxY = Math.max(...ys);
+            const areaWidth = Math.max(maxX - minX, Number.EPSILON);
+            const areaHeight = Math.max(maxY - minY, Number.EPSILON);
+
+            const x = THREE.MathUtils.clamp((normalized.x - minX) / areaWidth, 0, 1);
+            const y = THREE.MathUtils.clamp((normalized.y - minY) / areaHeight, 0, 1);
+
+            return Array.from(layers.values()).some(item => {
+                if (item.layer.area_id !== area.id) return false;
+                if (layerSide(item) !== side) return false;
+
+                const existing = areaRelativePlacement(item);
+                if (!existing) return false;
+
+                return (
+                    Math.abs(x - existing.x) < (labelWidth + Number(item.layer.width || 0.35)) / 2 &&
+                    Math.abs(y - existing.y) < (labelHeight + Number(item.layer.height || 0.25)) / 2
+                );
+            });
+        };
 
         for (const [dx, dy] of candidates) {
             const x = THREE.MathUtils.clamp(baseX + dx, -0.98, 0.98);
             const y = THREE.MathUtils.clamp(baseY + dy, -0.98, 0.98);
             raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
             const hit = raycaster.intersectObjects(garmentMeshes, false)[0];
-            if (isValidPrintSurface(hit, area)) return hit;
+            if (!isValidPrintSurface(hit, area)) continue;
+
+            const side = surfaceSide(hitNormal(hit));
+            if (!overlapsExisting(hit, side)) return hit;
         }
 
         return null;
@@ -1121,16 +1163,16 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             return;
         }
 
-        let hit = placementHit(area);
-        if (!hit) {
+        let hit = placementHit(area, 0.35, 0.25);
+        if (!hit && layers.size === 0) {
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
             const centerHit = raycaster.intersectObjects(garmentMeshes, false)[0];
             if (isValidPrintSurface(centerHit, area)) hit = centerHit;
         }
 
         if (!hit) {
-            // If the active area belongs to the other side, retry using the
-            // production area for the face currently visible on the GLB.
+            // If the active area belongs to the other side, retry there with
+            // the same collision-aware placement rules.
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
             const centerHit = raycaster.intersectObjects(garmentMeshes, false)[0];
             if (centerHit) {
@@ -1138,7 +1180,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                 const sideArea = areaForSurfaceSide(side, area);
                 if (sideArea.id !== area.id) {
                     area = sideArea;
-                    hit = placementHit(area);
+                    hit = placementHit(area, 0.35, 0.25);
                 }
             }
         }
