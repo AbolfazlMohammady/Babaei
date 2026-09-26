@@ -35,11 +35,30 @@
             seen.add(item.color);
             return true;
         });
+
         colorHosts.forEach(host => {
             host.innerHTML = colors.map(item => `<button type="button" class="premium-color-button" style="--swatch:${item.hex || "#fff"}" data-color="${esc(item.color)}" title="${esc(item.color)}" aria-label="${esc(item.color)}"></button>`).join("");
+
             host.querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
-                const variant = variants.find(item => item.color === button.dataset.color && Number(item.stock) > 0) || variants.find(item => item.color === button.dataset.color);
-                chooseVariant(variant);
+                const selected = select
+                    ? variants.find(item => String(item.id) === String(select.value))
+                    : null;
+
+                // Keep the currently selected size when changing color whenever
+                // that exact color/size combination is available in stock.
+                // Otherwise fall back to the first in-stock size of the new color.
+                // Never carry the old color into a size selection implicitly.
+                const sameSize = variants.find(item =>
+                    item.color === button.dataset.color &&
+                    item.size === selected?.size &&
+                    Number(item.stock) > 0
+                );
+                const firstInStock = variants.find(item =>
+                    item.color === button.dataset.color &&
+                    Number(item.stock) > 0
+                );
+
+                chooseVariant(sameSize || firstInStock || null);
             }));
         });
     }
@@ -83,18 +102,24 @@
                 // Only select a real in-stock variant. Otherwise the UI can
                 // show a size as selected while the cart API correctly rejects
                 // the out-of-stock variant.
+                // A size change must NEVER change the selected color.
+                // If this color/size combination is unavailable, leave the
+                // current variant untouched and tell the user why.
                 const sameColor = variants.find(item =>
                     item.size === button.dataset.size &&
                     item.color === selected?.color &&
                     Number(item.stock) > 0
                 );
-                const anyInStock = variants.find(item =>
-                    item.size === button.dataset.size &&
-                    Number(item.stock) > 0
-                );
 
-                if (!sameColor && !anyInStock) return;
-                chooseVariant(sameColor || anyInStock);
+                if (!sameColor) {
+                    const message = document.getElementById("save-status");
+                    if (message) {
+                        message.textContent = `سایز ${button.dataset.size} برای رنگ ${selected?.color || "انتخاب‌شده"} موجود نیست.`;
+                    }
+                    return;
+                }
+
+                chooseVariant(sameColor);
             });
         });;
     }
