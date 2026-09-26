@@ -256,7 +256,27 @@
                 button.addEventListener("click", event => {
                     event.preventDefault();
                     event.stopPropagation();
-                    sourceButtons[index]?.click();
+
+                    const sourceButton = sourceButtons[index];
+                    sourceButton?.click();
+
+                    // The desktop popover is a clone of the real control list.
+                    // The source button changes state, but cloneNode does not
+                    // receive that DOM update automatically. Mirror the state
+                    // immediately so size/color selections are visible without
+                    // closing and reopening the popover.
+                    requestAnimationFrame(() => {
+                        result.node.querySelectorAll("button").forEach((cloneButton, cloneIndex) => {
+                            const source = sourceButtons[cloneIndex];
+                            if (!source) return;
+                            cloneButton.classList.toggle("is-active", source.classList.contains("is-active"));
+                            cloneButton.classList.toggle("is-disabled", source.classList.contains("is-disabled"));
+                            cloneButton.classList.toggle("is-out-of-stock", source.classList.contains("is-out-of-stock"));
+                            cloneButton.disabled = source.disabled;
+                            cloneButton.setAttribute("aria-pressed", source.classList.contains("is-active") ? "true" : "false");
+                        });
+                    });
+
                     // Keep the tool card open until the explicit × is pressed.
                 });
             });
