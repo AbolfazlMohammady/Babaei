@@ -17,18 +17,24 @@
 <link rel="stylesheet" href="{% static 'css/pages/customizer.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio.css' %}?v=20260925-studio-header17">
-<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260920-15">
+<link rel="stylesheet" href="{% static 'css/pages/customizer-3d-studio-ui.css' %}?v=20260926-back-cart1">
 <link rel="stylesheet" href="{% static 'css/pages/customizer-3d-mobile-nav.css' %}?v=20260925-1">
 {% endblock %}
 
 {% block content %}
 <div class="customizer-shell customizer-shell--premium" id="customizer"
      data-product-slug="{{ product.slug }}"
+     data-product-url="{{ product.get_absolute_url }}"
      data-save-url="{% url 'customizer:save_design' product.slug %}"
          data-cart-url="{% url 'customizer:add_to_cart' product.slug %}"
          data-cart-page-url="{% url 'orders:cart' %}"
      data-upload-url="{% url 'customizer:upload_artwork' product.slug %}">
+    {% csrf_token %}
     <header class="customizer-header customizer-header--studio">
+        <button type="button" class="customizer-back-button" id="customizer-back-button" aria-label="بازگشت به صفحه قبل">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"></path></svg>
+            <span>بازگشت</span>
+        </button>
         <div class="customizer-header__identity">
             <div class="customizer-header__title">
                 <span class="customizer-header__eyebrow">BABAEI · 3D STUDIO</span>
