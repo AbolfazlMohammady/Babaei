@@ -33,7 +33,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     const areas = (data.views || []).flatMap(view => view.areas || []);
     const basePrice = Number(data.base_price || 0);
     const artworkById = id => artworks.find(item => Number(item.id) === Number(id));
-    const areaById = id => areas.find(item => Number(item.id) === Number(id));
+    const areaById = (id, side = null) =>
+        areas.find(item =>
+            Number(item.id) === Number(id) &&
+            (!side || item.side === side)
+        ) || areas.find(item => Number(item.id) === Number(id));
     const esc = value => String(value ?? "").replace(/[&<>\\"']/g, char => ({
         "&":"&amp;","<":"&lt;",">":"&gt;","\\":"&quot;","'":"&#39;"
     }[char]));
@@ -693,7 +697,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function areaRelativePlacement(item) {
-        const area = areaById(item?.layer?.area_id);
+        const area = areaById(item?.layer?.area_id, layerSide(item));
         const normalized = normalizedGarmentPoint(item?.surfacePoint || item?.position);
         const geometry = Array.isArray(area?.geometry) ? area.geometry : [];
         if (!area || !normalized || geometry.length < 3) return null;
@@ -1245,7 +1249,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const item = layers.get(selectedId);
         if (!item) return;
 
-        const area = areaById(item.layer.area_id);
+        const area = areaById(item.layer.area_id, layerSide(item));
         pointerOf(event);
         raycaster.setFromCamera(pointer, camera);
         const hit = raycaster.intersectObjects(garmentMeshes, false)[0];
@@ -1274,7 +1278,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         const direction = normal.clone().multiplyScalar(-1);
         const probe = new THREE.Raycaster(origin, direction, 0, 0.9);
         const hit = probe.intersectObject(item.target, false)[0];
-        if (!isValidPrintSurface(hit, areaById(item.layer.area_id))) return;
+        if (!isValidPrintSurface(hit, areaById(item.layer.area_id, layerSide(item)))) return;
 
         item.target = hit.object;
         project(item, hit.point, hitNormal(hit));
@@ -1332,7 +1336,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
         if (card) {
             card.innerHTML = selected
-                ? `<div class="selected-card__title">${esc(selected.artwork.name || "لیبل")}</div><span class="selected-card__meta">${esc(areaById(selected.layer.area_id)?.name || "ناحیه چاپ")} · ${Math.round(selected.layer.width * 100)}%</span>`
+                ? `<div class="selected-card__title">${esc(selected.artwork.name || "لیبل")}</div><span class="selected-card__meta">${esc(areaById(selected.layer.area_id, layerSide(selected))?.name || "ناحیه چاپ")} · ${Math.round(selected.layer.width * 100)}%</span>`
                 : `<span class="selected-card__empty">یک لیبل را انتخاب کنید.</span>`;
         }
 
@@ -1606,7 +1610,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
                     );
                     project(item, item.surfacePoint || item.position, item.surfaceNormal || item.normal);
                 } else if (action === "center-label") {
-                    const hit = placementHit(areaById(item.layer.area_id));
+                    const hit = placementHit(areaById(item.layer.area_id, layerSide(item)), 0.35, 0.25, layerSide(item));
                     if (hit) {
                         item.target = hit.object;
                         project(item, hit.point, hitNormal(hit));
