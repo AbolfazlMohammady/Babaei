@@ -5,7 +5,7 @@
 {% block body_class %}cart-page{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/cart.css' %}?v=6">
+<link rel="stylesheet" href="{% static 'css/pages/cart.css' %}?v=20260926-cart-design2">
 {% endblock %}
 
 {% block content %}
@@ -22,19 +22,23 @@
             <div class="cart-products__list" id="products">
                 {% for item in items %}
                 <article class="cart-product-card" data-cart-item data-cart-id="{{ item.id }}" data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
-                    <a class="cart-product-card__image" href="{% if item.custom_design %}{% url 'orders:checkout' %}{% else %}{{ item.product.get_absolute_url }}{% endif %}" aria-label="{% if item.custom_design %}طراحی سفارشی {{ item.custom_design.design_code }}{% else %}{{ item.product.name }}{% endif %}">
-                        {% if item.custom_design %}
-                            {% if item.custom_design.preview_front %}
-                            <img src="{{ item.custom_design.preview_front.url }}" alt="پیش‌نمایش طراحی {{ item.custom_design.design_code }}" loading="lazy" decoding="async">
-                            {% else %}
-                            <img src="{% static 'images/home/Tshirt.png' %}" alt="پیش‌نمایش طراحی {{ item.custom_design.design_code }}" loading="lazy" decoding="async">
-                            {% endif %}
-                        {% elif item.primary_image_url %}
+                    {% if item.custom_design %}
+                    <div class="cart-product-card__image" aria-label="پیش‌نمایش طراحی {{ item.custom_design.design_code }}">
+                        {% if item.custom_design.preview_front %}
+                        <img src="{{ item.custom_design.preview_front.url }}" alt="پیش‌نمایش طراحی {{ item.custom_design.design_code }}" loading="lazy" decoding="async">
+                        {% else %}
+                        <div class="cart-product-card__image-placeholder" aria-hidden="true"></div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <a class="cart-product-card__image" href="{{ item.product.get_absolute_url }}" aria-label="{{ item.product.name }}">
+                        {% if item.primary_image_url %}
                         <img src="{{ item.primary_image_url }}" alt="{{ item.primary_image_alt|default:item.product.name }}" loading="lazy" decoding="async">
                         {% else %}
                         <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ item.product.name }}" loading="lazy" decoding="async">
                         {% endif %}
                     </a>
+                    {% endif %}
 
                     <div class="cart-product-card__info">
                         <div class="cart-product-card__title-row">
@@ -118,15 +122,23 @@
                 {% for item in items %}
                 <article class="cart-line" data-cart-item data-cart-id="{{ item.id }}" data-stock="{% if item.variant %}{{ item.variant.stock_quantity }}{% endif %}">
                     <div class="cart-line__visual">
-                        <a href="{% if item.custom_design %}{% url 'orders:checkout' %}{% else %}{{ item.product.get_absolute_url }}{% endif %}" class="cart-line__image" aria-label="{% if item.custom_design %}طراحی سفارشی {{ item.custom_design.design_code }}{% else %}{{ item.product.name }}{% endif %}">
-                            {% if item.custom_design and item.custom_design.preview_front %}
+                        {% if item.custom_design %}
+                        <div class="cart-line__image" aria-label="پیش‌نمایش طراحی {{ item.custom_design.design_code }}">
+                            {% if item.custom_design.preview_front %}
                             <img src="{{ item.custom_design.preview_front.url }}" alt="پیش‌نمایش طراحی {{ item.custom_design.design_code }}" loading="lazy" decoding="async">
-                            {% elif item.primary_image_url %}
+                            {% else %}
+                            <div class="cart-line__image-placeholder" aria-hidden="true"></div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <a href="{{ item.product.get_absolute_url }}" class="cart-line__image" aria-label="{{ item.product.name }}">
+                            {% if item.primary_image_url %}
                             <img src="{{ item.primary_image_url }}" alt="{{ item.primary_image_alt|default:item.product.name }}" loading="lazy" decoding="async">
                             {% else %}
                             <img src="{% static 'images/home/Tshirt.png' %}" alt="{{ item.product.name }}" loading="lazy" decoding="async">
                             {% endif %}
                         </a>
+                        {% endif %}
                     </div>
 
                     <div class="cart-line__content">
