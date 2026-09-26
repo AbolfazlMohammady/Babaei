@@ -31,10 +31,6 @@
      data-upload-url="{% url 'customizer:upload_artwork' product.slug %}">
     {% csrf_token %}
     <header class="customizer-header customizer-header--studio">
-        <button type="button" class="customizer-back-button" id="customizer-back-button" aria-label="بازگشت به صفحه قبل">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"></path></svg>
-            <span>بازگشت</span>
-        </button>
         <div class="customizer-header__identity">
             <div class="customizer-header__title">
                 <span class="customizer-header__eyebrow">BABAEI · 3D STUDIO</span>
@@ -180,6 +176,11 @@
             </button>
             <button type="button" class="desktop-tool desktop-tool--save" data-desktop-tool="save" title="افزودن به سبد خرید" aria-label="افزودن طراحی به سبد خرید">
                 <span class="desktop-tool__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h11l3 3v13H5V4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 4v6h7V4M8 20v-6h8v6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m10 17 1.5 1.5L14.5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </button>
+            <button type="button" class="desktop-tool desktop-tool--back" id="customizer-back-button" title="بازگشت به صفحه قبل" aria-label="بازگشت به صفحه قبل">
+                <span class="desktop-tool__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="m15 5-7 7 7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
             </button>
         </div>
         <div class="desktop-tool-popover" id="desktop-tool-popover" hidden></div>
